@@ -1,0 +1,8 @@
+
+=== X28 GATE BENCH -- heldout, ceiling false-retake <= 3% ===
+model   params     MB   AUROC    thr  helFRT helCatch  oracle   cpu1ms   peakMiB  ceiling
+base     11.4M   46.2  0.9701  0.260   0.029    0.817   0.817        -         -       ok
+pe_s16   23.6M   47.2  0.9801  0.287   0.023    0.839   0.863     96.4       531       ok
+pe_t16    6.0M   24.2  0.9725  0.222   0.012    0.758   0.798     37.2       453       ok
+MB: base = measured .tflite fp32; pe_s16 = params x 2 (fp16); pe_t16 = params x 4 (fp32).
+cpu1ms / peakMiB: Mac CPU, 1 thread, torch fp32 -- RELATIVE only; the box is measured in X28.
