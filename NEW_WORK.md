@@ -59,3 +59,27 @@ PE-Core-S16 refuses more non-food and less real food than the old gate, at the s
 | **PE-Core-S16 fp16 weights @384** | **48.1 MB** | **96 ms** | **112 ms** | **242 MiB** |
 
 Same file size as the old gate; 2.4× the compute per photo (384 px input). Next: the server gate runs this file in shadow mode next to the old one, with the PE preprocess (timm config in the export JSON).
+
+---
+
+## 3. One preprocess for server and phone, and the PE gate in shadow mode on the server
+
+**When:** Oct 26 2026, 2:57 PM ET (deploy-head run); Go change committed Oct 26.
+**Meta model:** Perception Encoder `PE-Core-S16-384` (Apache-2.0).
+**Files:** `tools/hackathon/pe_gate_deploy_head.py`, `tools/hackathon/results/deploy_head_20261026T185715Z.{txt,json}`, `gate/preprocess.go`, `gate/head.go`, `gate/handler.go`, `gate/events.go`, `gate/cmd/gate/main.go`, `gate/gate_test.go`
+
+**One preprocess.** PE-Core was trained with timm's preprocess (resize, then crop; bicubic). The server crops the centre square first and then resizes, as the phone does, and Go must equal Python bit for bit. So the deployed preprocess is fixed as: crop-first centre square → Pillow **bicubic** to 384 → (x/255 − 0.5)/0.5, NHWC. The head is refitted on embeddings from the **deployed fp16-weight `.tflite`** with exactly that preprocess:
+
+| Head (HELDOUT) | AUROC | Catch | False retake |
+|---|---|---|---|
+| Old gate (MobileCLIP2-S0) | 0.970 | 0.817 | 2.9% |
+| PE, timm preprocess (#1, #2) | 0.980 | 0.839 | 2.3% |
+| **PE, deployed preprocess (this)** | **0.981** | **0.831** | **1.6%** |
+
+**Go gate (server).**
+- A Pillow-exact **bicubic** resampler next to the bilinear one (same fixed-point code, cubic kernel a = −0.5, support 2). Bit-exact with Pillow on the 4 golden cases, including 640×480 → 384.
+- The head JSON may declare its `preprocess`; a head without one keeps the old tensor bit for bit (tested).
+- **Shadow mode:** a second gate (`-shadow-model`, `-shadow-head`, both pinned by sha256) scores the same decoded photo **after** the answer is sent, on its own slot. It never changes the answer or its latency. It writes its own event (`step: gate_shadow`) with the caller's verdict, so the two gates can be compared photo by photo. A busy shadow skips and counts; a shadow that fails to load is reported in `/healthz` and never runs.
+- Tests: gate 13 → **19** (bicubic goldens, old-tensor identity, PE tensor, preprocess validation, shadow cannot change the answer, shadow failure is ignored); all pass with the race detector.
+
+Next: run the shadow on the new box with live photos, then switch the router to the PE gate and remove MobileCLIP2.

@@ -1,0 +1,73 @@
+{
+ "preprocess": {
+  "geometry": "crop_first_centre_square",
+  "resample": "pillow_bicubic",
+  "mean": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "std": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "layout": "NHWC"
+ },
+ "pillow": "12.3.0",
+ "model": "gate_pe_s16_f16w_384.tflite",
+ "model_sha256": "c0618012abe6a22664285b85ae0d7820e3013342965cb74aa6767404a5ff649e",
+ "head": {
+  "file": "gate_head_pe_s16_384_deploy.json",
+  "sha256": "7ba764ea8b562bef0948678dba5a1d103b0772ce2df46f3959d181d093c507a4",
+  "threshold": 0.254,
+  "dim": 384
+ },
+ "heldout": {
+  "deploy": {
+   "thr": 0.254,
+   "hel_catch": 0.8306451612903226,
+   "hel_frt": 0.01642710472279261,
+   "auroc": 0.9808019253273277,
+   "oracle_catch": 0.8575268817204301
+  },
+  "timm": {
+   "thr": 0.287,
+   "hel_catch": 0.839,
+   "hel_frt": 0.023,
+   "auroc": 0.9801,
+   "oracle_catch": 0.863
+  }
+ },
+ "pass": true,
+ "go_goldens_pillow_bicubic": [
+  {
+   "w": 41,
+   "h": 29,
+   "side": 16,
+   "sha256": "bb1b2adb97af201df6c21ee68b37797022e4892ba856131fe56ef0009d9f6489"
+  },
+  {
+   "w": 29,
+   "h": 41,
+   "side": 16,
+   "sha256": "52534b1e2dcb29db377313ff51d9fcfdf49da7a9aefa216980aa58e9f5c081d3"
+  },
+  {
+   "w": 9,
+   "h": 7,
+   "side": 16,
+   "sha256": "ba4a998e9bf8d3231d4a1946149274a520351f04fe66154c8845404c61ba278b"
+  },
+  {
+   "w": 640,
+   "h": 480,
+   "side": 384,
+   "sha256": "416526607facc9efc771f832462e017040c50e0a6952f8a9cb9f2029884f4dd7"
+  }
+ ],
+ "litert_ref": {
+  "file": "litert_ref_pe_s16_f16w.json",
+  "argmax": 148
+ }
+}

@@ -1,0 +1,15 @@
+
+=== PE-Core-S16 deployed preprocess + head ===
+preprocess: crop-first centre square -> Pillow bicubic 384 -> (x/255-0.5)/0.5, NHWC; model fp16w .tflite
+
+head                           AUROC     thr   helFRT helCatch   oracle
+timm preprocess (#1, #2)      0.9801   0.287    0.023    0.839    0.863
+deploy preprocess (this)      0.9808   0.254    0.016    0.831    0.858
+bar: false retake <= 3%, catch >= 0.817 (old gate)  ->  PASS
+
+Go goldens (Pillow 12.3.0 bicubic, crop-first):
+  41x29 -> 16  bb1b2adb97af201df6c21ee68b37797022e4892ba856131fe56ef0009d9f6489
+  29x41 -> 16  52534b1e2dcb29db377313ff51d9fcfdf49da7a9aefa216980aa58e9f5c081d3
+  9x7 -> 16  ba4a998e9bf8d3231d4a1946149274a520351f04fe66154c8845404c61ba278b
+  640x480 -> 384  416526607facc9efc771f832462e017040c50e0a6952f8a9cb9f2029884f4dd7
+LiteRT ref: argmax 148, 384 values -> litert_ref_pe_s16_f16w.json (untracked)
