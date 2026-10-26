@@ -30,3 +30,32 @@ Times: the kickoff was Oct 26, 12:00 PM ET; the building period is Oct 27 – No
 | PE-Core-T16-384 fp32 | 24.2 MB | 0.973 | 0.758 | 1.2% | 0.798 | no (catch) |
 
 PE-Core-S16 refuses more non-food and less real food than the old gate, at the same file size. Next: export to LiteRT, verdict parity (0 flips), then shadow mode on the server.
+
+---
+
+## 2. The PE-Core gate as a LiteRT file, with verdict parity
+
+**When:** Oct 26 2026, 2:30 PM ET (export run). Committed Oct 26.
+**Meta model:** Perception Encoder `PE-Core-S16-384` (Apache-2.0).
+**Files:** `tools/hackathon/pe_export_gate.py`, `tools/hackathon/results/export_20261026T183051Z.{txt,json}`
+
+**What.** The file the server (and later the phone) runs: the vision tower only, L2-normalised inside the graph, NHWC input at 384 px, exported with `litert_torch`, then **fp16 weights** with `ai_edge_quantizer` float casting. Compute, input and output stay float32, so the server's LiteRT C API call does not change. The head is refitted with the protocol of entry 1 (threshold 0.287). Model and head stay out of the repo, as the old gate assets did.
+
+**Verdict parity (all 1,432 gold photos, PyTorch fp32 vs the fp16-weight `.tflite`, same head):**
+
+| Check | Result |
+|---|---|
+| Verdict flips | **0** |
+| Minimum cosine | 0.999994 |
+| Largest probability change | 0.0016 |
+| Photos within 0.01 of the threshold | 6 |
+
+**Cost (LiteRT interpreter, 1 thread, Mac; relative only):**
+
+| Model | File | Median | p95 | Peak memory |
+|---|---|---|---|---|
+| MobileCLIP2-S0 fp32 @192 (old) | 46.2 MB | 40 ms | 51 ms | 147 MiB |
+| PE-Core-S16 fp32 @384 | 94.4 MB | 95 ms | 110 ms | 257 MiB |
+| **PE-Core-S16 fp16 weights @384** | **48.1 MB** | **96 ms** | **112 ms** | **242 MiB** |
+
+Same file size as the old gate; 2.4× the compute per photo (384 px input). Next: the server gate runs this file in shadow mode next to the old one, with the PE preprocess (timm config in the export JSON).

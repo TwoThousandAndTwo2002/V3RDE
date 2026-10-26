@@ -1,0 +1,19 @@
+
+=== PE-Core-S16 gate export ===
+params 23.6M | fp32 94.4 MB | fp16w 48.1 MB | input 384px NHWC
+head: thr 0.287 | heldout catch 0.839 | false retake 0.023 | AUROC 0.9801
+
+--- verdict parity: PyTorch fp32 vs fp16w .tflite, 1432 photos ---
+verdict flips          : 0
+min cosine             : 0.99999428
+max probability delta  : 1.619e-03
+within 0.01 of thr     : 6
+flips vs fitted (fp16 MPS) embeddings: 2
+
+--- cost: LiteRT interpreter, 1 thread, Mac (relative) ---
+model                                MB   med ms   p95 ms  peakMiB
+gate_s0_f32_192.tflite             46.2     40.1     50.9      147
+gate_pe_s16_f32_384.tflite         94.4     95.4    110.2      257
+gate_pe_s16_f16w_384.tflite        48.1     95.5    112.0      242
+
+PASS: 0 flips.

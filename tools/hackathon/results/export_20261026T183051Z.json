@@ -1,0 +1,101 @@
+{
+ "encoder": "PE-Core-S16-384/timm:vit_pe_core_small_patch16_384.fb",
+ "params": 23586048,
+ "license": "Apache-2.0",
+ "input_side": 384,
+ "input_layout": "NHWC",
+ "normalised_in_graph": true,
+ "preprocess_timm": {
+  "input_size": [
+   3,
+   384,
+   384
+  ],
+  "interpolation": "bicubic",
+  "mean": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "std": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "crop_pct": 1.0,
+  "crop_mode": "center"
+ },
+ "tflite_fp32": {
+  "file": "gate_pe_s16_f32_384.tflite",
+  "bytes": 94351952,
+  "sha256": "07554ea2e69bc7e4948cb08a00b7eb60f051f24cb3b6e66dc528820efab8b4d0"
+ },
+ "tflite_fp16w": {
+  "file": "gate_pe_s16_f16w_384.tflite",
+  "bytes": 48065136,
+  "sha256": "c0618012abe6a22664285b85ae0d7820e3013342965cb74aa6767404a5ff649e"
+ },
+ "head": {
+  "file": "gate_head_pe_s16_384.json",
+  "sha256": "5e2b9b2ac1027345d433b0c044d0e9790e3ac9cfcceec219055e4d81bd849f8c",
+  "threshold": 0.287,
+  "embedding_dim": 384,
+  "heldout": {
+   "protocol": "OOF sweep on dev (n=573), applied once to heldout (n=859)",
+   "heldout_catch": 0.8387096774193549,
+   "heldout_false_retake": 0.022587268993839837,
+   "heldout_auroc": 0.9801174626305448,
+   "ceiling_false_retake": 0.03,
+   "oracle_catch_at_ceiling": 0.8629032258064516
+  }
+ },
+ "parity_fp16w_vs_torch_fp32": {
+  "images": 1432,
+  "verdict_flips": 0,
+  "min_cosine": 0.9999942779541016,
+  "max_prob_delta": 0.0016192944180334345,
+  "within_0.01_of_threshold": 6,
+  "flips_vs_fitted_embeddings": 2
+ },
+ "cost_litert_1thread_mac": [
+  {
+   "model": "gate_s0_f32_192.tflite",
+   "input": [
+    1,
+    192,
+    192,
+    3
+   ],
+   "ms_median": 40.06252100225538,
+   "ms_p95": 50.917917003971525,
+   "peak_rss_mib": 147.203125,
+   "bytes": 46202512
+  },
+  {
+   "model": "gate_pe_s16_f32_384.tflite",
+   "input": [
+    1,
+    384,
+    384,
+    3
+   ],
+   "ms_median": 95.40779150120215,
+   "ms_p95": 110.15012499410659,
+   "peak_rss_mib": 256.8125,
+   "bytes": 94351952
+  },
+  {
+   "model": "gate_pe_s16_f16w_384.tflite",
+   "input": [
+    1,
+    384,
+    384,
+    3
+   ],
+   "ms_median": 95.45750050165225,
+   "ms_p95": 111.96545801067259,
+   "peak_rss_mib": 241.59375,
+   "bytes": 48065136
+  }
+ ]
+}
