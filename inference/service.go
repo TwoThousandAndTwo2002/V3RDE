@@ -145,6 +145,7 @@ func NewService(c ServiceConfig) http.Handler {
 	for _, p := range []string{"/v1/analyze", "/api/analyze"} {
 		mux.HandleFunc(p, c.analyze)
 		mux.HandleFunc("GET "+p+"/photo/{id}", c.photo)
+		mux.HandleFunc("POST "+p+"/labels", c.labels) // X32g
 	}
 	return mux
 }

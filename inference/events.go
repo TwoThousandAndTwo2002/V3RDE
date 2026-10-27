@@ -78,6 +78,29 @@ type Event struct {
 	// JSON object: source photo|frame|native, ms from the press, the preview
 	// video's time and state). Logged as sent; never used for the answer.
 	Capture json.RawMessage `json:"capture,omitempty"`
+	// X32g: what the user did with the answer (step "labels"; request_id =
+	// the analyze request it labels). The truth for tuning thresholds.
+	Labels *LabelSet `json:"labels,omitempty"`
+}
+
+// LabelSet is the app's report on one answer (X32g, T9 2026-10-27: "we are
+// logging the corrected labels"): every item of the answer, the model's
+// title and servings, the user's final ones, and whether it was kept.
+type LabelSet struct {
+	Outcome string      `json:"outcome"` // posted | retake | closed
+	Locale  string      `json:"locale,omitempty"`
+	Items   []LabelItem `json:"items"`
+}
+
+// LabelItem is one item of the answer as the user left it.
+type LabelItem struct {
+	Item          int    `json:"item"`
+	PhotoID       string `json:"photo_id,omitempty"`
+	ModelTitle    string `json:"model_title"`
+	FinalTitle    string `json:"final_title"`
+	ModelServings int    `json:"model_servings"`
+	FinalServings int    `json:"final_servings"`
+	Kept          bool   `json:"kept"`
 }
 
 // CaptureField keeps the app's "capture" field when it is one JSON object of

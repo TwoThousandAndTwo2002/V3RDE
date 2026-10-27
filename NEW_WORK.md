@@ -284,3 +284,19 @@ The capture log from the phone showed why the shutter felt broken: the photo its
 - The resize runs once, after "Use photo", inside the Analyzing timer (one decode, one encode).
 - The preview runs at the upload size, not the sensor size, so the camera and the barcode reader stay light.
 - Checked on the real web export in Chromium: sheet 0.6–1.1 s after the press; resize 0.33 s; upload 2376x1337.
+
+---
+
+## 15. The user's corrections, in the ledger
+
+**When:** Oct 27 2026.
+**Files:** `inference/labels.go` (new), `inference/labels_test.go` (new), `inference/events.go`, `inference/service.go`, `mobile/src/screens/Capture.tsx`, `mobile/src/logic.ts`, `mobile/src/api.ts`, `mobile/tests/logic.test.mts`, `docs/morpheus/analyze_api.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X32g.md`
+
+The pipeline has thresholds set by hand. To tune them on real use, the ledger needs the truth for each answer, and the user gives it in the app: they rename an item, change its servings, remove it, or start over.
+
+- After the user acts on an answer, the app sends one report: every item with the model's title and servings and the user's final ones, kept or removed, posted or not, and the device's language (for the translated app later).
+- The service logs it next to the answer (same request_id). It never changes a listing.
+- Tests: inference 61 -> 62, mobile 26 -> 28.
+
+Next: the barcode front-of-package image; then a replay bench that tunes the thresholds on labelled photos.
