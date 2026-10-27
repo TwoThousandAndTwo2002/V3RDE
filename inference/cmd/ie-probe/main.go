@@ -52,6 +52,7 @@ type variant struct {
 	NameEffort   string `json:"name_effort,omitempty"`
 	DetailEffort string `json:"detail_effort,omitempty"`
 	Split        int    `json:"split,omitempty"`
+	Compact      bool   `json:"compact,omitempty"` // X31b: duplicates give box, point, same_as only
 	// App: the photo is first made like the app's upload (mobile/src/photo.ts:
 	// upright, long edge <= 1600 px, JPEG 0.85), the camera's own 0.7 step
 	// cannot be copied off the phone.
@@ -71,6 +72,9 @@ func parseVariant(v string) (variant, error) {
 		out.Marks, out.NoCoords = true, true
 	default:
 		return out, fmt.Errorf("variant %q: kind must be coords, marks or marksonly", v)
+	}
+	if n := len(parts); n >= 3 && parts[n-1] == "compact" {
+		out.Compact, parts = true, parts[:n-1]
 	}
 	if n := len(parts); n >= 3 && parts[n-1] == "app" {
 		out.App, parts = true, parts[:n-1]
@@ -225,7 +229,7 @@ func main() {
 				var smu sync.Mutex
 				e := &inference.Engine{API: &inference.Client{URL: *apiURL, Key: key, Effort: v.Effort,
 					HTTP: &http.Client{Timeout: 120 * time.Second}}, Marks: v.Marks, NoCoords: v.NoCoords, MaxNamed: *maxNamed, SAMCache: cache,
-					PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
+					PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, Compact: v.Compact, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
 					Sent: func(purpose string, jb []byte) {
 						smu.Lock()
 						defer smu.Unlock()

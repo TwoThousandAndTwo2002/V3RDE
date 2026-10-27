@@ -88,6 +88,10 @@ type Engine struct {
 	NameEffort   string
 	DetailEffort string
 	SAMCache     *SAMCache
+	// Compact (X31b bench): a box that holds the identical product as an
+	// earlier box in the same call gives only box, point and same_as; it
+	// takes the earlier box's fields. Shorter answers, so less waiting.
+	Compact bool
 	// Sent, if set, gets every multi-item image as sent (probe: check the marks).
 	Sent func(purpose string, jpeg []byte)
 }
@@ -684,6 +688,18 @@ func MultiPrompt(boxes []Instance, marks, coords bool) string {
 	return boxList(boxes, marks, coords) + "For EVERY box, identify the item in it. Return ONLY valid JSON:\n" + itemFields
 }
 
+// compactRule (Engine.Compact): duplicates give three fields only.
+const compactRule = "\nIf a box holds the identical product as an earlier box, give ONLY " +
+	`{"box": <box number>, "point": [x, y], "same_as": <the earlier box>} for it; the earlier box's fields are used.`
+
+func (e *Engine) multiPrompt(boxes []Instance) string {
+	p := MultiPrompt(boxes, e.Marks, !e.NoCoords)
+	if e.Compact {
+		p += compactRule
+	}
+	return p
+}
+
 // boxList introduces the numbered boxes: as coordinates in the text, as
 // tags drawn on the photo, or both. Without coordinates, the drawn numbers
 // are the only link between a number and a place in the photo.
@@ -726,6 +742,11 @@ func parseEntries(text string, n int) (map[int]entry, map[int]string) {
 		return ok, bad
 	}
 	items, _ := m["items"].([]any)
+	type copyOf struct {
+		box, of int
+		point   *[2]float64
+	}
+	var copies []copyOf
 	for _, raw := range items {
 		obj, _ := raw.(map[string]any)
 		bf, isNum := obj["box"].(float64)
@@ -735,6 +756,11 @@ func parseEntries(text string, n int) (map[int]entry, map[int]string) {
 		}
 		r, err := analyze.Validate(obj)
 		if err != nil {
+			// a compact duplicate: box + point + same_as only (Engine.Compact)
+			if sf, ok := obj["same_as"].(float64); ok && sf >= 1 && sf < float64(b) && sf == float64(int(sf)) && obj["name"] == nil {
+				copies = append(copies, copyOf{box: b, of: int(sf), point: pointOf(obj)})
+				continue
+			}
 			bad[b] = err.Error()
 			continue
 		}
@@ -742,14 +768,7 @@ func parseEntries(text string, n int) (map[int]entry, map[int]string) {
 		if sf, ok := obj["same_as"].(float64); ok && sf >= 1 && sf < float64(b) && sf == float64(int(sf)) {
 			s = int(sf)
 		}
-		var pt *[2]float64
-		if p, ok := obj["point"].([]any); ok && len(p) == 2 {
-			x, okx := p[0].(float64)
-			y, oky := p[1].(float64)
-			if okx && oky {
-				pt = &[2]float64{x, y}
-			}
-		}
+		pt := pointOf(obj)
 		nf := false
 		if f, isBool := obj["food"].(bool); isBool && !f {
 			nf = true
@@ -769,7 +788,32 @@ func parseEntries(text string, n int) (map[int]entry, map[int]string) {
 			ok[b] = entry{box: b, sameAs: s, point: pt, notFood: nf, tray: tr, pan: tp, res: r}
 		}
 	}
+	// copies take the fields of the box they point to (earlier boxes first,
+	// so a chain resolves); a copy of a box with no valid entry fails
+	sort.Slice(copies, func(i, j int) bool { return copies[i].box < copies[j].box })
+	for _, c := range copies {
+		src, found := ok[c.of]
+		if _, dup := ok[c.box]; dup {
+			continue
+		}
+		if !found {
+			bad[c.box] = "same_as points to a box with no valid entry"
+			continue
+		}
+		ok[c.box] = entry{box: c.box, sameAs: c.of, point: c.point, notFood: src.notFood, tray: src.tray, pan: src.pan, res: src.res}
+	}
 	return ok, bad
+}
+
+func pointOf(obj map[string]any) *[2]float64 {
+	if p, ok := obj["point"].([]any); ok && len(p) == 2 {
+		x, okx := p[0].(float64)
+		y, oky := p[1].(float64)
+		if okx && oky {
+			return &[2]float64{x, y}
+		}
+	}
+	return nil
 }
 
 // score adds one named box's point to the numbered-box test.
@@ -814,7 +858,7 @@ func (e *Engine) single(ctx context.Context, inv *Inventory, ph *photo, named []
 		e.Sent(purpose, jb)
 	}
 	c, err := e.API.Do(ctx, "muse:"+purpose, map[string]any{
-		"model": e.Muse, "input": UserMessage(TextPart(MultiPrompt(sub, e.Marks, !e.NoCoords)), ImagePart(jb, "image/jpeg"))})
+		"model": e.Muse, "input": UserMessage(TextPart(e.multiPrompt(sub)), ImagePart(jb, "image/jpeg"))})
 	inv.add(c)
 	if err != nil {
 		return got, which

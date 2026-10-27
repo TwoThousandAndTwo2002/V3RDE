@@ -47,7 +47,7 @@ type ServiceConfig struct {
 	GateHTTP    *http.Client
 	MaxImage    int64         // bytes (8 MB: the X32 upload, about 2376 px at JPEG 0.9)
 	MaxInFlight int           // photos at the same time; more get 503 busy
-	Timeout     time.Duration // per photo, gate and every API call included
+	Timeout     time.Duration // per photo, gate and every API call included (55 s: under the LB's 60 s)
 	Origin      string        // CORS allow-origin; "" = no CORS headers
 	Build       string
 	slots       chan struct{}
@@ -93,7 +93,7 @@ func NewService(c ServiceConfig) http.Handler {
 		c.MaxInFlight = 3
 	}
 	if c.Timeout == 0 {
-		c.Timeout = 120 * time.Second
+		c.Timeout = 55 * time.Second
 	}
 	if c.GateHTTP == nil {
 		c.GateHTTP = &http.Client{Timeout: 20 * time.Second}
@@ -241,11 +241,12 @@ func (c *ServiceConfig) inventory(w http.ResponseWriter, r *http.Request) {
 	}
 	ev.fromInventory(inv)
 	if err != nil {
-		status := http.StatusBadGateway
-		if errors.Is(err, context.DeadlineExceeded) {
+		status, msg := http.StatusBadGateway, err.Error()
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			status = http.StatusGatewayTimeout
+			msg = fmt.Sprintf("this photo took longer than %s; try a closer photo of fewer items", c.Timeout)
 		}
-		fail(status, RouteError, err.Error())
+		fail(status, RouteError, msg)
 		return
 	}
 	ans.Items, ans.NotListed = nonNil(inv.Items), nonNil(inv.NotListed)

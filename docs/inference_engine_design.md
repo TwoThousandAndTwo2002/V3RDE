@@ -240,6 +240,28 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 ### D38. SUP template v5
 - **What:** S3 also checks `inference/Dockerfile` (root context) and validates `deploy/Caddyfile` with the pinned `caddy:2.8.4` image.
 
+### D39. The inventory timeout is 55 s (X31c)
+- **What:** `-timeout 55s` (was 120 s), under the load balancer's 60 s idle timeout (T9: keep the LB at 60 s; "no photo should take that long"). A photo over the time gets 504 with "this photo took longer than 55s; try a closer photo of fewer items". The router waits 65 s, Caddy 70 s, so the clear 504 reaches the caller.
+
+### D40. Keep split 3 (X31b bench)
+- **Why:** the live test took about 27 s for two dense photos; the box events showed the Muse split calls at 15.9–20.4 s (local work < 1 s). The bench (`probe_x31b_20261027T050833Z.json`, `score_x31b_bench.json` from `tools/hackathon/bench_x31b.py`; 20 phone photos, 4 variants on each photo one after the other):
+
+  | Variant | Muse wait median / p90 | Cost / photo | Out tokens / box | Reasoning share | Near-dup pairs |
+  |---|---|---|---|---|---|
+  | split 3 (live) | 10.4 / 12.3 s | $0.0452 | 251 | 56% | 132 |
+  | split 6 | 9.7 / 10.6 s | $0.0665 | 340 | 68% | 147 |
+  | split 3 + compact | 9.9 / 12.3 s | $0.0435 | 230 | 65% | 144 |
+  | split 6 + compact | 8.6 / 10.6 s | $0.0653 | 330 | 73% | 196 |
+
+- **Findings:** each extra call reasons again (cost +47% for split 6); most of the wait is the model's reasoning and the API's own speed (the same photo took 6.4–8.5 s per call in X30b and 17–19 s live); more calls give more near-duplicate names.
+
+### D41. `compact` is an option that is off
+- **What:** `Engine.Compact` / probe suffix `:compact`: a box with the identical product as an earlier box in the same call gives only `box`, `point`, `same_as`, and takes that box's fields (a chain resolves; a copy of a box with no valid entry fails). Measured gain too small (−8% output tokens, −4% cost) for a new answer format live.
+
+### D42. Next for speed and quality (T9, 2026-10-27)
+- **Speed for the user:** the app shows the boxes first (SAM is done after about 4 s), then the names (X32 UI).
+- **Quality:** merge near-duplicate names in one photo (132 pairs in 182 listings with split 3), then the gate retrain with shelf, pantry and pet-product photos (the pet-product photo passed the gate at p 0.581 and cost $0.051).
+
 ---
 
 ## 4. Results by run

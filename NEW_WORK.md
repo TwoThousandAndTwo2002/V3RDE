@@ -166,3 +166,20 @@ The X30 engine is now a service. One photo in; every food item in it out, with i
 - Tests: inference 41 → 47, router 9 → 12.
 
 Next: deploy to the Icarus box (`icarus.thehungreeapp.com`), then X32 (the app's review screen and the upload at Muse's limit).
+
+---
+
+## 8. A clear time limit, and a measured choice of Muse variant
+
+**When:** Oct 27 2026 (bench 05:08 UTC; code the same day).
+**Meta models:** SAM 3.1, Muse Spark 1.3 (Meta Model API); PE-Core-S16-384 gate.
+**Files:** `inference/cmd/inventory/main.go`, `inference/service.go`, `inference/service_test.go`, `inference/engine.go` (the `compact` option, off), `inference/twopass_test.go`, `inference/cmd/ie-probe/main.go` (`:compact`), `router/router.go`, `deploy/Caddyfile`, `tools/hackathon/bench_x31b.py`, `tools/hackathon/results/inference/{probe_x31b_20261027T050833Z.json, score_x31b_bench.json}`, `docs/inference_engine_design.md` (D39–D42)
+**Sources:** `docs/sources/X31c.md`
+
+The first live photos through `icarus.thehungreeapp.com` took about 27 s. The box's own records showed where: the Muse calls, not the server.
+
+- **A clear limit.** A photo now stops at 55 s with a clear message, under the load balancer's 60 s.
+- **A measured choice.** Four ways to call Muse were run on the same 20 phone photos. More parallel calls cut the wait only a little (10.4 s → 9.7 s median) and cost 47% more, because each call reasons again. The live variant stays.
+- Tests: inference 47 → 49.
+
+Next: the app shows the boxes first and the names after (X32); merge near-duplicate names in one photo; retrain the gate with shelf and pet-product photos.

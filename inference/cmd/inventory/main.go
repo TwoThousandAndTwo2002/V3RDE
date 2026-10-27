@@ -48,7 +48,9 @@ func main() {
 	burst := flag.Int("rate-burst", 6, "requests per window per client IP")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	maxImage := flag.Int64("max-image-bytes", 8<<20, "largest accepted image")
-	timeout := flag.Duration("timeout", 120*time.Second, "per photo, every call included")
+	// X31c (T9, 2026-10-27): 55 s, under the load balancer's 60 s idle
+	// timeout, so a slow photo gets a clear 504 from Icarus, not one from the LB.
+	timeout := flag.Duration("timeout", 55*time.Second, "per photo, every call included")
 	origin := flag.String("origin", "", "CORS Access-Control-Allow-Origin; empty disables")
 	flag.Parse()
 

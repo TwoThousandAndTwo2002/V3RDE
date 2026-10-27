@@ -255,3 +255,22 @@ func TestServiceBudgetCap(t *testing.T) {
 		t.Fatal("restart", r.Spent())
 	}
 }
+
+// X31c: a photo over the timeout gets 504 with a clear message, not the
+// load balancer's own 504 at 60 s.
+func TestServiceTimeoutIsClear(t *testing.T) {
+	f := twoItems(t)
+	inner := f.sam
+	f.sam = func(c string) (int, string) {
+		time.Sleep(300 * time.Millisecond)
+		return inner(c)
+	}
+	s := newSvc(t, f, "FOOD", 0, func(c *ServiceConfig) { c.Timeout = 100 * time.Millisecond })
+	w, a := s.do(multipartReq(t, testPhoto(t)))
+	if w.Code != 504 || a["route"] != RouteError || !strings.Contains(a["error"].(string), "longer than 100ms") {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if ev := s.events(t); len(ev) != 1 || ev[0].Status != 504 {
+		t.Fatalf("%+v", ev)
+	}
+}

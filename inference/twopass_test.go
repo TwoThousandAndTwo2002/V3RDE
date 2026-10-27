@@ -165,3 +165,33 @@ func TestAllNotFoodIsAnAnswer(t *testing.T) {
 		t.Fatal(err, inv.NotFood, ok, len(inv.NotListed))
 	}
 }
+
+// Compact (X31b): a duplicate gives only box, point and same_as and takes
+// the earlier box's fields; a copy of a box with no valid entry fails.
+func TestCompactDuplicatesTakeTheEarlierFields(t *testing.T) {
+	var prompt string
+	f := &fakeAPI{sam: func(string) (int, string) {
+		return 200, samLine(t, [4]int{0, 0, 199, 299}, [4]int{300, 0, 499, 299}, [4]int{600, 0, 799, 299})
+	}, muse: func(p string, _ map[string]any) map[string]any {
+		prompt = p
+		a := ent(1, nil, "Cola can")
+		b := map[string]any{"box": 2.0, "same_as": 1.0, "point": []any{400.0, 250.0}}
+		c := map[string]any{"box": 3.0, "same_as": 2.0, "point": []any{700.0, 250.0}} // a chain
+		return textResp("m", itemsText(a, b, c))
+	}}
+	e, done := engine(t, f)
+	defer done()
+	e.Marks, e.Compact = true, true
+	inv, err := e.Run(context.Background(), testPhoto(t), "image/jpeg", ModeAuto)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(prompt, "give ONLY") || len(inv.Items) != 1 || inv.Items[0].Count != 3 ||
+		inv.Items[0].Name != "Cola can" || len(inv.Rejected) != 0 {
+		t.Fatalf("%+v", inv.Items)
+	}
+	ok, bad := parseEntries(itemsText(map[string]any{"box": 2.0, "same_as": 1.0}), 2)
+	if len(ok) != 0 || bad[2] == "" {
+		t.Fatal(ok, bad)
+	}
+}
