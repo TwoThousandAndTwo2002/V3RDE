@@ -203,3 +203,22 @@ A photo with no food came back as "200, No food", and the app had three routes f
 - Tests: inference 49 → 59, listings 10 → 11; the router module (12) is removed. The old race-test setup in `prepare_test.go` now calls `defaults()` once, as the service does (`-race` found it).
 
 Next: the app's multi-item review and posting screens (X32b, mockup approved), then one deploy.
+
+---
+
+## 10. The app on the one route: every item in one review list
+
+**When:** Oct 27 2026.
+**Meta models:** PE-Core-S16-384 food gate; SAM 3.1; Muse Spark 1.3 (through `/api/analyze`).
+**Files:** `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Give.tsx`, `mobile/src/api.ts`, `mobile/src/logic.ts`, `mobile/src/photo.ts`, `mobile/src/theme.ts`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X32b.md`
+
+The app now sends every photo to the one route and shows what it found.
+
+- **One item:** the form as before; the listing uses the server's photo.
+- **Several items:** one card per item (the server's crop, the title, the servings = the count, remove), one pickup for all, then "Post N listings". A failed item stays on the list with its error.
+- **A clear sheet for each answer:** not food, no food the scanner can name (one item or several), already listed, busy, too many photos, daily limit.
+- **Sharper input:** photos go up at about 2376 px, JPEG 0.9 (D28).
+- Checked on the real app export in Chromium with a fake camera and recorded answers (not only the mockup). Tests: mobile 21 → 24.
+
+Next: one deploy of X32a + X32b, then the live test on the web app and the APK.
