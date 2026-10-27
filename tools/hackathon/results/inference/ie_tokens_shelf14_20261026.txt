@@ -1,0 +1,13 @@
+cmd/ie-tokens, 2026-10-26: POST /v1/responses/input_tokens (no model runs), model muse-spark-1.3,
+photo shelf_14.png (3264 x 2448), resized with an area average, JPEG q90, one user message
+(image + "List the food items in this photo."). Text only = 173 tokens (subtracted).
+
+sent          tokens    image tok   28px predict   px/token
+ 640x480         589          416            414        738
+1280x960        1785         1612           1610        762
+1792x1344       3247         3074           3072        783
+2240x1680       4271         4098           4800        918
+2688x2016       4271         4098           6912       1322
+3264x2448       4271         4098          10296       1950
+
+Reading: image tokens = ceil(w/28) x ceil(h/28) + 2, capped at 4,096 + 2 (from 2240 px up).

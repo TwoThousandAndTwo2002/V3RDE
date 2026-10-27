@@ -83,3 +83,33 @@ Same file size as the old gate; 2.4× the compute per photo (384 px input). Next
 - Tests: gate 13 → **19** (bicubic goldens, old-tensor identity, PE tensor, preprocess validation, shadow cannot change the answer, shadow failure is ignored); all pass with the race detector.
 
 Next: run the shadow on the new box with live photos, then switch the router to the PE gate and remove MobileCLIP2.
+
+---
+
+## 4. Multi-item scan: inference_engine (SAM 3.1 + Muse Spark)
+
+**When:** Oct 26 2026, 3:55 PM ET (first live probe) to Oct 26, 7:52 PM ET (last SAM test); Go change committed Oct 27.
+**Meta models:** SAM 3.1 (`sam-3.1`), Muse Spark 1.3 (`muse-spark-1.3`), both on the Meta Model API; PE-Core-S16-384 food gate (#3) in front.
+**Files:** `inference/` (new Go module: engine, agent, prepare, pan table, SAM parser and one_bit decoder, 35 tests), `inference/cmd/{ie-probe,ie-tokens,sam-size}`, `tools/hackathon/gen_sam_goldens.py`, `tools/hackathon/results/inference/*`, `docs/inference_engine_design.md`, `docs/sources/X30.md`
+**Sources:** `docs/sources/X30.md` (every decision D1–D23 with its sources).
+
+One photo in, every food item out, each in analyze's strict 8-field contract (imported from `server`, so the two cannot drift). A photo of **one** item gives exactly analyze's answer (same prompt, same bytes). A photo of several gives one listing per product, counted.
+
+**Pipeline.** Food gate → SAM 3.1 with 3 concepts **at the same time** ("food", "package", "food tray") while the photo is resized for Muse → merge (a picture on a package joins its package; a serving board under pans is dropped, the pans are the items) → 0 boxes: Muse agent with SAM as its tool; 1 box: analyze's call; 2+: one Muse call (3 in parallel from 12 boxes) with **numbered marks drawn on the photo** and boxes on Muse's 0–1000 grid → group identical products → count.
+
+**Measured (5 live runs, 23 photos, $2.83 in total; hand check of 294 boxes):**
+
+| Result | Value |
+|---|---|
+| Correct product (marks + coordinates, effort low) | **89.8%** |
+| Correct when the box is ≥ 96 px in the image Muse reads | **97.4%** |
+| Cost per photo / per named item | **$0.022 / $0.0012** (analyze today: $0.005–0.007 per item, one item per photo) |
+| Wait per 24-item photo, 1 call → 3 parallel calls | 14.9 s → **6.1 s** |
+| Pictures on packages listed as food (shelf 6) | 10 of 11 → **0 of 8** (package concept) |
+| Rows of identical boxes | Cheerios ×15, Honey Maid ×25 |
+
+**What the answer carries for the app:** every box on the 0–1000 grid (÷10 = CSS %), a "check this" mark for boxes of 64–96 px, "take a closer photo" when boxes are too small to name, "not listed" for non-food products (never deleted), and trays as one listing each with servings from a hotel-pan chart (the user can change them).
+
+**Measured and rejected:** per-crop calls (most expensive, invented items), two passes (more cost, 79.9%), effort `minimal` (merged different products), marks without coordinates (84.7%).
+
+Next: X30b real phone photos (decides what SAM is sent and the app's upload size), then X31 the `/v1/inventory` service.

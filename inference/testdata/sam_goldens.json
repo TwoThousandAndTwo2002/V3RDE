@@ -1,0 +1,157 @@
+{
+ "generator": "meta-sam-parser 0.1.0",
+ "masks": [
+  {
+   "w": 1,
+   "h": 1,
+   "kind": "full",
+   "payload": "!!!!!&O.lVP",
+   "raster_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+   "raster": "1"
+  },
+  {
+   "w": 3,
+   "h": 2,
+   "kind": "noise",
+   "payload": "!!!!!&dc6D7",
+   "raster_sha256": "1a71797cab8ed23c72233b7706b166a33049e4e87dfbc55b9e252f9c1843eca6",
+   "raster": "110000"
+  },
+  {
+   "w": 17,
+   "h": 9,
+   "kind": "blob",
+   "payload": "!!!!!1F0-Oz5[Q@4n_Fh5!!!",
+   "raster_sha256": "e0bb09c1c3a6050f260b04be7136fd8458cdf204490cfd5b17c858a1818cb568",
+   "raster": null
+  },
+  {
+   "w": 64,
+   "h": 48,
+   "kind": "blob",
+   "payload": "!!!!!RA2.+dO.XZ-%hexxOXMk+xDuv(`201Me-x_mC7u70l4s!f!+y*i!!!!!",
+   "raster_sha256": "3b334b53040f54418bbb4de93a6e9e3bb235b5c0222b80ac28d075a4e0883696",
+   "raster": null
+  },
+  {
+   "w": 40,
+   "h": 40,
+   "kind": "empty",
+   "payload": "!!!!!&!!!!!",
+   "raster_sha256": "e61f41d57db208c5f92a35c4ce7198570924a3fc87eeba83441fceee5d6a2865",
+   "raster": null
+  },
+  {
+   "w": 33,
+   "h": 21,
+   "kind": "full",
+   "payload": "!!!!!'y:QVyV4",
+   "raster_sha256": "820302da8086d25c717d85b8ad9e67cd442a70d1b57159798abe971c9858ba40",
+   "raster": null
+  },
+  {
+   "w": 101,
+   "h": 46,
+   "kind": "blob",
+   "payload": "!!!!!Z@%P[cd1W2R6Q6k714@9m7v!M1%rm5vo3bvyMACmnhTK3X8pFTB@Hf9Ncupl7@D/ay",
+   "raster_sha256": "56434fc13d85f8dcba4f639780fb4ef5947dc7bd8f644deb1d27cf5866845637",
+   "raster": null
+  },
+  {
+   "w": 12,
+   "h": 30,
+   "kind": "noise",
+   "payload": "!!!!!]IyZaYA5./'e7LL$&9ths67NjYhf/VvlnFq1nWO]Rtz=`AvQDZEJXl$hR2fS!xOA+&'Oh",
+   "raster_sha256": "f2dda59c19e06a9bbd1eca4ee2ddb9e24d37736e6dee5f5c2323c3d6b27d23fd",
+   "raster": null
+  }
+ ],
+ "lines": {
+  "three": {
+   "text": "<0f>0<|box;x1=353;y1=382;x2=453;y2=427;w=800;h=600;c=0.91|><|mask;x=0;y=0;data=9,17,!!!!!1F0-Oz5[Q@4n_Fh5!!!;c=0.91|>,1<|box;x1=10;y1=20;x2=210;y2=260;w=800;h=600;c=0.77|><|mask;x=0;y=0;data=48,64,!!!!!RA2.+dO.XZ-%hexxOXMk+xDuv(`201Me-x_mC7u70l4s!f!+y*i!!!!!;c=0.77|>,2<|box;x1=500;y1=40;x2=780;y2=330;w=800;h=600|><|mask;x=0;y=0;data=46,101,!!!!!Z@%P[cd1W2R6Q6k714@9m7v!M1%rm5vo3bvyMACmnhTK3X8pFTB@Hf9Ncupl7@D/ay|>\n",
+   "records": [
+    {
+     "id": "0",
+     "left": 353,
+     "top": 382,
+     "right": 454,
+     "bottom": 428,
+     "c": 0.91
+    },
+    {
+     "id": "0",
+     "mask_w": 17,
+     "mask_h": 9,
+     "bounds": [
+      353,
+      382,
+      454,
+      428
+     ]
+    },
+    {
+     "id": "1",
+     "left": 10,
+     "top": 20,
+     "right": 211,
+     "bottom": 261,
+     "c": 0.77
+    },
+    {
+     "id": "1",
+     "mask_w": 64,
+     "mask_h": 48,
+     "bounds": [
+      10,
+      20,
+      211,
+      261
+     ]
+    },
+    {
+     "id": "2",
+     "left": 500,
+     "top": 40,
+     "right": 781,
+     "bottom": 331,
+     "c": null
+    },
+    {
+     "id": "2",
+     "mask_w": 101,
+     "mask_h": 46,
+     "bounds": [
+      500,
+      40,
+      781,
+      331
+     ]
+    }
+   ],
+   "errors": []
+  },
+  "none": {
+   "text": "<0f>\n",
+   "records": [],
+   "errors": [
+    "malformed_record"
+   ]
+  },
+  "bad_mask": {
+   "text": "<0f>0<|box;x1=1;y1=1;x2=5;y2=5;w=10;h=10|><|mask;x=0;y=0;data=4,4,!zzzz|>\n",
+   "records": [
+    {
+     "id": "0",
+     "left": 1,
+     "top": 1,
+     "right": 6,
+     "bottom": 6,
+     "c": null
+    }
+   ],
+   "errors": [
+    "invalid_mask_payload"
+   ]
+  }
+ }
+}

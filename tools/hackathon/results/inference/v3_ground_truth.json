@@ -1,0 +1,4638 @@
+{
+ "about": "Hand check of run v3 (probe_20261026T220918Z.json): for each named box, whether each variant's name is the correct product. Variant order M = marks:low, O = marksonly:low, T = marksonly:2pass:minimal:low. 1 = correct, 0 = wrong; boxes absent = the reviewer could not read the product in the photo either.",
+ "reviewer": "one review of crops at product level (2026-10-26)",
+ "photos": {
+  "shelf_1.png": [
+   {
+    "box": 1,
+    "short_px": 270,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 264,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 265,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 264,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 262,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 262,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 267,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 265,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 260,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 260,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 261,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 260,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 246,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 246,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 241,
+    "names": {
+     "M": "Cheerios Whole Grain Oats Cereal",
+     "O": "Cheerios Cereal Box",
+     "T": "Cheerios 100% Whole Grain Oats"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_2.png": [
+   {
+    "box": 1,
+    "short_px": 244,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 231,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 239,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 226,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 229,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 230,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 228,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 231,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 249,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 232,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 213,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 215,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 217,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 224,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 223,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 237,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 160,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 154,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 153,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 151,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 73,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 57,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 46,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 42,
+    "names": {
+     "M": "Honey Maid Graham Crackers",
+     "O": "Honey Maid Graham Crackers",
+     "T": "Honey Maid Graham Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_3.png": [
+   {
+    "box": 1,
+    "short_px": 84,
+    "names": {
+     "M": "Kraft Deluxe Mac Cheese",
+     "O": "Kraft Deluxe Original",
+     "T": "Kraft Deluxe Original"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 109,
+    "names": {
+     "M": "Kraft Mac Cheese",
+     "O": "Meijer Mac and Cheese",
+     "T": "Meijer Mac Cheese"
+    },
+    "correct": null
+   },
+   {
+    "box": 3,
+    "short_px": 102,
+    "names": {
+     "M": "SkinnyPop Mac Cheese",
+     "O": "Green Box Macaroni",
+     "T": "Good Gather Mac"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 66,
+    "names": {
+     "M": "Meijer Creamy Bacon Cheddar",
+     "O": "Kraft Macaroni Cheese",
+     "T": "Meijer Creamy Bacon Cheddar"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 100,
+    "names": {
+     "M": "Velveeta Shells Cheese",
+     "O": "Velveeta Shells Cheese",
+     "T": "Cracker Barrel Cheddar"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 85,
+    "names": {
+     "M": "Kraft Easy Mac",
+     "O": "Kraft Shells Cheese",
+     "T": "Mac Cheese"
+    },
+    "correct": null
+   },
+   {
+    "box": 7,
+    "short_px": 87,
+    "names": {
+     "M": "Modern Mac Vegan",
+     "O": "Velveeta Mac Cheese",
+     "T": "Modern Table Mac"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 78,
+    "names": {
+     "M": "Kraft White Cheddar Mac",
+     "O": "Annie's White Cheddar",
+     "T": "Kraft Deluxe White Cheddar"
+    },
+    "correct": null
+   },
+   {
+    "box": 9,
+    "short_px": 75,
+    "names": {
+     "M": "Great Value Mac Cheese",
+     "O": "Great Value Macaroni",
+     "T": "Annie's Real Aged Cheddar"
+    },
+    "correct": null
+   },
+   {
+    "box": 10,
+    "short_px": 79,
+    "names": {
+     "M": "Annie's Mac Cheese",
+     "O": "Annie's Mac Cheese",
+     "T": "Annie's Mac Cheese"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 62,
+    "names": {
+     "M": "Kraft Deluxe Mac Cheese",
+     "O": "Kraft Deluxe Macaroni",
+     "T": "Kraft Deluxe"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 79,
+    "names": {
+     "M": "Kraft Macaroni Cheese",
+     "O": "Kraft Mac Cheese",
+     "T": "Kraft Mac Cheese"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 72,
+    "names": {
+     "M": "Annie's Shells Cheese",
+     "O": "Annie's Real Aged Cheddar",
+     "T": "Annie's Organic Mac"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 75,
+    "names": {
+     "M": "Velveeta Shells Cheese",
+     "O": "Kraft Shells Cheese",
+     "T": "Velveeta Shells Cheese"
+    },
+    "correct": null
+   },
+   {
+    "box": 15,
+    "short_px": 77,
+    "names": {
+     "M": "Greenwise Mac Cheese",
+     "O": "Green Mac Cheese",
+     "T": "Goodles Mac Cheese"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 65,
+    "names": {
+     "M": "Banza Chickpea Mac",
+     "O": "Kraft Macaroni Cheese",
+     "T": "Great Value Macaroni"
+    },
+    "correct": null
+   },
+   {
+    "box": 17,
+    "short_px": 61,
+    "names": {
+     "M": "Cheetos Mac Cheese",
+     "O": "Cheetos Mac and Cheese",
+     "T": "Cheetos Mac N Cheese"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 70,
+    "names": {
+     "M": "Kraft White Cheddar Mac",
+     "O": "Kraft Deluxe Original",
+     "T": "Kraft Deluxe Original"
+    },
+    "correct": null
+   },
+   {
+    "box": 19,
+    "short_px": 57,
+    "names": {
+     "M": "Velveeta Original Mac",
+     "O": "Velveeta Shells Cheese",
+     "T": "Velveeta Shells Cheese"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 45,
+    "names": {
+     "M": "Kraft Three Cheese Mac",
+     "O": "Kraft Easy Mac",
+     "T": "Lean Cuisine Mac"
+    },
+    "correct": null
+   },
+   {
+    "box": 21,
+    "short_px": 64,
+    "names": {
+     "M": "Daiya Vegan Mac",
+     "O": "Vegan Mac Cheese",
+     "T": "Daiya Vegan Mac"
+    },
+    "correct": null
+   },
+   {
+    "box": 22,
+    "short_px": 64,
+    "names": {
+     "M": "Baby Shark Mac Cheese",
+     "O": "Baby Shark Mac Cheese",
+     "T": "Baby Shark Mac Cheese"
+    },
+    "correct": null
+   },
+   {
+    "box": 23,
+    "short_px": 66,
+    "names": {
+     "M": "Annie's Vegan Mac",
+     "O": "Annie's Vegan Mac",
+     "T": "Banza Chickpea Mac"
+    },
+    "correct": null
+   },
+   {
+    "box": 24,
+    "short_px": 58,
+    "names": {
+     "M": "Daiya Cheddar Mac",
+     "O": "Daiya Cheezy Mac",
+     "T": "Daiya Cheezy Mac"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_4.png": [
+   {
+    "box": 1,
+    "short_px": null,
+    "names": {
+     "M": "NF:Cardboard shipping box",
+     "O": "Contadina Diced Tomatoes",
+     "T": "Contadina Diced Tomatoes"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 140,
+    "names": {
+     "M": "Betty Crocker Stuffing Mix",
+     "O": "Dole Pineapple Chunks",
+     "T": "Ritz Crackers"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 128,
+    "names": {
+     "M": "Success White Rice",
+     "O": "Carolina Long Grain Rice",
+     "T": "Betty Crocker Cake Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 135,
+    "names": {
+     "M": "Barilla Rotini Pasta",
+     "O": "Barilla Rotini Pasta",
+     "T": "Barilla Rotini"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 95,
+    "names": {
+     "M": "Contadina Diced Tomatoes",
+     "O": "Barilla Spaghetti Pasta",
+     "T": "Libbys Sweet Peas"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 72,
+    "names": {
+     "M": "Del Monte Tropical Fruit Salad",
+     "O": "Del Monte Fruit Salad",
+     "T": "Del Monte Tropical Fruit"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 74,
+    "names": {
+     "M": "Crown Prince Sardines",
+     "O": "Hormel Chili Can",
+     "T": "Hormel Chili"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 66,
+    "names": {
+     "M": "Ritz Crackers",
+     "O": "Ritz Crackers Box",
+     "T": "Green Giant Green Beans"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 63,
+    "names": {
+     "M": "Swanson Chicken Broth",
+     "O": "Wonder Bread Loaf",
+     "T": "Kraft Cheese Slices"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 62,
+    "names": {
+     "M": "Hormel Chili Box",
+     "O": "Manwich Sloppy Joe Sauce",
+     "T": "Hormel Serve Chili"
+    },
+    "correct": null
+   },
+   {
+    "box": 11,
+    "short_px": 62,
+    "names": {
+     "M": "Green Giant Green Beans",
+     "O": "Green Giant Green Beans",
+     "T": "Green Giant Green Beans"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 59,
+    "names": {
+     "M": "Green Giant Green Beans",
+     "O": "Green Giant Green Beans",
+     "T": "Crown Prince Sardines"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 35,
+    "names": {
+     "M": "Ocean Spray Cranberry Sauce",
+     "O": "Knorr Pasta Packet",
+     "T": "Knorr Pasta Sides"
+    },
+    "correct": {
+     "M": false,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 50,
+    "names": {
+     "M": "Hormel Chili Can",
+     "O": "Hormel Chili with Beans",
+     "T": "Hormel Chili"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 32,
+    "names": {
+     "M": "Del Monte Sliced Carrots",
+     "O": "Del Monte Corn Can",
+     "T": "Mandarin Oranges"
+    },
+    "correct": null
+   },
+   {
+    "box": 16,
+    "short_px": 23,
+    "names": {
+     "M": "Hormel Chili Seasoning Pack",
+     "O": "Hot Dog Pack",
+     "T": "Oscar Mayer Bacon"
+    },
+    "correct": null
+   },
+   {
+    "box": 17,
+    "short_px": 32,
+    "names": {
+     "M": "Del Monte Green Beans",
+     "O": "Starkist Tuna Can",
+     "T": "Chicken Broth"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 21,
+    "names": {
+     "M": "Hormel Chili Can",
+     "O": "Hunts Tomato Sauce",
+     "T": "Tomato Soup Can"
+    },
+    "correct": null
+   }
+  ],
+  "shelf_6.png": [
+   {
+    "box": 1,
+    "short_px": 185,
+    "names": {
+     "M": "Reggano Spaghetti",
+     "O": "Reggano Spaghetti 2LB",
+     "T": "Reggano Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 192,
+    "names": {
+     "M": "De Cecco Spaghetti",
+     "O": "De Cecco Spaghetti No.12",
+     "T": "De Cecco Spaghetti no.12"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 182,
+    "names": {
+     "M": "HyVee Spaghetti",
+     "O": "Hy-Vee Spaghetti",
+     "T": "HyVee Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 182,
+    "names": {
+     "M": "Great Value Spaghetti",
+     "O": "Great Value Spaghetti",
+     "T": "Great Value Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 178,
+    "names": {
+     "M": "Dreamfields Spaghetti",
+     "O": "Dreamfields Spaghetti",
+     "T": "Dreamfields Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 178,
+    "names": {
+     "M": "Barilla Al Bronzo Spaghetti",
+     "O": "Barilla Al Bronzo Spaghetti",
+     "T": "Barilla Al Bronzo Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 179,
+    "names": {
+     "M": "Barilla Classic Spaghetti",
+     "O": "Barilla Classic Spaghetti",
+     "T": "Barilla Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 176,
+    "names": {
+     "M": "Creamette Spaghetti",
+     "O": "Creamette Spaghetti",
+     "T": "Creamette Spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_8.png": [
+   {
+    "box": 1,
+    "short_px": 128,
+    "names": {
+     "M": "P.F. Chang's Chicken Teriyaki",
+     "O": "P.F. Chang's Chicken Teriyaki",
+     "T": "P.F. Chang's Chicken Teriyaki"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 111,
+    "names": {
+     "M": "Banquet Salisbury Steak Meal",
+     "O": "Banquet Salisbury Steak Meal",
+     "T": "Banquet Salisbury Steak Meal"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 128,
+    "names": {
+     "M": "Marie Callender's Beef and Broccoli Bowl",
+     "O": "Marie Callender's Beef and Broccoli Bowl",
+     "T": "Marie Callender's Beef & Broccoli Bowl"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 114,
+    "names": {
+     "M": "Stouffer's Macaroni and Cheese",
+     "O": "Stouffer's Macaroni and Cheese",
+     "T": "Stouffer's Macaroni & Cheese"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 114,
+    "names": {
+     "M": "Lean Cuisine Protein Fried Chicken",
+     "O": "Lean Cuisine Protein Fried Chicken",
+     "T": "Lean Cuisine Fried Chicken"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_9.png": [
+   {
+    "box": 1,
+    "short_px": null,
+    "names": {
+     "M": "NF:plastic storage bin",
+     "O": "Bulk canned vegetables bin",
+     "T": "NF:Clear Plastic Bin"
+    },
+    "correct": null
+   },
+   {
+    "box": 2,
+    "short_px": 57,
+    "names": {
+     "M": "scalloped potatoes mix",
+     "O": "Turkey gravy mix",
+     "T": "Scalloped Potatoes"
+    },
+    "correct": null
+   },
+   {
+    "box": 3,
+    "short_px": 56,
+    "names": {
+     "M": "scalloped potatoes mix",
+     "O": "Turkey gravy mix",
+     "T": "Scalloped Potatoes"
+    },
+    "correct": null
+   },
+   {
+    "box": 4,
+    "short_px": 49,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Stuffing mix",
+     "T": "Stuffing Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 50,
+    "names": {
+     "M": "au gratin potatoes",
+     "O": "Au gratin potatoes",
+     "T": "Au Gratin Potatoes"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 51,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Stuffing mix",
+     "T": "Stuffing Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 49,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Stuffing mix",
+     "T": "Stuffing Mix"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 38,
+    "names": {
+     "M": "scalloped potatoes mix",
+     "O": "Turkey gravy mix",
+     "T": "Scalloped Potatoes"
+    },
+    "correct": null
+   },
+   {
+    "box": 9,
+    "short_px": 26,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Stuffing mix",
+     "T": "Stuffing Mix"
+    },
+    "correct": null
+   },
+   {
+    "box": 10,
+    "short_px": 34,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Macaroni and cheese",
+     "T": "Canned Vegetables"
+    },
+    "correct": null
+   },
+   {
+    "box": 11,
+    "short_px": 23,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Cereal box",
+     "T": "Stuffing Mix"
+    },
+    "correct": null
+   },
+   {
+    "box": 12,
+    "short_px": 31,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned corn",
+     "T": "Canned Vegetables"
+    },
+    "correct": null
+   },
+   {
+    "box": 13,
+    "short_px": 31,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned corn",
+     "T": "Canned Vegetables"
+    },
+    "correct": null
+   },
+   {
+    "box": 14,
+    "short_px": 27,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned corn",
+     "T": "Canned Vegetables"
+    },
+    "correct": null
+   },
+   {
+    "box": 15,
+    "short_px": 25,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned green beans",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 16,
+    "short_px": 15,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned green beans",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 17,
+    "short_px": 10,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Canned soup",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 18,
+    "short_px": 19,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned green beans",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 19,
+    "short_px": 10,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Brownie mix",
+     "T": "Krusteaz Baking Mix"
+    },
+    "correct": null
+   },
+   {
+    "box": 20,
+    "short_px": 10,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Cereal box",
+     "T": "Stuffing Mix"
+    },
+    "correct": null
+   },
+   {
+    "box": 21,
+    "short_px": 18,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned green beans",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 22,
+    "short_px": 17,
+    "names": {
+     "M": "canned vegetables",
+     "O": "Canned green beans",
+     "T": "Canned Food Can"
+    },
+    "correct": null
+   },
+   {
+    "box": 23,
+    "short_px": 16,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Cereal box",
+     "T": "Stuffing Mix"
+    },
+    "correct": null
+   },
+   {
+    "box": 24,
+    "short_px": 8,
+    "names": {
+     "M": "turkey stuffing mix",
+     "O": "Stuffing mix",
+     "T": "Stuffing Mix"
+    },
+    "correct": null
+   }
+  ],
+  "shelf_10.png": [
+   {
+    "box": 1,
+    "short_px": 342.2,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 271.7,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 231.6,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 212.3,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 170,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 219.7,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 220.5,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 176.7,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 191.5,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 145.5,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 187.8,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 173,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 101,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 160.4,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 135.8,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "red bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 145.5,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 137.4,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 108.4,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 149.2,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 119.5,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 106.2,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 98,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 83.9,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 112.1,
+    "names": {
+     "M": "Bell Pepper",
+     "O": "bell pepper",
+     "T": "yellow bell pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   }
+  ],
+  "shelf_11.png": [
+   {
+    "box": 1,
+    "short_px": 87,
+    "names": {
+     "M": "Arborio Rice Box",
+     "O": "Arborio Rice Box",
+     "T": "Italia Arborio Rice"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 80,
+    "names": {
+     "M": "Bellino Risotto Mix",
+     "O": "Bellino Risotto Mix",
+     "T": "Bellino Risotto Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 95,
+    "names": {
+     "M": "Pasta Side Box",
+     "O": "Polenta Cornmeal Box",
+     "T": "Pasta Side Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 4,
+    "short_px": 77,
+    "names": {
+     "M": "Arborio Rice Box",
+     "O": "Arborio Rice Box",
+     "T": "Italia Arborio Rice"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 76,
+    "names": {
+     "M": "Vermicelli Pasta Box",
+     "O": "Gnocchi Pasta Mix",
+     "T": "Bellino Gnocchi Mix"
+    },
+    "correct": {
+     "M": false,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 86,
+    "names": {
+     "M": "Campbell's Grill Dinner",
+     "O": "Campbell's Grill Dinner",
+     "T": "Campbells Grill Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 83,
+    "names": {
+     "M": "Slow Cooker Dinner Kit",
+     "O": "Slow Cooker Dinner",
+     "T": "Slow Cooker Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 67,
+    "names": {
+     "M": "Bellino Risotto Mix",
+     "O": "Bellino Risotto Mix",
+     "T": "Bellino Risotto Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 76,
+    "names": {
+     "M": "Davinci Pasta Bag",
+     "O": "Pasta Sides Bag",
+     "T": "Rice Side Bag"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 68,
+    "names": {
+     "M": "Red Pasta Bag",
+     "O": "Tomato Pasta Bags",
+     "T": "Red Pasta Bag"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 83,
+    "names": {
+     "M": "Campbell's Oven Dinner",
+     "O": "Campbell's Oven Dinner",
+     "T": "Campbells Oven Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 71,
+    "names": {
+     "M": "Pasta Bag Blue",
+     "O": "Pasta Sides Bag",
+     "T": "Pasta Side Bag"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 73,
+    "names": {
+     "M": "Campbell's Grill Dinner",
+     "O": "Campbell's Grill Dinner",
+     "T": "Campbells Grill Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 76,
+    "names": {
+     "M": "Campbell's Skillet Dinner",
+     "O": "Campbell's Skillet Dinner",
+     "T": "Campbells Skillet Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 70,
+    "names": {
+     "M": "Campbell's Skillet Dinner",
+     "O": "Campbell's Skillet Dinner",
+     "T": "Campbells Skillet Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 81,
+    "names": {
+     "M": "Campbell's Grill Dinner",
+     "O": "Campbell's Grill Dinner",
+     "T": "Campbells Grill Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 50,
+    "names": {
+     "M": "Cento Bread Crumbs",
+     "O": "Cento Bread Crumbs",
+     "T": "Cento Bread Crumbs"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 77,
+    "names": {
+     "M": "Dinner Kit Box",
+     "O": "Italian Dinner Box",
+     "T": "Dinner Mix Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 19,
+    "short_px": 75,
+    "names": {
+     "M": "Campbell's Oven Dinner",
+     "O": "Oven Easy Dinner",
+     "T": "Easy Dinner Bag"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 64,
+    "names": {
+     "M": "Red Pasta Bag",
+     "O": "Tomato Pasta Bags",
+     "T": "Red Pasta Bag"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 51,
+    "names": {
+     "M": "Cento Bread Crumbs",
+     "O": "Cento Bread Crumbs",
+     "T": "Cento Bread Crumbs"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 51,
+    "names": {
+     "M": "Cento Bread Crumbs",
+     "O": "Cento Bread Crumbs",
+     "T": "Cento Bread Crumbs"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 75,
+    "names": {
+     "M": "Dinner Kit Box",
+     "O": "Italian Dinner Box",
+     "T": "Dinner Mix Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 24,
+    "short_px": 62,
+    "names": {
+     "M": "Campbell's Grill Dinner",
+     "O": "Campbell's Grill Dinner",
+     "T": "Campbells Grill Easy Dinner"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_12.png": [
+   {
+    "box": 1,
+    "short_px": 149,
+    "names": {
+     "M": "Nature Valley Trail Mix",
+     "O": "Nature Valley Trail Mix Bars",
+     "T": "Nature Valley Trail Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 139,
+    "names": {
+     "M": "Nature Valley Trail Mix",
+     "O": "Nature Valley Trail Mix Bars",
+     "T": "Nature Valley Trail Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 148,
+    "names": {
+     "M": "Nature Valley Lunch Box",
+     "O": "Nature Valley Lunch Box Bars",
+     "T": "Nature Valley Lunch Box"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 157,
+    "names": {
+     "M": "Nature Valley Sweet Salty Minis",
+     "O": "Nature Valley Sweet Salty Minis",
+     "T": "Nature Valley Sweet Salty minis"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 158,
+    "names": {
+     "M": "Nature Valley Muffin Bars",
+     "O": "Nature Valley Muffin Bars Apple",
+     "T": "Nature Valley Muffin Apple"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 116,
+    "names": {
+     "M": "Rich Chewy Bars",
+     "O": "Rich Chewy Granola Bars Club",
+     "T": "Rich Chewy Chocolate Chip"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 131,
+    "names": {
+     "M": "Mini Dipped Chewy Bars",
+     "O": "Mini Dipped Chewy Bars",
+     "T": "Mini Dipped Chewy Chocolate"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 154,
+    "names": {
+     "M": "Nature Valley Muffin Bars",
+     "O": "Nature Valley Muffin Bars Blueberry",
+     "T": "Nature Valley Muffin Blueberry"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 150,
+    "names": {
+     "M": "Nature Valley Muffin Bars",
+     "O": "Nature Valley Muffin Bars Blueberry",
+     "T": "Nature Valley Soft-Baked Muffin Blueberry"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 126,
+    "names": {
+     "M": "Dipped Chewy Bars",
+     "O": "Dipped Chewy Granola Bars",
+     "T": "Dipped Chewy Chocolate Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 112,
+    "names": {
+     "M": "Rich Chewy Bars",
+     "O": "Rich Chewy Granola Bars Club",
+     "T": "Rich Chewy Chocolate Chip"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 125,
+    "names": {
+     "M": "Nature Valley Crunchy Family",
+     "O": "Nature Valley Crunchy Family Pack",
+     "T": "Nature Valley Crunchy Family"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 126,
+    "names": {
+     "M": "Dipped Chewy Bars",
+     "O": "Dipped Chewy Granola Bars",
+     "T": "Dipped Chewy Chocolate Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 132,
+    "names": {
+     "M": "Nature Valley Lunch Box",
+     "O": "Nature Valley Lunch Box Bars",
+     "T": "Nature Valley Lunch Box"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 149,
+    "names": {
+     "M": "Nature Valley Muffin Bars",
+     "O": "Nature Valley Muffin Bars Apple",
+     "T": "Nature Valley Muffin Apple"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 141,
+    "names": {
+     "M": "Sweet Salty Almond Bars",
+     "O": "Sweet Salty Almond Bars",
+     "T": "Sweet Salty Almond Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 134,
+    "names": {
+     "M": "Mini Dipped Chewy Bars",
+     "O": "Mini Dipped Chewy Bars",
+     "T": "Mini Dipped Chewy Chocolate"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 135,
+    "names": {
+     "M": "Sweet Salty Almond Bars",
+     "O": "Sweet Salty Almond Bars",
+     "T": "Sweet Salty Almond Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 149,
+    "names": {
+     "M": "Go Pure Fruit Bars",
+     "O": "Go Pure Fruit Oat Bars",
+     "T": "Go Pure Banana Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 141,
+    "names": {
+     "M": "Nature Valley Crunchy Bars",
+     "O": "Nature Valley Crunchy Bars",
+     "T": "Nature Valley Crunchy Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 143,
+    "names": {
+     "M": "Kashi Dark Chocolate Bars",
+     "O": "Kashi Dark Chocolate Almond Bars",
+     "T": "Kashi Dark Chocolate Almond"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 145,
+    "names": {
+     "M": "Go Pure Fruit Oat",
+     "O": "Go Pure Fruit Oat Bars",
+     "T": "Go Pure Fruit Oat"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 134,
+    "names": {
+     "M": "Nature Valley Crunchy Bars",
+     "O": "Nature Valley Crunchy Bars",
+     "T": "Nature Valley Crunchy Bars"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 143,
+    "names": {
+     "M": "Kashi Dark Chocolate Bars",
+     "O": "Kashi Dark Chocolate Almond Bars",
+     "T": "Kashi Dark Chocolate Almond"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_14.png": [
+   {
+    "box": 1,
+    "short_px": 235.3,
+    "names": {
+     "M": "Ginger root",
+     "O": "Fresh Ginger Root",
+     "T": "Ginger Root"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 206.4,
+    "names": {
+     "M": "Brussels sprouts",
+     "O": "Brussels Sprouts",
+     "T": "Brussels Sprouts"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 233.4,
+    "names": {
+     "M": "Red bell peppers",
+     "O": "Red Mini Bell Peppers",
+     "T": "Red Peppers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 171.9,
+    "names": {
+     "M": "Jalapeno peppers",
+     "O": "Jalapeno Peppers",
+     "T": "Jalapeno Peppers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 183.2,
+    "names": {
+     "M": "Zucchini",
+     "O": "Green Zucchini",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 159.4,
+    "names": {
+     "M": "Zucchini",
+     "O": "Yellow Summer Squash",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 131.8,
+    "names": {
+     "M": "Snow peas",
+     "O": "Snow Peas",
+     "T": "Sugar Snap Peas"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 168.2,
+    "names": {
+     "M": "Zucchini",
+     "O": "Baby Zucchini",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": null,
+    "names": {
+     "M": "NF:Bell pepper illustration",
+     "O": "Yellow Bell Pepper Illustration",
+     "T": "NF:Yellow Bell Pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 129.3,
+    "names": {
+     "M": "Red bell peppers",
+     "O": "Red Bell Pepper",
+     "T": "Red Bell Pepper"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 11,
+    "short_px": null,
+    "names": {
+     "M": "NF:Cucumber sign illustration",
+     "O": "Cucumber Illustration",
+     "T": "NF:Cucumber"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": null,
+    "names": {
+     "M": "NF:Bell pepper illustration",
+     "O": "Green Bell Pepper Illustration",
+     "T": "NF:Green Bell Pepper"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": null,
+    "names": {
+     "M": "NF:Eggplant sign illustration",
+     "O": "Eggplant Illustration",
+     "T": "NF:Eggplant"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 91,
+    "names": {
+     "M": "White corn",
+     "O": "Sweet Corn",
+     "T": "Corn"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 15,
+    "short_px": null,
+    "names": {
+     "M": "NF:Wall decoration picture",
+     "O": "Display Produce Photo",
+     "T": "NF:Wall Art"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 91.6,
+    "names": {
+     "M": "Parsnip root",
+     "O": "White Onion",
+     "T": "White Onion"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 80.9,
+    "names": {
+     "M": "Parsnip root",
+     "O": "Yellow Potato",
+     "T": "Yellow Squash"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 55.2,
+    "names": {
+     "M": "Sweet corn",
+     "O": "Sweet Corn",
+     "T": "Corn"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": null,
+    "names": {
+     "M": "NF:Wall decoration picture",
+     "O": "Display Produce Photo",
+     "T": "NF:Wall Art"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 74,
+    "names": {
+     "M": "Zucchini",
+     "O": "Cucumber Illustration",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 72.8,
+    "names": {
+     "M": "Red onion",
+     "O": "Red Onion",
+     "T": "Red Onion"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 57.1,
+    "names": {
+     "M": "Sweet corn",
+     "O": "Sweet Corn",
+     "T": "Corn"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 69,
+    "names": {
+     "M": "White mushrooms",
+     "O": "White Mushrooms",
+     "T": "Mushrooms"
+    },
+    "correct": null
+   },
+   {
+    "box": 24,
+    "short_px": null,
+    "names": {
+     "M": "NF:Pepper guide illustration",
+     "O": "NF:Pepper Guide Sign",
+     "T": "NF:Bell Pepper Guide"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_15.png": [
+   {
+    "box": 1,
+    "short_px": 114,
+    "names": {
+     "M": "Santitas Tortilla Chips",
+     "O": "Santitas Tortilla Chips",
+     "T": "Santitas Tortilla Chips"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 117,
+    "names": {
+     "M": "G.H. Cretors Chicago Mix",
+     "O": "G.H. Cretors Chicago Mix",
+     "T": "G.H. Cretors Chicago Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 108,
+    "names": {
+     "M": "Jolly Time White Cheddar",
+     "O": "Jolly Time White Cheddar",
+     "T": "Jolly Time White Cheddar"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 106,
+    "names": {
+     "M": "G.H. Cretors Chicago Mix",
+     "O": "G.H. Cretors Chicago Mix",
+     "T": "G.H. Cretors Chicago Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 114,
+    "names": {
+     "M": "Santitas Tortilla Chips",
+     "O": "Santitas Tortilla Chips",
+     "T": "Santitas Tortilla Chips"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 113,
+    "names": {
+     "M": "G.H. Cretors Cheese Corn",
+     "O": "G.H. Cretors Popcorn",
+     "T": "G.H. Cretors Cheese Corn"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 115,
+    "names": {
+     "M": "Pop Secret Kettle Corn",
+     "O": "Pop Secret Popcorn",
+     "T": "Pop Secret Kettle Corn"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 114,
+    "names": {
+     "M": "Pop Secret Popcorn",
+     "O": "Pop Secret Popcorn",
+     "T": "Pop Secret Kettle Corn"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 104,
+    "names": {
+     "M": "Funyuns Onion Rings",
+     "O": "Funyuns Onion Rings",
+     "T": "Funyuns Onion Flavored Rings"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 103,
+    "names": {
+     "M": "Jolly Time White Cheddar",
+     "O": "Jolly Time White Cheddar",
+     "T": "Jolly Time White Cheddar"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 112,
+    "names": {
+     "M": "G.H. Cretors Chicago Mix",
+     "O": "G.H. Cretors Chicago Mix",
+     "T": "G.H. Cretors Chicago Mix"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 110,
+    "names": {
+     "M": "G.H. Cretors Cheese Corn",
+     "O": "G.H. Cretors Cheese Corn",
+     "T": "G.H. Cretors Cheese Corn"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 107,
+    "names": {
+     "M": "Doritos Cool Ranch",
+     "O": "Doritos Cool Ranch",
+     "T": "Doritos Cool Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 107,
+    "names": {
+     "M": "Doritos Cool Ranch",
+     "O": "Doritos Cool Ranch",
+     "T": "Doritos Cool Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 106,
+    "names": {
+     "M": "Doritos Cool Ranch",
+     "O": "Doritos Cool Ranch",
+     "T": "Doritos Cool Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 96,
+    "names": {
+     "M": "Chester's Puffcorn",
+     "O": "Chester's Puffcorn",
+     "T": "Chester's Puffcorn Butter"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 97,
+    "names": {
+     "M": "Santitas Tortilla Chips",
+     "O": "Santitas Tortilla Chips",
+     "T": "Santitas Tortilla Chips"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 93,
+    "names": {
+     "M": "Doritos Nacho Cheese",
+     "O": "Doritos Nacho Cheese",
+     "T": "Doritos Nacho Cheese"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 96,
+    "names": {
+     "M": "Funyuns Onion Rings",
+     "O": "Funyuns Onion Rings",
+     "T": "Funyuns Onion Flavored Rings"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 94,
+    "names": {
+     "M": "Doritos Jacked",
+     "O": "Doritos Jacked",
+     "T": "Doritos Jacked"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 101,
+    "names": {
+     "M": "Doritos Cool Ranch",
+     "O": "Doritos Cool Ranch",
+     "T": "Doritos Cool Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 86,
+    "names": {
+     "M": "Jolly Time White Cheddar",
+     "O": "Jolly Time White Cheddar",
+     "T": "Jolly Time White Cheddar"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 104,
+    "names": {
+     "M": "Doritos Cool Ranch",
+     "O": "Doritos Cool Ranch",
+     "T": "Doritos Cool Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 96,
+    "names": {
+     "M": "Doritos Nacho Cheese",
+     "O": "Doritos Nacho Cheese",
+     "T": "Doritos Nacho Cheese"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   }
+  ],
+  "shelf_16.png": [
+   {
+    "box": 1,
+    "short_px": 129,
+    "names": {
+     "M": "Great Value Elbow Macaroni",
+     "O": "Great Value Elbows",
+     "T": "Chips Ahoy Cookies"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 120,
+    "names": {
+     "M": "Instant Noodles Case",
+     "O": "Instant Noodle Case",
+     "T": "Tim Hortons Tea 30 pack"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 139,
+    "names": {
+     "M": "Cheerios Cereal Box",
+     "O": "Cheerios Cereal",
+     "T": "Cheerios Whole Grain Cereal"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 117,
+    "names": {
+     "M": "Kool-Aid Jammers Box",
+     "O": "Kool-Aid Jammers",
+     "T": "Kool-Aid Jammers Raspberry"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 95,
+    "names": {
+     "M": "Chips Ahoy Cookies",
+     "O": "Chips Ahoy Cookies",
+     "T": "Chips Ahoy Cookies"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 127,
+    "names": {
+     "M": "Bowl Noodle Soup",
+     "O": "Bowl Noodle Soup",
+     "T": "Bowl Noodle Soup"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 91,
+    "names": {
+     "M": "Cookie Mix Box",
+     "O": "Chocolate Brownie Mix",
+     "T": "Granola Bars Box"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 109,
+    "names": {
+     "M": "Brownie Mix Box",
+     "O": "Candy Bag",
+     "T": "Red Candy Pack"
+    },
+    "correct": null
+   },
+   {
+    "box": 9,
+    "short_px": 86,
+    "names": {
+     "M": "Ranch Dressing Bottle",
+     "O": "Ranch Dressing",
+     "T": "Ranch Dressing Bottle"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 98,
+    "names": {
+     "M": "Flour Bag",
+     "O": "Long Grain Rice",
+     "T": "Flour Bag"
+    },
+    "correct": {
+     "M": false,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 117,
+    "names": {
+     "M": "Super Moist Cake Mix",
+     "O": "Super Moist Cake",
+     "T": "Betty Crocker Super Moist"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 96,
+    "names": {
+     "M": "Stuffing Mix Box",
+     "O": "Mac Cheese Box",
+     "T": "Red Pasta Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 13,
+    "short_px": 83,
+    "names": {
+     "M": "Rice Side Pouch",
+     "O": "Fruit Snacks",
+     "T": "Hidden Valley Ranch"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 87,
+    "names": {
+     "M": "Baking Mix Box",
+     "O": "Cracker Box",
+     "T": "Honeycomb Cereal Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 15,
+    "short_px": 93,
+    "names": {
+     "M": "Cereal Boxes Pack",
+     "O": "Stove Top Stuffing",
+     "T": "Uncle Ben Stuffing"
+    },
+    "correct": {
+     "M": false,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 86,
+    "names": {
+     "M": "Cracker Box",
+     "O": "Cookie Box",
+     "T": "Purple Raisin Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 17,
+    "short_px": 72,
+    "names": {
+     "M": "Broth Carton",
+     "O": "Blue Mac Box",
+     "T": "Kraft Dinner Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 18,
+    "short_px": 76,
+    "names": {
+     "M": "Kraft Dinner Box",
+     "O": "Kraft Dinner Cans",
+     "T": "Kraft Dinner Macaroni"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 70,
+    "names": {
+     "M": "Ravioli Can",
+     "O": "Chef Boyardee Can",
+     "T": "Rodeo Chicken Canned"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 70,
+    "names": {
+     "M": "Gerber Baby Cereal",
+     "O": "Gerber Baby Cereal",
+     "T": "Gerber Baby Cereal"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 76,
+    "names": {
+     "M": "Vegetable Soup Can",
+     "O": "Vegetable Soup Can",
+     "T": "Habitant Vegetable Soup"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": false
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 55,
+    "names": {
+     "M": "Tomato Paste Box",
+     "O": "Frozen Mac Meal",
+     "T": "Great Value Macaroni"
+    },
+    "correct": null
+   },
+   {
+    "box": 23,
+    "short_px": 68,
+    "names": {
+     "M": "Cream Corn Can",
+     "O": "Canned Corn",
+     "T": "Corn Homestyle Canned"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 61,
+    "names": {
+     "M": "Stove Top Stuffing",
+     "O": "Rice Side Pouch",
+     "T": "McCain Quick Sidekicks"
+    },
+    "correct": {
+     "M": false,
+     "O": true,
+     "T": false
+    }
+   }
+  ],
+  "shelf_17.png": [
+   {
+    "box": 1,
+    "short_px": 83,
+    "names": {
+     "M": "Celery",
+     "O": "Celery",
+     "T": "CELERY"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 97,
+    "names": {
+     "M": "Red apples",
+     "O": "Red Apples",
+     "T": "Gala Apples"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 92,
+    "names": {
+     "M": "Hamburger buns",
+     "O": "Bread Rolls",
+     "T": "NF:Cardboard Box"
+    },
+    "correct": null
+   },
+   {
+    "box": 4,
+    "short_px": 98,
+    "names": {
+     "M": "White onions",
+     "O": "Yellow Onions",
+     "T": "Yellow Onions"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 81,
+    "names": {
+     "M": "Strawberries",
+     "O": "Iceberg Lettuce",
+     "T": "Red Blossom Strawberries"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 91,
+    "names": {
+     "M": "Baby carrots",
+     "O": "Baby Carrots",
+     "T": "Baby Carrots"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 76,
+    "names": {
+     "M": "Apples bag",
+     "O": "Bread Rolls",
+     "T": "Bread Buns"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 90,
+    "names": {
+     "M": "Iceberg lettuce",
+     "O": "Strawberries",
+     "T": "Iceberg Lettuce"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 86,
+    "names": {
+     "M": "Sweet potatoes",
+     "O": "Zucchini",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 86,
+    "names": {
+     "M": "Zucchini",
+     "O": "Zucchini",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 64,
+    "names": {
+     "M": "Cucumbers",
+     "O": "Sweet Potato",
+     "T": "Sweet Potato"
+    },
+    "correct": {
+     "M": true,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 73,
+    "names": {
+     "M": "Zucchini",
+     "O": "Zucchini",
+     "T": "Zucchini"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 64,
+    "names": {
+     "M": "Sweet potatoes",
+     "O": "Sweet Potato",
+     "T": "Sweet Potato"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 66,
+    "names": {
+     "M": "Oranges",
+     "O": "Navel Oranges",
+     "T": "Navel Oranges"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 36,
+    "names": {
+     "M": "Cucumbers",
+     "O": "Cucumber",
+     "T": "Cucumber"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 53,
+    "names": {
+     "M": "Oranges",
+     "O": "Navel Oranges",
+     "T": "Orange"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 47,
+    "names": {
+     "M": "Mini orange pepper",
+     "O": "Orange Bell Pepper",
+     "T": "Orange Bell Pepper"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 43,
+    "names": {
+     "M": "Mini orange pepper",
+     "O": "Cucumber",
+     "T": "Orange Bell Pepper"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 43,
+    "names": {
+     "M": "Mini orange pepper",
+     "O": "Orange Bell Pepper",
+     "T": "Red Mini Pepper"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 38,
+    "names": {
+     "M": "Mini orange pepper",
+     "O": "Orange Bell Pepper",
+     "T": "Orange Bell Pepper"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 38,
+    "names": {
+     "M": "Mini orange pepper",
+     "O": "Strawberries",
+     "T": "Cucumber"
+    },
+    "correct": {
+     "M": false,
+     "O": false,
+     "T": false
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 26,
+    "names": {
+     "M": "Oranges",
+     "O": "Navel Oranges",
+     "T": "Orange"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 25,
+    "names": {
+     "M": "Oranges",
+     "O": "Navel Oranges",
+     "T": "Orange"
+    },
+    "correct": null
+   },
+   {
+    "box": 24,
+    "short_px": 24,
+    "names": {
+     "M": "Oranges",
+     "O": "Navel Oranges",
+     "T": "Orange"
+    },
+    "correct": null
+   }
+  ],
+  "shelf_20.png": [
+   {
+    "box": 1,
+    "short_px": 222,
+    "names": {
+     "M": "Cooked Green Beans",
+     "O": "Green Beans",
+     "T": "green beans"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 219,
+    "names": {
+     "M": "Mashed Potatoes",
+     "O": "Mashed Potatoes",
+     "T": "mashed potatoes"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 128,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 108,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 71,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 70,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 86,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 71,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 42,
+    "names": {
+     "M": "Roasted Chicken Breast",
+     "O": "Roasted Chicken Breast",
+     "T": "roasted chicken breast"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_21.png": [
+   {
+    "box": 1,
+    "short_px": 525,
+    "names": {
+     "M": "BBQ chicken wings",
+     "O": "BBQ chicken wings",
+     "T": "glazed barbecue chicken wings"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 508,
+    "names": {
+     "M": "Seasoned corn on cob",
+     "O": "Buttered corn on cob",
+     "T": "seasoned buttered corn on the cob"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 361,
+    "names": {
+     "M": "Roasted asparagus lemons",
+     "O": "Roasted asparagus",
+     "T": "roasted asparagus with lemon slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 281,
+    "names": {
+     "M": "Seafood cheese bake",
+     "O": "Seafood casserole",
+     "T": "seafood lobster baked casserole"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 276,
+    "names": {
+     "M": "Cheesy baked casserole",
+     "O": "Cheesy baked dip",
+     "T": "cheesy baked crab dip"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 202,
+    "names": {
+     "M": "Baked lobster tails",
+     "O": "Stuffed lobster tails",
+     "T": "baked stuffed lobster tails"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 215,
+    "names": {
+     "M": "Roasted chicken pieces",
+     "O": "Roasted chicken thighs",
+     "T": "roasted seasoned chicken pieces"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 186,
+    "names": {
+     "M": "Sliced toasted baguette",
+     "O": "Sliced baguette",
+     "T": "sliced toasted baguette bread"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 32,
+    "names": {
+     "M": "Dark dipping sauce",
+     "O": "Dipping sauce",
+     "T": "dark dipping sauce bowl"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_22.png": [
+   {
+    "box": 1,
+    "short_px": 426.7,
+    "names": {
+     "M": "Pancit canton noodles",
+     "O": "Pancit Noodles",
+     "T": "Stir-fried pancit noodles"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 405.8,
+    "names": {
+     "M": "Filipino spaghetti",
+     "O": "Filipino Spaghetti",
+     "T": "Filipino spaghetti"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 368.3,
+    "names": {
+     "M": "Fried rice",
+     "O": "Fried Rice",
+     "T": "Fried rice"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 375.9,
+    "names": {
+     "M": "Fried chicken wings",
+     "O": "Fried Chicken Wings",
+     "T": "Fried chicken wings"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 338.3,
+    "names": {
+     "M": "Lumpia spring rolls",
+     "O": "Lumpia Rolls",
+     "T": "Lumpia spring rolls"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 298.7,
+    "names": {
+     "M": "Shrimp alfredo pasta",
+     "O": "Shrimp Alfredo Pasta",
+     "T": "Shrimp alfredo pasta"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 284.4,
+    "names": {
+     "M": "Cashew shrimp stir fry",
+     "O": "Cashew Shrimp Mix",
+     "T": "Shrimp cashew stir-fry"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 273.3,
+    "names": {
+     "M": "Fried wontons",
+     "O": "Fried Wontons",
+     "T": "Fried wontons"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 281.9,
+    "names": {
+     "M": "Chicken afritada stew",
+     "O": "Chicken Afritada Stew",
+     "T": "Chicken afritada stew"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 287,
+    "names": {
+     "M": "Lechon kawali",
+     "O": "Lechon Kawali",
+     "T": "Crispy pork belly"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 206.7,
+    "names": {
+     "M": "Pork barbecue skewers",
+     "O": "Pork BBQ Skewers",
+     "T": "Grilled pork barbecue skewers"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 162.5,
+    "names": {
+     "M": "Grilled hotdog skewers",
+     "O": "Hotdog Skewers",
+     "T": "Grilled red hotdogs"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 116.3,
+    "names": {
+     "M": "Lemon wedges",
+     "O": "Lemon Wedges",
+     "T": "Sliced lemons"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 109.2,
+    "names": {
+     "M": "Red dipping sauce",
+     "O": "Dipping Sauce",
+     "T": "Sweet chili sauce"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ],
+  "shelf_23.png": [
+   {
+    "box": 1,
+    "short_px": 315,
+    "names": {
+     "M": "Mixed hotpot vegetable platter",
+     "O": "Hotpot vegetable platter",
+     "T": "mixed hotpot vegetables platter"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 2,
+    "short_px": 283,
+    "names": {
+     "M": "Raw pork belly slices",
+     "O": "Raw pork belly slices",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 3,
+    "short_px": 254,
+    "names": {
+     "M": "Spicy red hotpot broth",
+     "O": "Spicy red hotpot broth",
+     "T": "spicy red hotpot broth"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 4,
+    "short_px": 200,
+    "names": {
+     "M": "Fried chicken and fish balls",
+     "O": "Fried chicken popcorn",
+     "T": "fried chicken popcorn plate"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 5,
+    "short_px": 216,
+    "names": {
+     "M": "Sliced fresh fruit plate",
+     "O": "Sliced fresh fruit",
+     "T": "sliced watermelon pineapple fruit"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 6,
+    "short_px": 202,
+    "names": {
+     "M": "Raw white wheat noodles",
+     "O": "White wheat noodles",
+     "T": "white noodles with greens"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 7,
+    "short_px": 183,
+    "names": {
+     "M": "Raw beef slice",
+     "O": "Raw marbled beef slice",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 8,
+    "short_px": 189,
+    "names": {
+     "M": "Dark hotpot dipping broth",
+     "O": "Dark hotpot broth",
+     "T": "dark broth hotpot with chopsticks"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 9,
+    "short_px": 157,
+    "names": {
+     "M": "Raw pork with fish balls",
+     "O": "Raw meat fish balls",
+     "T": "raw meat fish balls greens"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 10,
+    "short_px": 149,
+    "names": {
+     "M": "Raw thin beef slices",
+     "O": "Thin beef slices",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 11,
+    "short_px": 175,
+    "names": {
+     "M": "Raw pork belly slices",
+     "O": "Raw pork belly slices",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 12,
+    "short_px": 138,
+    "names": {
+     "M": "Raw beef slice",
+     "O": "Raw marbled beef slice",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 13,
+    "short_px": 167,
+    "names": {
+     "M": "Spicy red hotpot broth",
+     "O": "Spicy red hotpot broth",
+     "T": "spicy red hotpot broth"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 14,
+    "short_px": 134,
+    "names": {
+     "M": "Raw beef slice",
+     "O": "Raw marbled beef slice",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 15,
+    "short_px": 164,
+    "names": {
+     "M": "Clear savory hotpot broth",
+     "O": "Light hotpot broth",
+     "T": "clear spicy hotpot broth"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 16,
+    "short_px": 148,
+    "names": {
+     "M": "Assorted raw seafood platter",
+     "O": "Mixed raw seafood",
+     "T": "mixed seafood squid shrimp"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 17,
+    "short_px": 163,
+    "names": {
+     "M": "Spicy dipping sauce bowl",
+     "O": "Dipping sauce bowl",
+     "T": "dipping sauce with sesame"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 18,
+    "short_px": 125,
+    "names": {
+     "M": "Raw thin beef slices",
+     "O": "Thin beef slices",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 19,
+    "short_px": 132,
+    "names": {
+     "M": "Raw pork belly slice",
+     "O": "Raw pork belly slice",
+     "T": "raw beef belly slices"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 20,
+    "short_px": 124,
+    "names": {
+     "M": "Sliced baby corn plate",
+     "O": "Baby corn greens",
+     "T": "baby corn with greens"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 21,
+    "short_px": 120,
+    "names": {
+     "M": "Milky white hotpot broth",
+     "O": "White bone broth",
+     "T": "milky white hotpot broth"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 22,
+    "short_px": 109,
+    "names": {
+     "M": "Spicy red hotpot broth",
+     "O": "Spicy red hotpot broth",
+     "T": "spicy red hotpot broth"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 23,
+    "short_px": 119,
+    "names": {
+     "M": "Enoki mushrooms with egg",
+     "O": "Enoki mushrooms cabbage",
+     "T": "enoki mushrooms cabbage egg"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   },
+   {
+    "box": 24,
+    "short_px": 116,
+    "names": {
+     "M": "Canned red soda drink",
+     "O": "Canned soda drink",
+     "T": "red soda can"
+    },
+    "correct": {
+     "M": true,
+     "O": true,
+     "T": true
+    }
+   }
+  ]
+ }
+}

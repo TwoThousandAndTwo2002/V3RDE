@@ -1,0 +1,9660 @@
+{
+ "runs": [
+  {
+   "photo": "shelf_12.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.6784905147512178,
+    "ms": {
+     "total": 440.373
+    },
+    "status": 200,
+    "wall_ms": 440
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1920,
+    "height": 1440,
+    "prep_width": 1920,
+    "prep_height": 1440,
+    "sam_instances": 126,
+    "kept": 112,
+    "named": 24,
+    "unnamed": 76,
+    "small": 12,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 111,
+    "contained": 14,
+    "items": [
+     {
+      "name": "Nature Valley Trail Mix Bars",
+      "description": "Large Nature Valley trail mix bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.98,
+      "meal_cost": 9.99,
+      "count": 2,
+      "boxes": [
+       [
+        33,
+        1189,
+        182,
+        1430
+       ],
+       [
+        170,
+        1188,
+        309,
+        1426
+       ]
+      ],
+      "norm_boxes": [
+       [
+        17,
+        826,
+        95,
+        993
+       ],
+       [
+        89,
+        825,
+        161,
+        990
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 149,
+        "area_pct": 1.299,
+        "tokens": 45.8
+       },
+       {
+        "short_px": 139,
+        "area_pct": 1.197,
+        "tokens": 42.2
+       }
+      ],
+      "members": [
+       1,
+       2
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Nature Valley Lunch Box Bars",
+      "description": "Green Nature Valley lunch box bars package.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.728,
+      "meal_cost": 8.99,
+      "count": 2,
+      "boxes": [
+       [
+        296,
+        1221,
+        444,
+        1429
+       ],
+       [
+        520,
+        1231,
+        652,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        154,
+        848,
+        231,
+        992
+       ],
+       [
+        271,
+        855,
+        340,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 148,
+        "area_pct": 1.113,
+        "tokens": 39.3
+       },
+       {
+        "short_px": 132,
+        "area_pct": 0.998,
+        "tokens": 35.2
+       }
+      ],
+      "members": [
+       4,
+       14
+      ],
+      "source": "single"
+     },
+     {
+      "name": "President's Choice Rich Chewy Bars",
+      "description": "White club size chewy granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 1,
+      "meal_cost": 8.99,
+      "count": 2,
+      "boxes": [
+       [
+        1036,
+        1187,
+        1152,
+        1436
+       ],
+       [
+        934,
+        1187,
+        1046,
+        1437
+       ]
+      ],
+      "norm_boxes": [
+       [
+        540,
+        824,
+        600,
+        997
+       ],
+       [
+        486,
+        824,
+        545,
+        998
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 116,
+        "area_pct": 1.045,
+        "tokens": 36.8
+       },
+       {
+        "short_px": 112,
+        "area_pct": 1.013,
+        "tokens": 35.7
+       }
+      ],
+      "members": [
+       6,
+       11
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Val Nature Apple Cinnamon Muffin Bars",
+      "description": "Apple cinnamon soft baked muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 2,
+      "boxes": [
+       [
+        994,
+        70,
+        1178,
+        228
+       ],
+       [
+        1171,
+        83,
+        1355,
+        232
+       ]
+      ],
+      "norm_boxes": [
+       [
+        518,
+        49,
+        614,
+        158
+       ],
+       [
+        610,
+        58,
+        706,
+        161
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 158,
+        "area_pct": 1.052,
+        "tokens": 37.1
+       },
+       {
+        "short_px": 149,
+        "area_pct": 0.992,
+        "tokens": 35
+       }
+      ],
+      "members": [
+       5,
+       15
+      ],
+      "source": "single"
+     },
+     {
+      "name": "President's Choice Dipped Chewy Bars",
+      "description": "Chocolate dipped chewy granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.6,
+      "meal_cost": 7.99,
+      "count": 2,
+      "boxes": [
+       [
+        1140,
+        1214,
+        1266,
+        1440
+       ],
+       [
+        1255,
+        1220,
+        1381,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        594,
+        843,
+        659,
+        1000
+       ],
+       [
+        654,
+        847,
+        719,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 126,
+        "area_pct": 1.03,
+        "tokens": 36.3
+       },
+       {
+        "short_px": 126,
+        "area_pct": 1.003,
+        "tokens": 35.4
+       }
+      ],
+      "members": [
+       10,
+       13
+      ],
+      "source": "single"
+     },
+     {
+      "name": "President's Choice Mini Dipped Chewy Bars",
+      "description": "Mini dipped chewy chocolate bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.6,
+      "meal_cost": 7.99,
+      "count": 2,
+      "boxes": [
+       [
+        1362,
+        1220,
+        1493,
+        1440
+       ],
+       [
+        1478,
+        1251,
+        1612,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        709,
+        847,
+        778,
+        1000
+       ],
+       [
+        770,
+        869,
+        840,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 131,
+        "area_pct": 1.042,
+        "tokens": 36.8
+       },
+       {
+        "short_px": 134,
+        "area_pct": 0.916,
+        "tokens": 32.3
+       }
+      ],
+      "members": [
+       7,
+       17
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Nature Valley Sweet Salty Almond Bars",
+      "description": "Sweet salty almond granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.35,
+      "meal_cost": 4.99,
+      "count": 2,
+      "boxes": [
+       [
+        1593,
+        1249,
+        1734,
+        1440
+       ],
+       [
+        1714,
+        1261,
+        1849,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        830,
+        867,
+        903,
+        1000
+       ],
+       [
+        893,
+        876,
+        963,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 141,
+        "area_pct": 0.974,
+        "tokens": 34.4
+       },
+       {
+        "short_px": 135,
+        "area_pct": 0.874,
+        "tokens": 30.8
+       }
+      ],
+      "members": [
+       16,
+       18
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Go Pure Fruit Oat Bars",
+      "description": "Blue box of Go Pure oat bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.21,
+      "meal_cost": 4.99,
+      "count": 2,
+      "boxes": [
+       [
+        40,
+        37,
+        188,
+        190
+       ],
+       [
+        203,
+        241,
+        348,
+        391
+       ]
+      ],
+      "norm_boxes": [
+       [
+        21,
+        26,
+        98,
+        132
+       ],
+       [
+        106,
+        167,
+        181,
+        272
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 148,
+        "area_pct": 0.819,
+        "tokens": 28.9
+       },
+       {
+        "short_px": 145,
+        "area_pct": 0.787,
+        "tokens": 27.7
+       }
+      ],
+      "members": [
+       19,
+       22
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Nature Valley Crunchy Granola Bars",
+      "description": "Nature Valley crunchy granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.25,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1707,
+        104,
+        1863,
+        245
+       ],
+       [
+        1678,
+        297,
+        1840,
+        431
+       ]
+      ],
+      "norm_boxes": [
+       [
+        889,
+        72,
+        970,
+        170
+       ],
+       [
+        874,
+        206,
+        958,
+        299
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 141,
+        "area_pct": 0.796,
+        "tokens": 28.1
+       },
+       {
+        "short_px": 134,
+        "area_pct": 0.785,
+        "tokens": 27.7
+       }
+      ],
+      "members": [
+       20,
+       23
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Kashi Dark Chocolate Almond Bars",
+      "description": "Kashi dark chocolate almond bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.2,
+      "meal_cost": 4.99,
+      "count": 2,
+      "boxes": [
+       [
+        318,
+        47,
+        461,
+        200
+       ],
+       [
+        459,
+        54,
+        602,
+        205
+       ]
+      ],
+      "norm_boxes": [
+       [
+        166,
+        33,
+        240,
+        139
+       ],
+       [
+        239,
+        38,
+        314,
+        142
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 143,
+        "area_pct": 0.791,
+        "tokens": 27.9
+       },
+       {
+        "short_px": 143,
+        "area_pct": 0.781,
+        "tokens": 27.5
+       }
+      ],
+      "members": [
+       21,
+       24
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Nature Valley Sweet Salty Minis",
+      "description": "Green box of Nature Valley minis bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.5,
+      "meal_cost": 6.99,
+      "count": 1,
+      "boxes": [
+       [
+        783,
+        1237,
+        940,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        408,
+        859,
+        490,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 157,
+        "area_pct": 1.153,
+        "tokens": 40.7
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Val Nature Blueberry Muffin Bars",
+      "description": "Blueberry soft baked muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        1532,
+        87,
+        1718,
+        241
+       ]
+      ],
+      "norm_boxes": [
+       [
+        798,
+        60,
+        895,
+        167
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 154,
+        "area_pct": 1.036,
+        "tokens": 36.5
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Nature Valley Blueberry Muffin Bars",
+      "description": "Blueberry soft baked muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        1351,
+        83,
+        1541,
+        233
+       ]
+      ],
+      "norm_boxes": [
+       [
+        704,
+        58,
+        803,
+        162
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 150,
+        "area_pct": 1.031,
+        "tokens": 36.4
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Val Nature Crunchy Granola Bars",
+      "description": "Family pack crunchy granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.69,
+      "meal_cost": 8.99,
+      "count": 1,
+      "boxes": [
+       [
+        663,
+        1213,
+        788,
+        1435
+       ]
+      ],
+      "norm_boxes": [
+       [
+        345,
+        842,
+        410,
+        997
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 125,
+        "area_pct": 1.004,
+        "tokens": 35.4
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single"
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 3299,
+      "request_id": "resp_6adfdfd9ca1250a3ecb244db",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 3418,
+      "request_id": "resp_6adfdfd9cc504fced6e140f3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 3912,
+      "request_id": "resp_6adfdfda784fba2cd644416e",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 12933,
+      "request_id": "resp_6adfdfe8cd97f905f46a493a",
+      "usage": {
+       "input_tokens": 4107,
+       "output_tokens": 4512,
+       "reasoning_tokens": 1909
+      },
+      "cost_usd": 0.02430975
+     }
+    ],
+    "ms": 17011,
+    "cost_usd": 0.03180975
+   }
+  },
+  {
+   "photo": "shelf_12.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.6784905147512178,
+    "ms": {
+     "total": 440.373
+    },
+    "status": 200,
+    "wall_ms": 440
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1920,
+    "height": 1440,
+    "prep_width": 1920,
+    "prep_height": 1440,
+    "sam_instances": 126,
+    "kept": 112,
+    "named": 24,
+    "unnamed": 76,
+    "small": 12,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 111,
+    "contained": 14,
+    "items": [
+     {
+      "name": "Nature Valley Trail Mix",
+      "description": "Large value pack trail mix bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.98,
+      "meal_cost": 9.99,
+      "count": 2,
+      "boxes": [
+       [
+        33,
+        1189,
+        182,
+        1430
+       ],
+       [
+        170,
+        1188,
+        309,
+        1426
+       ]
+      ],
+      "norm_boxes": [
+       [
+        17,
+        826,
+        95,
+        993
+       ],
+       [
+        89,
+        825,
+        161,
+        990
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 149,
+        "area_pct": 1.299,
+        "tokens": 45.8
+       },
+       {
+        "short_px": 139,
+        "area_pct": 1.197,
+        "tokens": 42.2
+       }
+      ],
+      "members": [
+       1,
+       2
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Nature Valley Lunch Box",
+      "description": "Box of double chocolate lunch bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.728,
+      "meal_cost": 8.99,
+      "count": 2,
+      "boxes": [
+       [
+        296,
+        1221,
+        444,
+        1429
+       ],
+       [
+        520,
+        1231,
+        652,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        154,
+        848,
+        231,
+        992
+       ],
+       [
+        271,
+        855,
+        340,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 148,
+        "area_pct": 1.113,
+        "tokens": 39.3
+       },
+       {
+        "short_px": 132,
+        "area_pct": 0.998,
+        "tokens": 35.2
+       }
+      ],
+      "members": [
+       4,
+       14
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "President's Choice Dipped and Chewy Bars",
+      "description": "Club size chocolate dipped chewy granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.68,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1140,
+        1214,
+        1266,
+        1440
+       ],
+       [
+        1255,
+        1220,
+        1381,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        594,
+        843,
+        659,
+        1000
+       ],
+       [
+        654,
+        847,
+        719,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 126,
+        "area_pct": 1.03,
+        "tokens": 36.3
+       },
+       {
+        "short_px": 126,
+        "area_pct": 1.003,
+        "tokens": 35.4
+       }
+      ],
+      "members": [
+       10,
+       13
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "President's Choice Mini Dipped and Chewy Bars",
+      "description": "Club size mini chocolate dipped chewy bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.6,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1362,
+        1220,
+        1493,
+        1440
+       ],
+       [
+        1478,
+        1251,
+        1612,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        709,
+        847,
+        778,
+        1000
+       ],
+       [
+        770,
+        869,
+        840,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 131,
+        "area_pct": 1.042,
+        "tokens": 36.8
+       },
+       {
+        "short_px": 134,
+        "area_pct": 0.916,
+        "tokens": 32.3
+       }
+      ],
+      "members": [
+       7,
+       17
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "President's Choice Sweet and Salty Almond Bars",
+      "description": "Club size sweet salty almond granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.68,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1593,
+        1249,
+        1734,
+        1440
+       ],
+       [
+        1714,
+        1261,
+        1849,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        830,
+        867,
+        903,
+        1000
+       ],
+       [
+        893,
+        876,
+        963,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 141,
+        "area_pct": 0.974,
+        "tokens": 34.4
+       },
+       {
+        "short_px": 135,
+        "area_pct": 0.874,
+        "tokens": 30.8
+       }
+      ],
+      "members": [
+       16,
+       18
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Kashi Dark Chocolate Almond Sea Salt",
+      "description": "Kashi dark chocolate almond granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 4.99,
+      "count": 2,
+      "boxes": [
+       [
+        318,
+        47,
+        461,
+        200
+       ],
+       [
+        459,
+        54,
+        602,
+        205
+       ]
+      ],
+      "norm_boxes": [
+       [
+        166,
+        33,
+        240,
+        139
+       ],
+       [
+        239,
+        38,
+        314,
+        142
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 143,
+        "area_pct": 0.791,
+        "tokens": 27.9
+       },
+       {
+        "short_px": 143,
+        "area_pct": 0.781,
+        "tokens": 27.5
+       }
+      ],
+      "members": [
+       21,
+       24
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Nature Valley Sweet and Salty Minis",
+      "description": "Club size mini sweet salty nut bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.6,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        783,
+        1237,
+        940,
+        1440
+       ]
+      ],
+      "norm_boxes": [
+       [
+        408,
+        859,
+        490,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 157,
+        "area_pct": 1.153,
+        "tokens": 40.7
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Val Nature Apple Cinnamon Muffin Bars",
+      "description": "Apple cinnamon soft muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        994,
+        70,
+        1178,
+        228
+       ]
+      ],
+      "norm_boxes": [
+       [
+        518,
+        49,
+        614,
+        158
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 158,
+        "area_pct": 1.052,
+        "tokens": 37.1
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "President's Choice Rich and Chewy Bars",
+      "description": "Club size chewy chocolate chip granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.68,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        1036,
+        1187,
+        1152,
+        1436
+       ]
+      ],
+      "norm_boxes": [
+       [
+        540,
+        824,
+        600,
+        997
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 116,
+        "area_pct": 1.045,
+        "tokens": 36.8
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Val Nature Blueberry Muffin Bars",
+      "description": "Blueberry soft muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        1532,
+        87,
+        1718,
+        241
+       ]
+      ],
+      "norm_boxes": [
+       [
+        798,
+        60,
+        895,
+        167
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 154,
+        "area_pct": 1.036,
+        "tokens": 36.5
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Nature Valley Blueberry Muffin Bars",
+      "description": "Blueberry soft-baked muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        1351,
+        83,
+        1541,
+        233
+       ]
+      ],
+      "norm_boxes": [
+       [
+        704,
+        58,
+        803,
+        162
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 150,
+        "area_pct": 1.031,
+        "tokens": 36.4
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "PC Rich and Chewy Bar",
+      "description": "Club pack of rich chewy bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1.4,
+      "meal_cost": 8.99,
+      "count": 1,
+      "boxes": [
+       [
+        934,
+        1187,
+        1046,
+        1437
+       ]
+      ],
+      "norm_boxes": [
+       [
+        486,
+        824,
+        545,
+        998
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 112,
+        "area_pct": 1.013,
+        "tokens": 35.7
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Val Nature Crunchy Family",
+      "description": "Family pack of crunchy granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.69,
+      "meal_cost": 8.99,
+      "count": 1,
+      "boxes": [
+       [
+        663,
+        1213,
+        788,
+        1435
+       ]
+      ],
+      "norm_boxes": [
+       [
+        345,
+        842,
+        410,
+        997
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 125,
+        "area_pct": 1.004,
+        "tokens": 35.4
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Nature Valley Apple Cinnamon Muffin Bars",
+      "description": "Apple cinnamon soft-baked muffin bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.175,
+      "meal_cost": 5.99,
+      "count": 1,
+      "boxes": [
+       [
+        1171,
+        83,
+        1355,
+        232
+       ]
+      ],
+      "norm_boxes": [
+       [
+        610,
+        58,
+        706,
+        161
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 149,
+        "area_pct": 0.992,
+        "tokens": 35
+       }
+      ],
+      "members": [
+       15
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Go Pure Fruit and Oat Bars",
+      "description": "Blue box of fruit oat snack bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        40,
+        37,
+        188,
+        190
+       ]
+      ],
+      "norm_boxes": [
+       [
+        21,
+        26,
+        98,
+        132
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 148,
+        "area_pct": 0.819,
+        "tokens": 28.9
+       }
+      ],
+      "members": [
+       19
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Val Nature Crunchy Granola Bars",
+      "description": "Crunchy croquantes granola bars box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.25,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        1707,
+        104,
+        1863,
+        245
+       ]
+      ],
+      "norm_boxes": [
+       [
+        889,
+        72,
+        970,
+        170
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 141,
+        "area_pct": 0.796,
+        "tokens": 28.1
+       }
+      ],
+      "members": [
+       20
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Go Pure Fruit Oat Bar",
+      "description": "Blue box of fruit and oat bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        203,
+        241,
+        348,
+        391
+       ]
+      ],
+      "norm_boxes": [
+       [
+        106,
+        167,
+        181,
+        272
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 145,
+        "area_pct": 0.787,
+        "tokens": 27.7
+       }
+      ],
+      "members": [
+       22
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Nature Valley Crunchy Bar",
+      "description": "Green box of crunchy granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.23,
+      "meal_cost": 3.99,
+      "count": 1,
+      "boxes": [
+       [
+        1678,
+        297,
+        1840,
+        431
+       ]
+      ],
+      "norm_boxes": [
+       [
+        874,
+        206,
+        958,
+        299
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 134,
+        "area_pct": 0.785,
+        "tokens": 27.7
+       }
+      ],
+      "members": [
+       23
+      ],
+      "source": "single-2"
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 3912,
+      "request_id": "resp_6adfdfda784fba2cd644416e",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 3299,
+      "request_id": "resp_6adfdfd9ca1250a3ecb244db",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 3418,
+      "request_id": "resp_6adfdfd9cc504fced6e140f3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 6203,
+      "request_id": "resp_6adfdfefdd4aa5cef01c4140",
+      "usage": {
+       "input_tokens": 3875,
+       "output_tokens": 1761,
+       "reasoning_tokens": 859
+      },
+      "cost_usd": 0.012328
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 6436,
+      "request_id": "resp_6adfdfef704fdb590e3c4860",
+      "usage": {
+       "input_tokens": 3882,
+       "output_tokens": 1803,
+       "reasoning_tokens": 906
+      },
+      "cost_usd": 0.01251525
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 6580,
+      "request_id": "resp_6adfdfefd624aace3f8642c1",
+      "usage": {
+       "input_tokens": 3876,
+       "output_tokens": 2123,
+       "reasoning_tokens": 1259
+      },
+      "cost_usd": 0.01386775
+     }
+    ],
+    "ms": 6702,
+    "cost_usd": 0.046210999999999995
+   }
+  },
+  {
+   "photo": "shelf_15.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.839932656555923,
+    "ms": {
+     "total": 354.936
+    },
+    "status": 200,
+    "wall_ms": 355
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1300,
+    "height": 956,
+    "prep_width": 1300,
+    "prep_height": 956,
+    "sam_instances": 164,
+    "kept": 83,
+    "named": 24,
+    "unnamed": 43,
+    "small": 16,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 82,
+    "contained": 81,
+    "items": [
+     {
+      "name": "Doritos Cool Ranch",
+      "description": "Blue bag of cool ranch chips",
+      "is_non_veg": 0,
+      "number_of_serving": 5,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 5,
+      "boxes": [
+       [
+        275,
+        39,
+        382,
+        161
+       ],
+       [
+        72,
+        39,
+        179,
+        160
+       ],
+       [
+        91,
+        209,
+        197,
+        328
+       ],
+       [
+        177,
+        43,
+        278,
+        161
+       ],
+       [
+        193,
+        214,
+        297,
+        328
+       ]
+      ],
+      "norm_boxes": [
+       [
+        212,
+        41,
+        294,
+        168
+       ],
+       [
+        55,
+        41,
+        138,
+        167
+       ],
+       [
+        70,
+        219,
+        152,
+        343
+       ],
+       [
+        136,
+        45,
+        214,
+        168
+       ],
+       [
+        148,
+        224,
+        228,
+        343
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 107,
+        "area_pct": 1.05,
+        "tokens": 16.7
+       },
+       {
+        "short_px": 107,
+        "area_pct": 1.042,
+        "tokens": 16.5
+       },
+       {
+        "short_px": 106,
+        "area_pct": 1.015,
+        "tokens": 16.1
+       },
+       {
+        "short_px": 101,
+        "area_pct": 0.959,
+        "tokens": 15.2
+       },
+       {
+        "short_px": 104,
+        "area_pct": 0.954,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       13,
+       14,
+       15,
+       21,
+       23
+      ],
+      "source": "single"
+     },
+     {
+      "name": "G.H. Cretors Chicago Mix",
+      "description": "White bag of Chicago popcorn mix",
+      "is_non_veg": 0,
+      "number_of_serving": 3,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.22,
+      "meal_cost": 3.99,
+      "count": 3,
+      "boxes": [
+       [
+        1100,
+        29,
+        1217,
+        157
+       ],
+       [
+        1008,
+        19,
+        1114,
+        158
+       ],
+       [
+        1185,
+        35,
+        1297,
+        156
+       ]
+      ],
+      "norm_boxes": [
+       [
+        846,
+        30,
+        936,
+        164
+       ],
+       [
+        775,
+        20,
+        857,
+        165
+       ],
+       [
+        912,
+        37,
+        998,
+        163
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 1.205,
+        "tokens": 19.1
+       },
+       {
+        "short_px": 106,
+        "area_pct": 1.186,
+        "tokens": 18.8
+       },
+       {
+        "short_px": 112,
+        "area_pct": 1.09,
+        "tokens": 17.3
+       }
+      ],
+      "members": [
+       2,
+       4,
+       10
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Santitas Tortilla Chips",
+      "description": "Yellow bag of salted tortilla chips",
+      "is_non_veg": 0,
+      "number_of_serving": 3,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 2,
+      "count": 3,
+      "boxes": [
+       [
+        859,
+        353,
+        973,
+        490
+       ],
+       [
+        682,
+        364,
+        796,
+        490
+       ],
+       [
+        969,
+        360,
+        1066,
+        489
+       ]
+      ],
+      "norm_boxes": [
+       [
+        661,
+        369,
+        748,
+        513
+       ],
+       [
+        525,
+        381,
+        612,
+        513
+       ],
+       [
+        745,
+        377,
+        820,
+        512
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 114,
+        "area_pct": 1.257,
+        "tokens": 19.9
+       },
+       {
+        "short_px": 114,
+        "area_pct": 1.156,
+        "tokens": 18.3
+       },
+       {
+        "short_px": 97,
+        "area_pct": 1.007,
+        "tokens": 16
+       }
+      ],
+      "members": [
+       1,
+       5,
+       17
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Jolly Time White Cheddar",
+      "description": "Orange bag of white cheddar popcorn",
+      "is_non_veg": 0,
+      "number_of_serving": 3,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 2.5,
+      "count": 3,
+      "boxes": [
+       [
+        965,
+        664,
+        1073,
+        802
+       ],
+       [
+        1149,
+        672,
+        1252,
+        803
+       ],
+       [
+        1063,
+        666,
+        1149,
+        804
+       ]
+      ],
+      "norm_boxes": [
+       [
+        742,
+        695,
+        825,
+        839
+       ],
+       [
+        884,
+        703,
+        963,
+        840
+       ],
+       [
+        818,
+        697,
+        884,
+        841
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 108,
+        "area_pct": 1.199,
+        "tokens": 19
+       },
+       {
+        "short_px": 103,
+        "area_pct": 1.086,
+        "tokens": 17.2
+       },
+       {
+        "short_px": 86,
+        "area_pct": 0.955,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       3,
+       11,
+       22
+      ],
+      "source": "single"
+     },
+     {
+      "name": "G.H. Cretors Cheese Corn",
+      "description": "White bag of cheddar cheese corn",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.22,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1039,
+        200,
+        1152,
+        327
+       ],
+       [
+        1147,
+        207,
+        1257,
+        327
+       ]
+      ],
+      "norm_boxes": [
+       [
+        799,
+        209,
+        886,
+        342
+       ],
+       [
+        882,
+        217,
+        967,
+        342
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 113,
+        "area_pct": 1.155,
+        "tokens": 18.3
+       },
+       {
+        "short_px": 110,
+        "area_pct": 1.062,
+        "tokens": 16.8
+       }
+      ],
+      "members": [
+       6,
+       12
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Funyuns Onion Rings",
+      "description": "Yellow bag of onion flavored rings",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 1.75,
+      "count": 2,
+      "boxes": [
+       [
+        163,
+        357,
+        267,
+        488
+       ],
+       [
+        85,
+        518,
+        181,
+        643
+       ]
+      ],
+      "norm_boxes": [
+       [
+        125,
+        373,
+        205,
+        510
+       ],
+       [
+        65,
+        542,
+        139,
+        673
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 104,
+        "area_pct": 1.096,
+        "tokens": 17.4
+       },
+       {
+        "short_px": 96,
+        "area_pct": 0.966,
+        "tokens": 15.3
+       }
+      ],
+      "members": [
+       9,
+       19
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Doritos Nacho Cheese",
+      "description": "Red bag of nacho cheese chips",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 2,
+      "boxes": [
+       [
+        576,
+        671,
+        669,
+        801
+       ],
+       [
+        458,
+        37,
+        554,
+        160
+       ]
+      ],
+      "norm_boxes": [
+       [
+        443,
+        702,
+        515,
+        838
+       ],
+       [
+        352,
+        39,
+        426,
+        167
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 93,
+        "area_pct": 0.973,
+        "tokens": 15.4
+       },
+       {
+        "short_px": 96,
+        "area_pct": 0.95,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       18,
+       24
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Pop Secret Kettle Corn",
+      "description": "Blue Star Wars kettle corn bag",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.25,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        1072,
+        365,
+        1187,
+        489
+       ]
+      ],
+      "norm_boxes": [
+       [
+        825,
+        382,
+        913,
+        512
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 115,
+        "area_pct": 1.147,
+        "tokens": 18.2
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Pop Secret Popcorn",
+      "description": "Stormtrooper bag of butter popcorn",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.25,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        1134,
+        530,
+        1255,
+        643
+       ]
+      ],
+      "norm_boxes": [
+       [
+        872,
+        554,
+        965,
+        673
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 113,
+        "area_pct": 1.1,
+        "tokens": 17.4
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Chester's Puffcorn Butter",
+      "description": "Orange bag of butter puffcorn",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        839,
+        511,
+        935,
+        642
+       ]
+      ],
+      "norm_boxes": [
+       [
+        645,
+        535,
+        719,
+        672
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 1.012,
+        "tokens": 16
+       }
+      ],
+      "members": [
+       16
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Doritos Jacked Ranch",
+      "description": "Black bag of jacked ranch chips",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 1,
+      "boxes": [
+       [
+        602,
+        360,
+        696,
+        487
+       ]
+      ],
+      "norm_boxes": [
+       [
+        463,
+        377,
+        535,
+        509
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 94,
+        "area_pct": 0.961,
+        "tokens": 15.2
+       }
+      ],
+      "members": [
+       20
+      ],
+      "source": "single",
+      "check": true
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 1654,
+      "request_id": "resp_6adfdff21ff71874fe364ce8",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1815,
+      "request_id": "resp_6adfdff21207d6d986ca4edb",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1936,
+      "request_id": "resp_6adfdff2bcadeb5094d546c1",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 11098,
+      "request_id": "resp_6adfdffe9dccf9b90bd64d5e",
+      "usage": {
+       "input_tokens": 2195,
+       "output_tokens": 4579,
+       "reasoning_tokens": 1979
+      },
+      "cost_usd": 0.0222045
+     }
+    ],
+    "ms": 13117,
+    "cost_usd": 0.0297045
+   }
+  },
+  {
+   "photo": "shelf_15.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.839932656555923,
+    "ms": {
+     "total": 354.936
+    },
+    "status": 200,
+    "wall_ms": 355
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1300,
+    "height": 956,
+    "prep_width": 1300,
+    "prep_height": 956,
+    "sam_instances": 164,
+    "kept": 83,
+    "named": 24,
+    "unnamed": 43,
+    "small": 16,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 82,
+    "contained": 81,
+    "items": [
+     {
+      "name": "Doritos Cool Ranch Tortilla Chips",
+      "description": "Blue bag of Cool Ranch tortilla chips.",
+      "is_non_veg": 0,
+      "number_of_serving": 5,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 5,
+      "boxes": [
+       [
+        275,
+        39,
+        382,
+        161
+       ],
+       [
+        72,
+        39,
+        179,
+        160
+       ],
+       [
+        91,
+        209,
+        197,
+        328
+       ],
+       [
+        177,
+        43,
+        278,
+        161
+       ],
+       [
+        193,
+        214,
+        297,
+        328
+       ]
+      ],
+      "norm_boxes": [
+       [
+        212,
+        41,
+        294,
+        168
+       ],
+       [
+        55,
+        41,
+        138,
+        167
+       ],
+       [
+        70,
+        219,
+        152,
+        343
+       ],
+       [
+        136,
+        45,
+        214,
+        168
+       ],
+       [
+        148,
+        224,
+        228,
+        343
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 107,
+        "area_pct": 1.05,
+        "tokens": 16.7
+       },
+       {
+        "short_px": 107,
+        "area_pct": 1.042,
+        "tokens": 16.5
+       },
+       {
+        "short_px": 106,
+        "area_pct": 1.015,
+        "tokens": 16.1
+       },
+       {
+        "short_px": 101,
+        "area_pct": 0.959,
+        "tokens": 15.2
+       },
+       {
+        "short_px": 104,
+        "area_pct": 0.954,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       13,
+       14,
+       15,
+       21,
+       23
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "G.H. Cretors Chicago Mix Popcorn",
+      "description": "White bag of Chicago Mix popcorn.",
+      "is_non_veg": 0,
+      "number_of_serving": 3,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.22,
+      "meal_cost": 3.39,
+      "count": 3,
+      "boxes": [
+       [
+        1100,
+        29,
+        1217,
+        157
+       ],
+       [
+        1008,
+        19,
+        1114,
+        158
+       ],
+       [
+        1185,
+        35,
+        1297,
+        156
+       ]
+      ],
+      "norm_boxes": [
+       [
+        846,
+        30,
+        936,
+        164
+       ],
+       [
+        775,
+        20,
+        857,
+        165
+       ],
+       [
+        912,
+        37,
+        998,
+        163
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 1.205,
+        "tokens": 19.1
+       },
+       {
+        "short_px": 106,
+        "area_pct": 1.186,
+        "tokens": 18.8
+       },
+       {
+        "short_px": 112,
+        "area_pct": 1.09,
+        "tokens": 17.3
+       }
+      ],
+      "members": [
+       2,
+       4,
+       10
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Jolly Time White Cheddar",
+      "description": "Blue white cheddar microwave popcorn bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 3,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.25,
+      "meal_cost": 2.29,
+      "count": 3,
+      "boxes": [
+       [
+        965,
+        664,
+        1073,
+        802
+       ],
+       [
+        1149,
+        672,
+        1252,
+        803
+       ],
+       [
+        1063,
+        666,
+        1149,
+        804
+       ]
+      ],
+      "norm_boxes": [
+       [
+        742,
+        695,
+        825,
+        839
+       ],
+       [
+        884,
+        703,
+        963,
+        840
+       ],
+       [
+        818,
+        697,
+        884,
+        841
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 108,
+        "area_pct": 1.199,
+        "tokens": 19
+       },
+       {
+        "short_px": 103,
+        "area_pct": 1.086,
+        "tokens": 17.2
+       },
+       {
+        "short_px": 86,
+        "area_pct": 0.955,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       3,
+       11,
+       22
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Santitas White Corn Tortilla Chips",
+      "description": "White bag of Santitas tortilla chips.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.31,
+      "meal_cost": 2,
+      "count": 2,
+      "boxes": [
+       [
+        859,
+        353,
+        973,
+        490
+       ],
+       [
+        969,
+        360,
+        1066,
+        489
+       ]
+      ],
+      "norm_boxes": [
+       [
+        661,
+        369,
+        748,
+        513
+       ],
+       [
+        745,
+        377,
+        820,
+        512
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 114,
+        "area_pct": 1.257,
+        "tokens": 19.9
+       },
+       {
+        "short_px": 97,
+        "area_pct": 1.007,
+        "tokens": 16
+       }
+      ],
+      "members": [
+       1,
+       17
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "G.H. Cretors Cheese Corn Popcorn",
+      "description": "White bag of G.H. Cretors cheese popcorn.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.2,
+      "meal_cost": 3.99,
+      "count": 2,
+      "boxes": [
+       [
+        1039,
+        200,
+        1152,
+        327
+       ],
+       [
+        1147,
+        207,
+        1257,
+        327
+       ]
+      ],
+      "norm_boxes": [
+       [
+        799,
+        209,
+        886,
+        342
+       ],
+       [
+        882,
+        217,
+        967,
+        342
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 113,
+        "area_pct": 1.155,
+        "tokens": 18.3
+       },
+       {
+        "short_px": 110,
+        "area_pct": 1.062,
+        "tokens": 16.8
+       }
+      ],
+      "members": [
+       6,
+       12
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Santitas Yellow Corn Tortilla Chips",
+      "description": "Yellow bag of Santitas tortilla chips.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.31,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        682,
+        364,
+        796,
+        490
+       ]
+      ],
+      "norm_boxes": [
+       [
+        525,
+        381,
+        612,
+        513
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 114,
+        "area_pct": 1.156,
+        "tokens": 18.3
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Pop Secret Kettle Corn",
+      "description": "Blue microwave kettle corn popcorn bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.25,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        1072,
+        365,
+        1187,
+        489
+       ]
+      ],
+      "norm_boxes": [
+       [
+        825,
+        382,
+        913,
+        512
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 115,
+        "area_pct": 1.147,
+        "tokens": 18.2
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Pop Secret Popcorn",
+      "description": "Star Wars stormtrooper microwave popcorn bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.25,
+      "meal_cost": 2.2,
+      "count": 1,
+      "boxes": [
+       [
+        1134,
+        530,
+        1255,
+        643
+       ]
+      ],
+      "norm_boxes": [
+       [
+        872,
+        554,
+        965,
+        673
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 113,
+        "area_pct": 1.1,
+        "tokens": 17.4
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Funyuns Onion Flavored Rings",
+      "description": "Yellow-green bag of Funyuns onion rings.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.17,
+      "meal_cost": 1.49,
+      "count": 1,
+      "boxes": [
+       [
+        163,
+        357,
+        267,
+        488
+       ]
+      ],
+      "norm_boxes": [
+       [
+        125,
+        373,
+        205,
+        510
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 104,
+        "area_pct": 1.096,
+        "tokens": 17.4
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Chester's Puffcorn Cheese",
+      "description": "Orange cheese puffed corn snack bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.15,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        839,
+        511,
+        935,
+        642
+       ]
+      ],
+      "norm_boxes": [
+       [
+        645,
+        535,
+        719,
+        672
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 1.012,
+        "tokens": 16
+       }
+      ],
+      "members": [
+       16
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Doritos Nacho Cheese",
+      "description": "Red nacho cheese tortilla chips bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 1,
+      "boxes": [
+       [
+        576,
+        671,
+        669,
+        801
+       ]
+      ],
+      "norm_boxes": [
+       [
+        443,
+        702,
+        515,
+        838
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 93,
+        "area_pct": 0.973,
+        "tokens": 15.4
+       }
+      ],
+      "members": [
+       18
+      ],
+      "source": "single-3",
+      "check": true
+     },
+     {
+      "name": "Funyuns Onion Rings",
+      "description": "Yellow onion flavored crispy snack bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.17,
+      "meal_cost": 1.49,
+      "count": 1,
+      "boxes": [
+       [
+        85,
+        518,
+        181,
+        643
+       ]
+      ],
+      "norm_boxes": [
+       [
+        65,
+        542,
+        139,
+        673
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 0.966,
+        "tokens": 15.3
+       }
+      ],
+      "members": [
+       19
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Doritos Jacked Ranch Tortilla Chips",
+      "description": "Black bag of Doritos Jacked chips.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.25,
+      "meal_cost": 1.75,
+      "count": 1,
+      "boxes": [
+       [
+        602,
+        360,
+        696,
+        487
+       ]
+      ],
+      "norm_boxes": [
+       [
+        463,
+        377,
+        535,
+        509
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 94,
+        "area_pct": 0.961,
+        "tokens": 15.2
+       }
+      ],
+      "members": [
+       20
+      ],
+      "source": "single-2",
+      "check": true
+     },
+     {
+      "name": "Doritos Nacho Cheese Tortilla Chips",
+      "description": "Red bag of Nacho Cheese tortilla chips.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.28,
+      "meal_cost": 1.75,
+      "count": 1,
+      "boxes": [
+       [
+        458,
+        37,
+        554,
+        160
+       ]
+      ],
+      "norm_boxes": [
+       [
+        352,
+        39,
+        426,
+        167
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 0.95,
+        "tokens": 15.1
+       }
+      ],
+      "members": [
+       24
+      ],
+      "source": "single-1"
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1815,
+      "request_id": "resp_6adfdff21207d6d986ca4edb",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1936,
+      "request_id": "resp_6adfdff2bcadeb5094d546c1",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 1654,
+      "request_id": "resp_6adfdff21ff71874fe364ce8",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 5096,
+      "request_id": "resp_6adfe003e64d86bb36014108",
+      "usage": {
+       "input_tokens": 1971,
+       "output_tokens": 1834,
+       "reasoning_tokens": 932
+      },
+      "cost_usd": 0.01025825
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 5123,
+      "request_id": "resp_6adfe00344bcda0020524d9c",
+      "usage": {
+       "input_tokens": 1971,
+       "output_tokens": 1752,
+       "reasoning_tokens": 860
+      },
+      "cost_usd": 0.00990975
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 5555,
+      "request_id": "resp_6adfe003631232992f5f4642",
+      "usage": {
+       "input_tokens": 1971,
+       "output_tokens": 1726,
+       "reasoning_tokens": 857
+      },
+      "cost_usd": 0.00979925
+     }
+    ],
+    "ms": 5615,
+    "cost_usd": 0.03746725
+   }
+  },
+  {
+   "photo": "shelf_16.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.6772751856913558,
+    "ms": {
+     "total": 332.421
+    },
+    "status": 200,
+    "wall_ms": 332
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1024,
+    "height": 768,
+    "prep_width": 1024,
+    "prep_height": 768,
+    "sam_instances": 87,
+    "kept": 52,
+    "named": 24,
+    "unnamed": 1,
+    "small": 27,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 37,
+    "contained": 35,
+    "items": [
+     {
+      "name": "Great Value elbow macaroni",
+      "description": "Large white bag of elbow pasta.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 1,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        150,
+        467,
+        387,
+        596
+       ]
+      ],
+      "norm_boxes": [
+       [
+        146,
+        608,
+        378,
+        776
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 129,
+        "area_pct": 3.888,
+        "tokens": 39
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Instant noodles case",
+      "description": "Case of thirty instant noodle packs.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 2.25,
+      "meal_cost": 8,
+      "count": 1,
+      "boxes": [
+       [
+        146,
+        588,
+        332,
+        708
+       ]
+      ],
+      "norm_boxes": [
+       [
+        143,
+        766,
+        324,
+        922
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 120,
+        "area_pct": 2.838,
+        "tokens": 28.5
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Cheerios cereal",
+      "description": "Yellow box of whole grain Cheerios.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.5,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        316,
+        243,
+        464,
+        382
+       ]
+      ],
+      "norm_boxes": [
+       [
+        309,
+        316,
+        453,
+        497
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 139,
+        "area_pct": 2.616,
+        "tokens": 26.2
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Kool-Aid Jammers",
+      "description": "Box of raspberry drink pouches.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1,
+      "meal_cost": 3.5,
+      "count": 1,
+      "boxes": [
+       [
+        750,
+        253,
+        922,
+        370
+       ]
+      ],
+      "norm_boxes": [
+       [
+        732,
+        329,
+        900,
+        482
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 2.559,
+        "tokens": 25.7
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Chips Ahoy cookies",
+      "description": "Blue package of chocolate chip cookies.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        91,
+        429,
+        186,
+        626
+       ]
+      ],
+      "norm_boxes": [
+       [
+        89,
+        559,
+        182,
+        815
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 95,
+        "area_pct": 2.38,
+        "tokens": 23.9
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Bowl Noodle Soup",
+      "description": "Boxed instant noodle soup bowl.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.1,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        328,
+        588,
+        455,
+        715
+       ]
+      ],
+      "norm_boxes": [
+       [
+        320,
+        766,
+        444,
+        931
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 127,
+        "area_pct": 2.051,
+        "tokens": 20.6
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Blueberry cookie box",
+      "description": "Tall box of blueberry cookies.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        450,
+        553,
+        541,
+        728
+       ]
+      ],
+      "norm_boxes": [
+       [
+        439,
+        720,
+        528,
+        948
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 91,
+        "area_pct": 2.025,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Rice side carton",
+      "description": "Carton of packaged rice mix.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        370,
+        433,
+        479,
+        579
+       ]
+      ],
+      "norm_boxes": [
+       [
+        361,
+        564,
+        468,
+        754
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 109,
+        "area_pct": 2.024,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Ranch dressing",
+      "description": "Bottle of ranch salad dressing.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.47,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        629,
+        518,
+        715,
+        703
+       ]
+      ],
+      "norm_boxes": [
+       [
+        614,
+        674,
+        698,
+        915
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 86,
+        "area_pct": 2.023,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Flour bag",
+      "description": "Paper bag of all-purpose flour.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 1,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        388,
+        156,
+        486,
+        314
+       ]
+      ],
+      "norm_boxes": [
+       [
+        379,
+        203,
+        475,
+        409
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 98,
+        "area_pct": 1.969,
+        "tokens": 19.8
+       }
+      ],
+      "members": [
+       10
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Super Moist cake mix",
+      "description": "Betty Crocker yellow cake mix.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.43,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        93,
+        253,
+        210,
+        380
+       ]
+      ],
+      "norm_boxes": [
+       [
+        91,
+        329,
+        205,
+        495
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 1.889,
+        "tokens": 19
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Cracker box",
+      "description": "Red box of baked crackers.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        557,
+        499,
+        653,
+        652
+       ]
+      ],
+      "norm_boxes": [
+       [
+        544,
+        650,
+        638,
+        849
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 1.868,
+        "tokens": 18.7
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Snack sticks bag",
+      "description": "Purple bag of vegetable snack sticks.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.1,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        695,
+        570,
+        778,
+        702
+       ]
+      ],
+      "norm_boxes": [
+       [
+        679,
+        742,
+        760,
+        914
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 83,
+        "area_pct": 1.393,
+        "tokens": 14
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Macaroni cheese box",
+      "description": "Small box of macaroni dinner.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        785,
+        471,
+        901,
+        558
+       ]
+      ],
+      "norm_boxes": [
+       [
+        767,
+        613,
+        880,
+        727
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 87,
+        "area_pct": 1.283,
+        "tokens": 12.9
+       }
+      ],
+      "members": [
+       14
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Stuffing mix",
+      "description": "Red box of turkey stuffing mix.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.17,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        734,
+        453,
+        841,
+        546
+       ]
+      ],
+      "norm_boxes": [
+       [
+        717,
+        590,
+        821,
+        711
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 93,
+        "area_pct": 1.265,
+        "tokens": 12.7
+       }
+      ],
+      "members": [
+       15
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Granola bars box",
+      "description": "Purple box of granola bars.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        551,
+        452,
+        637,
+        560
+       ]
+      ],
+      "norm_boxes": [
+       [
+        538,
+        589,
+        622,
+        729
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 86,
+        "area_pct": 1.181,
+        "tokens": 11.8
+       }
+      ],
+      "members": [
+       16
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Juice cartons",
+      "description": "Blue box of juice drinks.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.8,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        578,
+        560,
+        650,
+        685
+       ]
+      ],
+      "norm_boxes": [
+       [
+        564,
+        729,
+        635,
+        892
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 72,
+        "area_pct": 1.144,
+        "tokens": 11.5
+       }
+      ],
+      "members": [
+       17
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Kraft Dinner",
+      "description": "Orange box of macaroni dinner.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.22,
+      "meal_cost": 1.2,
+      "count": 1,
+      "boxes": [
+       [
+        837,
+        540,
+        913,
+        648
+       ]
+      ],
+      "norm_boxes": [
+       [
+        817,
+        703,
+        892,
+        844
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 76,
+        "area_pct": 1.044,
+        "tokens": 10.5
+       }
+      ],
+      "members": [
+       18
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Canned tomatoes",
+      "description": "Can of diced stewed tomatoes.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        225,
+        364,
+        295,
+        473
+       ]
+      ],
+      "norm_boxes": [
+       [
+        220,
+        474,
+        288,
+        616
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 70,
+        "area_pct": 0.97,
+        "tokens": 9.7
+       }
+      ],
+      "members": [
+       19
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Gerber baby food",
+      "description": "Box of baby cereal food.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        561,
+        307,
+        663,
+        377
+       ]
+      ],
+      "norm_boxes": [
+       [
+        548,
+        400,
+        647,
+        491
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 70,
+        "area_pct": 0.908,
+        "tokens": 9.1
+       }
+      ],
+      "members": [
+       20
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Vegetable soup can",
+      "description": "Can of chunky vegetable soup.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.54,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        777,
+        611,
+        853,
+        700
+       ]
+      ],
+      "norm_boxes": [
+       [
+        759,
+        796,
+        833,
+        911
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 76,
+        "area_pct": 0.86,
+        "tokens": 8.6
+       }
+      ],
+      "members": [
+       21
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Canned corn",
+      "description": "Can of homestyle canned corn.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.34,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        291,
+        388,
+        359,
+        478
+       ]
+      ],
+      "norm_boxes": [
+       [
+        284,
+        505,
+        351,
+        622
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 68,
+        "area_pct": 0.778,
+        "tokens": 7.8
+       }
+      ],
+      "members": [
+       22
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Candy bag",
+      "description": "Small bag of assorted candy.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        479,
+        283,
+        564,
+        352
+       ]
+      ],
+      "norm_boxes": [
+       [
+        468,
+        368,
+        551,
+        458
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 69,
+        "area_pct": 0.746,
+        "tokens": 7.5
+       }
+      ],
+      "members": [
+       23
+      ],
+      "source": "single",
+      "check": true
+     },
+     {
+      "name": "Canned pineapple",
+      "description": "Can of pineapple chunks in juice.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.4,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        860,
+        611,
+        924,
+        698
+       ]
+      ],
+      "norm_boxes": [
+       [
+        840,
+        796,
+        902,
+        909
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 64,
+        "area_pct": 0.708,
+        "tokens": 7.1
+       }
+      ],
+      "members": [
+       24
+      ],
+      "source": "single",
+      "check": true
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1182,
+      "request_id": "resp_6adfe0050bb412f1dc854c64",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 1433,
+      "request_id": "resp_6adfe005843eea83945f48fb",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1501,
+      "request_id": "resp_6adfe0054a1d6ff08cec4cc3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 9967,
+      "request_id": "resp_6adfe00f6f549c9984134fba",
+      "usage": {
+       "input_tokens": 1603,
+       "output_tokens": 3766,
+       "reasoning_tokens": 1248
+      },
+      "cost_usd": 0.01800925
+     }
+    ],
+    "ms": 11532,
+    "cost_usd": 0.02550925
+   }
+  },
+  {
+   "photo": "shelf_16.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.6772751856913558,
+    "ms": {
+     "total": 332.421
+    },
+    "status": 200,
+    "wall_ms": 332
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1024,
+    "height": 768,
+    "prep_width": 1024,
+    "prep_height": 768,
+    "sam_instances": 87,
+    "kept": 52,
+    "named": 24,
+    "unnamed": 1,
+    "small": 27,
+    "trays": 0,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 37,
+    "contained": 35,
+    "items": [
+     {
+      "name": "Cracker Box",
+      "description": "Cardboard box of baked crackers.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.5,
+      "meal_cost": 4,
+      "count": 2,
+      "boxes": [
+       [
+        785,
+        471,
+        901,
+        558
+       ],
+       [
+        551,
+        452,
+        637,
+        560
+       ]
+      ],
+      "norm_boxes": [
+       [
+        767,
+        613,
+        880,
+        727
+       ],
+       [
+        538,
+        589,
+        622,
+        729
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 87,
+        "area_pct": 1.283,
+        "tokens": 12.9
+       },
+       {
+        "short_px": 86,
+        "area_pct": 1.181,
+        "tokens": 11.8
+       }
+      ],
+      "members": [
+       14,
+       16
+      ],
+      "source": "single-3",
+      "check": true
+     },
+     {
+      "name": "Kraft Dinner Box",
+      "description": "Blue box of Kraft macaroni dinner.",
+      "is_non_veg": 0,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.22,
+      "meal_cost": 1.5,
+      "count": 2,
+      "boxes": [
+       [
+        578,
+        560,
+        650,
+        685
+       ],
+       [
+        837,
+        540,
+        913,
+        648
+       ]
+      ],
+      "norm_boxes": [
+       [
+        564,
+        729,
+        635,
+        892
+       ],
+       [
+        817,
+        703,
+        892,
+        844
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 72,
+        "area_pct": 1.144,
+        "tokens": 11.5
+       },
+       {
+        "short_px": 76,
+        "area_pct": 1.044,
+        "tokens": 10.5
+       }
+      ],
+      "members": [
+       17,
+       18
+      ],
+      "source": "single-2",
+      "check": true
+     },
+     {
+      "name": "Great Value Elbow Macaroni",
+      "description": "Large bag of dry elbow macaroni pasta.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.9,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        150,
+        467,
+        387,
+        596
+       ]
+      ],
+      "norm_boxes": [
+       [
+        146,
+        608,
+        378,
+        776
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 129,
+        "area_pct": 3.888,
+        "tokens": 39
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Instant Noodles Case",
+      "description": "Bulk case of thirty instant noodles.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 2.25,
+      "meal_cost": 15,
+      "count": 1,
+      "boxes": [
+       [
+        146,
+        588,
+        332,
+        708
+       ]
+      ],
+      "norm_boxes": [
+       [
+        143,
+        766,
+        324,
+        922
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 120,
+        "area_pct": 2.838,
+        "tokens": 28.5
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Cheerios cereal",
+      "description": "Yellow Whole Grain Cheerios breakfast cereal box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.5,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        316,
+        243,
+        464,
+        382
+       ]
+      ],
+      "norm_boxes": [
+       [
+        309,
+        316,
+        453,
+        497
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 139,
+        "area_pct": 2.616,
+        "tokens": 26.2
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Kool-Aid Jammers",
+      "description": "Blue raspberry drink pouches box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        750,
+        253,
+        922,
+        370
+       ]
+      ],
+      "norm_boxes": [
+       [
+        732,
+        329,
+        900,
+        482
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 2.559,
+        "tokens": 25.7
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Chips Ahoy Cookies",
+      "description": "Blue carton of Chips Ahoy chocolate chip cookies.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        91,
+        429,
+        186,
+        626
+       ]
+      ],
+      "norm_boxes": [
+       [
+        89,
+        559,
+        182,
+        815
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 95,
+        "area_pct": 2.38,
+        "tokens": 23.9
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-2",
+      "check": true
+     },
+     {
+      "name": "Bowl Noodle Soup",
+      "description": "Single spicy bowl noodle soup.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.1,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        328,
+        588,
+        455,
+        715
+       ]
+      ],
+      "norm_boxes": [
+       [
+        320,
+        766,
+        444,
+        931
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 127,
+        "area_pct": 2.051,
+        "tokens": 20.6
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Blueberry Muffin Mix",
+      "description": "Boxed blueberry muffin baking mix.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.5,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        450,
+        553,
+        541,
+        728
+       ]
+      ],
+      "norm_boxes": [
+       [
+        439,
+        720,
+        528,
+        948
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 91,
+        "area_pct": 2.025,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single-3",
+      "check": true
+     },
+     {
+      "name": "Rice Side Carton",
+      "description": "Boxed rice side dish requiring cooking.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.4,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        370,
+        433,
+        479,
+        579
+       ]
+      ],
+      "norm_boxes": [
+       [
+        361,
+        564,
+        468,
+        754
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 109,
+        "area_pct": 2.024,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Ranch Dressing Bottle",
+      "description": "White bottle of creamy ranch salad dressing.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.44,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        629,
+        518,
+        715,
+        703
+       ]
+      ],
+      "norm_boxes": [
+       [
+        614,
+        674,
+        698,
+        915
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 86,
+        "area_pct": 2.023,
+        "tokens": 20.3
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single-2",
+      "check": true
+     },
+     {
+      "name": "Flour bag",
+      "description": "Tall red white flour bag standing upright.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 1,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        388,
+        156,
+        486,
+        314
+       ]
+      ],
+      "norm_boxes": [
+       [
+        379,
+        203,
+        475,
+        409
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 98,
+        "area_pct": 1.969,
+        "tokens": 19.8
+       }
+      ],
+      "members": [
+       10
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Betty Crocker Super Moist cake mix",
+      "description": "Yellow cake mix box in left carton.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.5,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        93,
+        253,
+        210,
+        380
+       ]
+      ],
+      "norm_boxes": [
+       [
+        91,
+        329,
+        205,
+        495
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 117,
+        "area_pct": 1.889,
+        "tokens": 19
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Macaroni Cheese Box",
+      "description": "Red box of macaroni and cheese.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.21,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        557,
+        499,
+        653,
+        652
+       ]
+      ],
+      "norm_boxes": [
+       [
+        544,
+        650,
+        638,
+        849
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 96,
+        "area_pct": 1.868,
+        "tokens": 18.7
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Sidekicks Pasta Pouch",
+      "description": "Pouch of seasoned Sidekicks pasta.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        695,
+        570,
+        778,
+        702
+       ]
+      ],
+      "norm_boxes": [
+       [
+        679,
+        742,
+        760,
+        914
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 83,
+        "area_pct": 1.393,
+        "tokens": 14
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single-3",
+      "check": true
+     },
+     {
+      "name": "Stuffing Mix Box",
+      "description": "Boxed stuffing mix for holiday side dish.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.34,
+      "meal_cost": 2.5,
+      "count": 1,
+      "boxes": [
+       [
+        734,
+        453,
+        841,
+        546
+       ]
+      ],
+      "norm_boxes": [
+       [
+        717,
+        590,
+        821,
+        711
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 93,
+        "area_pct": 1.265,
+        "tokens": 12.7
+       }
+      ],
+      "members": [
+       15
+      ],
+      "source": "single-2",
+      "check": true
+     },
+     {
+      "name": "Canned tomatoes",
+      "description": "Open top metal can of tomatoes.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.4,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        225,
+        364,
+        295,
+        473
+       ]
+      ],
+      "norm_boxes": [
+       [
+        220,
+        474,
+        288,
+        616
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 70,
+        "area_pct": 0.97,
+        "tokens": 9.7
+       }
+      ],
+      "members": [
+       19
+      ],
+      "source": "single-1",
+      "check": true
+     },
+     {
+      "name": "Gerber baby cereal",
+      "description": "Small white Gerber infant cereal box.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.3,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        561,
+        307,
+        663,
+        377
+       ]
+      ],
+      "norm_boxes": [
+       [
+        548,
+        400,
+        647,
+        491
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 70,
+        "area_pct": 0.908,
+        "tokens": 9.1
+       }
+      ],
+      "members": [
+       20
+      ],
+      "source": "single-1",
+      "check": true
+     },
+     {
+      "name": "Progresso Vegetable Soup",
+      "description": "Canned Progresso vegetable soup.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.54,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        777,
+        611,
+        853,
+        700
+       ]
+      ],
+      "norm_boxes": [
+       [
+        759,
+        796,
+        833,
+        911
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 76,
+        "area_pct": 0.86,
+        "tokens": 8.6
+       }
+      ],
+      "members": [
+       21
+      ],
+      "source": "single-3",
+      "check": true
+     },
+     {
+      "name": "Canned cream corn",
+      "description": "Small yellow label cream style corn can.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        291,
+        388,
+        359,
+        478
+       ]
+      ],
+      "norm_boxes": [
+       [
+        284,
+        505,
+        351,
+        622
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 68,
+        "area_pct": 0.778,
+        "tokens": 7.8
+       }
+      ],
+      "members": [
+       22
+      ],
+      "source": "single-1",
+      "check": true
+     },
+     {
+      "name": "Candy bag",
+      "description": "Small red wrapped candy snack bag.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        479,
+        283,
+        564,
+        352
+       ]
+      ],
+      "norm_boxes": [
+       [
+        468,
+        368,
+        551,
+        458
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 69,
+        "area_pct": 0.746,
+        "tokens": 7.5
+       }
+      ],
+      "members": [
+       23
+      ],
+      "source": "single-1",
+      "check": true
+     },
+     {
+      "name": "Canned Corn",
+      "description": "Yellow can of canned corn.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.4,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        860,
+        611,
+        924,
+        698
+       ]
+      ],
+      "norm_boxes": [
+       [
+        840,
+        796,
+        902,
+        909
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 64,
+        "area_pct": 0.708,
+        "tokens": 7.1
+       }
+      ],
+      "members": [
+       24
+      ],
+      "source": "single-3",
+      "check": true
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 1433,
+      "request_id": "resp_6adfe005843eea83945f48fb",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1501,
+      "request_id": "resp_6adfe0054a1d6ff08cec4cc3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1182,
+      "request_id": "resp_6adfe0050bb412f1dc854c64",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 6092,
+      "request_id": "resp_6adfe016fa520b14d1714a94",
+      "usage": {
+       "input_tokens": 1379,
+       "output_tokens": 1687,
+       "reasoning_tokens": 825
+      },
+      "cost_usd": 0.0088935
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 6856,
+      "request_id": "resp_6adfe0167fbcd48ee29a4cb8",
+      "usage": {
+       "input_tokens": 1379,
+       "output_tokens": 1802,
+       "reasoning_tokens": 962
+      },
+      "cost_usd": 0.00938225
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 8195,
+      "request_id": "resp_6adfe01856b1c16a04784797",
+      "usage": {
+       "input_tokens": 1379,
+       "output_tokens": 2381,
+       "reasoning_tokens": 1545
+      },
+      "cost_usd": 0.011843
+     }
+    ],
+    "ms": 8231,
+    "cost_usd": 0.03761875
+   }
+  },
+  {
+   "photo": "shelf_20.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9717111345531516,
+    "ms": {
+     "total": 354.462
+    },
+    "status": 200,
+    "wall_ms": 354
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1536,
+    "height": 1024,
+    "prep_width": 0,
+    "prep_height": 0,
+    "sam_instances": 13,
+    "kept": 1,
+    "named": 0,
+    "unnamed": 0,
+    "small": 0,
+    "trays": 1,
+    "closer_photo": false,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 9,
+    "items": [
+     {
+      "name": "Roasted Chicken with Mashed Potatoes and Green Beans",
+      "description": "Roasted chicken with mashed potatoes and green beans.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        80,
+        346,
+        1446,
+        814
+       ]
+      ],
+      "norm_boxes": [
+       [
+        52,
+        338,
+        941,
+        795
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 468,
+        "area_pct": 40.645,
+        "tokens": 815.4
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "whole"
+     }
+    ],
+    "points": {
+     "hit": 0,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 2289,
+      "request_id": "resp_6adfe01a2a372cbc5c1a4d21",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 2392,
+      "request_id": "resp_6adfe01a6b08e4fc8bdb477c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 2465,
+      "request_id": "resp_6adfe01a6ece4cdee706433c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:whole",
+      "status": 200,
+      "ms": 3498,
+      "request_id": "resp_6adfe01ed386f03b70864191",
+      "usage": {
+       "input_tokens": 2033,
+       "output_tokens": 479,
+       "reasoning_tokens": 398
+      },
+      "cost_usd": 0.004577
+     }
+    ],
+    "ms": 6023,
+    "cost_usd": 0.012077000000000001
+   }
+  },
+  {
+   "photo": "shelf_20.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9717111345531516,
+    "ms": {
+     "total": 354.462
+    },
+    "status": 200,
+    "wall_ms": 354
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1536,
+    "height": 1024,
+    "prep_width": 0,
+    "prep_height": 0,
+    "sam_instances": 13,
+    "kept": 1,
+    "named": 0,
+    "unnamed": 0,
+    "small": 0,
+    "trays": 1,
+    "closer_photo": false,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 9,
+    "items": [
+     {
+      "name": "Roasted Chicken with Mashed Potatoes and Green Beans",
+      "description": "Roasted chicken with mashed potatoes and green beans.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        80,
+        346,
+        1446,
+        814
+       ]
+      ],
+      "norm_boxes": [
+       [
+        52,
+        338,
+        941,
+        795
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 468,
+        "area_pct": 40.645,
+        "tokens": 815.4
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "whole"
+     }
+    ],
+    "points": {
+     "hit": 0,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 2465,
+      "request_id": "resp_6adfe01a6ece4cdee706433c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 2392,
+      "request_id": "resp_6adfe01a6b08e4fc8bdb477c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 2289,
+      "request_id": "resp_6adfe01a2a372cbc5c1a4d21",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:whole",
+      "status": 200,
+      "ms": 3003,
+      "request_id": "resp_6adfe0215f5d825b8e724ed2",
+      "usage": {
+       "input_tokens": 2033,
+       "output_tokens": 513,
+       "reasoning_tokens": 423
+      },
+      "cost_usd": 0.0047215
+     }
+    ],
+    "ms": 3043,
+    "cost_usd": 0.0122215
+   }
+  },
+  {
+   "photo": "shelf_21.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9501325233798414,
+    "ms": {
+     "total": 353.249
+    },
+    "status": 200,
+    "wall_ms": 353
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1055,
+    "height": 1200,
+    "prep_width": 1055,
+    "prep_height": 1200,
+    "sam_instances": 17,
+    "kept": 9,
+    "named": 8,
+    "unnamed": 0,
+    "small": 1,
+    "trays": 8,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 8,
+    "items": [
+     {
+      "name": "Corn on the cob tray",
+      "description": "Buttered seasoned corn halves in foil pan.",
+      "is_non_veg": 0,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 25,
+      "count": 1,
+      "boxes": [
+       [
+        232,
+        359,
+        958,
+        984
+       ]
+      ],
+      "norm_boxes": [
+       [
+        220,
+        299,
+        908,
+        820
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 625,
+        "area_pct": 35.841,
+        "tokens": 578.8
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Glazed chicken wings tray",
+      "description": "Saucy barbecue wings garnished with green onions.",
+      "is_non_veg": 1,
+      "number_of_serving": 30,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 45,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        584,
+        679,
+        1200
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        487,
+        644,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 616,
+        "area_pct": 33.038,
+        "tokens": 533.5
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Roasted asparagus tray",
+      "description": "Cooked asparagus spears topped with lemon slices.",
+      "is_non_veg": 0,
+      "number_of_serving": 18,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 22,
+      "count": 1,
+      "boxes": [
+       [
+        514,
+        205,
+        1055,
+        658
+       ]
+      ],
+      "norm_boxes": [
+       [
+        487,
+        171,
+        1000,
+        548
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 453,
+        "area_pct": 19.358,
+        "tokens": 312.6
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Seafood bake casserole",
+      "description": "Cheesy baked seafood gratin in foil pan.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 40,
+      "count": 1,
+      "boxes": [
+       [
+        124,
+        104,
+        608,
+        438
+       ]
+      ],
+      "norm_boxes": [
+       [
+        118,
+        87,
+        576,
+        365
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 334,
+        "area_pct": 12.769,
+        "tokens": 206.2
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Sliced baguette tray",
+      "description": "Sliced toasted baguette rounds in foil pan.",
+      "is_non_veg": 0,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1,
+      "meal_cost": 10,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        350,
+        353,
+        691
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        292,
+        335,
+        576
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 341,
+        "area_pct": 9.508,
+        "tokens": 153.5
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Stuffed lobster tails tray",
+      "description": "Baked stuffed lobster tails in foil pan.",
+      "is_non_veg": 1,
+      "number_of_serving": 14,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 70,
+      "count": 1,
+      "boxes": [
+       [
+        362,
+        0,
+        834,
+        248
+       ]
+      ],
+      "norm_boxes": [
+       [
+        343,
+        0,
+        791,
+        207
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 248,
+        "area_pct": 9.246,
+        "tokens": 149.3
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Roasted chicken pieces tray",
+      "description": "Seasoned roasted chicken thighs in foil pan.",
+      "is_non_veg": 1,
+      "number_of_serving": 8,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        743,
+        51,
+        1055,
+        332
+       ]
+      ],
+      "norm_boxes": [
+       [
+        704,
+        43,
+        1000,
+        277
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 281,
+        "area_pct": 6.925,
+        "tokens": 111.8
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single",
+      "tray": true
+     }
+    ],
+    "not_listed": [
+     {
+      "name": "White cardboard food box",
+      "description": "Empty white takeout box with window.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.3,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        22,
+        260,
+        234,
+        459
+       ]
+      ],
+      "norm_boxes": [
+       [
+        21,
+        217,
+        222,
+        383
+       ]
+      ],
+      "seen": null,
+      "members": [
+       8
+      ],
+      "source": "single"
+     }
+    ],
+    "points": {
+     "hit": 7,
+     "miss": 1,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1733,
+      "request_id": "resp_6adfe0247eecf86571c949bf",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1895,
+      "request_id": "resp_6adfe024b9f9c27eda454fe5",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 3975,
+      "request_id": "resp_6adfe025e4e2d0addf4245f3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 12320,
+      "request_id": "resp_6adfe0338d5dd6328bba4bd4",
+      "usage": {
+       "input_tokens": 1964,
+       "output_tokens": 3427,
+       "reasoning_tokens": 2549
+      },
+      "cost_usd": 0.01701975
+     }
+    ],
+    "ms": 16406,
+    "cost_usd": 0.02451975
+   }
+  },
+  {
+   "photo": "shelf_21.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9501325233798414,
+    "ms": {
+     "total": 353.249
+    },
+    "status": 200,
+    "wall_ms": 353
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1055,
+    "height": 1200,
+    "prep_width": 1055,
+    "prep_height": 1200,
+    "sam_instances": 17,
+    "kept": 9,
+    "named": 8,
+    "unnamed": 0,
+    "small": 1,
+    "trays": 8,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 8,
+    "items": [
+     {
+      "name": "Corn on the Cob Tray",
+      "description": "Buttered corn halves garnished with herbs.",
+      "is_non_veg": 0,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        232,
+        359,
+        958,
+        984
+       ]
+      ],
+      "norm_boxes": [
+       [
+        220,
+        299,
+        908,
+        820
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 625,
+        "area_pct": 35.841,
+        "tokens": 578.8
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Barbecue Chicken Wings Tray",
+      "description": "Glazed barbecue chicken wings with scallions.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 45,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        584,
+        679,
+        1200
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        487,
+        644,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 616,
+        "area_pct": 33.038,
+        "tokens": 533.5
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Roasted Asparagus Tray",
+      "description": "Roasted asparagus topped with lemon slices.",
+      "is_non_veg": 0,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        514,
+        205,
+        1055,
+        658
+       ]
+      ],
+      "norm_boxes": [
+       [
+        487,
+        171,
+        1000,
+        548
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 453,
+        "area_pct": 19.358,
+        "tokens": 312.6
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Seafood Baked Casserole",
+      "description": "Cheesy baked seafood casserole with lobster topping.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 45,
+      "count": 1,
+      "boxes": [
+       [
+        124,
+        104,
+        608,
+        438
+       ]
+      ],
+      "norm_boxes": [
+       [
+        118,
+        87,
+        576,
+        365
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 334,
+        "area_pct": 12.769,
+        "tokens": 206.2
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "Cheesy Baked Casserole",
+      "description": "Golden baked cheesy casserole topped with herbs.",
+      "is_non_veg": 0,
+      "number_of_serving": 10,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1.5,
+      "meal_cost": 15,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        350,
+        353,
+        691
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        292,
+        335,
+        576
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 341,
+        "area_pct": 9.508,
+        "tokens": 153.5
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Baked Lobster Tails",
+      "description": "Seasoned baked lobster tails arranged in tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 10,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 60,
+      "count": 1,
+      "boxes": [
+       [
+        362,
+        0,
+        834,
+        248
+       ]
+      ],
+      "norm_boxes": [
+       [
+        343,
+        0,
+        791,
+        207
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 248,
+        "area_pct": 9.246,
+        "tokens": 149.3
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "Roasted Chicken Tray",
+      "description": "Large foil tray of seasoned roasted chicken pieces.",
+      "is_non_veg": 1,
+      "number_of_serving": 8,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 25,
+      "count": 1,
+      "boxes": [
+       [
+        743,
+        51,
+        1055,
+        332
+       ]
+      ],
+      "norm_boxes": [
+       [
+        704,
+        43,
+        1000,
+        277
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 281,
+        "area_pct": 6.925,
+        "tokens": 111.8
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Sliced Toasted Baguette",
+      "description": "Small tray of sliced toasted baguette rounds.",
+      "is_non_veg": 0,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.5,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        22,
+        260,
+        234,
+        459
+       ]
+      ],
+      "norm_boxes": [
+       [
+        21,
+        217,
+        222,
+        383
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 199,
+        "area_pct": 3.332,
+        "tokens": 53.8
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-2",
+      "tray": true
+     }
+    ],
+    "points": {
+     "hit": 8,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 1733,
+      "request_id": "resp_6adfe0247eecf86571c949bf",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 3975,
+      "request_id": "resp_6adfe025e4e2d0addf4245f3",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 1895,
+      "request_id": "resp_6adfe024b9f9c27eda454fe5",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 3862,
+      "request_id": "resp_6adfe03776420ac22583451f",
+      "usage": {
+       "input_tokens": 1877,
+       "output_tokens": 947,
+       "reasoning_tokens": 720
+      },
+      "cost_usd": 0.006371
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 5302,
+      "request_id": "resp_6adfe038d730031807824983",
+      "usage": {
+       "input_tokens": 1893,
+       "output_tokens": 1256,
+       "reasoning_tokens": 926
+      },
+      "cost_usd": 0.00770425
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 5814,
+      "request_id": "resp_6adfe038763e484e4b104480",
+      "usage": {
+       "input_tokens": 1892,
+       "output_tokens": 1321,
+       "reasoning_tokens": 987
+      },
+      "cost_usd": 0.00797925
+     }
+    ],
+    "ms": 5870,
+    "cost_usd": 0.0295545
+   }
+  },
+  {
+   "photo": "shelf_22.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9856519769212121,
+    "ms": {
+     "total": 712.408
+    },
+    "status": 200,
+    "wall_ms": 712
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 4032,
+    "height": 3024,
+    "prep_width": 2048,
+    "prep_height": 1536,
+    "sam_instances": 28,
+    "kept": 14,
+    "named": 14,
+    "unnamed": 0,
+    "small": 0,
+    "trays": 12,
+    "closer_photo": false,
+    "concepts": [
+     "package",
+     "food",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 12,
+    "items": [
+     {
+      "name": "Pancit Bihon Noodles",
+      "description": "Stir-fried rice noodles with vegetables and meat.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        155,
+        1551,
+        1049,
+        2657
+       ]
+      ],
+      "norm_boxes": [
+       [
+        38,
+        513,
+        260,
+        879
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 454.1,
+        "area_pct": 8.109,
+        "tokens": 325.4
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Filipino Spaghetti",
+      "description": "Spaghetti in sweet red meat sauce.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        2524,
+        1447,
+        3379,
+        2485
+       ]
+      ],
+      "norm_boxes": [
+       [
+        626,
+        479,
+        838,
+        822
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 434.3,
+        "area_pct": 7.279,
+        "tokens": 292.1
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Yang Chow Fried Rice",
+      "description": "Fried rice with peas carrots and egg.",
+      "is_non_veg": 0,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        1000,
+        1510,
+        1793,
+        2587
+       ]
+      ],
+      "norm_boxes": [
+       [
+        248,
+        499,
+        445,
+        855
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 402.8,
+        "area_pct": 7.005,
+        "tokens": 281.1
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Fried Chicken Wings",
+      "description": "Crispy fried chicken wings with dipping sauce.",
+      "is_non_veg": 1,
+      "number_of_serving": 18,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 40,
+      "count": 1,
+      "boxes": [
+       [
+        1770,
+        1491,
+        2516,
+        2542
+       ]
+      ],
+      "norm_boxes": [
+       [
+        439,
+        493,
+        624,
+        841
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 378.9,
+        "area_pct": 6.43,
+        "tokens": 258
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Lumpia Spring Rolls",
+      "description": "Deep-fried pork vegetable spring rolls.",
+      "is_non_veg": 1,
+      "number_of_serving": 25,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        3333,
+        1444,
+        4032,
+        2484
+       ]
+      ],
+      "norm_boxes": [
+       [
+        827,
+        478,
+        1000,
+        821
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 355,
+        "area_pct": 5.962,
+        "tokens": 239.2
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Fried Wontons",
+      "description": "Crispy deep-fried crab cheese wontons.",
+      "is_non_veg": 1,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1.5,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        3066,
+        703,
+        3809,
+        1416
+       ]
+      ],
+      "norm_boxes": [
+       [
+        760,
+        232,
+        945,
+        468
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 362.2,
+        "area_pct": 4.345,
+        "tokens": 174.3
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Shrimp Alfredo Pasta",
+      "description": "Creamy fettuccine pasta with shrimp and mushrooms.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 40,
+      "count": 1,
+      "boxes": [
+       [
+        573,
+        802,
+        1240,
+        1553
+       ]
+      ],
+      "norm_boxes": [
+       [
+        142,
+        265,
+        308,
+        514
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 338.8,
+        "area_pct": 4.108,
+        "tokens": 164.8
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Cashew Shrimp Stir Fry",
+      "description": "Stir-fried shrimp with cashews and quail eggs.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 45,
+      "count": 1,
+      "boxes": [
+       [
+        2443,
+        743,
+        3117,
+        1471
+       ]
+      ],
+      "norm_boxes": [
+       [
+        606,
+        246,
+        773,
+        486
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 342.3,
+        "area_pct": 4.024,
+        "tokens": 161.5
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Chicken Afritada Stew",
+      "description": "Chicken stew with potatoes carrots and quail eggs.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 38,
+      "count": 1,
+      "boxes": [
+       [
+        1851,
+        741,
+        2491,
+        1476
+       ]
+      ],
+      "norm_boxes": [
+       [
+        459,
+        245,
+        618,
+        488
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 325.1,
+        "area_pct": 3.858,
+        "tokens": 154.8
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Lechon Kawali Pork",
+      "description": "Crispy deep-fried pork belly cubes.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 45,
+      "count": 1,
+      "boxes": [
+       [
+        1224,
+        753,
+        1833,
+        1497
+       ]
+      ],
+      "norm_boxes": [
+       [
+        304,
+        249,
+        455,
+        495
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 309.3,
+        "area_pct": 3.716,
+        "tokens": 149.1
+       }
+      ],
+      "members": [
+       10
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Pork BBQ Skewers",
+      "description": "Grilled marinated pork barbecue on sticks.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        979,
+        598,
+        1544
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        324,
+        148,
+        511
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 287,
+        "area_pct": 2.771,
+        "tokens": 111.2
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Red Hotdog Skewers",
+      "description": "Grilled sweet red hotdogs on skewers.",
+      "is_non_veg": 1,
+      "number_of_serving": 10,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 1,
+      "meal_cost": 20,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        1727,
+        366,
+        2523
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        571,
+        91,
+        834
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 185.9,
+        "area_pct": 2.389,
+        "tokens": 95.9
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single",
+      "tray": true
+     },
+     {
+      "name": "Lemon Wedges",
+      "description": "Fresh cut lemon wedges for garnish.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        177,
+        1465,
+        472,
+        1694
+       ]
+      ],
+      "norm_boxes": [
+       [
+        44,
+        484,
+        117,
+        560
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 116.3,
+        "area_pct": 0.554,
+        "tokens": 22.2
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single"
+     },
+     {
+      "name": "Sweet Chili Sauce",
+      "description": "Small bowl of red dipping sauce.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        3154,
+        1388,
+        3437,
+        1603
+       ]
+      ],
+      "norm_boxes": [
+       [
+        782,
+        459,
+        852,
+        530
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 109.2,
+        "area_pct": 0.499,
+        "tokens": 20
+       }
+      ],
+      "members": [
+       14
+      ],
+      "source": "single"
+     }
+    ],
+    "points": {
+     "hit": 14,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 9647,
+      "request_id": "resp_6adfe040cf648caaf6e04797",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 10988,
+      "request_id": "resp_6adfe040c3a6fd5a504a45d9",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 11625,
+      "request_id": "resp_6adfe040f8fd115d3b424fb1",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 8321,
+      "request_id": "resp_6adfe04ed485c160fbcc42a6",
+      "usage": {
+       "input_tokens": 4507,
+       "output_tokens": 2868,
+       "reasoning_tokens": 1338
+      },
+      "cost_usd": 0.01782275
+     }
+    ],
+    "ms": 20513,
+    "cost_usd": 0.025322749999999998
+   }
+  },
+  {
+   "photo": "shelf_22.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9856519769212121,
+    "ms": {
+     "total": 712.408
+    },
+    "status": 200,
+    "wall_ms": 712
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 4032,
+    "height": 3024,
+    "prep_width": 2048,
+    "prep_height": 1536,
+    "sam_instances": 28,
+    "kept": 14,
+    "named": 14,
+    "unnamed": 0,
+    "small": 0,
+    "trays": 12,
+    "closer_photo": false,
+    "concepts": [
+     "package",
+     "food",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 12,
+    "items": [
+     {
+      "name": "pancit vegetable noodles",
+      "description": "Large tray of stir fried vegetable noodles.",
+      "is_non_veg": 0,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 20,
+      "count": 1,
+      "boxes": [
+       [
+        155,
+        1551,
+        1049,
+        2657
+       ]
+      ],
+      "norm_boxes": [
+       [
+        38,
+        513,
+        260,
+        879
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 454.1,
+        "area_pct": 8.109,
+        "tokens": 325.4
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Spaghetti",
+      "description": "Tray of spaghetti with red meat sauce.",
+      "is_non_veg": 1,
+      "number_of_serving": 18,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 25,
+      "count": 1,
+      "boxes": [
+       [
+        2524,
+        1447,
+        3379,
+        2485
+       ]
+      ],
+      "norm_boxes": [
+       [
+        626,
+        479,
+        838,
+        822
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 434.3,
+        "area_pct": 7.279,
+        "tokens": 292.1
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Fried rice",
+      "description": "Large tray of vegetable fried rice.",
+      "is_non_veg": 0,
+      "number_of_serving": 18,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        1000,
+        1510,
+        1793,
+        2587
+       ]
+      ],
+      "norm_boxes": [
+       [
+        248,
+        499,
+        445,
+        855
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 402.8,
+        "area_pct": 7.005,
+        "tokens": 281.1
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Fried chicken wings",
+      "description": "Tray of fried chicken wings with sauce.",
+      "is_non_veg": 1,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        1770,
+        1491,
+        2516,
+        2542
+       ]
+      ],
+      "norm_boxes": [
+       [
+        439,
+        493,
+        624,
+        841
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 378.9,
+        "area_pct": 6.43,
+        "tokens": 258
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "Lumpia",
+      "description": "Tray of fried pork lumpia spring rolls.",
+      "is_non_veg": 1,
+      "number_of_serving": 25,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        3333,
+        1444,
+        4032,
+        2484
+       ]
+      ],
+      "norm_boxes": [
+       [
+        827,
+        478,
+        1000,
+        821
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 355,
+        "area_pct": 5.962,
+        "tokens": 239.2
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-3",
+      "tray": true
+     },
+     {
+      "name": "fried crab wontons",
+      "description": "Large tray of crispy golden fried wontons.",
+      "is_non_veg": 1,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2,
+      "meal_cost": 25,
+      "count": 1,
+      "boxes": [
+       [
+        3066,
+        703,
+        3809,
+        1416
+       ]
+      ],
+      "norm_boxes": [
+       [
+        760,
+        232,
+        945,
+        468
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 362.2,
+        "area_pct": 4.345,
+        "tokens": 174.3
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Shrimp Alfredo Pasta",
+      "description": "Creamy pasta with shrimp in catering pan.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 4,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        573,
+        802,
+        1240,
+        1553
+       ]
+      ],
+      "norm_boxes": [
+       [
+        142,
+        265,
+        308,
+        514
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 338.8,
+        "area_pct": 4.108,
+        "tokens": 164.8
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "cashew shrimp stir fry",
+      "description": "Large tray of shrimp with cashews and quail eggs.",
+      "is_non_veg": 1,
+      "number_of_serving": 15,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        2443,
+        743,
+        3117,
+        1471
+       ]
+      ],
+      "norm_boxes": [
+       [
+        606,
+        246,
+        773,
+        486
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 342.3,
+        "area_pct": 4.024,
+        "tokens": 161.5
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Chicken Quail Egg Stew",
+      "description": "Stew with chicken, carrots and quail eggs.",
+      "is_non_veg": 1,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 4,
+      "meal_cost": 35,
+      "count": 1,
+      "boxes": [
+       [
+        1851,
+        741,
+        2491,
+        1476
+       ]
+      ],
+      "norm_boxes": [
+       [
+        459,
+        245,
+        618,
+        488
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 325.1,
+        "area_pct": 3.858,
+        "tokens": 154.8
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "Crispy Pork Belly",
+      "description": "Fried pork belly cubes with dipping sauce.",
+      "is_non_veg": 1,
+      "number_of_serving": 20,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 3.5,
+      "meal_cost": 40,
+      "count": 1,
+      "boxes": [
+       [
+        1224,
+        753,
+        1833,
+        1497
+       ]
+      ],
+      "norm_boxes": [
+       [
+        304,
+        249,
+        455,
+        495
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 309.3,
+        "area_pct": 3.716,
+        "tokens": 149.1
+       }
+      ],
+      "members": [
+       10
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "Grilled Pork Skewers",
+      "description": "Charred pork skewers arranged on metal tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 12,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 2.5,
+      "meal_cost": 30,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        979,
+        598,
+        1544
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        324,
+        148,
+        511
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 287,
+        "area_pct": 2.771,
+        "tokens": 111.2
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single-1",
+      "tray": true
+     },
+     {
+      "name": "grilled sausage skewers",
+      "description": "Red grilled sausages on wooden skewers.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.8,
+      "meal_cost": 12,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        1727,
+        366,
+        2523
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        571,
+        91,
+        834
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 185.9,
+        "area_pct": 2.389,
+        "tokens": 95.9
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Lemon wedges",
+      "description": "Sliced lemon wedges in small bowl.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        177,
+        1465,
+        472,
+        1694
+       ]
+      ],
+      "norm_boxes": [
+       [
+        44,
+        484,
+        117,
+        560
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 116.3,
+        "area_pct": 0.554,
+        "tokens": 22.2
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "sweet chili dipping sauce",
+      "description": "Small bowl of red sweet chili sauce.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        3154,
+        1388,
+        3437,
+        1603
+       ]
+      ],
+      "norm_boxes": [
+       [
+        782,
+        459,
+        852,
+        530
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 109.2,
+        "area_pct": 0.499,
+        "tokens": 20
+       }
+      ],
+      "members": [
+       14
+      ],
+      "source": "single-2"
+     }
+    ],
+    "points": {
+     "hit": 14,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 9647,
+      "request_id": "resp_6adfe040cf648caaf6e04797",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 11625,
+      "request_id": "resp_6adfe040f8fd115d3b424fb1",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 10988,
+      "request_id": "resp_6adfe040c3a6fd5a504a45d9",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 4358,
+      "request_id": "resp_6adfe0553907fa148ac34ecc",
+      "usage": {
+       "input_tokens": 4366,
+       "output_tokens": 1104,
+       "reasoning_tokens": 665
+      },
+      "cost_usd": 0.0101495
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 4376,
+      "request_id": "resp_6adfe0558c6358557de54277",
+      "usage": {
+       "input_tokens": 4381,
+       "output_tokens": 1334,
+       "reasoning_tokens": 807
+      },
+      "cost_usd": 0.01114575
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 5489,
+      "request_id": "resp_6adfe056db77cf315c8941e7",
+      "usage": {
+       "input_tokens": 4380,
+       "output_tokens": 1504,
+       "reasoning_tokens": 962
+      },
+      "cost_usd": 0.011867
+     }
+    ],
+    "ms": 6013,
+    "cost_usd": 0.04066225
+   }
+  },
+  {
+   "photo": "shelf_23.png",
+   "variant": "marks:low",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9578839006962908,
+    "ms": {
+     "total": 385.759
+    },
+    "status": 200,
+    "wall_ms": 386
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1000,
+    "height": 1778,
+    "prep_width": 1000,
+    "prep_height": 1778,
+    "sam_instances": 59,
+    "kept": 39,
+    "named": 24,
+    "unnamed": 11,
+    "small": 4,
+    "trays": 23,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 20,
+    "items": [
+     {
+      "name": "raw marbled beef slices",
+      "description": "thin beef slices on grill tray",
+      "is_non_veg": 1,
+      "number_of_serving": 4,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.25,
+      "meal_cost": 7,
+      "count": 4,
+      "boxes": [
+       [
+        584,
+        1428,
+        954,
+        1778
+       ],
+       [
+        475,
+        1018,
+        827,
+        1371
+       ],
+       [
+        522,
+        824,
+        818,
+        1033
+       ],
+       [
+        400,
+        329,
+        655,
+        485
+       ]
+      ],
+      "norm_boxes": [
+       [
+        584,
+        803,
+        954,
+        1000
+       ],
+       [
+        475,
+        573,
+        827,
+        771
+       ],
+       [
+        522,
+        463,
+        818,
+        581
+       ],
+       [
+        400,
+        185,
+        655,
+        273
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 350,
+        "area_pct": 7.283,
+        "tokens": 165.2
+       },
+       {
+        "short_px": 352,
+        "area_pct": 6.989,
+        "tokens": 158.5
+       },
+       {
+        "short_px": 209,
+        "area_pct": 3.479,
+        "tokens": 78.9
+       },
+       {
+        "short_px": 156,
+        "area_pct": 2.237,
+        "tokens": 50.7
+       }
+      ],
+      "members": [
+       2,
+       3,
+       10,
+       17
+      ],
+      "source": "single"
+     },
+     {
+      "name": "mixed hotpot set",
+      "description": "enoki egg dumplings crab sticks plate",
+      "is_non_veg": 1,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.4,
+      "meal_cost": 5,
+      "count": 2,
+      "boxes": [
+       [
+        737,
+        379,
+        1000,
+        692
+       ],
+       [
+        627,
+        221,
+        922,
+        478
+       ]
+      ],
+      "norm_boxes": [
+       [
+        737,
+        213,
+        1000,
+        389
+       ],
+       [
+        627,
+        124,
+        922,
+        269
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 263,
+        "area_pct": 4.63,
+        "tokens": 105
+       },
+       {
+        "short_px": 257,
+        "area_pct": 4.264,
+        "tokens": 96.7
+       }
+      ],
+      "members": [
+       5,
+       6
+      ],
+      "source": "single"
+     },
+     {
+      "name": "raw pork belly slices",
+      "description": "streaky pork strips on black tray",
+      "is_non_veg": 1,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.25,
+      "meal_cost": 5,
+      "count": 2,
+      "boxes": [
+       [
+        775,
+        670,
+        1000,
+        987
+       ],
+       [
+        137,
+        285,
+        404,
+        522
+       ]
+      ],
+      "norm_boxes": [
+       [
+        775,
+        377,
+        1000,
+        555
+       ],
+       [
+        137,
+        160,
+        404,
+        294
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 225,
+        "area_pct": 4.012,
+        "tokens": 91
+       },
+       {
+        "short_px": 237,
+        "area_pct": 3.559,
+        "tokens": 80.7
+       }
+      ],
+      "members": [
+       7,
+       9
+      ],
+      "source": "single"
+     },
+     {
+      "name": "assorted hotpot vegetables",
+      "description": " mixed enoki lotus cabbage tofu platter",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.6,
+      "meal_cost": 6,
+      "count": 1,
+      "boxes": [
+       [
+        202,
+        815,
+        580,
+        1166
+       ]
+      ],
+      "norm_boxes": [
+       [
+        202,
+        458,
+        580,
+        656
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 351,
+        "area_pct": 7.462,
+        "tokens": 169.2
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single"
+     },
+     {
+      "name": "clear hotpot broth",
+      "description": "steaming savory soup in metal pot",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        526,
+        693,
+        846,
+        983
+       ]
+      ],
+      "norm_boxes": [
+       [
+        526,
+        390,
+        846,
+        553
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 290,
+        "area_pct": 5.219,
+        "tokens": 118.4
+       }
+      ],
+      "members": [
+       4
+      ],
+      "source": "single"
+     },
+     {
+      "name": "tomato spicy hotpot broth",
+      "description": "red tomato soup in metal pot",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        242,
+        1278,
+        496,
+        1534
+       ]
+      ],
+      "norm_boxes": [
+       [
+        242,
+        719,
+        496,
+        863
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 254,
+        "area_pct": 3.657,
+        "tokens": 82.9
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single"
+     },
+     {
+      "name": "sliced fresh fruit",
+      "description": "watermelon pineapple melon white plate",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.4,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        984,
+        216,
+        1267
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        553,
+        216,
+        713
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 216,
+        "area_pct": 3.438,
+        "tokens": 78
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single"
+     },
+     {
+      "name": "spicy hotpot broth",
+      "description": "red chili soup in metal pot",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        398,
+        216,
+        660,
+        441
+       ]
+      ],
+      "norm_boxes": [
+       [
+        398,
+        121,
+        660,
+        248
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 225,
+        "area_pct": 3.316,
+        "tokens": 75.2
+       }
+      ],
+      "members": [
+       12
+      ],
+      "source": "single"
+     },
+     {
+      "name": "white wheat noodles",
+      "description": "uncooked thin noodles with greens",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        280,
+        1576,
+        547,
+        1778
+       ]
+      ],
+      "norm_boxes": [
+       [
+        280,
+        886,
+        547,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 202,
+        "area_pct": 3.033,
+        "tokens": 68.8
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single"
+     },
+     {
+      "name": "raw meat meatballs plate",
+      "description": "sliced meat fish balls greens plate",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        385,
+        176,
+        667
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        217,
+        176,
+        375
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 176,
+        "area_pct": 2.791,
+        "tokens": 63.3
+       }
+      ],
+      "members": [
+       14
+      ],
+      "source": "single"
+     },
+     {
+      "name": "dark dipping broth pot",
+      "description": "dark soup with chopsticks stirring",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        811,
+        1103,
+        1000,
+        1346
+       ]
+      ],
+      "norm_boxes": [
+       [
+        811,
+        620,
+        1000,
+        757
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 189,
+        "area_pct": 2.583,
+        "tokens": 58.6
+       }
+      ],
+      "members": [
+       15
+      ],
+      "source": "single"
+     },
+     {
+      "name": "raw seafood mix",
+      "description": "shrimp squid shellfish white plate",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 6,
+      "count": 1,
+      "boxes": [
+       [
+        183,
+        0,
+        450,
+        153
+       ]
+      ],
+      "norm_boxes": [
+       [
+        183,
+        0,
+        450,
+        86
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 153,
+        "area_pct": 2.298,
+        "tokens": 52.1
+       }
+      ],
+      "members": [
+       16
+      ],
+      "source": "single"
+     },
+     {
+      "name": "dipping sauce bowl",
+      "description": "sesame chili oil sauce red bowl",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.1,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        1414,
+        169,
+        1619
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        795,
+        169,
+        911
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 169,
+        "area_pct": 1.949,
+        "tokens": 44.2
+       }
+      ],
+      "members": [
+       18
+      ],
+      "source": "single"
+     },
+     {
+      "name": "spicy tomato hotpot",
+      "description": "red broth in personal metal pot",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.8,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        99,
+        661,
+        305,
+        828
+       ]
+      ],
+      "norm_boxes": [
+       [
+        99,
+        372,
+        305,
+        466
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 167,
+        "area_pct": 1.935,
+        "tokens": 43.9
+       }
+      ],
+      "members": [
+       19
+      ],
+      "source": "single"
+     },
+     {
+      "name": "canned soda drink",
+      "description": "silver aluminum can beside meat",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "sealed",
+      "weight": 0.33,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        195,
+        471,
+        406,
+        586
+       ]
+      ],
+      "norm_boxes": [
+       [
+        195,
+        265,
+        406,
+        330
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 115,
+        "area_pct": 1.365,
+        "tokens": 31
+       }
+      ],
+      "members": [
+       22
+      ],
+      "source": "single"
+     },
+     {
+      "name": "baby corn greens",
+      "description": "small corn cobs with leafy vegetables",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.1,
+      "meal_cost": 1.5,
+      "count": 1,
+      "boxes": [
+       [
+        149,
+        1654,
+        309,
+        1778
+       ]
+      ],
+      "norm_boxes": [
+       [
+        149,
+        930,
+        309,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 124,
+        "area_pct": 1.116,
+        "tokens": 25.3
+       }
+      ],
+      "members": [
+       23
+      ],
+      "source": "single"
+     }
+    ],
+    "not_listed": [
+     {
+      "name": "stacked brown serving trays",
+      "description": "empty plastic trays stacked together",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 0.5,
+      "count": 1,
+      "boxes": [
+       [
+        532,
+        529,
+        735,
+        693
+       ]
+      ],
+      "norm_boxes": [
+       [
+        532,
+        298,
+        735,
+        390
+       ]
+      ],
+      "seen": null,
+      "members": [
+       20
+      ],
+      "source": "single"
+     },
+     {
+      "name": "stacked white foam trays",
+      "description": "empty white containers stacked high",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 0.5,
+      "count": 1,
+      "boxes": [
+       [
+        409,
+        393,
+        648,
+        529
+       ]
+      ],
+      "norm_boxes": [
+       [
+        409,
+        221,
+        648,
+        298
+       ]
+      ],
+      "seen": null,
+      "members": [
+       21
+      ],
+      "source": "single"
+     },
+     {
+      "name": "stacked empty paper bowls",
+      "description": "white disposable bowls piled high",
+      "is_non_veg": 0,
+      "number_of_serving": 4,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.2,
+      "meal_cost": 0.5,
+      "count": 1,
+      "boxes": [
+       [
+        494,
+        0,
+        727,
+        84
+       ]
+      ],
+      "norm_boxes": [
+       [
+        494,
+        0,
+        727,
+        47
+       ]
+      ],
+      "seen": null,
+      "members": [
+       24
+      ],
+      "source": "single"
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 3810,
+      "request_id": "resp_6adfe05be09d536872684610",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 4301,
+      "request_id": "resp_6adfe05cdbe542bc9335424c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 5246,
+      "request_id": "resp_6adfe05b0bba313f25eb4100",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single",
+      "status": 200,
+      "ms": 14528,
+      "request_id": "resp_6adfe06dfc9fbbc1891c463a",
+      "usage": {
+       "input_tokens": 2941,
+       "output_tokens": 5070,
+       "reasoning_tokens": 2526
+      },
+      "cost_usd": 0.02522375
+     }
+    ],
+    "ms": 19917,
+    "cost_usd": 0.032723749999999996
+   }
+  },
+  {
+   "photo": "shelf_23.png",
+   "variant": "marks:low:split3",
+   "gate": {
+    "verdict": "FOOD",
+    "food": true,
+    "p": 0.9578839006962908,
+    "ms": {
+     "total": 385.759
+    },
+    "status": 200,
+    "wall_ms": 386
+   },
+   "inventory": {
+    "mode": "auto",
+    "width": 1000,
+    "height": 1778,
+    "prep_width": 1000,
+    "prep_height": 1778,
+    "sam_instances": 59,
+    "kept": 39,
+    "named": 24,
+    "unnamed": 11,
+    "small": 4,
+    "trays": 23,
+    "closer_photo": true,
+    "concepts": [
+     "food",
+     "package",
+     "food tray"
+    ],
+    "packages": 0,
+    "contained": 20,
+    "items": [
+     {
+      "name": "Raw marbled beef slices",
+      "description": "Thin raw beef slices on white tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 3,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 5,
+      "count": 3,
+      "boxes": [
+       [
+        398,
+        216,
+        660,
+        441
+       ],
+       [
+        400,
+        329,
+        655,
+        485
+       ],
+       [
+        409,
+        393,
+        648,
+        529
+       ]
+      ],
+      "norm_boxes": [
+       [
+        398,
+        121,
+        660,
+        248
+       ],
+       [
+        400,
+        185,
+        655,
+        273
+       ],
+       [
+        409,
+        221,
+        648,
+        298
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 225,
+        "area_pct": 3.316,
+        "tokens": 75.2
+       },
+       {
+        "short_px": 156,
+        "area_pct": 2.237,
+        "tokens": 50.7
+       },
+       {
+        "short_px": 136,
+        "area_pct": 1.828,
+        "tokens": 41.5
+       }
+      ],
+      "members": [
+       12,
+       17,
+       21
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Thin sliced raw beef",
+      "description": "Thin marbled raw beef slices stacked.",
+      "is_non_veg": 1,
+      "number_of_serving": 2,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 7,
+      "count": 2,
+      "boxes": [
+       [
+        526,
+        693,
+        846,
+        983
+       ],
+       [
+        522,
+        824,
+        818,
+        1033
+       ]
+      ],
+      "norm_boxes": [
+       [
+        526,
+        390,
+        846,
+        553
+       ],
+       [
+        522,
+        463,
+        818,
+        581
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 290,
+        "area_pct": 5.219,
+        "tokens": 118.4
+       },
+       {
+        "short_px": 209,
+        "area_pct": 3.479,
+        "tokens": 78.9
+       }
+      ],
+      "members": [
+       4,
+       10
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Spicy hotpot broth",
+      "description": "Steaming spicy oily hotpot soup pot.",
+      "is_non_veg": 1,
+      "number_of_serving": 2,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.8,
+      "meal_cost": 5,
+      "count": 2,
+      "boxes": [
+       [
+        99,
+        661,
+        305,
+        828
+       ],
+       [
+        532,
+        529,
+        735,
+        693
+       ]
+      ],
+      "norm_boxes": [
+       [
+        99,
+        372,
+        305,
+        466
+       ],
+       [
+        532,
+        298,
+        735,
+        390
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 167,
+        "area_pct": 1.935,
+        "tokens": 43.9
+       },
+       {
+        "short_px": 164,
+        "area_pct": 1.872,
+        "tokens": 42.5
+       }
+      ],
+      "members": [
+       19,
+       20
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Mixed hotpot vegetables platter",
+      "description": "Assorted raw mushrooms, tofu, lotus and cabbage.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.5,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        202,
+        815,
+        580,
+        1166
+       ]
+      ],
+      "norm_boxes": [
+       [
+        202,
+        458,
+        580,
+        656
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 351,
+        "area_pct": 7.462,
+        "tokens": 169.2
+       }
+      ],
+      "members": [
+       1
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Sliced raw beef",
+      "description": "Three slices of marbled beef on tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 9,
+      "count": 1,
+      "boxes": [
+       [
+        584,
+        1428,
+        954,
+        1778
+       ]
+      ],
+      "norm_boxes": [
+       [
+        584,
+        803,
+        954,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 350,
+        "area_pct": 7.283,
+        "tokens": 165.2
+       }
+      ],
+      "members": [
+       2
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Sliced raw pork belly",
+      "description": "Five strips of marbled pork on grill.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 8,
+      "count": 1,
+      "boxes": [
+       [
+        475,
+        1018,
+        827,
+        1371
+       ]
+      ],
+      "norm_boxes": [
+       [
+        475,
+        573,
+        827,
+        771
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 352,
+        "area_pct": 6.989,
+        "tokens": 158.5
+       }
+      ],
+      "members": [
+       3
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Raw pork belly strips",
+      "description": "Five raw pork belly strips on grill.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 6,
+      "count": 1,
+      "boxes": [
+       [
+        737,
+        379,
+        1000,
+        692
+       ]
+      ],
+      "norm_boxes": [
+       [
+        737,
+        213,
+        1000,
+        389
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 263,
+        "area_pct": 4.63,
+        "tokens": 105
+       }
+      ],
+      "members": [
+       5
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Mixed vegetable hotpot platter",
+      "description": "Enoki mushrooms, cabbage, egg and fish balls.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.35,
+      "meal_cost": 5,
+      "count": 1,
+      "boxes": [
+       [
+        627,
+        221,
+        922,
+        478
+       ]
+      ],
+      "norm_boxes": [
+       [
+        627,
+        124,
+        922,
+        269
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 257,
+        "area_pct": 4.264,
+        "tokens": 96.7
+       }
+      ],
+      "members": [
+       6
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Crispy fried chicken",
+      "description": "Golden crispy fried chicken pieces plate.",
+      "is_non_veg": 1,
+      "number_of_serving": 3,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.5,
+      "meal_cost": 8,
+      "count": 1,
+      "boxes": [
+       [
+        775,
+        670,
+        1000,
+        987
+       ]
+      ],
+      "norm_boxes": [
+       [
+        775,
+        377,
+        1000,
+        555
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 225,
+        "area_pct": 4.012,
+        "tokens": 91
+       }
+      ],
+      "members": [
+       7
+      ],
+      "source": "single-2",
+      "tray": true
+     },
+     {
+      "name": "Spicy tomato hotpot broth",
+      "description": "Red simmering soup in individual metal pot.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.8,
+      "meal_cost": 8,
+      "count": 1,
+      "boxes": [
+       [
+        242,
+        1278,
+        496,
+        1534
+       ]
+      ],
+      "norm_boxes": [
+       [
+        242,
+        719,
+        496,
+        863
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 254,
+        "area_pct": 3.657,
+        "tokens": 82.9
+       }
+      ],
+      "members": [
+       8
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Raw beef slice tray",
+      "description": "Single raw beef strip in brown tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.15,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        137,
+        285,
+        404,
+        522
+       ]
+      ],
+      "norm_boxes": [
+       [
+        137,
+        160,
+        404,
+        294
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 237,
+        "area_pct": 3.559,
+        "tokens": 80.7
+       }
+      ],
+      "members": [
+       9
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Sliced fresh fruit",
+      "description": "Watermelon pineapple slices on plate.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "bulk",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.4,
+      "meal_cost": 4,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        984,
+        216,
+        1267
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        553,
+        216,
+        713
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 216,
+        "area_pct": 3.438,
+        "tokens": 78
+       }
+      ],
+      "members": [
+       11
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "White wheat noodles",
+      "description": "Plate of uncooked white noodles with spinach.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.2,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        280,
+        1576,
+        547,
+        1778
+       ]
+      ],
+      "norm_boxes": [
+       [
+        280,
+        886,
+        547,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 202,
+        "area_pct": 3.033,
+        "tokens": 68.8
+       }
+      ],
+      "members": [
+       13
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Beef and fish ball plate",
+      "description": "Raw beef slices with fish balls and greens.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.3,
+      "meal_cost": 5.5,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        385,
+        176,
+        667
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        217,
+        176,
+        375
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 176,
+        "area_pct": 2.791,
+        "tokens": 63.3
+       }
+      ],
+      "members": [
+       14
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Dark sukiyaki style broth",
+      "description": "Dark soup being cooked with chopsticks stirring.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.8,
+      "meal_cost": 8,
+      "count": 1,
+      "boxes": [
+       [
+        811,
+        1103,
+        1000,
+        1346
+       ]
+      ],
+      "norm_boxes": [
+       [
+        811,
+        620,
+        1000,
+        757
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 189,
+        "area_pct": 2.583,
+        "tokens": 58.6
+       }
+      ],
+      "members": [
+       15
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Mixed hotpot meat plate",
+      "description": "Partial plate of cooked meats and seafood.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.3,
+      "meal_cost": 6,
+      "count": 1,
+      "boxes": [
+       [
+        183,
+        0,
+        450,
+        153
+       ]
+      ],
+      "norm_boxes": [
+       [
+        183,
+        0,
+        450,
+        86
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 153,
+        "area_pct": 2.298,
+        "tokens": 52.1
+       }
+      ],
+      "members": [
+       16
+      ],
+      "source": "single-1"
+     },
+     {
+      "name": "Sesame dipping sauce",
+      "description": "Spicy sesame sauce in small red bowl.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "ready_to_eat",
+      "weight": 0.1,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        0,
+        1414,
+        169,
+        1619
+       ]
+      ],
+      "norm_boxes": [
+       [
+        0,
+        795,
+        169,
+        911
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 169,
+        "area_pct": 1.949,
+        "tokens": 44.2
+       }
+      ],
+      "members": [
+       18
+      ],
+      "source": "single-3"
+     },
+     {
+      "name": "Raw pork belly slice",
+      "description": "Thin raw pork slice on brown tray.",
+      "is_non_veg": 1,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.15,
+      "meal_cost": 3,
+      "count": 1,
+      "boxes": [
+       [
+        195,
+        471,
+        406,
+        586
+       ]
+      ],
+      "norm_boxes": [
+       [
+        195,
+        265,
+        406,
+        330
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 115,
+        "area_pct": 1.365,
+        "tokens": 31
+       }
+      ],
+      "members": [
+       22
+      ],
+      "source": "single-2"
+     },
+     {
+      "name": "Baby corn side dish",
+      "description": "Small portion of baby corn with greens.",
+      "is_non_veg": 0,
+      "number_of_serving": 1,
+      "serving_type": "individual",
+      "meal_condition": "cooking_required",
+      "weight": 0.15,
+      "meal_cost": 2,
+      "count": 1,
+      "boxes": [
+       [
+        149,
+        1654,
+        309,
+        1778
+       ]
+      ],
+      "norm_boxes": [
+       [
+        149,
+        930,
+        309,
+        1000
+       ]
+      ],
+      "seen": [
+       {
+        "short_px": 124,
+        "area_pct": 1.116,
+        "tokens": 25.3
+       }
+      ],
+      "members": [
+       23
+      ],
+      "source": "single-3"
+     }
+    ],
+    "not_listed": [
+     {
+      "name": "Stacked empty serving trays",
+      "description": "Stack of white square plastic serving trays.",
+      "is_non_veg": 0,
+      "number_of_serving": 0,
+      "serving_type": "bulk",
+      "meal_condition": "sealed",
+      "weight": 0.4,
+      "meal_cost": 1,
+      "count": 1,
+      "boxes": [
+       [
+        494,
+        0,
+        727,
+        84
+       ]
+      ],
+      "norm_boxes": [
+       [
+        494,
+        0,
+        727,
+        47
+       ]
+      ],
+      "seen": null,
+      "members": [
+       24
+      ],
+      "source": "single-1"
+     }
+    ],
+    "points": {
+     "hit": 24,
+     "miss": 0,
+     "missing": 0
+    },
+    "calls": [
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food tray",
+      "status": 200,
+      "ms": 5246,
+      "request_id": "resp_6adfe05b0bba313f25eb4100",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:package",
+      "status": 200,
+      "ms": 3810,
+      "request_id": "resp_6adfe05be09d536872684610",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "sam-3.1",
+      "purpose": "sam:food",
+      "status": 200,
+      "ms": 4301,
+      "request_id": "resp_6adfe05cdbe542bc9335424c",
+      "usage": {
+       "input_tokens": 0,
+       "output_tokens": 0,
+       "reasoning_tokens": 0
+      },
+      "cost_usd": 0.0025,
+      "cached": true
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-3",
+      "status": 200,
+      "ms": 5119,
+      "request_id": "resp_6adfe0727ebbb7ca404e4710",
+      "usage": {
+       "input_tokens": 2715,
+       "output_tokens": 1601,
+       "reasoning_tokens": 746
+      },
+      "cost_usd": 0.010198
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-1",
+      "status": 200,
+      "ms": 5567,
+      "request_id": "resp_6adfe07380126eb1a6c448d9",
+      "usage": {
+       "input_tokens": 2711,
+       "output_tokens": 1615,
+       "reasoning_tokens": 746
+      },
+      "cost_usd": 0.0102525
+     },
+     {
+      "model": "muse-spark-1.3",
+      "purpose": "muse:single-2",
+      "status": 200,
+      "ms": 7343,
+      "request_id": "resp_6adfe075007078493762489e",
+      "usage": {
+       "input_tokens": 2713,
+       "output_tokens": 2337,
+       "reasoning_tokens": 1475
+      },
+      "cost_usd": 0.0133235
+     }
+    ],
+    "ms": 7430,
+    "cost_usd": 0.041274
+   }
+  }
+ ],
+ "variants": [
+  {
+   "name": "marks:low",
+   "marks": true,
+   "no_coords": false,
+   "effort": "low",
+   "two_pass": false
+  },
+  {
+   "name": "marks:low:split3",
+   "marks": true,
+   "no_coords": false,
+   "effort": "low",
+   "two_pass": false,
+   "split": 3
+  }
+ ]
+}
