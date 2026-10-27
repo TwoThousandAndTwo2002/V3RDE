@@ -239,3 +239,18 @@ The first live test showed two problems. A single bottle held close gave SAM no 
 - Tests: inference 59 → 60.
 
 Next: every photo under 20 s; first cut about 5 s from the multi-item photos.
+
+---
+
+## 12. The web camera at full size
+
+**When:** Oct 27 2026.
+**Files:** `mobile/src/webcam.ts` (new), `mobile/src/screens/Capture.tsx`, `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X32d.md`
+
+The first live test from a phone browser showed that the web app sent every photo at 480x640: the camera library opens the camera with no size and copies the preview frame. On a counter with 7 food items, SAM got a 640x480 frame and the answer named 3.
+
+- After the camera opens, the app asks for the camera's largest size; at the shutter it takes a real still photo where the browser can (Chrome for Android, Safari on iOS 18.4+), else the larger video frame. Then the upload is about 2376 px at JPEG 0.9, as planned in #5.
+- Checked on the real web export in Chromium with a fake camera: the upload went from 640x480 to 2376x1337. Tests: mobile 24 -> 26.
+
+Next: the same counter and single items from the phone, then the parity bench against the original single call.
