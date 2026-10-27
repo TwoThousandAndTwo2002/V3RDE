@@ -581,3 +581,33 @@ func TestAnalyzeTimeoutIsClear(t *testing.T) {
 		t.Fatalf("%+v", ev)
 	}
 }
+
+// X32e: the app's "capture" field (how the photo was taken) is logged as
+// sent when it is one small JSON object, and dropped otherwise; it never
+// changes the answer.
+func TestCaptureFieldIsLogged(t *testing.T) {
+	s := newSvc(t, oneBox(t, "Romanesco"), "FOOD", 0, nil)
+	var b bytes.Buffer
+	mw := multipart.NewWriter(&b)
+	h := map[string][]string{"Content-Disposition": {`form-data; name="image"; filename="p.jpg"`}, "Content-Type": {"image/jpeg"}}
+	pw, _ := mw.CreatePart(h)
+	_, _ = pw.Write(testPhoto(t))
+	_ = mw.WriteField("capture", `{"source":"photo","ms":812,"video_t":12.5,"paused":false}`)
+	_ = mw.Close()
+	r := httptest.NewRequest(http.MethodPost, "/api/analyze", &b)
+	r.Header.Set("Content-Type", mw.FormDataContentType())
+	r.AddCookie(&http.Cookie{Name: SessionCookie, Value: "u1"})
+	if w, a := s.do(r); w.Code != 200 || a["count"] != 1.0 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	ev := s.events(t)
+	var c map[string]any
+	if err := json.Unmarshal(ev[0].Capture, &c); err != nil || c["source"] != "photo" || c["ms"] != 812.0 {
+		t.Fatalf("%s %v", ev[0].Capture, err)
+	}
+	for _, bad := range []string{"", "not json", "[1,2]", `{"a":` + strings.Repeat("1", 600) + `}`} {
+		if CaptureField(bad) != nil {
+			t.Fatalf("kept %q", bad)
+		}
+	}
+}

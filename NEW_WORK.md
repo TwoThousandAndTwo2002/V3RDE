@@ -254,3 +254,18 @@ The first live test from a phone browser showed that the web app sent every phot
 - Checked on the real web export in Chromium with a fake camera: the upload went from 640x480 to 2376x1337. Tests: mobile 24 -> 26.
 
 Next: the same counter and single items from the phone, then the parity bench against the original single call.
+
+---
+
+## 13. How each app photo was taken, in the ledger
+
+**When:** Oct 27 2026.
+**Files:** `mobile/src/webcam.ts`, `mobile/src/screens/Capture.tsx`, `mobile/src/api.ts`, `inference/events.go`, `inference/service.go`, `inference/service_test.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X32e.md`
+
+Two reports from the phone test: a delay between the camera button and the shot, and once an older photo of the previous item. Before any fix, the app now sends how each photo was taken, and the ledger keeps it next to the photo's sha: what started it (shutter or barcode), a real still or the preview frame, the time from the press to the photo, the time to prepare the upload, and the preview video's time and state at the press. A preview whose time does not move between two presses was frozen.
+
+- The service logs the field as sent (one small JSON object) and never uses it for the answer.
+- Tests: inference 60 -> 61.
+
+Next: read the field on the next phone test, then fix the shutter.

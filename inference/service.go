@@ -263,6 +263,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		code = code[:64]
 	}
 	ev.Barcode = code
+	ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
 	ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
 	done := func() {
 		ans.Count = len(ans.Items)

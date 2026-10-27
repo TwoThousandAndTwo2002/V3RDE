@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -73,6 +74,20 @@ type Event struct {
 	FrameH          int        `json:"frame_h,omitempty"`
 	Boxes           []EventBox `json:"boxes,omitempty"`
 	PhotoIDs        []string   `json:"photo_ids,omitempty"`
+	// X32e: how the app took the photo (its "capture" form field, a small
+	// JSON object: source photo|frame|native, ms from the press, the preview
+	// video's time and state). Logged as sent; never used for the answer.
+	Capture json.RawMessage `json:"capture,omitempty"`
+}
+
+// CaptureField keeps the app's "capture" field when it is one JSON object of
+// at most 512 bytes; anything else is dropped (X32e).
+func CaptureField(s string) json.RawMessage {
+	s = strings.TrimSpace(s)
+	if s == "" || len(s) > 512 || s[0] != '{' || !json.Valid([]byte(s)) {
+		return nil
+	}
+	return json.RawMessage(s)
 }
 
 // EventBox is one kept SAM box and what became of it (X32a, T9: every box
