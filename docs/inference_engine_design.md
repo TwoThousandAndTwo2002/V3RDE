@@ -181,7 +181,7 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 - **Source:** dev.meta.ai/docs/pricing-rate-limits (3,000 requests per minute: parallel calls fit).
 
 ### D22. What SAM is sent (decided in X30b, see D24 and D28)
-- **Decision (X30b):** SAM gets the upload's own bytes when the photo is upright, else the upright pixels as JPEG q98; the upload itself becomes about 2376 px at JPEG 0.9 (D28). Real phone photos: originals 99.4% correct.
+- **Decision (X30b):** SAM gets the upload's own bytes when the photo is upright, else the upright pixels as JPEG q98; the upload itself becomes about 2376 px at JPEG 0.9 (D28). Real phone photos: originals 297/297 = 100.0% correct of the readable boxes (`score_x30b.json`).
 - **What now:** SAM gets the original bytes of the upload. No change in X30.
 - **Evidence (SAM tests 1 and 2, 110 calls, $0.275):** the wait is mostly upload: shelf 22 as a 14.7 MB PNG took 7.6–12.2 s; the same pixels as a 3.3 MB JPEG q98 took 2.9 s, at 2048 px 2.0 s, with the same items. SAM gives the same answer for the same bytes (original sent twice). Packages keep 95–100% of nameable boxes at every encoding. But SAM "food" lost items on some photos: shelf 16 PNG 50 boxes, JPEG q98 6, q92 13; making a dense produce photo smaller lost items (shelf 14: 84% at 2048 px, 47% at 1536 px).
 - **Why open:** published studies find detection accuracy flat from JPEG quality 100 down to about 40, so q98 should not lose 44 of 50 boxes. Our test photos were web JPEGs saved as PNG, so a new JPEG compresses them a second time. Real phone photos (X30b) decide the rule.
@@ -211,7 +211,7 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 
 ### D28. The app uploads at Muse's limit (to build in X32)
 - **What:** the app sends about **2376 px on the long side** (≈ 4,096 image tokens at 16:9) at **JPEG 0.9**, about 1 MB, in place of 1600 px at 0.85.
-- **Evidence (X30b, hand check):** camera originals 313/315 correct (99.4%), app version 291/305 (95.4%); the app version lost counting (bananas ×71 → ×1) and small label text (salads 23/24 → 17/23). The app version was cheaper ($0.037 vs $0.047 / photo) and faster (9.1 vs 13.4 s).
+- **Evidence (X30b, per-box labels `x30b_labels.json`, totals by `score_labels.py` in `score_x30b.json`):** camera originals 297/297 = 100.0% correct of the readable boxes (60 unreadable, not counted); app version 274/283 = 96.8% (44 unreadable). The app version lost counting (bananas: 71 counted vs 1, from the probe report) and small label text (salad bowls, photo 185725: 19 correct, 0 wrong vs 13 correct, 6 wrong). The app version was cheaper ($0.037 vs $0.047 / photo) and faster (9.1 vs 13.4 s).
 
 ---
 
@@ -230,14 +230,16 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 | v4 | 7 | marks + coords, low (trays, levels) | $0.026 | $0.0016 | 14.9 s | trays: one listing each |
 | v4 | 7 | same, split 3 | $0.035 | $0.0021 | **6.1 s** | groups split across calls |
 | SAM 1 + 2 | 5 | 110 SAM calls, sizes and encodings | — | — | — | see D22 |
-| X30b | 19 | real phone photos, originals | $0.047 | $0.0025 | 13.4 s | **99.4%** correct |
-| X30b | 19 | same, app upload (1600 px, 0.85) | $0.037 | $0.0021 | 9.1 s | 95.4%; counting lost |
+| X30b | 19 | real phone photos, originals | $0.047 | $0.0025 | 13.4 s | **297/297 = 100.0%** of readable boxes |
+| X30b | 19 | same, app upload (1600 px, 0.85) | $0.037 | $0.0021 | 9.1 s | 274/283 = 96.8%; counting lost |
 
 Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**; X30b $1.58; total **$4.41**.
 
 ---
 
 ## 5. Known limits and open items
+
+0. **Accuracy numbers are traceable (X30c).** Every accuracy number in this document is printed by `tools/hackathon/score_labels.py` from per-box labels (`v3_ground_truth.json`, `x30b_labels.json`) into `score_v3.json` and `score_x30b.json`. The labels are one reviewer's; boxes the reviewer cannot read are not counted, so a high share means "no error among the boxes a person can check", not "no error".
 
 1. **Gate on shelves:** 5 of 23 food photos refused (shelves, pantries). Retrain the head with such photos.
 2. **Produce that looks alike:** turnips named "corn" or "parsnip", Roma tomatoes named "mini peppers", radicchio named "red onion". San Pellegrino water named "pasta bag".

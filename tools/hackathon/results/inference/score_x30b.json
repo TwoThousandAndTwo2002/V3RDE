@@ -1,0 +1,117 @@
+{
+ "file": "x30b_labels.json",
+ "original": {
+  "correct": "297/297 = 100.0%",
+  "unreadable": 60,
+  "by_short_side": [
+   [
+    "0-48 px",
+    "0/0"
+   ],
+   [
+    "48-64 px",
+    "0/0"
+   ],
+   [
+    "64-96 px",
+    "12/12 = 100.0%"
+   ],
+   [
+    "96-up px",
+    "253/253 = 100.0%"
+   ]
+  ]
+ },
+ "app": {
+  "correct": "274/283 = 96.8%",
+  "unreadable": 44,
+  "by_short_side": [
+   [
+    "0-48 px",
+    "0/0"
+   ],
+   [
+    "48-64 px",
+    "0/0"
+   ],
+   [
+    "64-96 px",
+    "84/86 = 97.7%"
+   ],
+   [
+    "96-up px",
+    "157/164 = 95.7%"
+   ]
+  ]
+ },
+ "per_photo": {
+  "20261026_185453.jpg": {
+   "original": "23 correct, 0 wrong, 1 unreadable",
+   "app": "23 correct, 0 wrong, 1 unreadable"
+  },
+  "20261026_185500.jpg": {
+   "original": "8 correct, 0 wrong, 10 unreadable",
+   "app": "9 correct, 0 wrong, 2 unreadable"
+  },
+  "20261026_185612.jpg": {
+   "original": "23 correct, 0 wrong, 1 unreadable",
+   "app": "20 correct, 0 wrong, 3 unreadable"
+  },
+  "20261026_185630.jpg": {
+   "original": "22 correct, 0 wrong, 2 unreadable",
+   "app": "22 correct, 0 wrong, 2 unreadable"
+  },
+  "20261026_185633.jpg": {
+   "original": "18 correct, 0 wrong, 6 unreadable",
+   "app": "17 correct, 1 wrong, 6 unreadable"
+  },
+  "20261026_185639.jpg": {
+   "original": "23 correct, 0 wrong, 1 unreadable",
+   "app": "21 correct, 1 wrong, 1 unreadable"
+  },
+  "20261026_185652.jpg": {
+   "original": "13 correct, 0 wrong, 11 unreadable",
+   "app": "17 correct, 0 wrong, 7 unreadable"
+  },
+  "20261026_185719.jpg": {
+   "original": "21 correct, 0 wrong, 3 unreadable",
+   "app": "22 correct, 1 wrong, 1 unreadable"
+  },
+  "20261026_185725.jpg": {
+   "original": "19 correct, 0 wrong, 5 unreadable",
+   "app": "13 correct, 6 wrong, 5 unreadable"
+  },
+  "20261026_185727.jpg": {
+   "original": "15 correct, 0 wrong, 9 unreadable",
+   "app": "15 correct, 0 wrong, 9 unreadable"
+  },
+  "20261026_185730.jpg": {
+   "original": "14 correct, 0 wrong, 10 unreadable",
+   "app": "19 correct, 0 wrong, 5 unreadable"
+  },
+  "20261026_185749.jpg": {
+   "original": "24 correct, 0 wrong, 0 unreadable",
+   "app": "1 correct, 0 wrong, 0 unreadable"
+  },
+  "20261026_185754.jpg": {
+   "original": "24 correct, 0 wrong, 0 unreadable",
+   "app": "24 correct, 0 wrong, 0 unreadable"
+  },
+  "20261026_185802.jpg": {
+   "original": "24 correct, 0 wrong, 0 unreadable",
+   "app": "23 correct, 0 wrong, 1 unreadable"
+  },
+  "20261026_185827.jpg": {
+   "original": "23 correct, 0 wrong, 1 unreadable",
+   "app": "23 correct, 0 wrong, 1 unreadable"
+  },
+  "20261026_185840.jpg": {
+   "original": "1 correct, 0 wrong, 0 unreadable",
+   "app": "1 correct, 0 wrong, 0 unreadable"
+  },
+  "20261026_185842.jpg": {
+   "original": "2 correct, 0 wrong, 0 unreadable",
+   "app": "4 correct, 0 wrong, 0 unreadable"
+  }
+ }
+}

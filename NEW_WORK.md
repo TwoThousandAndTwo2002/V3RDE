@@ -127,9 +127,9 @@ Next: X30b real phone photos (decides what SAM is sent and the app's upload size
 
 | Result | Camera original | App upload today |
 |---|---|---|
-| Correct product (hand check) | **313/315 = 99.4%** | 291/305 = 95.4% |
+| Correct product, readable boxes (hand check) | **297/297 = 100.0%** | 274/283 = 96.8% |
 | Bananas counted | **71** | 1 |
-| Salad bowls with small labels | 23/24 | 17/23 |
+| Salad bowls with small labels (photo 185725) | 19 correct, 0 wrong | 13 correct, 6 wrong |
 | Cost / wait per photo | $0.047 / 13.4 s | $0.037 / 9.1 s |
 
 **Changes from what the photos showed:**
@@ -138,3 +138,12 @@ Next: X30b real phone photos (decides what SAM is sent and the app's upload size
 - **Parallel tests.** The probe runs 4 photos at the same time (`-parallel 1` to measure the wait); a shared SAM answer is paid once even when runs overlap. The SUP template (v3) runs its Go, Dockerfile, Python and mobile checks at the same time.
 
 Next (X32): the app uploads at Muse's limit, about 2376 px at JPEG 0.9 (it costs about $0.01 more per photo and keeps the counts and the small labels).
+
+---
+
+## 6. Accuracy numbers traced to per-box labels
+
+**When:** Oct 27 2026. **Sources:** `docs/sources/X30c.md`
+**Files:** `tools/hackathon/score_labels.py`, `tools/hackathon/results/inference/{x30b_labels.json, score_x30b.json, score_v3.json}` (`x30b_hand_check.json` removed), `docs/inference_engine_design.md`, `NEW_WORK.md` #5
+
+Entry #5 first gave the hand check as counts per photo, and some counts included boxes the reviewer could not read. It is replaced by one label per box (correct, wrong or unreadable, with the box and the names), and a script that computes every total. The corrected numbers in #5: camera originals **297/297 = 100.0%** of the readable boxes (60 unreadable), app upload **274/283 = 96.8%** (44 unreadable). The v3 numbers (89.8%, 97.4% at ≥ 96 px) are reproduced exactly by the same script from their committed labels. The SUP now stops if a changed document states an accuracy share that no committed score output contains.

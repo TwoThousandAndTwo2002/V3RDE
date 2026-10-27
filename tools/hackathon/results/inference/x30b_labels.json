@@ -1,0 +1,9841 @@
+{
+ "about": "X30b hand check, one label per box. Run: probe_x30b_20261027T013947Z.json. original = camera photo; app = the app's upload today (upright, 1600 px, JPEG 0.85). Boxes of the two variants are paired by IoU > 0.5 on the 0-1000 grid.",
+ "criteria": [
+  "correct: the product (brand and product line, or a true generic name such as 'apple') matches what the crop shows; a flavour or variant that cannot be read in the crop is not counted against the name",
+  "wrong: the crop shows a different product, or a food/not-food call that is wrong",
+  "unreadable: the reviewer cannot read or verify the product in the crop; not counted",
+  "not food (pet food, empty trays, shelf parts): correct when the product is not food",
+  "not labelled: 20261026_185828 and 20261026_185829 (repeats of 185827), 20261026_185524 (refused by the gate)"
+ ],
+ "reviewer": "one reviewer (assistant), crops at product level, 2026-10-27; labels written before any total was computed",
+ "rows": [
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 1,
+   "original": {
+    "box": 1,
+    "norm": [
+     0,
+     12,
+     141,
+     208
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     0,
+     12,
+     139,
+     207
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 2,
+   "original": {
+    "box": 23,
+    "norm": [
+     306,
+     0,
+     421,
+     89
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Natural Dog Treats",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     294,
+     0,
+     421,
+     88
+    ],
+    "short_px": null,
+    "name": "NF:Dog Treat Bag Top Shelf",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 3,
+   "original": {
+    "box": 21,
+    "norm": [
+     608,
+     7,
+     668,
+     178
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Jerky Cuts Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     608,
+     8,
+     670,
+     178
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Jerky Cuts Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 4,
+   "original": {
+    "box": 18,
+    "norm": [
+     670,
+     11,
+     738,
+     181
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Jerky Cuts Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     669,
+     11,
+     738,
+     181
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Grillers Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 5,
+   "original": {
+    "box": 5,
+    "norm": [
+     153,
+     91,
+     267,
+     281
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     153,
+     91,
+     267,
+     281
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 6,
+   "original": {
+    "box": 8,
+    "norm": [
+     261,
+     82,
+     357,
+     292
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     262,
+     82,
+     357,
+     293
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Petite Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 7,
+   "original": {
+    "box": 16,
+    "norm": [
+     354,
+     126,
+     427,
+     299
+    ],
+    "short_px": null,
+    "name": "NF:Nutrish Savory Roasters Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     354,
+     126,
+     426,
+     299
+    ],
+    "short_px": null,
+    "name": "NF:Nutrish Savory Roasters Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 8,
+   "original": {
+    "box": 12,
+    "norm": [
+     425,
+     163,
+     499,
+     357
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Strips Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     426,
+     163,
+     498,
+     357
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Strips Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 9,
+   "original": {
+    "box": 4,
+    "norm": [
+     0,
+     574,
+     114,
+     787
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Medium",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     0,
+     573,
+     107,
+     788
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Medium",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 10,
+   "original": {
+    "box": 3,
+    "norm": [
+     93,
+     557,
+     225,
+     751
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Medium",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     93,
+     557,
+     224,
+     751
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Medium",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 11,
+   "original": {
+    "box": 11,
+    "norm": [
+     251,
+     535,
+     340,
+     703
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Large",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     251,
+     536,
+     339,
+     703
+    ],
+    "short_px": null,
+    "name": "NF:Minties Dental Treats Small",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 12,
+   "original": {
+    "box": 14,
+    "norm": [
+     424,
+     597,
+     501,
+     777
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Jerky Tenders",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     424,
+     597,
+     500,
+     777
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Jerky Tenders",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 13,
+   "original": {
+    "box": 2,
+    "norm": [
+     122,
+     760,
+     252,
+     968
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Fresh",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     121,
+     760,
+     253,
+     969
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Fresh",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 14,
+   "original": {
+    "box": 13,
+    "norm": [
+     337,
+     691,
+     425,
+     851
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Beef",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     337,
+     691,
+     424,
+     851
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Beef Flavor",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 15,
+   "original": {
+    "box": 20,
+    "norm": [
+     435,
+     817,
+     518,
+     945
+    ],
+    "short_px": null,
+    "name": "NF:Golden Rewards Duck Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     435,
+     812,
+     518,
+     946
+    ],
+    "short_px": null,
+    "name": "NF:Dog Jerky Treats Bag",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 16,
+   "original": {
+    "box": 9,
+    "norm": [
+     0,
+     818,
+     125,
+     974
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     0,
+     818,
+     124,
+     974
+    ],
+    "short_px": null,
+    "name": "NF:Pedigree Dentastix Original Chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 17,
+   "original": {
+    "box": 22,
+    "norm": [
+     497,
+     173,
+     551,
+     362
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Strips",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     497,
+     173,
+     551,
+     362
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Jerky Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 18,
+   "original": {
+    "box": 17,
+    "norm": [
+     543,
+     188,
+     608,
+     365
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Jerky Cuts Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     543,
+     190,
+     608,
+     366
+    ],
+    "short_px": null,
+    "name": "NF:Nudges Jerky Cuts Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 19,
+   "original": {
+    "box": 10,
+    "norm": [
+     0,
+     323,
+     78,
+     533
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Dental Treats Box",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     0,
+     323,
+     77,
+     534
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Large Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 20,
+   "original": {
+    "box": 6,
+    "norm": [
+     73,
+     303,
+     198,
+     473
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Large Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     73,
+     303,
+     198,
+     473
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Large Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 21,
+   "original": {
+    "box": 7,
+    "norm": [
+     192,
+     317,
+     297,
+     510
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Large Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     192,
+     319,
+     298,
+     510
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Original Large Dental Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 22,
+   "original": {
+    "box": 15,
+    "norm": [
+     293,
+     321,
+     369,
+     498
+    ],
+    "short_px": null,
+    "name": "NF:Stewart Chicken Breast Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     293,
+     321,
+     368,
+     499
+    ],
+    "short_px": null,
+    "name": "NF:Stewart Chicken Breast Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 23,
+   "original": {
+    "box": 24,
+    "norm": [
+     364,
+     327,
+     426,
+     488
+    ],
+    "short_px": null,
+    "name": "NF:Stewart Beef Liver Dog Treats",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 24,
+   "original": {
+    "box": 19,
+    "norm": [
+     509,
+     393,
+     583,
+     549
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Strips",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     509,
+     392,
+     583,
+     549
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Jerky Dog Treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185453.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 16,
+    "norm": [
+     0,
+     184,
+     151,
+     269
+    ],
+    "short_px": null,
+    "name": "NF:Greenies Cardboard Display Tray",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 1,
+   "original": {
+    "box": 5,
+    "norm": [
+     191,
+     485,
+     443,
+     785
+    ],
+    "short_px": 336,
+    "name": "Silk Dark Chocolate Almondmilk",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     191,
+     486,
+     442,
+     784
+    ],
+    "short_px": 226,
+    "name": "Silk Dark Chocolate Almondmilk",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 2,
+   "original": {
+    "box": 7,
+    "norm": [
+     0,
+     620,
+     198,
+     831
+    ],
+    "short_px": null,
+    "name": "NF:Dog Dental Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     0,
+     633,
+     193,
+     831
+    ],
+    "short_px": null,
+    "name": "NF:Dog dental treats bag",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 3,
+   "original": {
+    "box": 14,
+    "norm": [
+     78,
+     908,
+     160,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Dog Treats",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     66,
+     908,
+     159,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Partial dog treats bag",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 4,
+   "original": {
+    "box": 6,
+    "norm": [
+     157,
+     879,
+     537,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Jerky Tenders Beef",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     158,
+     879,
+     537,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon jerky tenders beef",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 5,
+   "original": {
+    "box": 9,
+    "norm": [
+     569,
+     871,
+     833,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     569,
+     871,
+     832,
+     1000
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon dog treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 6,
+   "original": {
+    "box": 18,
+    "norm": [
+     825,
+     869,
+     882,
+     925
+    ],
+    "short_px": null,
+    "name": "NF:Dog Treat Bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 7,
+   "original": {
+    "box": 16,
+    "norm": [
+     948,
+     866,
+     1000,
+     974
+    ],
+    "short_px": null,
+    "name": "NF:Pet Food Bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 8,
+   "original": {
+    "box": 17,
+    "norm": [
+     947,
+     63,
+     1000,
+     130
+    ],
+    "short_px": null,
+    "name": "NF:Chicken Recipe Dog Treats Bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 9,
+   "original": {
+    "box": 10,
+    "norm": [
+     0,
+     84,
+     57,
+     370
+    ],
+    "short_px": null,
+    "name": "NF:Partial Dog Treats Bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 10,
+   "original": {
+    "box": 3,
+    "norm": [
+     25,
+     116,
+     443,
+     409
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Strips Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     24,
+     116,
+     442,
+     409
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon chicken strips dog treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 11,
+   "original": {
+    "box": 1,
+    "norm": [
+     439,
+     16,
+     849,
+     399
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Jerky Dog Treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     439,
+     16,
+     850,
+     399
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon chicken jerky dog treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 12,
+   "original": {
+    "box": 4,
+    "norm": [
+     773,
+     60,
+     1000,
+     395
+    ],
+    "short_px": null,
+    "name": "NF:Chicken Recipe Dog Treats Bag",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     779,
+     61,
+     1000,
+     396
+    ],
+    "short_px": null,
+    "name": "NF:Dog food bag with white dog",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 13,
+   "original": {
+    "box": 13,
+    "norm": [
+     0,
+     475,
+     62,
+     634
+    ],
+    "short_px": null,
+    "name": "NF:Blue Dog Treats Bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 14,
+   "original": {
+    "box": 12,
+    "norm": [
+     52,
+     475,
+     143,
+     615
+    ],
+    "short_px": null,
+    "name": "NF:Blue dog treat bag",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     52,
+     474,
+     143,
+     615
+    ],
+    "short_px": null,
+    "name": "NF:Dog food bag black dog",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 15,
+   "original": {
+    "box": 15,
+    "norm": [
+     131,
+     474,
+     179,
+     595
+    ],
+    "short_px": null,
+    "name": "NF:Blue dog treat bag",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 16,
+   "original": {
+    "box": 8,
+    "norm": [
+     331,
+     468,
+     549,
+     628
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon dog treats",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     328,
+     468,
+     549,
+     628
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon dog treats bag behind",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 17,
+   "original": {
+    "box": 11,
+    "norm": [
+     584,
+     465,
+     650,
+     695
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Jerky",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "n": 18,
+   "original": {
+    "box": 2,
+    "norm": [
+     624,
+     462,
+     1000,
+     789
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon Chicken Jerky",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     624,
+     462,
+     1000,
+     789
+    ],
+    "short_px": null,
+    "name": "NF:Full Moon chicken jerky dog treats",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 1,
+   "original": {
+    "box": 10,
+    "norm": [
+     421,
+     153,
+     812,
+     203
+    ],
+    "short_px": 120,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     421,
+     163,
+     811,
+     204
+    ],
+    "short_px": 66,
+    "name": "DiGiorno Wood Fired Pizza CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 2,
+   "original": {
+    "box": 11,
+    "norm": [
+     426,
+     25,
+     841,
+     72
+    ],
+    "short_px": 111.1,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     427,
+     29,
+     841,
+     72
+    ],
+    "short_px": 69,
+    "name": "DiGiorno Wood Fired Pizza CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 3,
+   "original": {
+    "box": 16,
+    "norm": [
+     424,
+     102,
+     824,
+     141
+    ],
+    "short_px": 93.3,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 4,
+   "original": {
+    "box": 18,
+    "norm": [
+     429,
+     68,
+     836,
+     106
+    ],
+    "short_px": 89.7,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 5,
+   "original": {
+    "box": 23,
+    "norm": [
+     421,
+     353,
+     808,
+     386
+    ],
+    "short_px": 79,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 6,
+   "original": {
+    "box": 24,
+    "norm": [
+     424,
+     380,
+     806,
+     413
+    ],
+    "short_px": 78.4,
+    "name": "DiGiorno Wood Fired Pepperoni Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 7,
+   "original": {
+    "box": 3,
+    "norm": [
+     78,
+     553,
+     421,
+     638
+    ],
+    "short_px": 200.8,
+    "name": "DiGiorno Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     76,
+     564,
+     402,
+     641
+    ],
+    "short_px": 124,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 8,
+   "original": {
+    "box": 6,
+    "norm": [
+     45,
+     251,
+     468,
+     304
+    ],
+    "short_px": 127.1,
+    "name": "DiGiorno Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     44,
+     251,
+     468,
+     303
+    ],
+    "short_px": 84,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 9,
+   "original": {
+    "box": 8,
+    "norm": [
+     47,
+     306,
+     417,
+     362
+    ],
+    "short_px": 133.1,
+    "name": "DiGiorno Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     47,
+     303,
+     423,
+     361
+    ],
+    "short_px": 92,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 10,
+   "original": {
+    "box": 14,
+    "norm": [
+     151,
+     525,
+     450,
+     579
+    ],
+    "short_px": 127.7,
+    "name": "DiGiorno Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     156,
+     490,
+     453,
+     588
+    ],
+    "short_px": 156,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 11,
+   "original": {
+    "box": 20,
+    "norm": [
+     44,
+     278,
+     436,
+     316
+    ],
+    "short_px": 89.7,
+    "name": "DiGiorno Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 12,
+   "original": {
+    "box": 7,
+    "norm": [
+     21,
+     53,
+     426,
+     109
+    ],
+    "short_px": 131.9,
+    "name": "DiGiorno Cheese Stuffed Three Meat Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     21,
+     54,
+     426,
+     101
+    ],
+    "short_px": 75,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 13,
+   "original": {
+    "box": 15,
+    "norm": [
+     28,
+     100,
+     399,
+     143
+    ],
+    "short_px": 101,
+    "name": "DiGiorno Cheese Stuffed Three Meat Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 14,
+   "original": {
+    "box": 19,
+    "norm": [
+     29,
+     139,
+     407,
+     179
+    ],
+    "short_px": 93.3,
+    "name": "DiGiorno Cheese Stuffed Three Meat Pizza",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     30,
+     139,
+     407,
+     191
+    ],
+    "short_px": 82,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 15,
+   "original": {
+    "box": 22,
+    "norm": [
+     18,
+     23,
+     404,
+     58
+    ],
+    "short_px": 83.2,
+    "name": "DiGiorno Cheese Stuffed Three Meat Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 16,
+   "original": {
+    "box": 1,
+    "norm": [
+     94,
+     746,
+     435,
+     851
+    ],
+    "short_px": 250.7,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     94,
+     750,
+     434,
+     860
+    ],
+    "short_px": 176,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 17,
+   "original": {
+    "box": 9,
+    "norm": [
+     79,
+     598,
+     387,
+     665
+    ],
+    "short_px": 158.6,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 18,
+   "original": {
+    "box": 21,
+    "norm": [
+     84,
+     686,
+     411,
+     731
+    ],
+    "short_px": 106.9,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     84,
+     689,
+     408,
+     731
+    ],
+    "short_px": 68,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 19,
+   "original": {
+    "box": 13,
+    "norm": [
+     404,
+     651,
+     755,
+     702
+    ],
+    "short_px": 120,
+    "name": "DiGiorno Wood Fired Four Cheese Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     404,
+     655,
+     757,
+     702
+    ],
+    "short_px": 75,
+    "name": "DiGiorno Wood Fired Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 20,
+   "original": {
+    "box": 17,
+    "norm": [
+     378,
+     618,
+     733,
+     662
+    ],
+    "short_px": 104.5,
+    "name": "DiGiorno Wood Fired Four Cheese Pizza",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 21,
+   "original": {
+    "box": 2,
+    "norm": [
+     99,
+     849,
+     426,
+     947
+    ],
+    "short_px": 233.4,
+    "name": "DiGiorno Supreme Cheese Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     99,
+     848,
+     426,
+     948
+    ],
+    "short_px": 161,
+    "name": "DiGiorno Supreme Stuffed Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 22,
+   "original": {
+    "box": 4,
+    "norm": [
+     434,
+     773,
+     737,
+     853
+    ],
+    "short_px": 189.5,
+    "name": "DiGiorno Hawaiian Style Stuffed Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     436,
+     773,
+     736,
+     852
+    ],
+    "short_px": 126,
+    "name": "DiGiorno Hawaiian Style Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 23,
+   "original": {
+    "box": 5,
+    "norm": [
+     426,
+     845,
+     761,
+     917
+    ],
+    "short_px": 171.1,
+    "name": "DiGiorno Rising Crust Original Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     427,
+     852,
+     764,
+     926
+    ],
+    "short_px": 119,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 24,
+   "original": {
+    "box": 12,
+    "norm": [
+     686,
+     553,
+     940,
+     626
+    ],
+    "short_px": 173.4,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     686,
+     553,
+     940,
+     624
+    ],
+    "short_px": 114,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 2,
+    "norm": [
+     87,
+     721,
+     379,
+     847
+    ],
+    "short_px": 202,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 26,
+   "original": null,
+   "app": {
+    "box": 22,
+    "norm": [
+     80,
+     513,
+     224,
+     554
+    ],
+    "short_px": 65,
+    "name": "DiGiorno Cheese Stuffed Crust Pizza",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 27,
+   "original": null,
+   "app": {
+    "box": 13,
+    "norm": [
+     764,
+     826,
+     913,
+     949
+    ],
+    "short_px": 134,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 28,
+   "original": null,
+   "app": {
+    "box": 19,
+    "norm": [
+     429,
+     918,
+     766,
+     958
+    ],
+    "short_px": 65,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 29,
+   "original": null,
+   "app": {
+    "box": 20,
+    "norm": [
+     716,
+     755,
+     920,
+     804
+    ],
+    "short_px": 78,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 30,
+   "original": null,
+   "app": {
+    "box": 21,
+    "norm": [
+     764,
+     649,
+     932,
+     699
+    ],
+    "short_px": 79,
+    "name": "DiGiorno Rising Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 31,
+   "original": null,
+   "app": {
+    "box": 5,
+    "norm": [
+     379,
+     581,
+     729,
+     658
+    ],
+    "short_px": 124,
+    "name": "DiGiorno Wood Fired Crust Pizza",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "n": 32,
+   "original": null,
+   "app": {
+    "box": 23,
+    "norm": [
+     71,
+     529,
+     156,
+     588
+    ],
+    "short_px": 76,
+    "name": "Frozen Pizza Box CHECK",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 1,
+   "original": {
+    "box": 5,
+    "norm": [
+     657,
+     587,
+     805,
+     714
+    ],
+    "short_px": 197.7,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     657,
+     587,
+     804,
+     714
+    ],
+    "short_px": 133,
+    "name": "Great Value Small Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 2,
+   "original": {
+    "box": 15,
+    "norm": [
+     485,
+     761,
+     631,
+     851
+    ],
+    "short_px": 195.3,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     484,
+     761,
+     631,
+     851
+    ],
+    "short_px": 132,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 3,
+   "original": {
+    "box": 16,
+    "norm": [
+     386,
+     869,
+     539,
+     955
+    ],
+    "short_px": 204.2,
+    "name": "Great Value Raw Shrimp",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     387,
+     869,
+     539,
+     954
+    ],
+    "short_px": 137,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 4,
+   "original": {
+    "box": 17,
+    "norm": [
+     310,
+     760,
+     447,
+     852
+    ],
+    "short_px": 182.9,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     312,
+     760,
+     447,
+     851
+    ],
+    "short_px": 121,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 5,
+   "original": {
+    "box": 20,
+    "norm": [
+     109,
+     802,
+     212,
+     905
+    ],
+    "short_px": 137.7,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     109,
+     803,
+     212,
+     905
+    ],
+    "short_px": 93,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 6,
+   "original": {
+    "box": 22,
+    "norm": [
+     597,
+     862,
+     795,
+     909
+    ],
+    "short_px": 111.7,
+    "name": "Great Value Raw Shrimp",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     598,
+     861,
+     796,
+     909
+    ],
+    "short_px": 76,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 7,
+   "original": {
+    "box": 23,
+    "norm": [
+     698,
+     764,
+     801,
+     854
+    ],
+    "short_px": 136.5,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     699,
+     764,
+     801,
+     854
+    ],
+    "short_px": 92,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 8,
+   "original": {
+    "box": 8,
+    "norm": [
+     241,
+     108,
+     426,
+     197
+    ],
+    "short_px": 210.9,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     241,
+     109,
+     427,
+     197
+    ],
+    "short_px": 141,
+    "name": "Great Value Cooked Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 9,
+   "original": {
+    "box": 9,
+    "norm": [
+     122,
+     267,
+     266,
+     382
+    ],
+    "short_px": 191.8,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     121,
+     281,
+     266,
+     382
+    ],
+    "short_px": 130,
+    "name": "Great Value Cooked Shrimp 31-40",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 10,
+   "original": {
+    "box": 10,
+    "norm": [
+     434,
+     76,
+     564,
+     197
+    ],
+    "short_px": 174.5,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     433,
+     76,
+     562,
+     197
+    ],
+    "short_px": 116,
+    "name": "Great Value Cooked Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 11,
+   "original": {
+    "box": 14,
+    "norm": [
+     635,
+     106,
+     787,
+     197
+    ],
+    "short_px": 202.4,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     637,
+     106,
+     784,
+     198
+    ],
+    "short_px": 133,
+    "name": "Great Value Cooked Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 12,
+   "original": {
+    "box": 21,
+    "norm": [
+     409,
+     283,
+     516,
+     381
+    ],
+    "short_px": 142.5,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     409,
+     284,
+     516,
+     379
+    ],
+    "short_px": 96,
+    "name": "Great Value Cooked Shrimp 50-70",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 13,
+   "original": {
+    "box": 24,
+    "norm": [
+     292,
+     307,
+     410,
+     384
+    ],
+    "short_px": 157.3,
+    "name": "Frozen Cooked Shrimp Bag",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 14,
+   "original": {
+    "box": 12,
+    "norm": [
+     108,
+     588,
+     236,
+     708
+    ],
+    "short_px": 170.4,
+    "name": "Great Value Raw Shrimp 26-30",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     109,
+     588,
+     238,
+     709
+    ],
+    "short_px": 116,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 15,
+   "original": {
+    "box": 13,
+    "norm": [
+     244,
+     582,
+     365,
+     703
+    ],
+    "short_px": 161.5,
+    "name": "Great Value Raw Shrimp 26-30",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     247,
+     585,
+     364,
+     704
+    ],
+    "short_px": 106,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 16,
+   "original": {
+    "box": 7,
+    "norm": [
+     484,
+     435,
+     632,
+     547
+    ],
+    "short_px": 197.7,
+    "name": "Great Value Raw Shrimp 16-22",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     483,
+     436,
+     631,
+     547
+    ],
+    "short_px": 133,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 17,
+   "original": {
+    "box": 19,
+    "norm": [
+     381,
+     444,
+     489,
+     545
+    ],
+    "short_px": 144.9,
+    "name": "Great Value Raw Shrimp 16-22",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     381,
+     441,
+     489,
+     545
+    ],
+    "short_px": 97,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 18,
+   "original": {
+    "box": 1,
+    "norm": [
+     625,
+     238,
+     840,
+     385
+    ],
+    "short_px": 286.8,
+    "name": "Frozen Cooked Salad Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     629,
+     239,
+     840,
+     384
+    ],
+    "short_px": 190,
+    "name": "Great Value Salad Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 19,
+   "original": {
+    "box": 2,
+    "norm": [
+     243,
+     420,
+     433,
+     555
+    ],
+    "short_px": 252.9,
+    "name": "Great Value Raw Shrimp 13-15",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     243,
+     420,
+     432,
+     556
+    ],
+    "short_px": 170,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 20,
+   "original": {
+    "box": 3,
+    "norm": [
+     600,
+     421,
+     788,
+     552
+    ],
+    "short_px": 251.1,
+    "name": "Great Value Raw Shrimp 21-30",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     600,
+     421,
+     788,
+     552
+    ],
+    "short_px": 169,
+    "name": "Great Value Jumbo Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 21,
+   "original": {
+    "box": 4,
+    "norm": [
+     91,
+     428,
+     275,
+     560
+    ],
+    "short_px": 245.8,
+    "name": "Frozen Raw Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     91,
+     428,
+     274,
+     561
+    ],
+    "short_px": 165,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 22,
+   "original": {
+    "box": 6,
+    "norm": [
+     347,
+     593,
+     496,
+     710
+    ],
+    "short_px": 198.9,
+    "name": "Great Value Raw Shrimp 60-80",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     347,
+     592,
+     497,
+     709
+    ],
+    "short_px": 135,
+    "name": "Great Value Small Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 23,
+   "original": {
+    "box": 11,
+    "norm": [
+     497,
+     578,
+     617,
+     706
+    ],
+    "short_px": 160.9,
+    "name": "Great Value Raw Shrimp 40-60",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     497,
+     578,
+     618,
+     705
+    ],
+    "short_px": 109,
+    "name": "Great Value Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 24,
+   "original": {
+    "box": 18,
+    "norm": [
+     927,
+     751,
+     1000,
+     902
+    ],
+    "short_px": 98,
+    "name": "Louisiana Seasoned Crawfish",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     927,
+     751,
+     1000,
+     903
+    ],
+    "short_px": 66,
+    "name": "Louisiana Seasoned Seafood Bag CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 23,
+    "norm": [
+     161,
+     832,
+     290,
+     904
+    ],
+    "short_px": 115,
+    "name": "Great Value Frozen Raw Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 1,
+   "original": {
+    "box": 22,
+    "norm": [
+     843,
+     301,
+     1000,
+     407
+    ],
+    "short_px": 209.6,
+    "name": "Frozen Tilapia Fillets",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     844,
+     302,
+     1000,
+     407
+    ],
+    "short_px": 140,
+    "name": "Frozen Catfish Fillets",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 2,
+   "original": {
+    "box": 24,
+    "norm": [
+     916,
+     431,
+     1000,
+     561
+    ],
+    "short_px": 112.8,
+    "name": "Frozen Tilapia Fillets",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     916,
+     431,
+     1000,
+     561
+    ],
+    "short_px": 76,
+    "name": "Frozen Tilapia Fillets CHECK",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 3,
+   "original": {
+    "box": 1,
+    "norm": [
+     515,
+     501,
+     931,
+     636
+    ],
+    "short_px": 319.6,
+    "name": "Wild Caught Snow Crab Legs",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     514,
+     502,
+     931,
+     638
+    ],
+    "short_px": 217,
+    "name": "Frozen Snow Crab Legs",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 4,
+   "original": {
+    "box": 2,
+    "norm": [
+     234,
+     434,
+     495,
+     631
+    ],
+    "short_px": 349.1,
+    "name": "Frozen Cooked Mussels",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     234,
+     436,
+     494,
+     630
+    ],
+    "short_px": 234,
+    "name": "Frozen Mussels",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 5,
+   "original": {
+    "box": 3,
+    "norm": [
+     625,
+     205,
+     862,
+     415
+    ],
+    "short_px": 317.6,
+    "name": "Blackened Atlantic Salmon Fillets",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     626,
+     205,
+     888,
+     415
+    ],
+    "short_px": 236,
+    "name": "Blackened Atlantic Salmon Fillets",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 6,
+   "original": {
+    "box": 4,
+    "norm": [
+     6,
+     200,
+     239,
+     407
+    ],
+    "short_px": 312.3,
+    "name": "Ahi Tuna Steaks",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     7,
+     199,
+     238,
+     408
+    ],
+    "short_px": 208,
+    "name": "Ahi Tuna Steaks",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 7,
+   "original": {
+    "box": 5,
+    "norm": [
+     222,
+     205,
+     440,
+     409
+    ],
+    "short_px": 292.1,
+    "name": "Mahi Mahi Fillets",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     220,
+     204,
+     441,
+     408
+    ],
+    "short_px": 199,
+    "name": "White Fish Fillets",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 8,
+   "original": {
+    "box": 6,
+    "norm": [
+     757,
+     0,
+     1000,
+     177
+    ],
+    "short_px": 324.8,
+    "name": "Lobster Tails",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     757,
+     0,
+     1000,
+     177
+    ],
+    "short_px": 219,
+    "name": "Lobster Tails",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 9,
+   "original": {
+    "box": 7,
+    "norm": [
+     21,
+     689,
+     236,
+     867
+    ],
+    "short_px": 287.3,
+    "name": "Wild Gulf Shrimp Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     21,
+     689,
+     236,
+     866
+    ],
+    "short_px": 193,
+    "name": "Frozen Gulf Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 10,
+   "original": {
+    "box": 8,
+    "norm": [
+     0,
+     0,
+     204,
+     173
+    ],
+    "short_px": 272.5,
+    "name": "Seafood Mix",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     0,
+     0,
+     203,
+     173
+    ],
+    "short_px": 183,
+    "name": "Seafood Mix",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 11,
+   "original": {
+    "box": 9,
+    "norm": [
+     55,
+     436,
+     236,
+     627
+    ],
+    "short_px": 241.6,
+    "name": "Wild Caught Dungeness Crab Legs",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     54,
+     436,
+     236,
+     626
+    ],
+    "short_px": 163,
+    "name": "Frozen Dungeness Crab Clusters",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 12,
+   "original": {
+    "box": 10,
+    "norm": [
+     182,
+     881,
+     460,
+     1000
+    ],
+    "short_px": 283.9,
+    "name": "Boiled Crawfish Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     182,
+     880,
+     460,
+     1000
+    ],
+    "short_px": 192,
+    "name": "Frozen Boiled Crawfish",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 13,
+   "original": {
+    "box": 11,
+    "norm": [
+     615,
+     662,
+     878,
+     786
+    ],
+    "short_px": 295.2,
+    "name": "Cooked Shrimp Ring",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     614,
+     663,
+     878,
+     786
+    ],
+    "short_px": 196,
+    "name": "Large Cooked Shrimp Ring",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 14,
+   "original": {
+    "box": 12,
+    "norm": [
+     442,
+     250,
+     637,
+     409
+    ],
+    "short_px": 260.6,
+    "name": "Sockeye Salmon Fillets",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     442,
+     251,
+     638,
+     409
+    ],
+    "short_px": 176,
+    "name": "Frozen Alaska Sockeye Salmon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 15,
+   "original": {
+    "box": 13,
+    "norm": [
+     559,
+     0,
+     725,
+     177
+    ],
+    "short_px": 222,
+    "name": "Langostino Lobster",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     558,
+     0,
+     724,
+     176
+    ],
+    "short_px": 150,
+    "name": "Langostino Lobster",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 16,
+   "original": {
+    "box": 14,
+    "norm": [
+     397,
+     18,
+     576,
+     175
+    ],
+    "short_px": 239.3,
+    "name": "Wild Caught Scallops",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     400,
+     18,
+     577,
+     174
+    ],
+    "short_px": 159,
+    "name": "Wild Caught Scallops",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 17,
+   "original": {
+    "box": 15,
+    "norm": [
+     612,
+     873,
+     826,
+     1000
+    ],
+    "short_px": 286.2,
+    "name": "Hushpuppies Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     614,
+     873,
+     826,
+     1000
+    ],
+    "short_px": 190,
+    "name": "Frozen Hushpuppies",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 18,
+   "original": {
+    "box": 16,
+    "norm": [
+     253,
+     682,
+     449,
+     816
+    ],
+    "short_px": 263,
+    "name": "Wild Caught Gulf Shrimp",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     253,
+     682,
+     449,
+     816
+    ],
+    "short_px": 176,
+    "name": "Frozen Wild Gulf Shrimp",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 19,
+   "original": {
+    "box": 17,
+    "norm": [
+     451,
+     705,
+     642,
+     830
+    ],
+    "short_px": 255.9,
+    "name": "Cooked Shrimp Ring",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     451,
+     704,
+     642,
+     821
+    ],
+    "short_px": 172,
+    "name": "Cooked Shrimp Ring",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 20,
+   "original": {
+    "box": 18,
+    "norm": [
+     192,
+     63,
+     375,
+     179
+    ],
+    "short_px": 245.2,
+    "name": "Cooked Octopus",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     193,
+     21,
+     374,
+     183
+    ],
+    "short_px": 163,
+    "name": "Cooked Octopus",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 21,
+   "original": {
+    "box": 19,
+    "norm": [
+     460,
+     880,
+     625,
+     1000
+    ],
+    "short_px": 220.3,
+    "name": "Frozen Crawfish Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     461,
+     880,
+     627,
+     1000
+    ],
+    "short_px": 149,
+    "name": "Frozen Crawfish Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 22,
+   "original": {
+    "box": 20,
+    "norm": [
+     879,
+     656,
+     1000,
+     809
+    ],
+    "short_px": 161.5,
+    "name": "Frozen Raw Shrimp Bag",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     880,
+     656,
+     1000,
+     809
+    ],
+    "short_px": 108,
+    "name": "Frozen Fish Fillets",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 23,
+   "original": {
+    "box": 21,
+    "norm": [
+     824,
+     893,
+     981,
+     1000
+    ],
+    "short_px": 210.8,
+    "name": "Catfish Nuggets Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     823,
+     892,
+     981,
+     1000
+    ],
+    "short_px": 142,
+    "name": "Frozen Catfish Nuggets",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "n": 24,
+   "original": {
+    "box": 23,
+    "norm": [
+     435,
+     665,
+     591,
+     766
+    ],
+    "short_px": 208.4,
+    "name": "Cooked Shrimp Ring",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     436,
+     664,
+     589,
+     766
+    ],
+    "short_px": 138,
+    "name": "Cooked Shrimp Ring",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 1,
+   "original": {
+    "box": 2,
+    "norm": [
+     484,
+     588,
+     875,
+     678
+    ],
+    "short_px": 212.7,
+    "name": "Birds Eye Super Sweet Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     484,
+     588,
+     876,
+     678
+    ],
+    "short_px": 143,
+    "name": "Frozen Super Sweet Corn",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 2,
+   "original": {
+    "box": 13,
+    "norm": [
+     476,
+     670,
+     753,
+     722
+    ],
+    "short_px": 121.8,
+    "name": "Birds Eye Super Sweet Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     476,
+     671,
+     752,
+     722
+    ],
+    "short_px": 82,
+    "name": "Birds Eye Super Sweet Corn CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 3,
+   "original": {
+    "box": 18,
+    "norm": [
+     143,
+     580,
+     296,
+     654
+    ],
+    "short_px": 177.6,
+    "name": "Birds Eye Super Sweet Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     142,
+     579,
+     296,
+     653
+    ],
+    "short_px": 118,
+    "name": "Frozen Super Sweet Corn",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 4,
+   "original": {
+    "box": 23,
+    "norm": [
+     718,
+     691,
+     874,
+     729
+    ],
+    "short_px": 89.7,
+    "name": "Birds Eye Super Sweet Corn",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 5,
+   "original": {
+    "box": 10,
+    "norm": [
+     712,
+     448,
+     892,
+     535
+    ],
+    "short_px": 207.3,
+    "name": "Birds Eye Whole Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     711,
+     448,
+     892,
+     534
+    ],
+    "short_px": 139,
+    "name": "Frozen Whole Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 6,
+   "original": {
+    "box": 12,
+    "norm": [
+     497,
+     456,
+     666,
+     545
+    ],
+    "short_px": 209.7,
+    "name": "Birds Eye Whole Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     489,
+     456,
+     667,
+     551
+    ],
+    "short_px": 152,
+    "name": "Frozen Whole Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 7,
+   "original": {
+    "box": 15,
+    "norm": [
+     574,
+     430,
+     694,
+     533
+    ],
+    "short_px": 161.5,
+    "name": "Birds Eye Whole Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     538,
+     433,
+     693,
+     534
+    ],
+    "short_px": 140,
+    "name": "Frozen Whole Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 8,
+   "original": {
+    "box": 8,
+    "norm": [
+     120,
+     284,
+     316,
+     375
+    ],
+    "short_px": 216.8,
+    "name": "Great Value Cut Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     120,
+     284,
+     314,
+     375
+    ],
+    "short_px": 146,
+    "name": "Great Value Cut Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 9,
+   "original": {
+    "box": 11,
+    "norm": [
+     272,
+     297,
+     464,
+     378
+    ],
+    "short_px": 192.5,
+    "name": "Great Value Cut Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     269,
+     299,
+     467,
+     378
+    ],
+    "short_px": 126,
+    "name": "Great Value Cut Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 10,
+   "original": {
+    "box": 7,
+    "norm": [
+     66,
+     113,
+     270,
+     205
+    ],
+    "short_px": 220.4,
+    "name": "Great Value Fine Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     66,
+     113,
+     269,
+     205
+    ],
+    "short_px": 148,
+    "name": "Great Value Fine Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 11,
+   "original": {
+    "box": 14,
+    "norm": [
+     352,
+     126,
+     548,
+     197
+    ],
+    "short_px": 169.3,
+    "name": "Great Value Fine Green Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     351,
+     125,
+     548,
+     197
+    ],
+    "short_px": 115,
+    "name": "Great Value Fine Green Beans",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 12,
+   "original": {
+    "box": 9,
+    "norm": [
+     309,
+     598,
+     506,
+     683
+    ],
+    "short_px": 201.4,
+    "name": "Birds Eye Super White Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     309,
+     599,
+     507,
+     683
+    ],
+    "short_px": 135,
+    "name": "Frozen White Corn",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 13,
+   "original": {
+    "box": 22,
+    "norm": [
+     349,
+     581,
+     488,
+     628
+    ],
+    "short_px": 111.1,
+    "name": "Birds Eye Super White Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     351,
+     581,
+     488,
+     626
+    ],
+    "short_px": 72,
+    "name": "Frozen White Corn",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 14,
+   "original": {
+    "box": 16,
+    "norm": [
+     656,
+     872,
+     862,
+     929
+    ],
+    "short_px": 137.2,
+    "name": "Frozen Sweet Corn Kernels",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     656,
+     871,
+     862,
+     928
+    ],
+    "short_px": 91,
+    "name": "Frozen Baby Lima Beans CHECK",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 15,
+   "original": {
+    "box": 19,
+    "norm": [
+     711,
+     918,
+     858,
+     976
+    ],
+    "short_px": 138.4,
+    "name": "Frozen Sweet Corn Kernels",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     711,
+     917,
+     858,
+     976
+    ],
+    "short_px": 94,
+    "name": "Frozen Whole Kernel Corn CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 16,
+   "original": {
+    "box": 1,
+    "norm": [
+     351,
+     869,
+     717,
+     971
+    ],
+    "short_px": 243.5,
+    "name": "Frozen Corn Cob Halves",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     354,
+     868,
+     716,
+     971
+    ],
+    "short_px": 165,
+    "name": "Frozen Whole Corn Cobs",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 17,
+   "original": {
+    "box": 3,
+    "norm": [
+     124,
+     724,
+     368,
+     827
+    ],
+    "short_px": 246.5,
+    "name": "Frozen Corn on the Cob",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     123,
+     734,
+     368,
+     828
+    ],
+    "short_px": 150,
+    "name": "Frozen Corn on the Cob",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 18,
+   "original": {
+    "box": 4,
+    "norm": [
+     119,
+     866,
+     339,
+     974
+    ],
+    "short_px": 256.6,
+    "name": "Extra Sweet Corn Nibblers",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     120,
+     867,
+     339,
+     974
+    ],
+    "short_px": 172,
+    "name": "Great Value Corn on Cob",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 19,
+   "original": {
+    "box": 5,
+    "norm": [
+     674,
+     251,
+     869,
+     370
+    ],
+    "short_px": 260.6,
+    "name": "Birds Eye Asparagus Spears",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     673,
+     251,
+     869,
+     371
+    ],
+    "short_px": 176,
+    "name": "Birds Eye Asparagus Spears",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 20,
+   "original": {
+    "box": 6,
+    "norm": [
+     477,
+     252,
+     662,
+     362
+    ],
+    "short_px": 246.4,
+    "name": "Great Value Asparagus Spears",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     478,
+     251,
+     662,
+     361
+    ],
+    "short_px": 166,
+    "name": "Great Value Asparagus Spears",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 21,
+   "original": {
+    "box": 17,
+    "norm": [
+     698,
+     731,
+     854,
+     806
+    ],
+    "short_px": 177.6,
+    "name": "C&W Frozen Corn",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     696,
+     732,
+     854,
+     805
+    ],
+    "short_px": 117,
+    "name": "C&W White Corn Kernels",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 22,
+   "original": {
+    "box": 20,
+    "norm": [
+     379,
+     417,
+     510,
+     471
+    ],
+    "short_px": 130.1,
+    "name": "Frozen Sweet Corn Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     383,
+     417,
+     508,
+     471
+    ],
+    "short_px": 86,
+    "name": "Frozen Sweet Corn CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 23,
+   "original": {
+    "box": 21,
+    "norm": [
+     377,
+     727,
+     521,
+     772
+    ],
+    "short_px": 108.1,
+    "name": "Frozen Mini Corn on Cob",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     377,
+     727,
+     521,
+     773
+    ],
+    "short_px": 73,
+    "name": "Frozen Mini Corn Cobs CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 24,
+   "original": {
+    "box": 24,
+    "norm": [
+     869,
+     148,
+     919,
+     194
+    ],
+    "short_px": 67.1,
+    "name": "Frozen Green Vegetable Bag CHECK",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 20,
+    "norm": [
+     158,
+     428,
+     346,
+     471
+    ],
+    "short_px": 70,
+    "name": "Frozen Vegetable Bag CHECK",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 1,
+   "original": {
+    "box": 6,
+    "norm": [
+     712,
+     500,
+     906,
+     679
+    ],
+    "short_px": 238.7,
+    "name": "Beef Milanesa Family Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     713,
+     500,
+     906,
+     680
+    ],
+    "short_px": 162,
+    "name": "Beef Milanesa Family Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 2,
+   "original": {
+    "box": 12,
+    "norm": [
+     840,
+     474,
+     1000,
+     652
+    ],
+    "short_px": 238.1,
+    "name": "Beef Milanesa Family Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     840,
+     473,
+     1000,
+     650
+    ],
+    "short_px": 159,
+    "name": "Beef Milanesa Family Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 3,
+   "original": {
+    "box": 13,
+    "norm": [
+     534,
+     277,
+     766,
+     395
+    ],
+    "short_px": 157.9,
+    "name": "Beef Milanesa Family Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     534,
+     278,
+     766,
+     396
+    ],
+    "short_px": 106,
+    "name": "Packaged raw beef strips",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 4,
+   "original": {
+    "box": 15,
+    "norm": [
+     0,
+     597,
+     186,
+     719
+    ],
+    "short_px": 163.3,
+    "name": "Beef Milanesa Family Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     0,
+     598,
+     186,
+     720
+    ],
+    "short_px": 110,
+    "name": "Packaged raw beef steak",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 5,
+   "original": {
+    "box": 16,
+    "norm": [
+     852,
+     235,
+     1000,
+     381
+    ],
+    "short_px": 194.7,
+    "name": "Beef Milanesa Family Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     853,
+     237,
+     1000,
+     380
+    ],
+    "short_px": 129,
+    "name": "Packaged raw beef slices",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 6,
+   "original": {
+    "box": 22,
+    "norm": [
+     675,
+     914,
+     874,
+     1000
+    ],
+    "short_px": 114.6,
+    "name": "Beef Milanesa Family Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     675,
+     914,
+     874,
+     1000
+    ],
+    "short_px": 77,
+    "name": "Beef Milanesa Tray",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 7,
+   "original": {
+    "box": 23,
+    "norm": [
+     685,
+     317,
+     906,
+     389
+    ],
+    "short_px": 96.8,
+    "name": "Beef Milanesa Family Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     687,
+     317,
+     906,
+     389
+    ],
+    "short_px": 65,
+    "name": "Packaged raw beef strips",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 8,
+   "original": {
+    "box": 11,
+    "norm": [
+     75,
+     218,
+     263,
+     372
+    ],
+    "short_px": 205.4,
+    "name": "Eye of round thin steak",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     75,
+     218,
+     263,
+     372
+    ],
+    "short_px": 139,
+    "name": "Beef thin sliced steak pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 9,
+   "original": {
+    "box": 20,
+    "norm": [
+     0,
+     242,
+     106,
+     408
+    ],
+    "short_px": 222,
+    "name": "Eye of round thin steak",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     0,
+     241,
+     106,
+     408
+    ],
+    "short_px": 150,
+    "name": "Beef thin sliced steak pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 10,
+   "original": {
+    "box": 21,
+    "norm": [
+     245,
+     247,
+     348,
+     417
+    ],
+    "short_px": 227.4,
+    "name": "Eye of round thin steak",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     242,
+     248,
+     349,
+     474
+    ],
+    "short_px": 172,
+    "name": "Packaged raw beef slices",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 11,
+   "original": {
+    "box": 2,
+    "norm": [
+     168,
+     793,
+     356,
+     996
+    ],
+    "short_px": 271.9,
+    "name": "Carne Picada Beef",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     169,
+     792,
+     356,
+     996
+    ],
+    "short_px": 183,
+    "name": "Carne Picada Beef",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 12,
+   "original": {
+    "box": 3,
+    "norm": [
+     8,
+     814,
+     203,
+     1000
+    ],
+    "short_px": 248.8,
+    "name": "Carne Picada Beef",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     8,
+     814,
+     203,
+     1000
+    ],
+    "short_px": 167,
+    "name": "Carne Picada Beef",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 13,
+   "original": {
+    "box": 1,
+    "norm": [
+     808,
+     734,
+     1000,
+     961
+    ],
+    "short_px": 303.4,
+    "name": "Beef Milanesa",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     808,
+     736,
+     1000,
+     961
+    ],
+    "short_px": 203,
+    "name": "Beef Milanesa Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 14,
+   "original": {
+    "box": 10,
+    "norm": [
+     483,
+     762,
+     655,
+     938
+    ],
+    "short_px": 236.3,
+    "name": "Beef Milanesa",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     483,
+     761,
+     655,
+     939
+    ],
+    "short_px": 160,
+    "name": "Beef Milanesa Tray",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 15,
+   "original": {
+    "box": 4,
+    "norm": [
+     536,
+     486,
+     719,
+     681
+    ],
+    "short_px": 260,
+    "name": "Bottom Round Milanesa Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     536,
+     487,
+     719,
+     681
+    ],
+    "short_px": 175,
+    "name": "Packaged raw beef milanesa",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 16,
+   "original": {
+    "box": 7,
+    "norm": [
+     332,
+     508,
+     509,
+     696
+    ],
+    "short_px": 252.3,
+    "name": "Bottom Round Milanesa Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     332,
+     508,
+     509,
+     696
+    ],
+    "short_px": 169,
+    "name": "Packaged raw beef milanesa",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 17,
+   "original": {
+    "box": 17,
+    "norm": [
+     532,
+     125,
+     702,
+     251
+    ],
+    "short_px": 168,
+    "name": "Thin sliced beef chuck",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     531,
+     126,
+     701,
+     250
+    ],
+    "short_px": 112,
+    "name": "Beef chuck steak pack",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 18,
+   "original": {
+    "box": 18,
+    "norm": [
+     360,
+     133,
+     536,
+     245
+    ],
+    "short_px": 149,
+    "name": "Thin sliced beef chuck",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     361,
+     133,
+     536,
+     250
+    ],
+    "short_px": 105,
+    "name": "Beef chuck steak pack",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 19,
+   "original": {
+    "box": 8,
+    "norm": [
+     349,
+     252,
+     555,
+     412
+    ],
+    "short_px": 213.1,
+    "name": "Chuck shaved steak",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     349,
+     252,
+     554,
+     412
+    ],
+    "short_px": 144,
+    "name": "Pork shoulder steak pack",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 20,
+   "original": {
+    "box": 9,
+    "norm": [
+     156,
+     543,
+     346,
+     712
+    ],
+    "short_px": 226.2,
+    "name": "Sirloin Tip Milanesa Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     156,
+     543,
+     346,
+     712
+    ],
+    "short_px": 152,
+    "name": "Packaged raw beef steak",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 21,
+   "original": {
+    "box": 14,
+    "norm": [
+     693,
+     117,
+     878,
+     260
+    ],
+    "short_px": 191.2,
+    "name": "Beef Chuck Steak Pack",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     694,
+     117,
+     878,
+     260
+    ],
+    "short_px": 129,
+    "name": "Beef chuck steak pack",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 22,
+   "original": {
+    "box": 24,
+    "norm": [
+     784,
+     736,
+     873,
+     914
+    ],
+    "short_px": 210.9,
+    "name": "Beef Milanesa Tray",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     784,
+     736,
+     872,
+     913
+    ],
+    "short_px": 141,
+    "name": "Beef Milanesa Pack",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 23,
+   "original": {
+    "box": 5,
+    "norm": [
+     105,
+     0,
+     364,
+     137
+    ],
+    "short_px": null,
+    "name": "NF:Empty foam meat tray",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     104,
+     0,
+     364,
+     136
+    ],
+    "short_px": null,
+    "name": "NF:Refrigerated display shelf panel",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "n": 24,
+   "original": {
+    "box": 19,
+    "norm": [
+     364,
+     2,
+     601,
+     79
+    ],
+    "short_px": null,
+    "name": "NF:Empty foam meat tray",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     364,
+     2,
+     601,
+     79
+    ],
+    "short_px": null,
+    "name": "NF:Refrigerated display shelf panel",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 1,
+   "original": {
+    "box": 6,
+    "norm": [
+     225,
+     800,
+     347,
+     861
+    ],
+    "short_px": 144.9,
+    "name": "Original Macaroni Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     224,
+     800,
+     348,
+     861
+    ],
+    "short_px": 98,
+    "name": "Macaroni Salad Original",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 2,
+   "original": {
+    "box": 7,
+    "norm": [
+     346,
+     801,
+     466,
+     859
+    ],
+    "short_px": 137.2,
+    "name": "Original Macaroni Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     347,
+     801,
+     467,
+     859
+    ],
+    "short_px": 93,
+    "name": "Macaroni Salad Original",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 3,
+   "original": {
+    "box": 22,
+    "norm": [
+     240,
+     764,
+     351,
+     807
+    ],
+    "short_px": 102.2,
+    "name": "Original Macaroni Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     240,
+     764,
+     351,
+     806
+    ],
+    "short_px": 67,
+    "name": "Potato Salad CHECK",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 4,
+   "original": {
+    "box": 9,
+    "norm": [
+     24,
+     759,
+     139,
+     816
+    ],
+    "short_px": 136,
+    "name": "Original Potato Salad Tub",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     24,
+     759,
+     139,
+     816
+    ],
+    "short_px": 90,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 5,
+   "original": {
+    "box": 17,
+    "norm": [
+     36,
+     598,
+     150,
+     642
+    ],
+    "short_px": 104.5,
+    "name": "Original Potato Salad Tub",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     37,
+     599,
+     149,
+     642
+    ],
+    "short_px": 68,
+    "name": "Potato Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 6,
+   "original": {
+    "box": 24,
+    "norm": [
+     150,
+     599,
+     262,
+     641
+    ],
+    "short_px": 101,
+    "name": "Original Potato Salad Tub",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     151,
+     599,
+     260,
+     641
+    ],
+    "short_px": 67,
+    "name": "Potato Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 7,
+   "original": {
+    "box": 2,
+    "norm": [
+     767,
+     650,
+     867,
+     771
+    ],
+    "short_px": 133.6,
+    "name": "Deviled Egg Potato Salad",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 8,
+   "original": {
+    "box": 3,
+    "norm": [
+     764,
+     682,
+     867,
+     787
+    ],
+    "short_px": 137.1,
+    "name": "Deviled Egg Potato Salad",
+    "label": "unreadable"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 9,
+   "original": {
+    "box": 5,
+    "norm": [
+     567,
+     767,
+     698,
+     825
+    ],
+    "short_px": 139,
+    "name": "Homestyle Coleslaw",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     566,
+     767,
+     699,
+     825
+    ],
+    "short_px": 93,
+    "name": "Coleslaw CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 10,
+   "original": {
+    "box": 15,
+    "norm": [
+     466,
+     808,
+     575,
+     856
+    ],
+    "short_px": 115.8,
+    "name": "Homestyle Coleslaw",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     467,
+     807,
+     574,
+     856
+    ],
+    "short_px": 78,
+    "name": "Coleslaw CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 11,
+   "original": {
+    "box": 10,
+    "norm": [
+     806,
+     802,
+     933,
+     849
+    ],
+    "short_px": 112.9,
+    "name": "BBQ Baked Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     806,
+     801,
+     931,
+     849
+    ],
+    "short_px": 77,
+    "name": "Baked Beans CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 12,
+   "original": {
+    "box": 12,
+    "norm": [
+     691,
+     803,
+     810,
+     851
+    ],
+    "short_px": 114.6,
+    "name": "BBQ Baked Beans",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     692,
+     804,
+     810,
+     851
+    ],
+    "short_px": 76,
+    "name": "Baked Beans CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 13,
+   "original": {
+    "box": 11,
+    "norm": [
+     3,
+     258,
+     130,
+     303
+    ],
+    "short_px": 108.1,
+    "name": "Chicken Salad 4-Pack Cups",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     0,
+     258,
+     140,
+     304
+    ],
+    "short_px": 74,
+    "name": "Deli Chicken Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 14,
+   "original": {
+    "box": 19,
+    "norm": [
+     12,
+     308,
+     143,
+     345
+    ],
+    "short_px": 87.3,
+    "name": "Chicken Salad 4-Pack Cups",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 15,
+   "original": {
+    "box": 13,
+    "norm": [
+     158,
+     677,
+     269,
+     728
+    ],
+    "short_px": 120.6,
+    "name": "Mustard Potato Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     158,
+     678,
+     267,
+     728
+    ],
+    "short_px": 81,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 16,
+   "original": {
+    "box": 18,
+    "norm": [
+     47,
+     685,
+     155,
+     730
+    ],
+    "short_px": 106.9,
+    "name": "Mustard Potato Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     48,
+     687,
+     156,
+     730
+    ],
+    "short_px": 69,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 17,
+   "original": {
+    "box": 16,
+    "norm": [
+     27,
+     476,
+     147,
+     518
+    ],
+    "short_px": 101,
+    "name": "Chicken Salad Tub",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     28,
+     478,
+     147,
+     519
+    ],
+    "short_px": 67,
+    "name": "Chicken Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 18,
+   "original": {
+    "box": 20,
+    "norm": [
+     29,
+     513,
+     150,
+     553
+    ],
+    "short_px": 94.4,
+    "name": "Chicken Salad Tub",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 19,
+   "original": {
+    "box": 1,
+    "norm": [
+     862,
+     663,
+     1000,
+     773
+    ],
+    "short_px": 184,
+    "name": "Rana Meat Lasagna",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 20,
+   "original": {
+    "box": 4,
+    "norm": [
+     902,
+     479,
+     1000,
+     558
+    ],
+    "short_px": 131.2,
+    "name": "Spinach and Ricotta Tortellini",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     902,
+     480,
+     1000,
+     556
+    ],
+    "short_px": 88,
+    "name": "Spinach Ricotta Tortellini CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 21,
+   "original": {
+    "box": 8,
+    "norm": [
+     0,
+     804,
+     106,
+     867
+    ],
+    "short_px": 141.9,
+    "name": "Original Potato Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     0,
+     804,
+     106,
+     866
+    ],
+    "short_px": 95,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 22,
+   "original": {
+    "box": 14,
+    "norm": [
+     922,
+     588,
+     1000,
+     660
+    ],
+    "short_px": 103.9,
+    "name": "Cheese Tortellini Pasta",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     920,
+     588,
+     1000,
+     659
+    ],
+    "short_px": 72,
+    "name": "Spinach Ricotta Tortellini CHECK",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 23,
+   "original": {
+    "box": 21,
+    "norm": [
+     378,
+     592,
+     483,
+     638
+    ],
+    "short_px": 108.7,
+    "name": "Amish Potato Salad Tub",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     379,
+     592,
+     482,
+     638
+    ],
+    "short_px": 74,
+    "name": "Potato Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 24,
+   "original": {
+    "box": 23,
+    "norm": [
+     791,
+     592,
+     899,
+     636
+    ],
+    "short_px": 104.5,
+    "name": "Amish Macaroni Salad",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 14,
+    "norm": [
+     129,
+     764,
+     242,
+     812
+    ],
+    "short_px": 77,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 26,
+   "original": null,
+   "app": {
+    "box": 21,
+    "norm": [
+     487,
+     590,
+     590,
+     636
+    ],
+    "short_px": 73,
+    "name": "Potato Salad CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 27,
+   "original": null,
+   "app": {
+    "box": 18,
+    "norm": [
+     26,
+     566,
+     142,
+     608
+    ],
+    "short_px": 66,
+    "name": "Potato Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 28,
+   "original": null,
+   "app": {
+    "box": 4,
+    "norm": [
+     863,
+     663,
+     1000,
+     715
+    ],
+    "short_px": 83,
+    "name": "Rana Meat Lasagna CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 29,
+   "original": null,
+   "app": {
+    "box": 5,
+    "norm": [
+     863,
+     691,
+     1000,
+     743
+    ],
+    "short_px": 82,
+    "name": "Rana Meat Lasagna CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "n": 30,
+   "original": null,
+   "app": {
+    "box": 16,
+    "norm": [
+     147,
+     474,
+     259,
+     520
+    ],
+    "short_px": 74,
+    "name": "Chicken Salad Tub CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 1,
+   "original": {
+    "box": 1,
+    "norm": [
+     657,
+     791,
+     772,
+     976
+    ],
+    "short_px": 247,
+    "name": "Taylor Farms BLT Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     656,
+     791,
+     771,
+     976
+    ],
+    "short_px": 166,
+    "name": "BBQ Chopped Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 2,
+   "original": {
+    "box": 2,
+    "norm": [
+     874,
+     830,
+     1000,
+     987
+    ],
+    "short_px": 209,
+    "name": "Taylor Farms BLT Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     874,
+     831,
+     1000,
+     987
+    ],
+    "short_px": 140,
+    "name": "BBQ Chopped Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 3,
+   "original": {
+    "box": 3,
+    "norm": [
+     770,
+     835,
+     884,
+     988
+    ],
+    "short_px": 204.8,
+    "name": "Taylor Farms BLT Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     770,
+     837,
+     884,
+     988
+    ],
+    "short_px": 136,
+    "name": "BBQ Chopped Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 4,
+   "original": {
+    "box": 4,
+    "norm": [
+     458,
+     815,
+     561,
+     984
+    ],
+    "short_px": 225,
+    "name": "Chicken Caesar Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     458,
+     814,
+     561,
+     984
+    ],
+    "short_px": 153,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 5,
+   "original": {
+    "box": 6,
+    "norm": [
+     157,
+     771,
+     263,
+     906
+    ],
+    "short_px": 179.9,
+    "name": "Chicken Caesar Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     157,
+     771,
+     263,
+     907
+    ],
+    "short_px": 122,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 6,
+   "original": {
+    "box": 7,
+    "norm": [
+     69,
+     825,
+     169,
+     966
+    ],
+    "short_px": 188.8,
+    "name": "Chicken Caesar Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     69,
+     826,
+     169,
+     967
+    ],
+    "short_px": 127,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 7,
+   "original": {
+    "box": 8,
+    "norm": [
+     353,
+     803,
+     451,
+     942
+    ],
+    "short_px": 185.8,
+    "name": "Caesar Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     352,
+     804,
+     451,
+     942
+    ],
+    "short_px": 124,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 8,
+   "original": {
+    "box": 10,
+    "norm": [
+     259,
+     813,
+     355,
+     948
+    ],
+    "short_px": 181.1,
+    "name": "Caesar Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     259,
+     813,
+     355,
+     949
+    ],
+    "short_px": 122,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 9,
+   "original": {
+    "box": 13,
+    "norm": [
+     368,
+     861,
+     460,
+     986
+    ],
+    "short_px": 166.8,
+    "name": "Caesar Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     368,
+     863,
+     460,
+     987
+    ],
+    "short_px": 111,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 10,
+   "original": {
+    "box": 11,
+    "norm": [
+     834,
+     733,
+     940,
+     851
+    ],
+    "short_px": 157.9,
+    "name": "BLT Chopped Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     836,
+     732,
+     940,
+     851
+    ],
+    "short_px": 107,
+    "name": "Chef Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 11,
+   "original": {
+    "box": 17,
+    "norm": [
+     740,
+     740,
+     839,
+     847
+    ],
+    "short_px": 143.1,
+    "name": "BLT Chopped Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     739,
+     740,
+     839,
+     848
+    ],
+    "short_px": 97,
+    "name": "Chef Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 12,
+   "original": {
+    "box": 16,
+    "norm": [
+     566,
+     690,
+     655,
+     810
+    ],
+    "short_px": 160.9,
+    "name": "Caesar with Bacon Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     566,
+     691,
+     655,
+     811
+    ],
+    "short_px": 108,
+    "name": "Taylor Farms Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 13,
+   "original": {
+    "box": 23,
+    "norm": [
+     466,
+     711,
+     552,
+     823
+    ],
+    "short_px": 149.6,
+    "name": "Caesar with Bacon Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     466,
+     710,
+     552,
+     823
+    ],
+    "short_px": 102,
+    "name": "Taylor Farms Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 14,
+   "original": {
+    "box": 22,
+    "norm": [
+     529,
+     433,
+     625,
+     534
+    ],
+    "short_px": 134.8,
+    "name": "Sweet Kale Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     529,
+     433,
+     624,
+     534
+    ],
+    "short_px": 91,
+    "name": "Chopped Salad Bowl CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 15,
+   "original": {
+    "box": 24,
+    "norm": [
+     435,
+     439,
+     528,
+     542
+    ],
+    "short_px": 137.7,
+    "name": "Sweet Kale Salad Bowl",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 16,
+   "original": {
+    "box": 5,
+    "norm": [
+     562,
+     837,
+     662,
+     988
+    ],
+    "short_px": 201.9,
+    "name": "Taylor Farms Caesar Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     563,
+     837,
+     663,
+     989
+    ],
+    "short_px": 137,
+    "name": "Mini Avocado Ranch Salad Bowl",
+    "label": "wrong"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 17,
+   "original": {
+    "box": 9,
+    "norm": [
+     838,
+     449,
+     956,
+     564
+    ],
+    "short_px": 153.8,
+    "name": "Pasta Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     838,
+     449,
+     956,
+     563
+    ],
+    "short_px": 103,
+    "name": "Macaroni Pasta Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 18,
+   "original": {
+    "box": 12,
+    "norm": [
+     733,
+     513,
+     838,
+     623
+    ],
+    "short_px": 146.6,
+    "name": "Chicken Pasta Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     733,
+     512,
+     838,
+     622
+    ],
+    "short_px": 99,
+    "name": "Pasta Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 19,
+   "original": {
+    "box": 14,
+    "norm": [
+     836,
+     515,
+     948,
+     615
+    ],
+    "short_px": 133.6,
+    "name": "Macaroni Pasta Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     836,
+     516,
+     948,
+     616
+    ],
+    "short_px": 90,
+    "name": "Macaroni Pasta Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 20,
+   "original": {
+    "box": 15,
+    "norm": [
+     640,
+     517,
+     737,
+     631
+    ],
+    "short_px": 152.6,
+    "name": "Rotini Pasta Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     639,
+     514,
+     737,
+     631
+    ],
+    "short_px": 105,
+    "name": "Pasta Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 21,
+   "original": {
+    "box": 18,
+    "norm": [
+     20,
+     526,
+     117,
+     635
+    ],
+    "short_px": 145.5,
+    "name": "Garden Side Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     21,
+     526,
+     117,
+     634
+    ],
+    "short_px": 98,
+    "name": "Chicken Caesar Salad",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 22,
+   "original": {
+    "box": 19,
+    "norm": [
+     10,
+     854,
+     89,
+     986
+    ],
+    "short_px": 175.7,
+    "name": "Chef Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     10,
+     854,
+     88,
+     986
+    ],
+    "short_px": 118,
+    "name": "Chef Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 23,
+   "original": {
+    "box": 20,
+    "norm": [
+     138,
+     507,
+     230,
+     615
+    ],
+    "short_px": 144.3,
+    "name": "Chef Lettuce Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     138,
+     508,
+     230,
+     614
+    ],
+    "short_px": 96,
+    "name": "Chicken Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 24,
+   "original": {
+    "box": 21,
+    "norm": [
+     296,
+     204,
+     396,
+     301
+    ],
+    "short_px": 129.4,
+    "name": "Quinoa Kale Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     296,
+     204,
+     396,
+     301
+    ],
+    "short_px": 87,
+    "name": "Garden Salad Bowl CHECK",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 12,
+    "norm": [
+     169,
+     838,
+     268,
+     961
+    ],
+    "short_px": 111,
+    "name": "Caesar Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 1,
+   "original": {
+    "box": 3,
+    "norm": [
+     306,
+     278,
+     515,
+     532
+    ],
+    "short_px": 340.2,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     306,
+     278,
+     514,
+     532
+    ],
+    "short_px": 229,
+    "name": "Taylor Farms Apple Walnut salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 2,
+   "original": {
+    "box": 5,
+    "norm": [
+     318,
+     435,
+     518,
+     666
+    ],
+    "short_px": 308.7,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     318,
+     436,
+     518,
+     664
+    ],
+    "short_px": 206,
+    "name": "Taylor Farms Apple Walnut salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 3,
+   "original": {
+    "box": 6,
+    "norm": [
+     519,
+     415,
+     733,
+     625
+    ],
+    "short_px": 281.4,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     519,
+     414,
+     733,
+     624
+    ],
+    "short_px": 189,
+    "name": "Taylor Farms Chopped Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 4,
+   "original": {
+    "box": 10,
+    "norm": [
+     546,
+     499,
+     741,
+     687
+    ],
+    "short_px": 251.1,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     544,
+     499,
+     741,
+     687
+    ],
+    "short_px": 169,
+    "name": "Taylor Farms Chopped Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 5,
+   "original": {
+    "box": 11,
+    "norm": [
+     344,
+     519,
+     525,
+     708
+    ],
+    "short_px": 253.5,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     345,
+     520,
+     525,
+     708
+    ],
+    "short_px": 169,
+    "name": "Taylor Farms Apple Walnut salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 6,
+   "original": {
+    "box": 15,
+    "norm": [
+     178,
+     813,
+     350,
+     997
+    ],
+    "short_px": 246.4,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     178,
+     813,
+     349,
+     997
+    ],
+    "short_px": 165,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 7,
+   "original": {
+    "box": 20,
+    "norm": [
+     276,
+     815,
+     412,
+     1000
+    ],
+    "short_px": 247.6,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     278,
+     816,
+     413,
+     1000
+    ],
+    "short_px": 166,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 8,
+   "original": {
+    "box": 21,
+    "norm": [
+     74,
+     843,
+     232,
+     1000
+    ],
+    "short_px": 209.6,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     86,
+     843,
+     229,
+     1000
+    ],
+    "short_px": 141,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 9,
+   "original": {
+    "box": 24,
+    "norm": [
+     0,
+     835,
+     128,
+     1000
+    ],
+    "short_px": 220.3,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     0,
+     837,
+     128,
+     1000
+    ],
+    "short_px": 147,
+    "name": "Caesar Salad Bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 10,
+   "original": {
+    "box": 9,
+    "norm": [
+     600,
+     779,
+     777,
+     991
+    ],
+    "short_px": 283.8,
+    "name": "Caesar with Bacon Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     600,
+     779,
+     776,
+     996
+    ],
+    "short_px": 195,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 11,
+   "original": {
+    "box": 12,
+    "norm": [
+     408,
+     800,
+     578,
+     1000
+    ],
+    "short_px": 267.2,
+    "name": "Caesar with Bacon Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     409,
+     802,
+     578,
+     1000
+    ],
+    "short_px": 178,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 12,
+   "original": {
+    "box": 22,
+    "norm": [
+     581,
+     866,
+     751,
+     1000
+    ],
+    "short_px": 178.7,
+    "name": "Caesar with Bacon Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     583,
+     872,
+     751,
+     1000
+    ],
+    "short_px": 115,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 13,
+   "original": {
+    "box": 4,
+    "norm": [
+     138,
+     387,
+     332,
+     628
+    ],
+    "short_px": 323,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     138,
+     387,
+     333,
+     629
+    ],
+    "short_px": 218,
+    "name": "packaged chicken salad bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 14,
+   "original": {
+    "box": 18,
+    "norm": [
+     0,
+     413,
+     104,
+     683
+    ],
+    "short_px": 247.1,
+    "name": "Chicken Caesar Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     0,
+     413,
+     104,
+     673
+    ],
+    "short_px": 166,
+    "name": "packaged Caesar salad bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 15,
+   "original": {
+    "box": 8,
+    "norm": [
+     741,
+     165,
+     929,
+     369
+    ],
+    "short_px": 271.9,
+    "name": "Taylor Farms Pasta Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     741,
+     166,
+     929,
+     369
+    ],
+    "short_px": 183,
+    "name": "Taylor Farms pasta salad bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 16,
+   "original": {
+    "box": 23,
+    "norm": [
+     740,
+     311,
+     906,
+     441
+    ],
+    "short_px": 174.5,
+    "name": "Taylor Farms Pasta Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     740,
+     311,
+     906,
+     441
+    ],
+    "short_px": 117,
+    "name": "Taylor Farms pasta salad bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 17,
+   "original": {
+    "box": 16,
+    "norm": [
+     0,
+     517,
+     142,
+     736
+    ],
+    "short_px": 292.7,
+    "name": "Cobb Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     0,
+     517,
+     142,
+     736
+    ],
+    "short_px": 197,
+    "name": "Caesar Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 18,
+   "original": {
+    "box": 19,
+    "norm": [
+     163,
+     581,
+     340,
+     730
+    ],
+    "short_px": 198.9,
+    "name": "Cobb Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     163,
+     583,
+     340,
+     730
+    ],
+    "short_px": 132,
+    "name": "Caesar Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 19,
+   "original": {
+    "box": 1,
+    "norm": [
+     756,
+     407,
+     983,
+     690
+    ],
+    "short_px": 378.2,
+    "name": "Taylor Farms American Style Pasta Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     756,
+     408,
+     983,
+     690
+    ],
+    "short_px": 254,
+    "name": "Taylor Farms American Style Pasta Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 20,
+   "original": {
+    "box": 2,
+    "norm": [
+     520,
+     254,
+     747,
+     512
+    ],
+    "short_px": 344.3,
+    "name": "Taylor Farms Apple Walnut Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     520,
+     254,
+     747,
+     513
+    ],
+    "short_px": 233,
+    "name": "Taylor Farms Apple Walnut salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 21,
+   "original": {
+    "box": 7,
+    "norm": [
+     10,
+     0,
+     238,
+     197
+    ],
+    "short_px": 263.6,
+    "name": "Kale Quinoa Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     11,
+     0,
+     238,
+     198
+    ],
+    "short_px": 178,
+    "name": "packaged green salad bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 22,
+   "original": {
+    "box": 13,
+    "norm": [
+     762,
+     810,
+     935,
+     1000
+    ],
+    "short_px": 254.7,
+    "name": "BLT Salad Bowl",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     763,
+     810,
+     934,
+     1000
+    ],
+    "short_px": 171,
+    "name": "Taylor Farms BLT Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 23,
+   "original": {
+    "box": 14,
+    "norm": [
+     64,
+     304,
+     215,
+     520
+    ],
+    "short_px": 289.1,
+    "name": "Chicken Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     64,
+     306,
+     216,
+     523
+    ],
+    "short_px": 196,
+    "name": "packaged salad bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "n": 24,
+   "original": {
+    "box": 17,
+    "norm": [
+     304,
+     0,
+     505,
+     141
+    ],
+    "short_px": 188.8,
+    "name": "Grain Greens Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     304,
+     0,
+     506,
+     141
+    ],
+    "short_px": 127,
+    "name": "packaged chopped salad bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 1,
+   "original": {
+    "box": 8,
+    "norm": [
+     0,
+     716,
+     234,
+     900
+    ],
+    "short_px": 312.9,
+    "name": "Marketside Caesar Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     0,
+     716,
+     233,
+     900
+    ],
+    "short_px": 210,
+    "name": "Chicken salad bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 2,
+   "original": {
+    "box": 13,
+    "norm": [
+     143,
+     731,
+     282,
+     895
+    ],
+    "short_px": 186.4,
+    "name": "Marketside Caesar Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     134,
+     731,
+     282,
+     896
+    ],
+    "short_px": 133,
+    "name": "Chicken salad bowl",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 3,
+   "original": {
+    "box": 17,
+    "norm": [
+     46,
+     624,
+     274,
+     714
+    ],
+    "short_px": 215.6,
+    "name": "Marketside Caesar Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     48,
+     624,
+     273,
+     714
+    ],
+    "short_px": 145,
+    "name": "Taylor Farms Caesar Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 4,
+   "original": {
+    "box": 23,
+    "norm": [
+     0,
+     623,
+     180,
+     700
+    ],
+    "short_px": 184.1,
+    "name": "Marketside Caesar Salad with Chicken",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     0,
+     623,
+     178,
+     701
+    ],
+    "short_px": 125,
+    "name": "Taylor Farms Caesar Salad with Chicken",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 5,
+   "original": {
+    "box": 3,
+    "norm": [
+     498,
+     358,
+     881,
+     533
+    ],
+    "short_px": 415.8,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     499,
+     360,
+     881,
+     533
+    ],
+    "short_px": 276,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 6,
+   "original": {
+    "box": 7,
+    "norm": [
+     485,
+     456,
+     833,
+     588
+    ],
+    "short_px": 313,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     484,
+     456,
+     832,
+     586
+    ],
+    "short_px": 208,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 7,
+   "original": {
+    "box": 10,
+    "norm": [
+     134,
+     472,
+     486,
+     590
+    ],
+    "short_px": 281.6,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     134,
+     473,
+     486,
+     591
+    ],
+    "short_px": 189,
+    "name": "Taylor Farms Apple Walnut Salad with Chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 8,
+   "original": {
+    "box": 5,
+    "norm": [
+     266,
+     734,
+     574,
+     940
+    ],
+    "short_px": 411.4,
+    "name": "Taylor Farms Caesar with Bacon Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     267,
+     738,
+     573,
+     939
+    ],
+    "short_px": 276,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 9,
+   "original": {
+    "box": 6,
+    "norm": [
+     562,
+     719,
+     841,
+     885
+    ],
+    "short_px": 372.2,
+    "name": "Taylor Farms Caesar with Bacon Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     562,
+     719,
+     840,
+     884
+    ],
+    "short_px": 250,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 10,
+   "original": {
+    "box": 19,
+    "norm": [
+     578,
+     621,
+     833,
+     697
+    ],
+    "short_px": 180.6,
+    "name": "Taylor Farms Caesar with Bacon Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     577,
+     621,
+     830,
+     698
+    ],
+    "short_px": 122,
+    "name": "Taylor Farms Caesar with Bacon",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 11,
+   "original": {
+    "box": 4,
+    "norm": [
+     116,
+     355,
+     490,
+     527
+    ],
+    "short_px": 409.9,
+    "name": "Taylor Farms Apple Walnut Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     118,
+     355,
+     490,
+     528
+    ],
+    "short_px": 277,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 12,
+   "original": {
+    "box": 18,
+    "norm": [
+     488,
+     331,
+     762,
+     405
+    ],
+    "short_px": 176.4,
+    "name": "Taylor Farms Apple Walnut Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     491,
+     331,
+     761,
+     404
+    ],
+    "short_px": 118,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 13,
+   "original": {
+    "box": 24,
+    "norm": [
+     227,
+     329,
+     485,
+     378
+    ],
+    "short_px": 116.4,
+    "name": "Taylor Farms Apple Walnut Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     244,
+     330,
+     486,
+     378
+    ],
+    "short_px": 77,
+    "name": "Taylor Farms Apple Walnut Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 14,
+   "original": {
+    "box": 11,
+    "norm": [
+     855,
+     728,
+     1000,
+     918
+    ],
+    "short_px": 193.5,
+    "name": "Taylor Farms Southwest Chopped Chicken Salad",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     856,
+     728,
+     1000,
+     918
+    ],
+    "short_px": 130,
+    "name": "Chopped salad with chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 15,
+   "original": {
+    "box": 20,
+    "norm": [
+     811,
+     622,
+     1000,
+     714
+    ],
+    "short_px": 218,
+    "name": "Taylor Farms Southwest Chopped Chicken Salad",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     811,
+     623,
+     1000,
+     714
+    ],
+    "short_px": 146,
+    "name": "Chopped salad with chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 16,
+   "original": {
+    "box": 21,
+    "norm": [
+     835,
+     710,
+     1000,
+     812
+    ],
+    "short_px": 220.9,
+    "name": "Taylor Farms Southwest Chopped Chicken Salad",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     834,
+     711,
+     1000,
+     814
+    ],
+    "short_px": 149,
+    "name": "Chopped salad with chicken",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 17,
+   "original": {
+    "box": 1,
+    "norm": [
+     84,
+     103,
+     528,
+     287
+    ],
+    "short_px": 436,
+    "name": "Farro Sweet Potato Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     83,
+     104,
+     528,
+     286
+    ],
+    "short_px": 291,
+    "name": "Farro Sweet Potato Chicken Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 18,
+   "original": {
+    "box": 9,
+    "norm": [
+     102,
+     0,
+     485,
+     109
+    ],
+    "short_px": 259,
+    "name": "Farro Sweet Potato Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     101,
+     0,
+     486,
+     109
+    ],
+    "short_px": 174,
+    "name": "Farro Sweet Potato Chicken Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 19,
+   "original": {
+    "box": 12,
+    "norm": [
+     278,
+     622,
+     536,
+     718
+    ],
+    "short_px": 226.9,
+    "name": "Taylor Farms Caesar with Bacon Salad with Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     279,
+     622,
+     536,
+     717
+    ],
+    "short_px": 152,
+    "name": "Taylor Farms Caesar with Bacon Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 20,
+   "original": {
+    "box": 15,
+    "norm": [
+     541,
+     623,
+     761,
+     719
+    ],
+    "short_px": 228.7,
+    "name": "Taylor Farms Caesar with Bacon Salad with Chicken",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     541,
+     624,
+     760,
+     719
+    ],
+    "short_px": 151,
+    "name": "Taylor Farms Caesar with Bacon Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 21,
+   "original": {
+    "box": 2,
+    "norm": [
+     567,
+     94,
+     978,
+     262
+    ],
+    "short_px": 399.8,
+    "name": "Taylor Farms Sweet Kale Chicken Salad",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     568,
+     94,
+     978,
+     262
+    ],
+    "short_px": 269,
+    "name": "Taylor Farms Sweet Kale Salad",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 22,
+   "original": {
+    "box": 14,
+    "norm": [
+     0,
+     383,
+     132,
+     549
+    ],
+    "short_px": 176.3,
+    "name": "Marketside Chicken Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     0,
+     383,
+     131,
+     548
+    ],
+    "short_px": 118,
+    "name": "Chicken Chopped Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 23,
+   "original": {
+    "box": 16,
+    "norm": [
+     866,
+     433,
+     1000,
+     588
+    ],
+    "short_px": 179.3,
+    "name": "Taylor Farms Chopped Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     866,
+     436,
+     1000,
+     587
+    ],
+    "short_px": 121,
+    "name": "Taylor Farms Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "n": 24,
+   "original": {
+    "box": 22,
+    "norm": [
+     847,
+     330,
+     1000,
+     436
+    ],
+    "short_px": 204.8,
+    "name": "Packaged Chicken Salad Bowl",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     848,
+     331,
+     1000,
+     436
+    ],
+    "short_px": 137,
+    "name": "Southwest Style Salad Bowl",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 1,
+   "original": {
+    "box": 1,
+    "norm": [
+     129,
+     684,
+     223,
+     1000
+    ],
+    "short_px": 223.9,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 2,
+   "original": {
+    "box": 2,
+    "norm": [
+     851,
+     639,
+     926,
+     1000
+    ],
+    "short_px": 177.6,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 3,
+   "original": {
+    "box": 3,
+    "norm": [
+     922,
+     677,
+     1000,
+     997
+    ],
+    "short_px": 185.9,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 4,
+   "original": {
+    "box": 4,
+    "norm": [
+     820,
+     673,
+     900,
+     978
+    ],
+    "short_px": 190.7,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 5,
+   "original": {
+    "box": 5,
+    "norm": [
+     209,
+     665,
+     279,
+     1000
+    ],
+    "short_px": 166.3,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 6,
+   "original": {
+    "box": 6,
+    "norm": [
+     511,
+     703,
+     588,
+     1000
+    ],
+    "short_px": 181.2,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 7,
+   "original": {
+    "box": 7,
+    "norm": [
+     21,
+     652,
+     123,
+     861
+    ],
+    "short_px": 241.2,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 8,
+   "original": {
+    "box": 8,
+    "norm": [
+     298,
+     687,
+     370,
+     978
+    ],
+    "short_px": 171.1,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 9,
+   "original": {
+    "box": 9,
+    "norm": [
+     316,
+     688,
+     382,
+     1000
+    ],
+    "short_px": 158.6,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 10,
+   "original": {
+    "box": 10,
+    "norm": [
+     822,
+     169,
+     897,
+     440
+    ],
+    "short_px": 177.6,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 11,
+   "original": {
+    "box": 11,
+    "norm": [
+     204,
+     459,
+     295,
+     678
+    ],
+    "short_px": 215,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 12,
+   "original": {
+    "box": 12,
+    "norm": [
+     389,
+     683,
+     449,
+     1000
+    ],
+    "short_px": 143.2,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 13,
+   "original": {
+    "box": 13,
+    "norm": [
+     743,
+     479,
+     831,
+     694
+    ],
+    "short_px": 207.9,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 14,
+   "original": {
+    "box": 14,
+    "norm": [
+     187,
+     438,
+     297,
+     608
+    ],
+    "short_px": 227.4,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 15,
+   "original": {
+    "box": 15,
+    "norm": [
+     756,
+     481,
+     845,
+     684
+    ],
+    "short_px": 212.7,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 16,
+   "original": {
+    "box": 16,
+    "norm": [
+     899,
+     683,
+     956,
+     1000
+    ],
+    "short_px": 135.4,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 17,
+   "original": {
+    "box": 17,
+    "norm": [
+     402,
+     499,
+     514,
+     655
+    ],
+    "short_px": 207.8,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 18,
+   "original": {
+    "box": 18,
+    "norm": [
+     826,
+     425,
+     892,
+     683
+    ],
+    "short_px": 158,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 19,
+   "original": {
+    "box": 19,
+    "norm": [
+     187,
+     476,
+     282,
+     649
+    ],
+    "short_px": 225.7,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 20,
+   "original": {
+    "box": 20,
+    "norm": [
+     0,
+     607,
+     65,
+     854
+    ],
+    "short_px": 154.4,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 21,
+   "original": {
+    "box": 21,
+    "norm": [
+     787,
+     162,
+     843,
+     447
+    ],
+    "short_px": 133.1,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 22,
+   "original": {
+    "box": 22,
+    "norm": [
+     357,
+     690,
+     406,
+     1000
+    ],
+    "short_px": 114.6,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 23,
+   "original": {
+    "box": 23,
+    "norm": [
+     687,
+     426,
+     743,
+     684
+    ],
+    "short_px": 133.7,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 24,
+   "original": {
+    "box": 24,
+    "norm": [
+     727,
+     191,
+     791,
+     417
+    ],
+    "short_px": 150.9,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 1,
+    "norm": [
+     0,
+     120,
+     99,
+     718
+    ],
+    "short_px": 159,
+    "name": "Banana",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 1,
+   "original": {
+    "box": 4,
+    "norm": [
+     757,
+     334,
+     810,
+     419
+    ],
+    "short_px": 114,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     756,
+     334,
+     810,
+     419
+    ],
+    "short_px": 76,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 2,
+   "original": {
+    "box": 8,
+    "norm": [
+     675,
+     278,
+     724,
+     363
+    ],
+    "short_px": 114,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     675,
+     278,
+     724,
+     362
+    ],
+    "short_px": 76,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 3,
+   "original": {
+    "box": 10,
+    "norm": [
+     721,
+     289,
+     771,
+     372
+    ],
+    "short_px": 111.6,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     721,
+     288,
+     771,
+     372
+    ],
+    "short_px": 76,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 4,
+   "original": {
+    "box": 12,
+    "norm": [
+     98,
+     417,
+     151,
+     495
+    ],
+    "short_px": 104.5,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     98,
+     417,
+     151,
+     496
+    ],
+    "short_px": 71,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 5,
+   "original": {
+    "box": 14,
+    "norm": [
+     513,
+     786,
+     560,
+     873
+    ],
+    "short_px": 111.7,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     513,
+     786,
+     560,
+     873
+    ],
+    "short_px": 75,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 6,
+   "original": {
+    "box": 15,
+    "norm": [
+     410,
+     763,
+     459,
+     847
+    ],
+    "short_px": 112.8,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     410,
+     762,
+     459,
+     848
+    ],
+    "short_px": 77,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 7,
+   "original": {
+    "box": 17,
+    "norm": [
+     687,
+     344,
+     737,
+     424
+    ],
+    "short_px": 107.5,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     686,
+     343,
+     738,
+     423
+    ],
+    "short_px": 72,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 8,
+   "original": {
+    "box": 19,
+    "norm": [
+     195,
+     341,
+     245,
+     421
+    ],
+    "short_px": 106.9,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     194,
+     341,
+     244,
+     421
+    ],
+    "short_px": 72,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 9,
+   "original": {
+    "box": 20,
+    "norm": [
+     458,
+     757,
+     503,
+     845
+    ],
+    "short_px": 106.9,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 21,
+    "norm": [
+     458,
+     757,
+     502,
+     844
+    ],
+    "short_px": 71,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 10,
+   "original": {
+    "box": 24,
+    "norm": [
+     748,
+     172,
+     797,
+     250
+    ],
+    "short_px": 103.9,
+    "name": "apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     748,
+     171,
+     798,
+     248
+    ],
+    "short_px": 69,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 11,
+   "original": {
+    "box": 3,
+    "norm": [
+     685,
+     915,
+     742,
+     1000
+    ],
+    "short_px": 114,
+    "name": "red apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     684,
+     916,
+     742,
+     1000
+    ],
+    "short_px": 76,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 12,
+   "original": {
+    "box": 6,
+    "norm": [
+     626,
+     790,
+     675,
+     878
+    ],
+    "short_px": 118.1,
+    "name": "red apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     625,
+     789,
+     675,
+     878
+    ],
+    "short_px": 80,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 13,
+   "original": {
+    "box": 7,
+    "norm": [
+     665,
+     754,
+     714,
+     841
+    ],
+    "short_px": 115.8,
+    "name": "red apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     665,
+     754,
+     714,
+     842
+    ],
+    "short_px": 78,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 14,
+   "original": {
+    "box": 18,
+    "norm": [
+     727,
+     833,
+     775,
+     917
+    ],
+    "short_px": 111,
+    "name": "red apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     726,
+     833,
+     775,
+     917
+    ],
+    "short_px": 75,
+    "name": "Gala Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 15,
+   "original": {
+    "box": 22,
+    "norm": [
+     679,
+     834,
+     727,
+     916
+    ],
+    "short_px": 109.2,
+    "name": "red apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     679,
+     834,
+     727,
+     916
+    ],
+    "short_px": 73,
+    "name": "Red Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 16,
+   "original": {
+    "box": 5,
+    "norm": [
+     249,
+     806,
+     301,
+     892
+    ],
+    "short_px": 114.6,
+    "name": "Green Apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     248,
+     806,
+     301,
+     892
+    ],
+    "short_px": 78,
+    "name": "Granny Smith Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 17,
+   "original": {
+    "box": 9,
+    "norm": [
+     257,
+     702,
+     307,
+     784
+    ],
+    "short_px": 110.4,
+    "name": "Green Apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     257,
+     702,
+     308,
+     784
+    ],
+    "short_px": 74,
+    "name": "Green Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 18,
+   "original": {
+    "box": 13,
+    "norm": [
+     121,
+     872,
+     172,
+     953
+    ],
+    "short_px": 108.6,
+    "name": "Green Apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     120,
+     871,
+     172,
+     953
+    ],
+    "short_px": 74,
+    "name": "Granny Smith Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 19,
+   "original": {
+    "box": 23,
+    "norm": [
+     241,
+     929,
+     295,
+     1000
+    ],
+    "short_px": 95.6,
+    "name": "Green Apple",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 20,
+   "original": {
+    "box": 2,
+    "norm": [
+     398,
+     866,
+     452,
+     960
+    ],
+    "short_px": 125.9,
+    "name": "gala apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     399,
+     867,
+     453,
+     958
+    ],
+    "short_px": 82,
+    "name": "Gala Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 21,
+   "original": {
+    "box": 11,
+    "norm": [
+     912,
+     919,
+     965,
+     997
+    ],
+    "short_px": 105.1,
+    "name": "gala apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     913,
+     919,
+     965,
+     997
+    ],
+    "short_px": 70,
+    "name": "Gala Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 22,
+   "original": {
+    "box": 21,
+    "norm": [
+     499,
+     822,
+     543,
+     911
+    ],
+    "short_px": 104.5,
+    "name": "gala apple",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     499,
+     822,
+     543,
+     911
+    ],
+    "short_px": 70,
+    "name": "Gala Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 23,
+   "original": {
+    "box": 1,
+    "norm": [
+     0,
+     0,
+     54,
+     123
+    ],
+    "short_px": 128.9,
+    "name": "banana",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 24,
+   "original": {
+    "box": 16,
+    "norm": [
+     892,
+     190,
+     936,
+     286
+    ],
+    "short_px": 102.8,
+    "name": "pear",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     892,
+     191,
+     936,
+     286
+    ],
+    "short_px": 70,
+    "name": "Green pear CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 19,
+    "norm": [
+     633,
+     110,
+     686,
+     184
+    ],
+    "short_px": 67,
+    "name": "Red-yellow apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "n": 26,
+   "original": null,
+   "app": {
+    "box": 23,
+    "norm": [
+     216,
+     761,
+     263,
+     843
+    ],
+    "short_px": 74,
+    "name": "Green Apple CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 1,
+   "original": {
+    "box": 2,
+    "norm": [
+     0,
+     12,
+     278,
+     482
+    ],
+    "short_px": 628.7,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     0,
+     13,
+     278,
+     478
+    ],
+    "short_px": 418,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 2,
+   "original": {
+    "box": 12,
+    "norm": [
+     24,
+     14,
+     182,
+     226
+    ],
+    "short_px": 283.8,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     24,
+     14,
+     181,
+     226
+    ],
+    "short_px": 190,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 3,
+   "original": {
+    "box": 14,
+    "norm": [
+     0,
+     276,
+     162,
+     476
+    ],
+    "short_px": 267.8,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     0,
+     276,
+     163,
+     477
+    ],
+    "short_px": 181,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 4,
+   "original": {
+    "box": 15,
+    "norm": [
+     131,
+     219,
+     259,
+     471
+    ],
+    "short_px": 303.5,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 13,
+    "norm": [
+     133,
+     208,
+     259,
+     472
+    ],
+    "short_px": 203,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 5,
+   "original": {
+    "box": 16,
+    "norm": [
+     3,
+     167,
+     168,
+     351
+    ],
+    "short_px": 245.8,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     3,
+     167,
+     167,
+     350
+    ],
+    "short_px": 165,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 6,
+   "original": {
+    "box": 18,
+    "norm": [
+     141,
+     32,
+     279,
+     202
+    ],
+    "short_px": 226.2,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     141,
+     32,
+     279,
+     169
+    ],
+    "short_px": 123,
+    "name": "Organic Honeycrisp Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 7,
+   "original": {
+    "box": 1,
+    "norm": [
+     289,
+     0,
+     558,
+     540
+    ],
+    "short_px": 639.1,
+    "name": "Gala Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     289,
+     0,
+     560,
+     539
+    ],
+    "short_px": 434,
+    "name": "Bagged Apples Orange Bag",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 8,
+   "original": {
+    "box": 5,
+    "norm": [
+     279,
+     631,
+     524,
+     1000
+    ],
+    "short_px": 492.8,
+    "name": "Gala Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     279,
+     631,
+     523,
+     1000
+    ],
+    "short_px": 332,
+    "name": "Gala Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 9,
+   "original": {
+    "box": 6,
+    "norm": [
+     292,
+     250,
+     562,
+     491
+    ],
+    "short_px": 321.8,
+    "name": "Gala Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     293,
+     251,
+     562,
+     510
+    ],
+    "short_px": 233,
+    "name": "Bagged Apples Orange Bag",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 10,
+   "original": {
+    "box": 19,
+    "norm": [
+     305,
+     0,
+     450,
+     150
+    ],
+    "short_px": 200.1,
+    "name": "Gala Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     305,
+     0,
+     450,
+     150
+    ],
+    "short_px": 135,
+    "name": "Gala Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 11,
+   "original": {
+    "box": 24,
+    "norm": [
+     462,
+     27,
+     522,
+     203
+    ],
+    "short_px": 143.2,
+    "name": "Gala Apples",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 12,
+   "original": {
+    "box": 20,
+    "norm": [
+     886,
+     612,
+     1000,
+     740
+    ],
+    "short_px": 171,
+    "name": "Cosmic Crisp Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     886,
+     612,
+     1000,
+     739
+    ],
+    "short_px": 114,
+    "name": "Bagged Red Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 13,
+   "original": {
+    "box": 21,
+    "norm": [
+     763,
+     621,
+     839,
+     787
+    ],
+    "short_px": 181.8,
+    "name": "Cosmic Crisp Apples Bag",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 14,
+   "original": {
+    "box": 22,
+    "norm": [
+     863,
+     902,
+     993,
+     1000
+    ],
+    "short_px": 130.6,
+    "name": "Cosmic Crisp Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     862,
+     902,
+     1000,
+     1000
+    ],
+    "short_px": 88,
+    "name": "Pink Lady Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 15,
+   "original": {
+    "box": 23,
+    "norm": [
+     794,
+     851,
+     876,
+     1000
+    ],
+    "short_px": 196,
+    "name": "Cosmic Crisp Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     794,
+     852,
+     879,
+     1000
+    ],
+    "short_px": 133,
+    "name": "Cosmic Crisp Apples Bag",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 16,
+   "original": {
+    "box": 4,
+    "norm": [
+     31,
+     637,
+     285,
+     1000
+    ],
+    "short_px": 485.6,
+    "name": "Granny Smith Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     31,
+     638,
+     284,
+     1000
+    ],
+    "short_px": 326,
+    "name": "Granny Smith Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 17,
+   "original": {
+    "box": 9,
+    "norm": [
+     32,
+     715,
+     191,
+     1000
+    ],
+    "short_px": 377.8,
+    "name": "Granny Smith Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     31,
+     716,
+     190,
+     997
+    ],
+    "short_px": 253,
+    "name": "Granny Smith Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 18,
+   "original": {
+    "box": 13,
+    "norm": [
+     98,
+     636,
+     285,
+     814
+    ],
+    "short_px": 238.7,
+    "name": "Granny Smith Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     98,
+     637,
+     284,
+     814
+    ],
+    "short_px": 160,
+    "name": "Granny Smith Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 19,
+   "original": {
+    "box": 3,
+    "norm": [
+     781,
+     0,
+     1000,
+     503
+    ],
+    "short_px": 520.3,
+    "name": "Pink Lady Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     781,
+     0,
+     1000,
+     503
+    ],
+    "short_px": 351,
+    "name": "Pink Lady Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 20,
+   "original": {
+    "box": 8,
+    "norm": [
+     819,
+     200,
+     972,
+     504
+    ],
+    "short_px": 364.7,
+    "name": "Pink Lady Apples",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     819,
+     200,
+     972,
+     504
+    ],
+    "short_px": 245,
+    "name": "Pink Lady Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 21,
+   "original": {
+    "box": 7,
+    "norm": [
+     285,
+     632,
+     485,
+     912
+    ],
+    "short_px": 373.4,
+    "name": "Gala Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     284,
+     632,
+     484,
+     910
+    ],
+    "short_px": 250,
+    "name": "Gala Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 22,
+   "original": {
+    "box": 17,
+    "norm": [
+     418,
+     732,
+     524,
+     984
+    ],
+    "short_px": 252.5,
+    "name": "Gala Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     418,
+     731,
+     524,
+     984
+    ],
+    "short_px": 171,
+    "name": "Gala Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 23,
+   "original": {
+    "box": 10,
+    "norm": [
+     77,
+     788,
+     273,
+     1000
+    ],
+    "short_px": 283.8,
+    "name": "Granny Smith Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     75,
+     787,
+     273,
+     1000
+    ],
+    "short_px": 192,
+    "name": "Granny Smith Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 24,
+   "original": {
+    "box": 11,
+    "norm": [
+     834,
+     742,
+     1000,
+     960
+    ],
+    "short_px": 290.9,
+    "name": "Pink Lady Apples Bag",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     834,
+     744,
+     1000,
+     959
+    ],
+    "short_px": 193,
+    "name": "Pink Lady Apples Bin",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 11,
+    "norm": [
+     780,
+     0,
+     934,
+     270
+    ],
+    "short_px": 243,
+    "name": "Pink Lady Apples",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "n": 26,
+   "original": null,
+   "app": {
+    "box": 21,
+    "norm": [
+     0,
+     653,
+     57,
+     963
+    ],
+    "short_px": 91,
+    "name": "Bagged Red Apples",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 1,
+   "original": {
+    "box": 16,
+    "norm": [
+     445,
+     839,
+     501,
+     935
+    ],
+    "short_px": 127.6,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 18,
+    "norm": [
+     445,
+     840,
+     501,
+     934
+    ],
+    "short_px": 85,
+    "name": "Coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 2,
+   "original": {
+    "box": 18,
+    "norm": [
+     546,
+     838,
+     610,
+     920
+    ],
+    "short_px": 108.6,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 20,
+    "norm": [
+     549,
+     842,
+     609,
+     919
+    ],
+    "short_px": 69,
+    "name": "Coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 3,
+   "original": {
+    "box": 19,
+    "norm": [
+     486,
+     779,
+     536,
+     874
+    ],
+    "short_px": 120,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 19,
+    "norm": [
+     486,
+     779,
+     536,
+     874
+    ],
+    "short_px": 80,
+    "name": "Coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 4,
+   "original": {
+    "box": 21,
+    "norm": [
+     441,
+     686,
+     485,
+     779
+    ],
+    "short_px": 105.1,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 23,
+    "norm": [
+     441,
+     687,
+     485,
+     779
+    ],
+    "short_px": 71,
+    "name": "Coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 5,
+   "original": {
+    "box": 22,
+    "norm": [
+     441,
+     641,
+     495,
+     717
+    ],
+    "short_px": 101.5,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 22,
+    "norm": [
+     441,
+     640,
+     494,
+     718
+    ],
+    "short_px": 70,
+    "name": "Brown coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 6,
+   "original": {
+    "box": 24,
+    "norm": [
+     501,
+     863,
+     554,
+     933
+    ],
+    "short_px": 94.4,
+    "name": "brown coconut",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 7,
+   "original": {
+    "box": 9,
+    "norm": [
+     59,
+     218,
+     154,
+     316
+    ],
+    "short_px": 130.6,
+    "name": "Zespri SunGold Kiwi Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 9,
+    "norm": [
+     59,
+     218,
+     153,
+     316
+    ],
+    "short_px": 88,
+    "name": "SunGold Kiwi Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 8,
+   "original": {
+    "box": 10,
+    "norm": [
+     64,
+     139,
+     158,
+     224
+    ],
+    "short_px": 113.4,
+    "name": "Zespri SunGold Kiwi Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 10,
+    "norm": [
+     64,
+     139,
+     159,
+     226
+    ],
+    "short_px": 78,
+    "name": "SunGold Kiwi Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 9,
+   "original": {
+    "box": 13,
+    "norm": [
+     143,
+     222,
+     222,
+     305
+    ],
+    "short_px": 110.4,
+    "name": "Zespri SunGold Kiwi Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 14,
+    "norm": [
+     144,
+     222,
+     221,
+     306
+    ],
+    "short_px": 75,
+    "name": "SunGold Kiwi Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 10,
+   "original": {
+    "box": 14,
+    "norm": [
+     154,
+     148,
+     233,
+     229
+    ],
+    "short_px": 108.6,
+    "name": "Zespri SunGold Kiwi Pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 15,
+    "norm": [
+     154,
+     148,
+     233,
+     227
+    ],
+    "short_px": 71,
+    "name": "SunGold Kiwi Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 11,
+   "original": {
+    "box": 4,
+    "norm": [
+     5,
+     231,
+     124,
+     344
+    ],
+    "short_px": 151.4,
+    "name": "Zespri kiwifruit pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 4,
+    "norm": [
+     5,
+     231,
+     124,
+     344
+    ],
+    "short_px": 102,
+    "name": "SunGold Kiwi Pack",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 12,
+   "original": {
+    "box": 6,
+    "norm": [
+     0,
+     323,
+     114,
+     428
+    ],
+    "short_px": 140.7,
+    "name": "Zespri kiwifruit pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 6,
+    "norm": [
+     0,
+     326,
+     114,
+     428
+    ],
+    "short_px": 92,
+    "name": "Golden kiwi pack CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 13,
+   "original": {
+    "box": 11,
+    "norm": [
+     135,
+     302,
+     217,
+     399
+    ],
+    "short_px": 129.4,
+    "name": "Zespri kiwifruit pack",
+    "label": "correct"
+   },
+   "app": {
+    "box": 11,
+    "norm": [
+     140,
+     303,
+     218,
+     398
+    ],
+    "short_px": 85,
+    "name": "Golden kiwi pack CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 14,
+   "original": {
+    "box": 5,
+    "norm": [
+     773,
+     584,
+     863,
+     726
+    ],
+    "short_px": 188.8,
+    "name": "Bagged green limes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 5,
+    "norm": [
+     773,
+     584,
+     863,
+     726
+    ],
+    "short_px": 127,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 15,
+   "original": {
+    "box": 15,
+    "norm": [
+     628,
+     238,
+     700,
+     319
+    ],
+    "short_px": 107.5,
+    "name": "Bagged green limes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 16,
+    "norm": [
+     628,
+     239,
+     701,
+     320
+    ],
+    "short_px": 73,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 16,
+   "original": {
+    "box": 8,
+    "norm": [
+     607,
+     88,
+     662,
+     259
+    ],
+    "short_px": 131.3,
+    "name": "Bagged Fresh Limes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 8,
+    "norm": [
+     607,
+     89,
+     662,
+     260
+    ],
+    "short_px": 88,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 17,
+   "original": {
+    "box": 12,
+    "norm": [
+     651,
+     121,
+     713,
+     228
+    ],
+    "short_px": 142.5,
+    "name": "Bagged Fresh Limes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 12,
+    "norm": [
+     651,
+     121,
+     714,
+     229
+    ],
+    "short_px": 97,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 18,
+   "original": {
+    "box": 17,
+    "norm": [
+     451,
+     244,
+     514,
+     327
+    ],
+    "short_px": 111.6,
+    "name": "Fresh Guava Clamshell",
+    "label": "correct"
+   },
+   "app": {
+    "box": 17,
+    "norm": [
+     451,
+     243,
+     513,
+     334
+    ],
+    "short_px": 82,
+    "name": "Packaged Guava CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 19,
+   "original": {
+    "box": 20,
+    "norm": [
+     511,
+     209,
+     580,
+     278
+    ],
+    "short_px": 92,
+    "name": "Fresh Guava Clamshell",
+    "label": "correct"
+   },
+   "app": null
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 20,
+   "original": {
+    "box": 1,
+    "norm": [
+     224,
+     573,
+     443,
+     950
+    ],
+    "short_px": 504.6,
+    "name": "Plantains crate",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     224,
+     574,
+     443,
+     951
+    ],
+    "short_px": 339,
+    "name": "Plantains",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 21,
+   "original": {
+    "box": 2,
+    "norm": [
+     602,
+     580,
+     784,
+     944
+    ],
+    "short_px": 432.4,
+    "name": "bagged lemons",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     603,
+     582,
+     784,
+     944
+    ],
+    "short_px": 290,
+    "name": "Bagged Lemons",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 22,
+   "original": {
+    "box": 3,
+    "norm": [
+     754,
+     604,
+     951,
+     924
+    ],
+    "short_px": 427.5,
+    "name": "green lime",
+    "label": "correct"
+   },
+   "app": {
+    "box": 3,
+    "norm": [
+     748,
+     606,
+     953,
+     924
+    ],
+    "short_px": 287,
+    "name": "Fresh Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 23,
+   "original": {
+    "box": 23,
+    "norm": [
+     574,
+     323,
+     624,
+     402
+    ],
+    "short_px": 105.7,
+    "name": "White coconut",
+    "label": "correct"
+   },
+   "app": {
+    "box": 24,
+    "norm": [
+     574,
+     323,
+     624,
+     402
+    ],
+    "short_px": 71,
+    "name": "Young coconut CHECK",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 24,
+   "original": {
+    "box": 7,
+    "norm": [
+     747,
+     200,
+     814,
+     360
+    ],
+    "short_px": null,
+    "name": "NF:Clear plastic produce bag",
+    "label": "unreadable"
+   },
+   "app": {
+    "box": 7,
+    "norm": [
+     747,
+     202,
+     814,
+     359
+    ],
+    "short_px": 107,
+    "name": "Bagged Limes",
+    "label": "unreadable"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 25,
+   "original": null,
+   "app": {
+    "box": 13,
+    "norm": [
+     699,
+     136,
+     751,
+     267
+    ],
+    "short_px": 82,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "n": 26,
+   "original": null,
+   "app": {
+    "box": 21,
+    "norm": [
+     751,
+     359,
+     794,
+     460
+    ],
+    "short_px": 68,
+    "name": "Bagged Limes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185840.jpg",
+   "n": 1,
+   "original": {
+    "box": 1,
+    "norm": [
+     0,
+     4,
+     1000,
+     956
+    ],
+    "short_px": 1272.3,
+    "name": "Roma Tomatoes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     0,
+     4,
+     1000,
+     956
+    ],
+    "short_px": 856,
+    "name": "Plum Tomatoes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185842.jpg",
+   "n": 1,
+   "original": {
+    "box": 1,
+    "norm": [
+     438,
+     43,
+     1000,
+     947
+    ],
+    "short_px": 1208.2,
+    "name": "Roma tomatoes",
+    "label": "correct"
+   },
+   "app": {
+    "box": 1,
+    "norm": [
+     438,
+     44,
+     1000,
+     943
+    ],
+    "short_px": 809,
+    "name": "Roma Tomatoes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185842.jpg",
+   "n": 2,
+   "original": {
+    "box": 2,
+    "norm": [
+     0,
+     46,
+     512,
+     891
+    ],
+    "short_px": 1129.8,
+    "name": "Plantains",
+    "label": "correct"
+   },
+   "app": {
+    "box": 2,
+    "norm": [
+     0,
+     46,
+     510,
+     891
+    ],
+    "short_px": 761,
+    "name": "Plantain Bananas",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185842.jpg",
+   "n": 3,
+   "original": null,
+   "app": {
+    "box": 3,
+    "norm": [
+     464,
+     738,
+     1000,
+     1000
+    ],
+    "short_px": 236,
+    "name": "Roma Tomatoes",
+    "label": "correct"
+   }
+  },
+  {
+   "photo": "20261026_185842.jpg",
+   "n": 4,
+   "original": null,
+   "app": {
+    "box": 4,
+    "norm": [
+     0,
+     727,
+     471,
+     996
+    ],
+    "short_px": 242,
+    "name": "Plantain Bananas",
+    "label": "correct"
+   }
+  }
+ ]
+}
