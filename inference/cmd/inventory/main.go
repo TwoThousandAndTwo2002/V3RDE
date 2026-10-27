@@ -55,9 +55,14 @@ func main() {
 	burst := flag.Int("rate-burst", 6, "requests per window per user (bearer: per client IP)")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	maxImage := flag.Int64("max-image-bytes", 5<<20, "largest accepted image (X32a: 5 MB, T9)")
-	// X31c (T9, 2026-10-27): 55 s, under the load balancer's 60 s idle
-	// timeout, so a slow photo gets a clear 504 from Icarus, not one from the LB.
-	timeout := flag.Duration("timeout", 55*time.Second, "per photo, every call included")
+	// X32c (T9, 2026-10-27): 25 s. icarus.thehungreeapp.com is an API Gateway
+	// HTTP API custom domain; its integration timeout is 30 s and cannot be
+	// raised (D58), so a slow photo gets a clear 504 from Icarus, not the
+	// gateway's 503. (X31c had 55 s, for the load balancer's 60 s.)
+	timeout := flag.Duration("timeout", 25*time.Second, "per photo, every call included")
+	// X32c (T9, option B): the whole-photo call starts with SAM; 0 or 1 box
+	// (or every box too small to name) uses it, with no agent (D57).
+	earlyWhole := flag.Bool("early-whole", true, "start the whole-photo call with SAM (X32c)")
 	origin := flag.String("origin", "", "CORS Access-Control-Allow-Origin; empty disables")
 	flag.Parse()
 
@@ -75,6 +80,7 @@ func main() {
 		PackageConcept: "package",
 		TrayConcept:    "food tray",
 		Split:          *split,
+		EarlyWhole:     *earlyWhole,
 	}
 	if err := os.MkdirAll(*photos, 0o755); err != nil {
 		log.Fatalf("%s: %v", *photos, err)

@@ -410,3 +410,62 @@ func TestEveryRunReportsItsCost(t *testing.T) {
 }
 
 func analyzePrompt() string { return analyze.Prompt }
+
+// X32c: with EarlyWhole the whole-photo call starts with SAM. 0 boxes and
+// SAM failure: its answer, no agent. 1 box: its answer with the box. Boxes
+// all too small to name: its answer. 2+: the multi-item answer; the early
+// call is paid and logged, not used.
+func TestEarlyWholeSkipsTheAgentAndIsLoggedOnMulti(t *testing.T) {
+	cases := []struct {
+		name  string
+		sam   func(string) (int, string)
+		calls string // sorted purposes
+		items string
+		boxes int
+	}{
+		{"0 boxes", func(string) (int, string) { return 200, "<0f>\n" }, "muse:whole:early,sam:food", "Rice bowl", 0},
+		{"SAM fails", func(string) (int, string) { return 500, "boom" }, "muse:whole:early,sam:food", "Rice bowl", 0},
+		{"1 box", func(string) (int, string) { return 200, samLine(t, [4]int{100, 100, 399, 499}) }, "muse:whole:early,sam:food", "Rice bowl", 1},
+		{"2 boxes", func(string) (int, string) {
+			return 200, samLine(t, [4]int{0, 0, 199, 299}, [4]int{500, 300, 599, 399})
+		}, "muse:single,muse:whole:early,sam:food", "Cheerios,Honey Maid", 0},
+		// every box too small to name: the early call is the answer (no second whole call)
+		{"2 tiny boxes", func(string) (int, string) {
+			return 200, samLine(t, [4]int{10, 10, 19, 19}, [4]int{40, 10, 49, 19})
+		}, "muse:whole:early,sam:food", "Rice bowl", 0},
+	}
+	for _, c := range cases {
+		f := &fakeAPI{sam: c.sam, muse: func(p string, _ map[string]any) map[string]any {
+			if p == analyze.Prompt {
+				b, _ := json.Marshal(contract("Rice bowl"))
+				return textResp("m", string(b))
+			}
+			return textResp("m", itemsText(ent(1, nil, "Cheerios"), ent(2, nil, "Honey Maid")))
+		}}
+		e, done := engine(t, f)
+		e.EarlyWhole = true
+		inv, err := e.Run(context.Background(), testPhoto(t), "image/jpeg", ModeAuto)
+		done()
+		if err != nil {
+			t.Fatal(c.name, err)
+		}
+		p := purposes(inv)
+		sort.Strings(p)
+		var names []string
+		for _, it := range inv.Items {
+			names = append(names, it.Name)
+		}
+		if strings.Join(p, ",") != c.calls || strings.Join(names, ",") != c.items {
+			t.Fatal(c.name, p, names)
+		}
+		if c.boxes == 1 && (len(inv.Items[0].Boxes) != 1 || inv.Items[0].Boxes[0] != [4]int{100, 100, 400, 500} || inv.Items[0].Source != "whole") {
+			t.Fatalf("%s: %+v", c.name, inv.Items[0])
+		}
+		if c.items == "Rice bowl" && (inv.Items[0].NumberOfServing != 1 || (c.boxes == 0 && len(inv.Items[0].Boxes) != 0)) {
+			t.Fatalf("%s: %+v", c.name, inv.Items[0])
+		}
+		if inv.Cost <= 0 || len(inv.Calls) != strings.Count(c.calls, ",")+1 {
+			t.Fatal(c.name, "every call is paid and logged", inv.Cost, len(inv.Calls))
+		}
+	}
+}

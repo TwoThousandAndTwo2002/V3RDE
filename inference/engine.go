@@ -94,6 +94,13 @@ type Engine struct {
 	Compact bool
 	// Sent, if set, gets every multi-item image as sent (probe: check the marks).
 	Sent func(purpose string, jpeg []byte)
+	// EarlyWhole (X32c, T9 2026-10-27: "most listings will be a single
+	// item"): in mode auto the whole-photo call (analyze's prompt, the
+	// original bytes) starts at the same time as SAM. 0 or 1 box: its answer
+	// is the answer (no agent; the agent took 41 s on a bottle held close).
+	// 2+ boxes: its answer is not used; the call is paid and logged
+	// ("muse:whole:early"). The run waits for it, so the log is complete.
+	EarlyWhole bool
 }
 
 // Item is one product: the strict contract plus where it is and how many.
@@ -255,22 +262,49 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 	if mode == ModeAgent {
 		return inv, e.agent(ctx, inv, ph)
 	}
+	var early chan wholeAnswer
+	if mode == ModeAuto && e.EarlyWhole {
+		early = make(chan wholeAnswer, 1)
+		go func() {
+			r, err := e.contractCall(ctx, inv, "muse:whole:early", ph.raw, ph.mime)
+			early <- wholeAnswer{r, err}
+		}()
+	}
+	var earlyGot *wholeAnswer
+	takeEarly := func() wholeAnswer { // read once; the 2+ path waits for it at the end
+		if earlyGot == nil {
+			a := <-early
+			earlyGot = &a
+		}
+		return *earlyGot
+	}
 	boxes, err := e.find(ctx, inv, ph)
 	inv.Kept = len(boxes)
 	inv.keepBoxes(boxes)
 	if mode == ModeAuto {
 		switch {
+		case early != nil && (err != nil || len(boxes) <= 1):
+			if err != nil || len(boxes) == 0 {
+				boxes = nil
+			}
+			return inv, e.wholeFrom(inv, ph, boxes, takeEarly())
 		case err != nil || len(boxes) == 0:
 			return inv, e.agent(ctx, inv, ph)
 		case len(boxes) == 1:
 			return inv, e.whole(ctx, inv, ph, boxes)
 		}
 	}
+	if early != nil {
+		defer func() { takeEarly() }() // 2+ boxes: not used; wait so the call is logged
+	}
 	if err != nil {
 		return inv, err
 	}
 	named := e.name(inv, boxes, ph.prepared())
 	if len(named) == 0 { // every box is too small to name: analyze's answer + "closer photo"
+		if early != nil { // X32c: the early call is that answer (bench: garlic knots paid a second whole call)
+			return inv, e.wholeFrom(inv, ph, nil, takeEarly())
+		}
 		return inv, e.whole(ctx, inv, ph, nil)
 	}
 	inv.members = named
@@ -654,6 +688,18 @@ func (e *Engine) contractCall(ctx context.Context, inv *Inventory, purpose strin
 // whole is analyze, unchanged: the same prompt on the original bytes.
 func (e *Engine) whole(ctx context.Context, inv *Inventory, ph *photo, boxes []Instance) error {
 	r, err := e.contractCall(ctx, inv, "muse:whole", ph.raw, ph.mime)
+	return e.wholeFrom(inv, ph, boxes, wholeAnswer{r, err})
+}
+
+// wholeAnswer is one whole-photo call's result (X32c: it can start early).
+type wholeAnswer struct {
+	r   analyze.Result
+	err error
+}
+
+// wholeFrom makes the one item of a whole-photo answer.
+func (e *Engine) wholeFrom(inv *Inventory, ph *photo, boxes []Instance, a wholeAnswer) error {
+	r, err := a.r, a.err
 	if err != nil {
 		inv.Rejected = append(inv.Rejected, Rejection{Box: 0, Reason: err.Error()})
 		return ErrNoItem

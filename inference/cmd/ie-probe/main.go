@@ -57,6 +57,8 @@ type variant struct {
 	// upright, long edge <= 1600 px, JPEG 0.85), the camera's own 0.7 step
 	// cannot be copied off the phone.
 	App bool `json:"app,omitempty"`
+	// Early (X32c): the whole-photo call starts with SAM; 0 or 1 box uses it.
+	Early bool `json:"early,omitempty"`
 }
 
 // parseVariant reads <coords|marks|marksonly>:<effort> or
@@ -72,6 +74,9 @@ func parseVariant(v string) (variant, error) {
 		out.Marks, out.NoCoords = true, true
 	default:
 		return out, fmt.Errorf("variant %q: kind must be coords, marks or marksonly", v)
+	}
+	if n := len(parts); n >= 3 && parts[n-1] == "early" {
+		out.Early, parts = true, parts[:n-1]
 	}
 	if n := len(parts); n >= 3 && parts[n-1] == "compact" {
 		out.Compact, parts = true, parts[:n-1]
@@ -229,7 +234,7 @@ func main() {
 				var smu sync.Mutex
 				e := &inference.Engine{API: &inference.Client{URL: *apiURL, Key: key, Effort: v.Effort,
 					HTTP: &http.Client{Timeout: 120 * time.Second}}, Marks: v.Marks, NoCoords: v.NoCoords, MaxNamed: *maxNamed, SAMCache: cache,
-					PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, Compact: v.Compact, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
+					PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, Compact: v.Compact, EarlyWhole: v.Early, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
 					Sent: func(purpose string, jb []byte) {
 						smu.Lock()
 						defer smu.Unlock()

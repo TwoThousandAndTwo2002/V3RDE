@@ -240,7 +240,7 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 ### D38. SUP template v5
 - **What:** S3 also checks `inference/Dockerfile` (root context) and validates `deploy/Caddyfile` with the pinned `caddy:2.8.4` image.
 
-### D39. The inventory timeout is 55 s (X31c)
+### D39. The inventory timeout is 55 s (X31c; replaced by D58: 25 s)
 - **What:** `-timeout 55s` (was 120 s), under the load balancer's 60 s idle timeout (T9: keep the LB at 60 s; "no photo should take that long"). A photo over the time gets 504 with "this photo took longer than 55s; try a closer photo of fewer items". The router waits 65 s, Caddy 70 s, so the clear 504 reaches the caller.
 
 ### D40. Keep split 3 (X31b bench)
@@ -261,6 +261,25 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 ### D42. Next for speed and quality (T9, 2026-10-27)
 - **Speed for the user:** the app shows the boxes first (SAM is done after about 4 s), then the names (X32 UI).
 - **Quality:** merge near-duplicate names in one photo (132 pairs in 182 listings with split 3), then the gate retrain with shelf, pantry and pet-product photos (the pet-product photo passed the gate at p 0.581 and cost $0.051).
+
+### D57. The whole-photo call starts with SAM (X32c, T9 2026-10-27: option B)
+- **What:** `Engine.EarlyWhole` (service flag `-early-whole`, on): in mode auto the whole-photo call (analyze's prompt, the original bytes) starts at the same time as SAM's three concepts. SAM finds 0 boxes, fails, finds 1 box, or finds boxes that are all too small to name: that call is the answer, and the agent does not run. 2+ named boxes: the multi-item path as before; the early call is paid, logged as `muse:whole:early`, and not used (the run waits for it, so the ledger is complete). D6/D7 stay for mode auto without the flag (the probe's live variant).
+- **Why:** T9: "most listings will be a single item"; a single item held close (kombucha) got 0 boxes from SAM on 3 of 3 app tries, and the agent took 35–41 s.
+- **Evidence (bench, `compare_x32c.json` from `tools/hackathon/compare_x32c.py`; `probe_x32c_live_*.json` and `probe_x32c_early_*.json`, 24 photos, each run alone with its own SAM calls; groups by SAM's first find):**
+
+  | SAM's first find | Photos | Live wait median / max | Early wait median / max | Cost live → early |
+  |---|---|---|---|---|
+  | 0 boxes | 3 | 33.0 / 35.2 s | 2.7 / 5.2 s | $0.0805 → $0.0360 |
+  | 1 box | 1 | 9.9 / 9.9 s | 6.0 / 6.0 s | $0.0155 → $0.0152 |
+  | 2+ boxes | 20 | 14.0 / 22.3 s | 14.1 / 22.5 s | $0.8710 → $0.9831 |
+
+- **Cost of the choice:** on photo `185749` (bananas and apples) SAM's concepts found 0 boxes; the agent gave 2 listings (Banana Bunch, Apple) in 33 s, the early call 1 (Bananas) in 5.2 s. The 2+ photos pay the unused call (bench: $0.8710 → $0.9831 for 20 photos).
+- **After the bench:** boxes that are all too small to name also use the early answer (the bench's garlic-knot photo paid a second whole call, 2.5 s + 7.1 s).
+
+### D58. The photo limit is 25 s: API Gateway's 30 s (X32c)
+- **What:** `-timeout 25s` (was 55 s, D39). A slower photo gets the service's own 504 `timeout`, not the gateway's 503.
+- **Why:** `icarus.thehungreeapp.com` is an API Gateway HTTP API custom domain in front of the load balancer (`apigw-requestid` on every answer). AWS: HTTP API "Maximum integration timeout | 30 seconds | No" (cannot be raised). Own evidence: from the Mac, the kombucha photo got 503 `{"message":"Service Unavailable"}` at 30.3 s (HTTP/2 and HTTP/1.1) while the service logged 200 at 35–41 s; a 24.3 s photo went through; the box resolves the name to private addresses and got 200 at 37.5 s.
+- **Target (T9):** every photo under 20 s. Next: cut about 5 s from the multi-item photos (bench 2+ max 22.5 s).
 
 ---
 
@@ -293,7 +312,7 @@ Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**; X
 1. **Gate on shelves:** 5 of 23 food photos refused (shelves, pantries). Retrain the head with such photos.
 2. **Produce that looks alike:** turnips named "corn" or "parsnip", Roma tomatoes named "mini peppers", radicchio named "red onion". San Pellegrino water named "pasta bag".
 3. **Test photos:** mostly small stock photos (some 474–600 px wide, some with watermarks), one AI-generated tray photo (shelf 20). Ground truth is one manual review of crops at product level. Before a claim in the demo: re-run on real phone photos taken for the project. Stock photos must not appear in the demo video.
-4. **Latency:** 15–20 s per multi-item photo with one Muse call; about 6 s with split 3 (D21); the agent 20–50 s. The app must show progress (and could show boxes first).
+4. **Latency:** 15–20 s per multi-item photo with one Muse call; about 6 s with split 3 (D21); the agent 20–50 s (not used in the service since X32c, D57). The public name has a 30 s limit (API Gateway, D58); the target is 20 s. The app must show progress (and could show boxes first).
 5. **Prompt cache:** two separate requests with the same image did not share the cache. Not needed with one pass.
 6. **Bins and crates** (shelf 9): a bin of cans can become one "not listed" box; the cans inside are counted only if SAM finds them.
 7. **Barcode per box** on the server: later improvement.

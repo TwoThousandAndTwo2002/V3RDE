@@ -222,3 +222,20 @@ The app now sends every photo to the one route and shows what it found.
 - Checked on the real app export in Chromium with a fake camera and recorded answers (not only the mockup). Tests: mobile 21 → 24.
 
 Next: one deploy of X32a + X32b, then the live test on the web app and the APK.
+
+---
+
+## 11. Single items first, and every photo under the 30 s gateway limit
+
+**When:** Oct 27 2026.
+**Meta models:** SAM 3.1, Muse Spark 1.3 (Meta Model API); PE-Core-S16-384 gate.
+**Files:** `inference/engine.go`, `inference/engine_test.go`, `inference/service.go`, `inference/cmd/inventory/main.go`, `inference/cmd/ie-probe/main.go` (`:early`), `tools/hackathon/compare_x32c.py`, `tools/hackathon/results/inference/{compare_x32c.json, probe_x32c_live_20261027T190540Z.json, probe_x32c_early_20261027T191106Z.json}`, `docs/inference_engine_design.md` (D57, D58), `docs/morpheus/analyze_api.md`
+**Sources:** `docs/sources/X32c.md`
+
+The first live test showed two problems. A single bottle held close gave SAM no box, so the slow agent ran (35–41 s). And the public name is behind API Gateway, which stops every request at 30 s: the app showed "busy" while the server still answered 200.
+
+- **Single items first.** The whole-photo call (the original analyze request) now starts at the same time as SAM. With 0 or 1 box its answer is the answer, with no agent. Bench, 24 photos: photos with no SAM box 33.0 s → 2.7 s (median); one box 9.9 s → 6.0 s; multi-item photos unchanged (14.0 s → 14.1 s), plus the unused call's cost.
+- **A clear limit.** A photo stops at 25 s with the service's own `timeout` answer, under the gateway's 30 s.
+- Tests: inference 59 → 60.
+
+Next: every photo under 20 s; first cut about 5 s from the multi-item photos.

@@ -1,0 +1,1357 @@
+{
+ "summary": {
+  "0": {
+   "photos": 3,
+   "live_ms_median": 32994,
+   "live_ms_max": 35196,
+   "early_ms_median": 2663,
+   "early_ms_max": 5238,
+   "live_cost": 0.0804907,
+   "early_cost": 0.0360453
+  },
+  "1": {
+   "photos": 1,
+   "live_ms_median": 9855,
+   "live_ms_max": 9855,
+   "early_ms_median": 5992,
+   "early_ms_max": 5992,
+   "live_cost": 0.01548225,
+   "early_cost": 0.01524425
+  },
+  "2+": {
+   "photos": 20,
+   "live_ms_median": 13986.5,
+   "live_ms_max": 22349,
+   "early_ms_median": 14129.5,
+   "early_ms_max": 22517,
+   "live_cost": 0.8709854999999999,
+   "early_cost": 0.9830540499999999
+  }
+ },
+ "rows": [
+  {
+   "photo": "20261026_185453.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 99,
+    "path": "multi",
+    "ms": 14833,
+    "cost": 0.0489165,
+    "listings": 0,
+    "error": "",
+    "names": [],
+    "calls": [
+     "sam:food tray 2752 ms",
+     "sam:package 3239 ms",
+     "sam:food 3630 ms",
+     "muse:single-3 8935 ms",
+     "muse:single-2 9549 ms",
+     "muse:single-1 10882 ms"
+    ]
+   },
+   "early": {
+    "kept": 100,
+    "path": "multi",
+    "ms": 15286,
+    "cost": 0.0529201,
+    "listings": 0,
+    "error": "",
+    "names": [],
+    "calls": [
+     "sam:package 4165 ms",
+     "sam:food 4227 ms",
+     "sam:food tray 5382 ms",
+     "muse:whole:early 6408 ms",
+     "muse:single-1 9587 ms",
+     "muse:single-3 9587 ms",
+     "muse:single-2 9689 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185500.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 19,
+    "path": "multi",
+    "ms": 13107,
+    "cost": 0.05066475,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Silk Dark Chocolate Almondmilk"
+    ],
+    "calls": [
+     "sam:food tray 2821 ms",
+     "sam:food 2842 ms",
+     "sam:package 3242 ms",
+     "muse:single-3 8765 ms",
+     "muse:single-1 9393 ms",
+     "muse:single-2 9419 ms"
+    ]
+   },
+   "early": {
+    "kept": 19,
+    "path": "multi",
+    "ms": 22517,
+    "cost": 0.0518676,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Silk Dark Chocolate Almondmilk"
+    ],
+    "calls": [
+     "sam:package 4787 ms",
+     "muse:whole:early 5092 ms",
+     "sam:food 5540 ms",
+     "sam:food tray 13595 ms",
+     "muse:single-3 7077 ms",
+     "muse:single-2 7495 ms",
+     "muse:single-1 8604 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185524.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 10,
+    "path": "multi",
+    "ms": 15390,
+    "cost": 0.02217775,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Silk Dark Chocolate Almond Milk"
+    ],
+    "calls": [
+     "sam:food 3233 ms",
+     "sam:package 4546 ms",
+     "sam:food tray 6961 ms",
+     "muse:single 8030 ms"
+    ]
+   },
+   "early": {
+    "kept": 9,
+    "path": "multi",
+    "ms": 16732,
+    "cost": 0.029721749999999998,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Silk Dark Chocolate Almondmilk"
+    ],
+    "calls": [
+     "sam:food tray 3319 ms",
+     "sam:food 4538 ms",
+     "muse:whole:early 5440 ms",
+     "sam:package 5780 ms",
+     "muse:single 10551 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185612.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 56,
+    "path": "multi",
+    "ms": 14573,
+    "cost": 0.05143675,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "DiGiorno Cheese Stuffed Crust Pizza",
+     "DiGiorno Wood Fired Crust Pizza",
+     "DiGiorno Cheese Stuffed Pepperoni Pizza",
+     "DiGiorno Cheese Stuffed Five Cheese Pizza",
+     "DiGiorno Wood Fired Four Cheese Pizza",
+     "DiGiorno Wood Fired Pepperoni Pizza",
+     "DiGiorno Supreme Stuffed Pizza",
+     "DiGiorno Hawaiian Style Pizza",
+     "DiGiorno Rising Crust Original Pizza",
+     "DiGiorno Rising Crust Four Cheese Pizza"
+    ],
+    "calls": [
+     "sam:food tray 4123 ms",
+     "sam:food 4525 ms",
+     "sam:package 4555 ms",
+     "muse:single-2 9240 ms",
+     "muse:single-3 9427 ms",
+     "muse:single-1 9524 ms"
+    ]
+   },
+   "early": {
+    "kept": 57,
+    "path": "multi",
+    "ms": 14451,
+    "cost": 0.060396500000000006,
+    "listings": 11,
+    "error": "",
+    "names": [
+     "DiGiorno Cheese Stuffed Pepperoni Pizza",
+     "DiGiorno Wood Fired Pizza",
+     "DiGiorno Cheese Stuffed Pizza",
+     "DiGiorno Cheese Stuffed Crust Pizza",
+     "DiGiorno Cheese Stuffed Five Cheese Pizza",
+     "DiGiorno Wood Fired Four Cheese Pizza",
+     "DiGiorno Supreme Cheese Stuffed Pizza",
+     "DiGiorno Hawaiian Style Stuffed Pizza",
+     "DiGiorno Rising Crust Original Pizza",
+     "DiGiorno Rising Crust Four Cheese Pizza",
+     "DiGiorno Wood Fired Pepperoni Pizza"
+    ],
+    "calls": [
+     "sam:food tray 3223 ms",
+     "sam:package 4324 ms",
+     "sam:food 4711 ms",
+     "muse:whole:early 7790 ms",
+     "muse:single-1 8370 ms",
+     "muse:single-3 8576 ms",
+     "muse:single-2 9291 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185630.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 52,
+    "path": "multi",
+    "ms": 14129,
+    "cost": 0.05097475,
+    "listings": 18,
+    "error": "",
+    "names": [
+     "Great Value Cooked Shrimp 41-60",
+     "Great Value Raw Shrimp",
+     "Great Value Colossal Raw Shrimp",
+     "Great Value Raw Shrimp 21-25",
+     "Great Value Cooked Salad Shrimp",
+     "Great Value Super Colossal Raw Shrimp",
+     "Great Value Jumbo Raw Shrimp",
+     "Great Value Raw Shrimp 13-15",
+     "Great Value Raw Shrimp Small",
+     "Great Value Small Raw Shrimp",
+     "Great Value Cooked Shrimp 31-40",
+     "Great Value Raw Shrimp 26-30",
+     "Great Value Raw Shrimp 40-60",
+     "Great Value X-Large Raw Shrimp",
+     "Louisiana Seasoned Crawfish",
+     "Great Value Cooked Shrimp 26-30",
+     "Great Value Raw Shrimp 31-40",
+     "Great Value Cooked Shrimp 71-90"
+    ],
+    "calls": [
+     "sam:food tray 3292 ms",
+     "sam:package 3293 ms",
+     "sam:food 4418 ms",
+     "muse:single-2 7313 ms",
+     "muse:single-1 9229 ms",
+     "muse:single-3 9283 ms"
+    ]
+   },
+   "early": {
+    "kept": 52,
+    "path": "multi",
+    "ms": 13170,
+    "cost": 0.04959785,
+    "listings": 15,
+    "error": "",
+    "names": [
+     "Great Value Raw Shrimp",
+     "Great Value Cooked Shrimp 41-60",
+     "Great Value Raw Colossal Shrimp",
+     "Great Value Cooked Salad Shrimp",
+     "Great Value Raw Super Colossal Shrimp",
+     "Great Value Raw Jumbo Shrimp",
+     "Great Value Raw Shrimp 13-15",
+     "Great Value Raw Small Shrimp",
+     "Great Value Cooked Shrimp 31-40",
+     "Great Value Raw Shrimp 40-60",
+     "Great Value Raw Shrimp 26-30",
+     "Great Value Raw X-Large Shrimp",
+     "Louisiana Seasoned Crawfish",
+     "Great Value Cooked Shrimp 26-30",
+     "Great Value Cooked Shrimp 71-90"
+    ],
+    "calls": [
+     "sam:package 2765 ms",
+     "sam:food tray 3090 ms",
+     "sam:food 4708 ms",
+     "muse:whole:early 6729 ms",
+     "muse:single-1 5981 ms",
+     "muse:single-2 6287 ms",
+     "muse:single-3 8031 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185633.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 32,
+    "path": "multi",
+    "ms": 22349,
+    "cost": 0.049904,
+    "listings": 23,
+    "error": "",
+    "names": [
+     "Frozen Tilapia Fillets",
+     "Wild Snow Crab Legs",
+     "Frozen Cooked Mussels",
+     "Blackened Atlantic Salmon Fillets",
+     "Ahi Tuna Steaks",
+     "Mahi Mahi Fillets",
+     "Lobster Tails",
+     "Frozen Raw Gulf Shrimp",
+     "Seafood Mix",
+     "Wild Dungeness Crab Legs",
+     "Boiled Louisiana Crawfish",
+     "Large Cooked Shrimp Ring",
+     "Sockeye Salmon Fillets",
+     "Langostino Lobster",
+     "Wild Caught Scallops",
+     "Frozen Hushpuppies",
+     "Wild Gulf Shrimp",
+     "Small Cooked Shrimp Ring",
+     "Cooked Octopus",
+     "Frozen Crawfish Pack",
+     "Frozen Raw Shrimp Bag",
+     "Frozen Catfish Nuggets",
+     "Cooked Shrimp Ring"
+    ],
+    "calls": [
+     "sam:food tray 3430 ms",
+     "sam:food 3900 ms",
+     "sam:package 4764 ms",
+     "muse:single-1 9000 ms",
+     "muse:single-2 9946 ms",
+     "muse:single-3 17091 ms"
+    ]
+   },
+   "early": {
+    "kept": 32,
+    "path": "multi",
+    "ms": 13081,
+    "cost": 0.05778,
+    "listings": 24,
+    "error": "",
+    "names": [
+     "Snow Crab Legs Box",
+     "Fully Cooked Mussels",
+     "Blackened Atlantic Salmon",
+     "Ahi Tuna Steaks",
+     "Mahi Mahi Fillets",
+     "Frozen Lobster Tails",
+     "Frozen Raw Gulf Shrimp",
+     "Frozen Seafood Mix",
+     "Dungeness Crab Legs",
+     "Boiled Louisiana Crawfish",
+     "Great Value Cooked Shrimp Ring",
+     "Alaska Sockeye Salmon Fillets",
+     "Langostino Lobster Meat",
+     "Cooked Octopus",
+     "Wild Caught Scallops",
+     "Great Value Hushpuppies",
+     "Wild Gulf Shrimp",
+     "Cooked Shrimp Ring Small",
+     "Frozen Crawfish Pack",
+     "Great Value Frozen Fish Fillets",
+     "Great Value Catfish Nuggets",
+     "Frozen Tilapia Fillets",
+     "Cooked Shrimp Ring",
+     "Great Value Tilapia Fillets"
+    ],
+    "calls": [
+     "sam:package 3379 ms",
+     "sam:food tray 3788 ms",
+     "sam:food 3789 ms",
+     "muse:whole:early 6621 ms",
+     "muse:single-1 6854 ms",
+     "muse:single-3 8009 ms",
+     "muse:single-2 8800 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185639.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 31,
+    "path": "multi",
+    "ms": 13844,
+    "cost": 0.051458000000000004,
+    "listings": 16,
+    "error": "",
+    "names": [
+     "Birds Eye Super Sweet Corn",
+     "Great Value Cut Green Beans",
+     "Great Value Fine Green Beans",
+     "Frozen Corn on the Cob",
+     "Birds Eye Cut Green Beans",
+     "Birds Eye Super Sweet White Corn",
+     "Frozen Sweet Corn Bag",
+     "Frozen Cut Corn Cobs",
+     "Birds Eye Super Sweet Corn Large",
+     "Green Giant Corn Nibblers",
+     "Birds Eye Asparagus Spears",
+     "Great Value Asparagus Spears",
+     "Birds Eye Whole Green Beans",
+     "C&W Sweet Corn Kernels",
+     "Frozen Sweet Corn Kernels",
+     "Frozen Green Vegetable Bag"
+    ],
+    "calls": [
+     "sam:food tray 3170 ms",
+     "sam:food 3691 ms",
+     "sam:package 3866 ms",
+     "muse:single-3 9006 ms",
+     "muse:single-1 9164 ms",
+     "muse:single-2 9538 ms"
+    ]
+   },
+   "early": {
+    "kept": 31,
+    "path": "multi",
+    "ms": 17150,
+    "cost": 0.06019675,
+    "listings": 16,
+    "error": "",
+    "names": [
+     "Birds Eye Whole Green Beans",
+     "Birds Eye Super Sweet Corn",
+     "Great Value Cut Green Beans",
+     "Great Value Fine Green Beans",
+     "Birds Eye Super White Corn",
+     "Frozen Sweet Corn Kernels",
+     "Frozen Yellow Corn on Cob",
+     "Birds Eye Super Sweet Corn Large",
+     "Frozen White Corn on Cob",
+     "Green Giant Extra Sweet Nibblers",
+     "Birds Eye Asparagus Spears",
+     "Great Value Asparagus Spears",
+     "C&W Premium Corn Kernels",
+     "Frozen Sweet Corn",
+     "Frozen Corn on the Cob",
+     "Frozen Green Vegetable Bag"
+    ],
+    "calls": [
+     "sam:food tray 4026 ms",
+     "sam:food 4451 ms",
+     "muse:whole:early 5487 ms",
+     "sam:package 6406 ms",
+     "muse:single-1 5814 ms",
+     "muse:single-2 9535 ms",
+     "muse:single-3 10289 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185652.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 47,
+    "path": "multi",
+    "ms": 11654,
+    "cost": 0.050928749999999995,
+    "listings": 11,
+    "error": "",
+    "names": [
+     "Beef Milanesa Pack",
+     "Beef Milanesa Slices",
+     "Carne Picada Beef",
+     "Bottom Round Milanesa",
+     "Shaved Beef Chuck",
+     "Chuck Shaved Steak",
+     "Sirloin Tip Milanesa",
+     "Thin Sliced Beef Steak",
+     "Beef Chuck Steak",
+     "Eye of Round Thin Beef",
+     "Eye of Round Sliced Beef"
+    ],
+    "calls": [
+     "sam:package 2468 ms",
+     "sam:food 2488 ms",
+     "sam:food tray 2880 ms",
+     "muse:single-1 7164 ms",
+     "muse:single-3 8290 ms",
+     "muse:single-2 8475 ms"
+    ]
+   },
+   "early": {
+    "kept": 47,
+    "path": "multi",
+    "ms": 12505,
+    "cost": 0.056650000000000006,
+    "listings": 13,
+    "error": "",
+    "names": [
+     "Beef Milanesa Pack",
+     "Thin sliced beef package",
+     "Carne Picada Diced Beef",
+     "Bottom round milanesa package",
+     "Packaged raw beef",
+     "Shaved beef steak",
+     "Chuck shaved steak",
+     "Sirloin tip milanesa package",
+     "Eye of round thin",
+     "Beef chuck steak package",
+     "Beef milanesa package",
+     "Thin sliced beef",
+     "Eye of round beef"
+    ],
+    "calls": [
+     "sam:food 2893 ms",
+     "sam:package 2894 ms",
+     "sam:food tray 3091 ms",
+     "muse:whole:early 4918 ms",
+     "muse:single-2 6463 ms",
+     "muse:single-3 8029 ms",
+     "muse:single-1 9156 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185719.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 122,
+    "path": "multi",
+    "ms": 15896,
+    "cost": 0.050514,
+    "listings": 14,
+    "error": "",
+    "names": [
+     "Potato Salad",
+     "Macaroni Salad",
+     "Coleslaw",
+     "BBQ Baked Beans",
+     "Chicken Salad 4-Pack",
+     "Mustard Potato Salad",
+     "Chicken Salad Tub",
+     "Original Potato Salad",
+     "Rana Meat Lasagna",
+     "Spinach Ricotta Tortellini",
+     "Original Potato Salad Tub",
+     "Cheese Tortellini Pasta",
+     "Amish Potato Salad",
+     "Amish Macaroni Salad"
+    ],
+    "calls": [
+     "sam:food tray 2919 ms",
+     "sam:package 3788 ms",
+     "sam:food 4082 ms",
+     "muse:single-1 6983 ms",
+     "muse:single-3 9956 ms",
+     "muse:single-2 11388 ms"
+    ]
+   },
+   "early": {
+    "kept": 123,
+    "path": "multi",
+    "ms": 17797,
+    "cost": 0.05693225,
+    "listings": 14,
+    "error": "",
+    "names": [
+     "Macaroni Salad",
+     "Original Potato Salad",
+     "Potato Salad Tub",
+     "Coleslaw",
+     "BBQ Baked Beans",
+     "Chicken Salad 4-Pack",
+     "Mustard Potato Salad",
+     "Chicken Salad Tub",
+     "Rana Meat Lasagna",
+     "Spinach Ricotta Tortellini",
+     "Potato Salad",
+     "Cheese Tortellini Pack",
+     "Amish Potato Salad",
+     "Macaroni Salad Amish"
+    ],
+    "calls": [
+     "sam:food tray 2983 ms",
+     "sam:package 3907 ms",
+     "muse:whole:early 6263 ms",
+     "sam:food 7701 ms",
+     "muse:single-3 7528 ms",
+     "muse:single-1 8347 ms",
+     "muse:single-2 9679 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185725.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 98,
+    "path": "multi",
+    "ms": 13163,
+    "cost": 0.047119999999999995,
+    "listings": 13,
+    "error": "",
+    "names": [
+     "BLT Chopped Salad Bowl",
+     "Caesar Chicken Salad Bowl",
+     "Packaged pasta salad bowl",
+     "Caesar Salad Bowl",
+     "Taylor Farms BLT Salad Bowl",
+     "Taylor Farms Caesar with Bacon",
+     "Packaged green salad bowl",
+     "Packaged Taylor salad bowl",
+     "Chopped Chicken Salad Bowl",
+     "Caesar with Bacon Salad Bowl",
+     "Taylor Farms Pasta Salad Bowl",
+     "Chef Salad Bowl",
+     "Packaged chef salad bowl"
+    ],
+    "calls": [
+     "sam:food 2670 ms",
+     "sam:food tray 2873 ms",
+     "sam:package 5370 ms",
+     "muse:single-2 6869 ms",
+     "muse:single-1 6869 ms",
+     "muse:single-3 7585 ms"
+    ]
+   },
+   "early": {
+    "kept": 98,
+    "path": "multi",
+    "ms": 13445,
+    "cost": 0.05139135,
+    "listings": 16,
+    "error": "",
+    "names": [
+     "Taylor Farms BLT Salad",
+     "Chicken Caesar Salad",
+     "Caesar chicken salad",
+     "Pasta salad bowl",
+     "BLT salad bowl",
+     "Caesar bacon salad",
+     "Taylor Farms Caesar Salad",
+     "Taylor Farms Caesar with Bacon",
+     "Macaroni Pasta Bowl",
+     "Rotini Pasta Salad",
+     "Garden Chef Salad",
+     "Deli salad bowl",
+     "Chef Salad Bowl",
+     "Quinoa Kale Salad",
+     "Taylor Garden Salad",
+     "Taylor Sweet Kale Salad"
+    ],
+    "calls": [
+     "sam:food tray 2377 ms",
+     "sam:package 3065 ms",
+     "sam:food 5151 ms",
+     "muse:whole:early 6168 ms",
+     "muse:single-1 6483 ms",
+     "muse:single-2 7492 ms",
+     "muse:single-3 7979 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185727.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 41,
+    "path": "multi",
+    "ms": 12933,
+    "cost": 0.050862000000000004,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Taylor Farms Apple Walnut Salad",
+     "Caesar Salad Bowl",
+     "Chicken Caesar Salad Bowl",
+     "Taylor Farms Caesar with Bacon",
+     "Taylor Farms Pasta Salad Bowl",
+     "Cobb Chicken Salad Bowl",
+     "Taylor Farms American Pasta Salad",
+     "Kale Quinoa Salad Bowl",
+     "Taylor Farms BLT Salad",
+     "Grain Greens Salad Box"
+    ],
+    "calls": [
+     "sam:package 2243 ms",
+     "sam:food tray 2343 ms",
+     "sam:food 2819 ms",
+     "muse:single-1 7466 ms",
+     "muse:single-3 8294 ms",
+     "muse:single-2 9629 ms"
+    ]
+   },
+   "early": {
+    "kept": 41,
+    "path": "multi",
+    "ms": 15442,
+    "cost": 0.0574715,
+    "listings": 11,
+    "error": "",
+    "names": [
+     "Chicken Caesar salad bowl",
+     "Taylor Farms Apple Walnut Chicken Salad",
+     "Taylor Farms Caesar with Bacon",
+     "Taylor Farms pasta salad bowl",
+     "Taylor Farms American Style Pasta Salad",
+     "Taylor Farms Apple Walnut salad",
+     "Kale grain salad bowl",
+     "Taylor Farms BLT Salad Bowl",
+     "Ready Pac Cobb Salad Bowl",
+     "Garden grain salad box",
+     "Ready Pac Chicken Caesar Salad Bowl"
+    ],
+    "calls": [
+     "sam:package 2332 ms",
+     "sam:food tray 2601 ms",
+     "sam:food 2600 ms",
+     "muse:whole:early 4906 ms",
+     "muse:single-2 7380 ms",
+     "muse:single-3 8538 ms",
+     "muse:single-1 12485 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185730.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 27,
+    "path": "multi",
+    "ms": 16383,
+    "cost": 0.05412475,
+    "listings": 11,
+    "error": "",
+    "names": [
+     "Marketside Caesar Salad with Chicken",
+     "Taylor Farms Apple Walnut Salad with Chicken",
+     "Taylor Farms Caesar with Bacon",
+     "Taylor Farms Apple Walnut Chicken Salad",
+     "Taylor Farms Southwest Salad with Chicken",
+     "Farro Sweet Potato Chicken Salad",
+     "Taylor Farms Caesar with Bacon Salad with Chicken",
+     "Taylor Farms Sweet Kale Chicken Salad",
+     "Marketside Chicken Salad Bowl",
+     "Taylor Farms Chopped Salad Bowl",
+     "Southwest Style Chicken Salad Bowl"
+    ],
+    "calls": [
+     "sam:food tray 2675 ms",
+     "sam:package 2881 ms",
+     "sam:food 4267 ms",
+     "muse:single-2 7766 ms",
+     "muse:single-1 8276 ms",
+     "muse:single-3 11593 ms"
+    ]
+   },
+   "early": {
+    "kept": 27,
+    "path": "multi",
+    "ms": 16760,
+    "cost": 0.06080225,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Marketside Caesar Salad with Chicken",
+     "Taylor Farms Apple Walnut Salad with Chicken",
+     "Taylor Farms Caesar with Bacon Chicken Salad",
+     "Taylor Farms Apple Walnut Chicken Salad",
+     "Chopped Salad with Chicken Purple Label",
+     "Marketside Farro Sweet Potato Chicken Salad",
+     "Taylor Farms Caesar with Bacon Salad with Chicken",
+     "Taylor Farms Sweet Kale Chicken Chopped Salad",
+     "Taylor Farms Chopped Salad Bowl",
+     "Taylor Farms Southwest Style Chicken Salad"
+    ],
+    "calls": [
+     "sam:package 3452 ms",
+     "sam:food tray 3758 ms",
+     "sam:food 4270 ms",
+     "muse:whole:early 4637 ms",
+     "muse:single-2 8068 ms",
+     "muse:single-3 8580 ms",
+     "muse:single-1 11960 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185749.jpg",
+   "group": "0",
+   "live": {
+    "kept": 39,
+    "path": "agent",
+    "ms": 32994,
+    "cost": 0.04310989999999999,
+    "listings": 2,
+    "error": "",
+    "names": [
+     "Banana Bunch",
+     "Apple"
+    ],
+    "calls": [
+     "sam:food 1637 ms",
+     "sam:food tray 2349 ms",
+     "sam:package 2360 ms",
+     "muse:agent:0 2953 ms",
+     "sam:apple 2271 ms",
+     "sam:banana bunch 2271 ms",
+     "muse:agent:1 25096 ms"
+    ]
+   },
+   "early": {
+    "kept": 0,
+    "path": "whole",
+    "ms": 5238,
+    "cost": 0.0153335,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Bananas"
+    ],
+    "calls": [
+     "sam:package 2277 ms",
+     "sam:food tray 2425 ms",
+     "sam:food 4427 ms",
+     "muse:whole:early 5142 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185754.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 109,
+    "path": "multi",
+    "ms": 11351,
+    "cost": 0.04761425,
+    "listings": 6,
+    "error": "",
+    "names": [
+     "Gala Apple",
+     "Honeycrisp Apple",
+     "Red Delicious Apple",
+     "Granny Smith Apple",
+     "Banana",
+     "Pear"
+    ],
+    "calls": [
+     "sam:food tray 2061 ms",
+     "sam:food 2372 ms",
+     "sam:package 3085 ms",
+     "muse:single-1 6784 ms",
+     "muse:single-2 6869 ms",
+     "muse:single-3 8095 ms"
+    ]
+   },
+   "early": {
+    "kept": 108,
+    "path": "multi",
+    "ms": 14129,
+    "cost": 0.05488675,
+    "listings": 7,
+    "error": "",
+    "names": [
+     "Gala apple",
+     "apple",
+     "Red Delicious apple",
+     "Granny Smith apple",
+     "banana",
+     "Honeycrisp apple",
+     "pear"
+    ],
+    "calls": [
+     "sam:food tray 2360 ms",
+     "sam:package 2870 ms",
+     "muse:whole:early 5321 ms",
+     "sam:food 5716 ms",
+     "muse:single-1 6205 ms",
+     "muse:single-2 7873 ms",
+     "muse:single-3 8182 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185802.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 34,
+    "path": "multi",
+    "ms": 10473,
+    "cost": 0.048711,
+    "listings": 9,
+    "error": "",
+    "names": [
+     "Organic Honeycrisp Apples Bag",
+     "Gala Apples Bag",
+     "Cosmic Crisp Apples Bag",
+     "Gala Apples",
+     "Granny Smith Apples",
+     "Pink Lady Apples",
+     "Organic Honeycrisp Apples Crate",
+     "Granny Smith Apples Bag",
+     "Pink Lady Apples Bag"
+    ],
+    "calls": [
+     "sam:package 2055 ms",
+     "sam:food tray 2499 ms",
+     "sam:food 2699 ms",
+     "muse:single-1 6455 ms",
+     "muse:single-2 7314 ms",
+     "muse:single-3 7500 ms"
+    ]
+   },
+   "early": {
+    "kept": 34,
+    "path": "multi",
+    "ms": 14130,
+    "cost": 0.058534749999999997,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Organic Honeycrisp Apples",
+     "Gala Apples",
+     "Granny Smith Apples",
+     "Cosmic Crisp Apples Bag",
+     "Pink Lady Apples",
+     "Granny Smith Apples Bag",
+     "Pink Lady Apples Bag",
+     "Gala Apples Bag",
+     "Apples Bag",
+     "Fuji Apples Bag"
+    ],
+    "calls": [
+     "sam:food tray 2678 ms",
+     "sam:package 3498 ms",
+     "sam:food 3703 ms",
+     "muse:whole:early 4957 ms",
+     "muse:single-3 7341 ms",
+     "muse:single-2 8362 ms",
+     "muse:single-1 10180 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185827.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 36,
+    "path": "multi",
+    "ms": 17424,
+    "cost": 0.051602499999999996,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "brown coconut",
+     "Zespri Golden Kiwi Pack",
+     "Zespri Kiwi Pack",
+     "Bagged Limes",
+     "Bagged Fresh Limes",
+     "Packaged Fresh Guavas",
+     "Plantains Crate",
+     "bagged lemons",
+     "fresh limes",
+     "White Coconut"
+    ],
+    "calls": [
+     "sam:food tray 4184 ms",
+     "sam:food 4227 ms",
+     "sam:package 6234 ms",
+     "muse:single-1 8596 ms",
+     "muse:single-2 9517 ms",
+     "muse:single-3 10789 ms"
+    ]
+   },
+   "early": {
+    "kept": 36,
+    "path": "multi",
+    "ms": 13237,
+    "cost": 0.05513925,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Brown coconut",
+     "Zespri Golden Kiwi Pack",
+     "Zespri Kiwifruit Pack",
+     "Bagged Limes",
+     "Bagged Fresh Limes",
+     "Packaged Fresh Guava",
+     "Plantains",
+     "Bagged lemons",
+     "Fresh limes",
+     "White Coconut"
+    ],
+    "calls": [
+     "sam:food tray 2245 ms",
+     "sam:package 3106 ms",
+     "sam:food 3289 ms",
+     "muse:whole:early 4276 ms",
+     "muse:single-1 5329 ms",
+     "muse:single-3 6542 ms",
+     "muse:single-2 9518 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185828.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 42,
+    "path": "multi",
+    "ms": 16456,
+    "cost": 0.0540305,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Golden Kiwi Pack",
+     "Bagged Lemons Crate",
+     "Lime Bag",
+     "bagged limes crate",
+     "Whole Coconut",
+     "Plantains",
+     "Loose Limes",
+     "aloe vera leaves",
+     "Bagged Limes",
+     "Bagged Mandarins"
+    ],
+    "calls": [
+     "sam:food 2953 ms",
+     "sam:package 3164 ms",
+     "sam:food tray 5718 ms",
+     "muse:single-1 7609 ms",
+     "muse:single-2 9750 ms",
+     "muse:single-3 10372 ms"
+    ]
+   },
+   "early": {
+    "kept": 43,
+    "path": "multi",
+    "ms": 14968,
+    "cost": 0.06130725,
+    "listings": 9,
+    "error": "",
+    "names": [
+     "Zespri Golden Kiwi Pack",
+     "Bagged limes crate",
+     "Bagged Fresh Green Limes",
+     "lemons crate",
+     "Bagged lemons",
+     "coconut",
+     "plantains",
+     "Aloe vera leaves",
+     "mandarin bags"
+    ],
+    "calls": [
+     "sam:food tray 3182 ms",
+     "sam:package 3958 ms",
+     "sam:food 3959 ms",
+     "muse:whole:early 7032 ms",
+     "muse:single-2 8665 ms",
+     "muse:single-1 9970 ms",
+     "muse:single-3 10566 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185829.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 39,
+    "path": "multi",
+    "ms": 15620,
+    "cost": 0.05055825,
+    "listings": 10,
+    "error": "",
+    "names": [
+     "Bagged Fresh Limes",
+     "Zespri Golden Kiwifruit Pack",
+     "loose limes",
+     "Zespri golden kiwi pack",
+     "plantains",
+     "bagged lemons",
+     "brown coconuts",
+     "aloe vera leaves",
+     "bagged mandarins",
+     "Guava Clamshell Pack"
+    ],
+    "calls": [
+     "sam:food tray 3306 ms",
+     "sam:package 3612 ms",
+     "sam:food 5896 ms",
+     "muse:single-1 7131 ms",
+     "muse:single-2 7829 ms",
+     "muse:single-3 9272 ms"
+    ]
+   },
+   "early": {
+    "kept": 39,
+    "path": "multi",
+    "ms": 12175,
+    "cost": 0.05141685,
+    "listings": 11,
+    "error": "",
+    "names": [
+     "Bagged Fresh Limes",
+     "Zespri Golden Kiwi Pack",
+     "Zespri Golden Kiwifruit Pack",
+     "Bagged Limes",
+     "Plantains",
+     "Bagged Lemons",
+     "Coconuts",
+     "Loose Limes",
+     "Aloe Vera Leaves",
+     "Packaged Mandarins",
+     "Fresh Guava Clamshell"
+    ],
+    "calls": [
+     "sam:food 3061 ms",
+     "sam:food tray 3096 ms",
+     "sam:package 3108 ms",
+     "muse:whole:early 4099 ms",
+     "muse:single-1 6509 ms",
+     "muse:single-3 8255 ms",
+     "muse:single-2 8665 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185840.jpg",
+   "group": "1",
+   "live": {
+    "kept": 1,
+    "path": "whole",
+    "ms": 9855,
+    "cost": 0.01548225,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Roma Tomatoes"
+    ],
+    "calls": [
+     "sam:food tray 3208 ms",
+     "sam:package 3264 ms",
+     "sam:food 5057 ms",
+     "muse:whole 4661 ms"
+    ]
+   },
+   "early": {
+    "kept": 1,
+    "path": "whole",
+    "ms": 5992,
+    "cost": 0.01524425,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Roma Tomatoes"
+    ],
+    "calls": [
+     "sam:food tray 2077 ms",
+     "sam:food 2299 ms",
+     "sam:package 2469 ms",
+     "muse:whole:early 5876 ms"
+    ]
+   }
+  },
+  {
+   "photo": "20261026_185842.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 2,
+    "path": "multi",
+    "ms": 10190,
+    "cost": 0.01692625,
+    "listings": 2,
+    "error": "",
+    "names": [
+     "Roma Tomatoes",
+     "Plantains"
+    ],
+    "calls": [
+     "sam:package 2093 ms",
+     "sam:food tray 2285 ms",
+     "sam:food 5063 ms",
+     "muse:single 4916 ms"
+    ]
+   },
+   "early": {
+    "kept": 2,
+    "path": "multi",
+    "ms": 7389,
+    "cost": 0.02674875,
+    "listings": 2,
+    "error": "",
+    "names": [
+     "Roma tomatoes",
+     "Plantains"
+    ],
+    "calls": [
+     "sam:food tray 1598 ms",
+     "sam:food 2010 ms",
+     "sam:package 2009 ms",
+     "muse:single 4799 ms",
+     "muse:whole:early 7295 ms"
+    ]
+   }
+  },
+  {
+   "photo": "app_artichoke.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 2,
+    "path": "multi",
+    "ms": 4225,
+    "cost": 0.012206499999999999,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Grilled Artichokes with Tomatoes"
+    ],
+    "calls": [
+     "sam:food tray 359 ms",
+     "sam:food 534 ms",
+     "sam:package 900 ms",
+     "muse:single 3314 ms"
+    ]
+   },
+   "early": {
+    "kept": 2,
+    "path": "multi",
+    "ms": 5741,
+    "cost": 0.01599345,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Crispy Artichokes with Tomatoes"
+    ],
+    "calls": [
+     "sam:food 289 ms",
+     "sam:food tray 320 ms",
+     "sam:package 421 ms",
+     "muse:whole:early 2540 ms",
+     "muse:single 5311 ms"
+    ]
+   }
+  },
+  {
+   "photo": "app_garlic_knots.jpg",
+   "group": "2+",
+   "live": {
+    "kept": 11,
+    "path": "whole",
+    "ms": 3357,
+    "cost": 0.01025425,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Garlic Herb Mini Buns"
+    ],
+    "calls": [
+     "sam:package 389 ms",
+     "sam:food 395 ms",
+     "sam:food tray 470 ms",
+     "muse:whole 2884 ms"
+    ]
+   },
+   "early": {
+    "kept": 11,
+    "path": "whole",
+    "ms": 8046,
+    "cost": 0.0132991,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Herb Cheese Mini Buns"
+    ],
+    "calls": [
+     "sam:food tray 267 ms",
+     "sam:package 991 ms",
+     "sam:food 991 ms",
+     "muse:whole:early 2474 ms",
+     "muse:whole 7051 ms"
+    ]
+   }
+  },
+  {
+   "photo": "app_kombucha.jpg",
+   "group": "0",
+   "live": {
+    "kept": 1,
+    "path": "agent",
+    "ms": 35196,
+    "cost": 0.024455349999999997,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Health-Ade Kombucha Passion Fruit Tangerine"
+    ],
+    "calls": [
+     "sam:food 369 ms",
+     "sam:package 1294 ms",
+     "sam:food tray 1843 ms",
+     "muse:agent:0 1478 ms",
+     "sam:kombucha bottle 720 ms",
+     "muse:agent:1 13618 ms",
+     "sam:bottle 900 ms",
+     "muse:agent:2 14145 ms",
+     "muse:whole 2455 ms"
+    ]
+   },
+   "early": {
+    "kept": 0,
+    "path": "whole",
+    "ms": 2663,
+    "cost": 0.01082,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "Health-Ade Kombucha Passion Fruit Tangerine"
+    ],
+    "calls": [
+     "sam:food 515 ms",
+     "sam:food tray 798 ms",
+     "sam:package 824 ms",
+     "muse:whole:early 2658 ms"
+    ]
+   }
+  },
+  {
+   "photo": "app_test_screen.jpg",
+   "group": "0",
+   "live": {
+    "kept": 0,
+    "path": "agent",
+    "ms": 6160,
+    "cost": 0.012925450000000002,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "No food visible"
+    ],
+    "calls": [
+     "sam:package 325 ms",
+     "sam:food 325 ms",
+     "sam:food tray 1040 ms",
+     "muse:agent:0 2630 ms",
+     "muse:whole 2484 ms"
+    ]
+   },
+   "early": {
+    "kept": 0,
+    "path": "whole",
+    "ms": 2404,
+    "cost": 0.0098918,
+    "listings": 1,
+    "error": "",
+    "names": [
+     "No food"
+    ],
+    "calls": [
+     "sam:food tray 507 ms",
+     "sam:food 673 ms",
+     "sam:package 675 ms",
+     "muse:whole:early 2402 ms"
+    ]
+   }
+  }
+ ]
+}

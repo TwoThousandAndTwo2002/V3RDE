@@ -79,7 +79,7 @@ type ServiceConfig struct {
 	FastHTTP    *http.Client
 	MaxImage    int64         // bytes (5 MB, T9 2026-10-27: the lower of the two limits)
 	MaxInFlight int           // photos at the same time; more get 503 busy
-	Timeout     time.Duration // per photo, gate and every API call included (55 s: under the LB's 60 s)
+	Timeout     time.Duration // per photo, gate and every API call included (25 s: under API Gateway's 30 s, X32c)
 	Origin      string        // CORS allow-origin; "" = no CORS headers
 	Build       string
 	now         func() time.Time
@@ -120,7 +120,7 @@ func NewService(c ServiceConfig) http.Handler {
 		c.MaxInFlight = 3
 	}
 	if c.Timeout == 0 {
-		c.Timeout = 55 * time.Second
+		c.Timeout = 25 * time.Second
 	}
 	if c.GateHTTP == nil {
 		c.GateHTTP = &http.Client{Timeout: 20 * time.Second}
