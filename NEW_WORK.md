@@ -269,3 +269,18 @@ Two reports from the phone test: a delay between the camera button and the shot,
 - Tests: inference 60 -> 61.
 
 Next: read the field on the next phone test, then fix the shutter.
+
+---
+
+## 14. The shutter answers at once
+
+**When:** Oct 27 2026.
+**Files:** `mobile/src/screens/Capture.tsx`, `mobile/src/webcam.ts`, `mobile/src/photo.ts`, `mobile/src/logic.ts`, `mobile/src/theme.ts` (`press.scale`), `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X32f.md`
+
+The capture log from the phone showed why the shutter felt broken: the photo itself took 0.8 s, then resizing the 12 MP photo took 10.4 s before anything changed on screen, and every press in that time was ignored.
+
+- The press shows at once: the shutter goes down and the preview stops on the frame the user saw. The "Use this photo?" sheet opens as soon as the photo exists.
+- The resize runs once, after "Use photo", inside the Analyzing timer (one decode, one encode).
+- The preview runs at the upload size, not the sensor size, so the camera and the barcode reader stay light.
+- Checked on the real web export in Chromium: sheet 0.6–1.1 s after the press; resize 0.33 s; upload 2376x1337.
