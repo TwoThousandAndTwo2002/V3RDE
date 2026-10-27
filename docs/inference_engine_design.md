@@ -213,6 +213,33 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 - **What:** the app sends about **2376 px on the long side** (≈ 4,096 image tokens at 16:9) at **JPEG 0.9**, about 1 MB, in place of 1600 px at 0.85.
 - **Evidence (X30b, per-box labels `x30b_labels.json`, totals by `score_labels.py` in `score_x30b.json`):** camera originals 297/297 = 100.0% correct of the readable boxes (60 unreadable, not counted); app version 274/283 = 96.8% (44 unreadable). The app version lost counting (bananas: 71 counted vs 1, from the probe report) and small label text (salad bowls, photo 185725: 19 correct, 0 wrong vs 13 correct, 6 wrong). The app version was cheaper ($0.037 vs $0.047 / photo) and faster (9.1 vs 13.4 s).
 
+### D31. The `/v1/inventory` service (X31; R2–R4)
+- **What:** `inference/service.go` + `cmd/inventory`, port 8087, inside the compose network. Same bearer token file and input formats as analyze (multipart `image` or JSON `{image_base64, mime}`; the image is read by analyze's own reader, `analyze.Config.ReadImage`). Image limit 8 MB (the X32 upload). Engine settings = the X30b production variant: marks + 0–1000 coordinates, effort low, split 3 from 12 named boxes, concepts `food` ║ `package` ║ `food tray`, 24 named.
+- **Answer:** the top level is the largest group in the analyze contract (R4); `items[]`, `not_listed[]`, `not_food`, `closer_photo`, `listings`, `counted`, `width`/`height` (the boxes are in these upright pixels), `gate_verdict`, `cost_usd`. The call trace stays in the event line, not in the answer.
+- **Routes:** `/v1/inventory` (bearer callers: Postman, judges) goes straight to the service; `/api/inventory` (the app) goes through the router (D35). `/v1/analyze`, `/api/analyze` and `/api/scan` do not change.
+
+### D32. PE-Core-S16-384 is the only gate (T9, 2026-10-26)
+- **What:** compose starts the gate with the PE files and their pins (`c0618012…`, `7ba764ea…`). The earlier gate is not deployed on the Icarus box (research-only weights). The inventory service calls the gate first; NOT_FOOD answers `not_food` at $0; a gate that is down or undecided gives 503 `unavailable` (fails closed), like `/api/scan`.
+
+### D33. Limits: per client, at the same time, per day
+- **What:** 6 requests per minute per client address → 429. At most 3 photos at the same time → 503 `busy` (the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB, plus the prepared copy, marks and crops). A daily spend cap of **$20 per UTC day** (T9) → 503 `budget`, checked after the gate (a gate refusal costs $0). A photo reserves $0.10 and settles at its real cost, so photos that run at the same time cannot pass the cap together. After a restart, the spend is read back from today's event file.
+
+### D34. The real client address
+- **What:** the Icarus box is behind a load balancer and Apache, so Caddy's peer is always private. Caddy trusts private ranges (strict mode: the address is read from the right of `X-Forwarded-For`, so a client cannot spoof it), and only the X31 routes send `{client_ip}` on. The older routes keep `{remote_host}`, unchanged.
+
+### D35. Dedup against live listings (R7)
+- **What:** the router's `/v1/inventory` checks the session cookie, stores the photo, calls the service with the token, then reads the caller's listings (`/api/listings/mine`). An item whose normalised name (the engine's `normName` rules) equals the title of one of the caller's **active, unexpired** listings gets `already_listed: {id, title, number_of_serving, expires_at}`; the answer gets `already_listed: <n>` and `dedup: ok`.
+- **Why:** nothing is removed; the app shows "already listed" and the user decides (as D15). Only the caller's own listings count: two donors may list the same product. A listings service that is down gives `dedup: unavailable`, not a failed scan.
+
+### D36. Events and cost (R6)
+- **What:** one JSONL line per request in `$RUNS/inventory/events-YYYYMMDD.jsonl` (synced): trace id (the router's, so one trace joins both), status, route, gate verdict and time, SAM and grouping counts, each call (purpose, model, status, time, tokens, cost), the request's cost and the day's spend. The router's line (step `inventory`) adds the user, the photo, `already_listed` and the service's status. A telemetry sidecar ships the folder.
+
+### D37. The image and the box
+- **What:** the image builds from the repo root (the module imports `../server`), with `inference/Dockerfile.dockerignore` so only `server/*.go` and `inference/` are sent; static binary on scratch; tests run in the build. `GOMEMLIMIT=400MiB` and `mem_limit: 700m`.
+
+### D38. SUP template v5
+- **What:** S3 also checks `inference/Dockerfile` (root context) and validates `deploy/Caddyfile` with the pinned `caddy:2.8.4` image.
+
 ---
 
 ## 4. Results by run
@@ -258,7 +285,7 @@ Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**; X
 
 1. **X30 SUP:** commit `inference/` (engine, agent, prepare, pan table, two-pass code kept as a measured option, 35 tests), `cmd/ie-probe`, `cmd/ie-tokens`, `cmd/sam-size`, `tools/hackathon/gen_sam_goldens.py`, the result files and the hand check, this document, and `docs/sources/X30.md`; `NEW_WORK.md` entry 4. The SUP gains the sources check (D23).
 2. **X30b, real photos:** 20 photos taken for the project (shot list: rows, mixed shelves, counters, produce, trays with a serving spoon, non-food, donation box, single item, far view, low light, a close-up and a second angle), as camera originals and as the app's upload version; plus a private set of about 2,000 buffet photos with trays. Decides D22 and the app's upload size, and re-checks accuracy with a hand check.
-3. **X31:** HTTP service `/v1/inventory` (R2–R4), JSONL events with cost, Dockerfile, compose + telemetry sidecar, router route, dedup against live listings (R7).
+3. **X31:** HTTP service `/v1/inventory` (R2–R4), JSONL events with cost, Dockerfile, compose + telemetry sidecar, router route, dedup against live listings (R7). **Built in X31 (D31–D38).**
 4. **X32:** multi-item review mockup (boxes, "check this", "not listed", "take a closer photo", tray servings), then the app change.
 5. **Later (T9 idea): nested SAM calls.** With fast SAM calls, a package box can be segmented again (label, then the food picture or the weight text), and the weight looked up. This is why SAM speed matters even though it is billed per image.
 

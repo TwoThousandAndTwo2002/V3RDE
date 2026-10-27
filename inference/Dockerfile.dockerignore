@@ -1,0 +1,6 @@
+# Only the two folders the inventory image needs (BuildKit reads
+# <Dockerfile>.dockerignore next to the Dockerfile).
+*
+!server/go.mod
+!server/*.go
+!inference/
