@@ -148,3 +148,20 @@ func TestTwoPassNamesThenDetailsPerGroup(t *testing.T) {
 func itemsTextKey(key string, entries ...map[string]any) string {
 	return strings.Replace(itemsText(entries...), `{"items":`, `{"`+key+`":`, 1)
 }
+
+// Every box not food: an answer (NotFood, boxes kept), not an error.
+func TestAllNotFoodIsAnAnswer(t *testing.T) {
+	f := &fakeAPI{sam: func(string) (int, string) {
+		return 200, samLine(t, [4]int{0, 0, 199, 299}, [4]int{300, 0, 499, 299})
+	}, muse: func(string, map[string]any) map[string]any {
+		a, b := ent(1, nil, "Dog treats"), ent(2, nil, "Dog food")
+		a["food"], b["food"] = false, false
+		return textResp("m", itemsText(a, b))
+	}}
+	e, done := engine(t, f)
+	defer done()
+	inv, err := e.Run(context.Background(), testPhoto(t), "image/jpeg", ModeAuto)
+	if _, ok := inv.TopLevel(); err != nil || !inv.NotFood || ok || len(inv.NotListed) != 2 || len(inv.Items) != 0 {
+		t.Fatal(err, inv.NotFood, ok, len(inv.NotListed))
+	}
+}

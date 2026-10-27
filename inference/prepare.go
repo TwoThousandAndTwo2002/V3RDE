@@ -64,9 +64,15 @@ func Prepare(src image.Image) *Prepared {
 }
 
 // JPEG encodes an image for the API.
-func JPEG(img image.Image) ([]byte, error) {
+func JPEG(img image.Image) ([]byte, error) { return jpegQ(img, jpegQuality) }
+
+// samJPEGQuality: SAM gets a new JPEG only when the photo had to be turned
+// upright; the highest quality keeps the second compression small (D22).
+const samJPEGQuality = 98
+
+func jpegQ(img image.Image, q int) ([]byte, error) {
 	var buf bytes.Buffer
-	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: jpegQuality}); err != nil {
+	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: q}); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil

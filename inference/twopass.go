@@ -23,7 +23,7 @@ import (
 
 const nameFields = `{"items": [{"box": <box number>, "point": [x, y] (the centre of the item you identified, on the same grid),
 "same_as": <number of an earlier box holding the identical product, or null>,
-"food": true, or false if the item is a product that is not food (for example paper towels or soap),
+"food": true, or false if the item is a product that is not food (for example paper towels, soap or pet food),
 "name": <the product name, from its label when you can read it, 6 words maximum>}]}
 One entry per box.`
 

@@ -123,17 +123,19 @@ type Points struct {
 
 // Inventory is the full answer and its trace.
 type Inventory struct {
-	Mode      Mode `json:"mode"`
-	Width     int  `json:"width"`
-	Height    int  `json:"height"`
-	PrepW     int  `json:"prep_width"` // the image Muse read (multi-item calls)
-	PrepH     int  `json:"prep_height"`
-	Instances int  `json:"sam_instances"`
-	Kept      int  `json:"kept"`    // after duplicates: every one is counted
-	Named     int  `json:"named"`   // boxes sent to Muse to name
-	Unnamed   int  `json:"unnamed"` // counted but not named (over MaxNamed)
-	Small     int  `json:"small"`   // counted but too small to name (under NameMinPx)
-	Trays     int  `json:"trays"`   // tray boxes kept
+	Mode  Mode `json:"mode"`
+	Width int  `json:"width"` // upright
+	// Orientation is the photo's EXIF orientation (1 = upright already).
+	Orientation int `json:"orientation"`
+	Height      int `json:"height"`
+	PrepW       int `json:"prep_width"` // the image Muse read (multi-item calls)
+	PrepH       int `json:"prep_height"`
+	Instances   int `json:"sam_instances"`
+	Kept        int `json:"kept"`    // after duplicates: every one is counted
+	Named       int `json:"named"`   // boxes sent to Muse to name
+	Unnamed     int `json:"unnamed"` // counted but not named (over MaxNamed)
+	Small       int `json:"small"`   // counted but too small to name (under NameMinPx)
+	Trays       int `json:"trays"`   // tray boxes kept
 	// CloserPhoto: some boxes were too small to name; the app asks for a
 	// closer photo of them.
 	CloserPhoto bool     `json:"closer_photo"`
@@ -143,13 +145,15 @@ type Inventory struct {
 	Items       []Item   `json:"items"`
 	// NotListed: boxes the model called a product that is not food. They are
 	// not deleted: the app shows them as "not listed" with "Add anyway".
-	NotListed []Item      `json:"not_listed,omitempty"`
-	Rejected  []Rejection `json:"rejected,omitempty"`
-	Points    Points      `json:"points"`
-	Calls     []*Call     `json:"calls"`
-	MS        int64       `json:"ms"`
-	Cost      float64     `json:"cost_usd"` // filled when Run returns
-	mu        sync.Mutex
+	NotListed []Item `json:"not_listed,omitempty"`
+	// NotFood: the photo has products but none is food (Items is empty).
+	NotFood  bool        `json:"not_food,omitempty"`
+	Rejected []Rejection `json:"rejected,omitempty"`
+	Points   Points      `json:"points"`
+	Calls    []*Call     `json:"calls"`
+	MS       int64       `json:"ms"`
+	Cost     float64     `json:"cost_usd"` // filled when Run returns
+	mu       sync.Mutex
 }
 
 func (inv *Inventory) add(c *Call) {
@@ -188,10 +192,14 @@ func (e *Engine) defaults() {
 // photo is one request's image in both forms.
 type photo struct {
 	once sync.Once
-	raw  []byte // the original bytes (SAM, and the analyze-identical call)
+	raw  []byte // the original bytes (the analyze-identical call)
 	mime string
-	src  image.Image // decoded original (nil if not decodable)
-	prep *Prepared   // as Muse reads it
+	src  image.Image // decoded and turned upright (nil if not decodable)
+	// sam is what SAM gets: the original bytes when the photo is already
+	// upright (no second compression, D22), else the upright pixels as JPEG.
+	sam     []byte
+	samMime string
+	prep    *Prepared // as Muse reads it
 }
 
 func (p *photo) prepared() *Prepared {
@@ -205,14 +213,31 @@ func (p *photo) prepared() *Prepared {
 
 // Run answers one photo.
 func (e *Engine) Run(ctx context.Context, img []byte, mime string, mode Mode) (*Inventory, error) {
+	inv, err := e.run(ctx, img, mime, mode)
+	// Every box was a product that is not food (pet food, soap): that is an
+	// answer, not a failure (T9, 2026-10-27, X30b photo 1). The boxes stay in
+	// NotListed; the app shows "not food" with "Add anyway".
+	if errors.Is(err, ErrNoItem) && len(inv.Items) == 0 && len(inv.NotListed) > 0 {
+		inv.NotFood, err = true, nil
+	}
+	return inv, err
+}
+
+func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*Inventory, error) {
 	e.defaults()
 	t0 := time.Now()
 	inv := &Inventory{Mode: mode}
 	defer func() { inv.MS, inv.Cost = time.Since(t0).Milliseconds(), inv.CostUSD() }()
-	ph := &photo{raw: img, mime: mime}
+	ph := &photo{raw: img, mime: mime, sam: img, samMime: mime}
 	if src, _, err := image.Decode(bytes.NewReader(img)); err == nil {
-		ph.src = src
-		inv.Width, inv.Height = src.Bounds().Dx(), src.Bounds().Dy()
+		inv.Orientation = Orientation(img)
+		ph.src = Upright(src, inv.Orientation)
+		if inv.Orientation > 1 {
+			if jb, err := jpegQ(ph.src, samJPEGQuality); err == nil {
+				ph.sam, ph.samMime = jb, "image/jpeg"
+			}
+		}
+		inv.Width, inv.Height = ph.src.Bounds().Dx(), ph.src.Bounds().Dy()
 	}
 	if mode == ModeWhole || ph.src == nil {
 		return inv, e.whole(ctx, inv, ph, nil)
@@ -419,36 +444,66 @@ func (e *Engine) name(inv *Inventory, boxes []Instance, p *Prepared) []Instance 
 // have had (production pays it every time) and Cached = true.
 type SAMCache struct {
 	mu sync.Mutex
-	m  map[[32]byte]samHit
+	m  map[[32]byte]*samSlot
 }
 
-type samHit struct {
+// samSlot is one photo + concept. The first caller makes the SAM call; a
+// caller that arrives while it is in flight waits for it (photos and
+// variants run at the same time in the probe), so SAM is paid once.
+type samSlot struct {
+	done chan struct{}
+	ok   bool
 	inst []Instance
 	call Call
+}
+
+// claim returns the slot for key and whether this caller must fill it.
+func (sc *SAMCache) claim(key [32]byte) (*samSlot, bool) {
+	sc.mu.Lock()
+	defer sc.mu.Unlock()
+	if sc.m == nil {
+		sc.m = map[[32]byte]*samSlot{}
+	}
+	if s, ok := sc.m[key]; ok {
+		return s, false
+	}
+	s := &samSlot{done: make(chan struct{})}
+	sc.m[key] = s
+	return s, true
 }
 
 func (e *Engine) segment(ctx context.Context, inv *Inventory, ph *photo, concept string) ([]Instance, error) {
 	inv.mu.Lock()
 	inv.Concepts = append(inv.Concepts, concept)
 	inv.mu.Unlock()
-	key := sha256.Sum256(append(append([]byte(concept), 0), ph.raw...))
+	var slot *samSlot
 	if e.SAMCache != nil {
-		e.SAMCache.mu.Lock()
-		h, ok := e.SAMCache.m[key]
-		e.SAMCache.mu.Unlock()
-		if ok {
-			c := h.call
-			c.Cached = true
-			inv.add(&c)
-			inv.mu.Lock()
-			inv.Instances += len(h.inst)
-			inv.mu.Unlock()
-			return append([]Instance(nil), h.inst...), nil
+		key := sha256.Sum256(append(append([]byte(concept), 0), ph.raw...))
+		s, mine := e.SAMCache.claim(key)
+		if !mine {
+			select {
+			case <-s.done:
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+			if s.ok {
+				c := s.call
+				c.Cached = true
+				inv.add(&c)
+				inv.mu.Lock()
+				inv.Instances += len(s.inst)
+				inv.mu.Unlock()
+				return append([]Instance(nil), s.inst...), nil
+			}
+			// the first call failed: make our own (not cached)
+		} else {
+			slot = s
+			defer close(s.done)
 		}
 	}
 	c, err := e.API.Do(ctx, "sam:"+concept, map[string]any{
 		"model":    e.SAM,
-		"input":    UserMessage(TextPart(concept), ImagePart(ph.raw, ph.mime)),
+		"input":    UserMessage(TextPart(concept), ImagePart(ph.sam, ph.samMime)),
 		"metadata": map[string]any{"include_confidence": "true", "mask_encoding": "one_bit"},
 	})
 	inv.add(c)
@@ -462,13 +517,8 @@ func (e *Engine) segment(ctx context.Context, inv *Inventory, ph *photo, concept
 	inv.mu.Lock()
 	inv.Instances += len(out)
 	inv.mu.Unlock()
-	if e.SAMCache != nil {
-		e.SAMCache.mu.Lock()
-		if e.SAMCache.m == nil {
-			e.SAMCache.m = map[[32]byte]samHit{}
-		}
-		e.SAMCache.m[key] = samHit{inst: append([]Instance(nil), out...), call: *c}
-		e.SAMCache.mu.Unlock()
+	if slot != nil {
+		slot.inst, slot.call, slot.ok = append([]Instance(nil), out...), *c, true
 	}
 	return out, nil
 }
@@ -617,7 +667,7 @@ const gridRule = `Coordinates use a 0-1000 grid: (0, 0) is the top-left corner a
 // number against the box, the grouping link, and analyze.Prompt's fields.
 const itemFields = `{"items": [{"box": <box number>, "point": [x, y] (the centre of the item you identified, on the same grid),
 "same_as": <number of an earlier box holding the identical product, or null>,
-"food": true, or false if the item is a product that is not food (for example paper towels or soap); fill every field either way,
+"food": true, or false if the item is a product that is not food (for example paper towels, soap or pet food); fill every field either way,
 "tray": true if the item is a tray or pan of cooked food, else false. For a tray also give
 "pan": the pan size compared with a standard 12 x 20 inch hotel pan: "full", "two_thirds", "half", "third", "quarter", "sixth", "ninth", or "other" (not a hotel pan),
 "depth": "shallow" (about 2.5 inches), "medium" (about 4 inches) or "deep" (about 6 inches),
@@ -942,7 +992,13 @@ func group(got map[int]Item, boxes []Instance, p *Prepared) []Item {
 }
 
 // TopLevel is the analyze-shaped answer: the largest group (ties: box area).
-func (inv *Inventory) TopLevel() analyze.Result { return inv.Items[0].Result }
+// ok is false when there is no food item (NotFood).
+func (inv *Inventory) TopLevel() (analyze.Result, bool) {
+	if len(inv.Items) == 0 {
+		return analyze.Result{}, false
+	}
+	return inv.Items[0].Result, true
+}
 
 // Dedup is keep() for tools: duplicates dropped, largest first, no cap.
 func Dedup(all []Instance) []Instance { return (&Engine{}).keep(all) }

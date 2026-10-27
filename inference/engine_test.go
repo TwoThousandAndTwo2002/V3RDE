@@ -153,7 +153,7 @@ func TestOneItemPhotoIsExactlyAnalyze(t *testing.T) {
 	want, _ := analyze.Validate(contract("Marinara sauce"))
 	want.NumberOfServing = 1
 	if len(inv.Items) != 1 || it.Result != want || it.Count != 1 || it.Source != "whole" ||
-		len(it.Boxes) != 1 || it.Boxes[0] != [4]int{100, 100, 400, 500} || inv.TopLevel() != want {
+		len(it.Boxes) != 1 || it.Boxes[0] != [4]int{100, 100, 400, 500} || func() analyze.Result { r, _ := inv.TopLevel(); return r }() != want {
 		t.Fatalf("%+v", inv.Items)
 	}
 	if p := purposes(inv); strings.Join(p, ",") != "sam:food,muse:whole" {

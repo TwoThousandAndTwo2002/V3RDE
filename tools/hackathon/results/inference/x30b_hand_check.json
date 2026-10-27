@@ -1,0 +1,172 @@
+{
+ "about": "Hand check of run X30b (probe_x30b_20261027T013947Z.json), one reviewer, crops at product level. O = camera original, A = app upload version (upright, 1600 px, JPEG 0.85). A generic but true name (\"apple\") counts as correct. Photos 185453/185500 (pet food, all not listed, correct), 185828/185829 (repeats of 185827) and 185524 (gate refused) are not counted.",
+ "photos": {
+  "185612 frozen pizza": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    32,
+    32
+   ]
+  },
+  "185630 frozen shrimp": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    25,
+    25
+   ]
+  },
+  "185633 frozen seafood": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    22,
+    24
+   ],
+   "A_wrong": [
+    "tilapia named catfish",
+    "shrimp bag named fish fillets"
+   ]
+  },
+  "185639 frozen vegetables": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    21,
+    22
+   ],
+   "A_wrong": [
+    "corn named lima beans"
+   ]
+  },
+  "185652 meat trays": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    23,
+    24
+   ],
+   "A_wrong": [
+    "chuck named pork shoulder"
+   ]
+  },
+  "185719 deli tubs": {
+   "O": [
+    23,
+    24
+   ],
+   "A": [
+    27,
+    29
+   ],
+   "O_wrong": [
+    "tortellini variety"
+   ],
+   "A_wrong": [
+    "macaroni salad named potato salad",
+    "tortellini variety"
+   ]
+  },
+  "185725 salad bowls": {
+   "O": [
+    23,
+    24
+   ],
+   "A": [
+    17,
+    23
+   ],
+   "A_wrong": [
+    "BLT named BBQ chopped (x3)",
+    "BLT chopped named chef (x2)",
+    "Caesar named avocado ranch"
+   ]
+  },
+  "185727 salad bowls": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    22,
+    24
+   ]
+  },
+  "185730 salad bowls": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    24,
+    24
+   ]
+  },
+  "185749 bananas": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    1,
+    1
+   ],
+   "note": "O counted 71 bananas; A found 1 box and gave banana x1"
+  },
+  "185754 apples": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    23,
+    23
+   ]
+  },
+  "185802 bagged apples": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    25,
+    25
+   ]
+  },
+  "185827 mixed produce": {
+   "O": [
+    24,
+    24
+   ],
+   "A": [
+    25,
+    25
+   ]
+  },
+  "185840 + 185842 tomatoes, plantains": {
+   "O": [
+    3,
+    3
+   ],
+   "A": [
+    4,
+    4
+   ]
+  }
+ },
+ "totals": {
+  "O": "313/315 = 99.4%",
+  "A": "291/305 = 95.4%"
+ }
+}

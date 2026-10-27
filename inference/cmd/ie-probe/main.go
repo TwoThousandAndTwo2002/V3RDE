@@ -21,7 +21,7 @@ import (
 	"image/color"
 	"image/draw"
 	_ "image/gif"
-	_ "image/jpeg"
+	"image/jpeg"
 	"image/png"
 	"io"
 	"log"
@@ -34,6 +34,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	xdraw "golang.org/x/image/draw"
 
 	"github.com/TwoThousandAndTwo2002/Icarus/inference"
 )
@@ -50,6 +52,10 @@ type variant struct {
 	NameEffort   string `json:"name_effort,omitempty"`
 	DetailEffort string `json:"detail_effort,omitempty"`
 	Split        int    `json:"split,omitempty"`
+	// App: the photo is first made like the app's upload (mobile/src/photo.ts:
+	// upright, long edge <= 1600 px, JPEG 0.85), the camera's own 0.7 step
+	// cannot be copied off the phone.
+	App bool `json:"app,omitempty"`
 }
 
 // parseVariant reads <coords|marks|marksonly>:<effort> or
@@ -65,6 +71,9 @@ func parseVariant(v string) (variant, error) {
 		out.Marks, out.NoCoords = true, true
 	default:
 		return out, fmt.Errorf("variant %q: kind must be coords, marks or marksonly", v)
+	}
+	if n := len(parts); n >= 3 && parts[n-1] == "app" {
+		out.App, parts = true, parts[:n-1]
 	}
 	if n := len(parts); n >= 3 && strings.HasPrefix(parts[n-1], "split") {
 		k, err := strconv.Atoi(strings.TrimPrefix(parts[n-1], "split"))
@@ -122,6 +131,8 @@ func main() {
 	gateURL := flag.String("gate-url", "", "food gate /v1/gate URL (\"\" = no gate)")
 	maxNamed := flag.Int("max-named", 24, "boxes named per photo")
 	timeout := flag.Duration("timeout", 180*time.Second, "per photo and variant")
+	apiURL := flag.String("api-url", inference.DefaultUpstream, "Responses endpoint (tests use a fake)")
+	parallel := flag.Int("parallel", 4, "photos at the same time (1 = measure the wait; the local gate queues 8)")
 	flag.Parse()
 	kb, err := os.ReadFile(*keyFile)
 	if err != nil || strings.TrimSpace(string(kb)) == "" {
@@ -154,75 +165,122 @@ func main() {
 	key := strings.TrimSpace(string(kb))
 	fmt.Printf("prices: Muse Spark 1.3 $%.2f/1M in, $%.2f/1M out, $%.2f/1M cached; SAM 3.1 $%.4f/image (%s)\n",
 		inference.PriceMuseInputPerM, inference.PriceMuseOutputPerM, inference.PriceMuseCachedPerM, inference.PriceSAMPerImage, inference.PricesSource)
-	fmt.Printf("image limit: %d tokens of %d px (measured 2026-10-26)\n\n", inference.MaxImageTokens, inference.TokenPx)
+	fmt.Printf("image limit: %d tokens of %d px (measured 2026-10-26); %d photos at a time\n\n", inference.MaxImageTokens, inference.TokenPx, *parallel)
 
-	var runs []run
+	// Photos run -parallel at a time (T9, 2026-10-27). Each photo's text is
+	// printed in one piece when it ends; the report keeps the file order.
+	// Measured times include the other photos' load: use -parallel 1 to
+	// measure the wait.
+	type photoOut struct {
+		runs  []run
+		text  string
+		spent float64
+		gate  string
+	}
+	results := make([]*photoOut, len(files))
+	var mu sync.Mutex
 	sum := map[string]*agg{}
-	spent := 0.0
-	gates := map[string]int{}
-	for _, f := range files {
+	var wg sync.WaitGroup
+	slots := make(chan struct{}, max(*parallel, 1))
+	for fi, f := range files {
 		ext := strings.ToLower(filepath.Ext(f))
 		mime := map[string]string{".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}[ext]
-		if mime == "" {
-			continue
-		}
-		img, err := os.ReadFile(f)
-		if err != nil {
-			log.Fatal(err)
-		}
 		name := filepath.Base(f)
 		stem := strings.TrimSuffix(name, ext)
-		if *only != "" && !strings.Contains(","+*only+",", ","+name+",") && !strings.Contains(","+*only+",", ","+stem+",") {
+		if mime == "" || (*only != "" && !strings.Contains(","+*only+",", ","+name+",") && !strings.Contains(","+*only+",", ","+stem+",")) {
 			continue
 		}
-		var g *gateOut
-		if *gateURL != "" {
-			g = callGate(*gateURL, name, img)
-			gates[g.Verdict]++
-			fmt.Printf("== %s | gate %s p=%.3f %.0f ms %s\n", name, g.Verdict, g.P, g.MS.Total, g.Error)
-			if !g.Food {
-				runs = append(runs, run{Photo: name, Variant: "gate", Gate: g})
-				fmt.Println("     not sent to the API ($0)")
-				continue
-			}
-		} else {
-			fmt.Printf("== %s\n", name)
-		}
-		for _, v := range vs {
-			var mu sync.Mutex
-			e := &inference.Engine{API: &inference.Client{URL: inference.DefaultUpstream, Key: key, Effort: v.Effort,
-				HTTP: &http.Client{Timeout: 120 * time.Second}}, Marks: v.Marks, NoCoords: v.NoCoords, MaxNamed: *maxNamed, SAMCache: cache,
-				PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
-				Sent: func(purpose string, jb []byte) {
-					mu.Lock()
-					defer mu.Unlock()
-					_ = os.WriteFile(filepath.Join(*out, fmt.Sprintf("%s.%s.%s.sent.jpg", stem, strings.ReplaceAll(v.Name, ":", "-"), purpose)), jb, 0o644)
-				}}
-			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
-			inv, err := e.Run(ctx, img, mime, inference.ModeAuto)
-			cancel()
-			r := run{Photo: name, Variant: v.Name, Gate: g, Inv: inv}
+		wg.Add(1)
+		go func(fi int, f, ext, mime, name, stem string) {
+			defer wg.Done()
+			slots <- struct{}{}
+			defer func() { <-slots }()
+			po := &photoOut{}
+			var w strings.Builder
+			defer func() {
+				mu.Lock()
+				results[fi] = po
+				fmt.Print(w.String())
+				mu.Unlock()
+			}()
+			img, err := os.ReadFile(f)
 			if err != nil {
-				r.Error = err.Error()
+				fmt.Fprintf(&w, "== %s | read: %v\n", name, err)
+				return
 			}
-			runs = append(runs, r)
-			spent += inv.SpentUSD()
-			report(r, inv)
-			a := sum[v.Name]
-			if a == nil {
-				a = &agg{}
-				sum[v.Name] = a
+			var g *gateOut
+			if *gateURL != "" {
+				g = callGate(*gateURL, name, img)
+				po.gate = g.Verdict
+				fmt.Fprintf(&w, "== %s | gate %s p=%.3f %.0f ms %s\n", name, g.Verdict, g.P, g.MS.Total, g.Error)
+				if !g.Food {
+					po.runs = append(po.runs, run{Photo: name, Variant: "gate", Gate: g})
+					fmt.Fprintln(&w, "     not sent to the API ($0)")
+					return
+				}
+			} else {
+				fmt.Fprintf(&w, "== %s\n", name)
 			}
-			a.photos++
-			a.listings += inv.Listings()
-			a.units += inv.Units()
-			a.counted += inv.Counted()
-			a.notListed += len(inv.NotListed)
-			a.calls += len(inv.Calls)
-			a.cost += inv.Cost
-			a.ms += inv.MS
-			a.hit, a.miss, a.missing = a.hit+inv.Points.Hit, a.miss+inv.Points.Miss, a.missing+inv.Points.Missing
-			overlay(img, inv, filepath.Join(*out, fmt.Sprintf("%s.%s.png", stem, strings.ReplaceAll(v.Name, ":", "-"))))
+			for _, v := range vs {
+				var smu sync.Mutex
+				e := &inference.Engine{API: &inference.Client{URL: *apiURL, Key: key, Effort: v.Effort,
+					HTTP: &http.Client{Timeout: 120 * time.Second}}, Marks: v.Marks, NoCoords: v.NoCoords, MaxNamed: *maxNamed, SAMCache: cache,
+					PackageConcept: *pkg, TrayConcept: *tray, Split: v.Split, TwoPass: v.TwoPass, NameEffort: v.NameEffort, DetailEffort: v.DetailEffort,
+					Sent: func(purpose string, jb []byte) {
+						smu.Lock()
+						defer smu.Unlock()
+						_ = os.WriteFile(filepath.Join(*out, fmt.Sprintf("%s.%s.%s.sent.jpg", stem, strings.ReplaceAll(v.Name, ":", "-"), purpose)), jb, 0o644)
+					}}
+				in, inMime := img, mime
+				if v.App {
+					if b, err := appUpload(img); err == nil {
+						in, inMime = b, "image/jpeg"
+					} else {
+						fmt.Fprintf(&w, "   %s: app version: %v\n", name, err)
+					}
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+				inv, err := e.Run(ctx, in, inMime, inference.ModeAuto)
+				cancel()
+				r := run{Photo: name, Variant: v.Name, Gate: g, Inv: inv}
+				if err != nil {
+					r.Error = err.Error()
+				}
+				po.runs = append(po.runs, r)
+				po.spent += inv.SpentUSD()
+				report(&w, r, inv)
+				mu.Lock()
+				a := sum[v.Name]
+				if a == nil {
+					a = &agg{}
+					sum[v.Name] = a
+				}
+				a.photos++
+				a.listings += inv.Listings()
+				a.units += inv.Units()
+				a.counted += inv.Counted()
+				a.notListed += len(inv.NotListed)
+				a.calls += len(inv.Calls)
+				a.cost += inv.Cost
+				a.ms += inv.MS
+				a.hit, a.miss, a.missing = a.hit+inv.Points.Hit, a.miss+inv.Points.Miss, a.missing+inv.Points.Missing
+				mu.Unlock()
+				overlay(img, inv, filepath.Join(*out, fmt.Sprintf("%s.%s.png", stem, strings.ReplaceAll(v.Name, ":", "-"))))
+			}
+		}(fi, f, ext, mime, name, stem)
+	}
+	wg.Wait()
+	var runs []run
+	spent := 0.0
+	gates := map[string]int{}
+	for _, po := range results {
+		if po == nil {
+			continue
+		}
+		runs = append(runs, po.runs...)
+		spent += po.spent
+		if po.gate != "" {
+			gates[po.gate]++
 		}
 	}
 	if len(gates) > 0 {
@@ -256,12 +314,12 @@ func main() {
 	fmt.Println("\nreport:", p)
 }
 
-func report(r run, inv *inference.Inventory) {
-	fmt.Printf("   -- %s | SAM %d (packages %d, trays %d, food inside %d), kept %d, named %d, unnamed %d, small %d | sent %dx%d | %d listings, %d named, %d counted | points %d/%d/%d (hit/miss/none) | %d ms | $%.5f",
+func report(w io.Writer, r run, inv *inference.Inventory) {
+	fmt.Fprintf(w, "   -- %s | SAM %d (packages %d, trays %d, food inside %d), kept %d, named %d, unnamed %d, small %d | sent %dx%d | %d listings, %d named, %d counted | points %d/%d/%d (hit/miss/none) | %d ms | $%.5f",
 		r.Variant, inv.Instances, inv.Packages, inv.Trays, inv.Contained, inv.Kept, inv.Named, inv.Unnamed, inv.Small, inv.PrepW, inv.PrepH, inv.Listings(), inv.Units(), inv.Counted(),
 		inv.Points.Hit, inv.Points.Miss, inv.Points.Missing, inv.MS, inv.Cost)
 	if inv.Units() > 0 {
-		fmt.Printf(" | $%.5f per named", inv.Cost/float64(inv.Units()))
+		fmt.Fprintf(w, " | $%.5f per named", inv.Cost/float64(inv.Units()))
 	}
 	// the parallel saving: the run's wall time against the calls added up
 	var callSum int64
@@ -270,17 +328,17 @@ func report(r run, inv *inference.Inventory) {
 			callSum += c.MS
 		}
 	}
-	fmt.Printf(" | calls added up %d ms (wall %d ms)", callSum, inv.MS)
+	fmt.Fprintf(w, " | calls added up %d ms (wall %d ms)", callSum, inv.MS)
 	if inv.CloserPhoto {
-		fmt.Print(" | CLOSER PHOTO")
+		fmt.Fprint(w, " | CLOSER PHOTO")
 	}
-	fmt.Println()
+	fmt.Fprintln(w)
 	for _, c := range inv.Calls {
 		cached := ""
 		if c.Cached {
 			cached = " [cache: $0 spent]"
 		}
-		fmt.Printf("      %-22s %-14s %4d %6d ms  in %6d (cached %5d)  out %5d (reasoning %5d)  $%.5f%s %s\n",
+		fmt.Fprintf(w, "      %-22s %-14s %4d %6d ms  in %6d (cached %5d)  out %5d (reasoning %5d)  $%.5f%s %s\n",
 			trim(c.Purpose, 22), c.Model, c.Status, c.MS, c.Usage.InputTokens, c.CachedTokens, c.Usage.OutputTokens,
 			c.Usage.ReasoningTokens, c.Cost(), cached, c.Error)
 	}
@@ -297,17 +355,40 @@ func report(r run, inv *inference.Inventory) {
 		if it.Tray {
 			flags += fmt.Sprintf(" TRAY(%g servings)", it.NumberOfServing)
 		}
-		fmt.Printf("      %2d. %s x%d (%s)%s%s\n", gi+1, it.Name, it.Count, it.Source, size, flags)
+		fmt.Fprintf(w, "      %2d. %s x%d (%s)%s%s\n", gi+1, it.Name, it.Count, it.Source, size, flags)
 	}
 	for _, nl := range inv.NotListed {
-		fmt.Printf("      not listed (not food): %s [box %d]\n", nl.Name, nl.Members[0])
+		fmt.Fprintf(w, "      not listed (not food): %s [box %d]\n", nl.Name, nl.Members[0])
 	}
 	for _, rj := range inv.Rejected {
-		fmt.Printf("      rejected box %d: %s\n", rj.Box, trim(rj.Reason, 120))
+		fmt.Fprintf(w, "      rejected box %d: %s\n", rj.Box, trim(rj.Reason, 120))
 	}
 	if r.Error != "" {
-		fmt.Printf("      ERROR %s\n", r.Error)
+		fmt.Fprintf(w, "      ERROR %s\n", r.Error)
 	}
+}
+
+// appUpload makes a photo like the app's upload: upright, the long edge at
+// most 1600 px (width-only resize keeps the aspect), JPEG quality 0.85.
+func appUpload(raw []byte) ([]byte, error) {
+	src, _, err := image.Decode(bytes.NewReader(raw))
+	if err != nil {
+		return nil, err
+	}
+	u := inference.Upright(src, inference.Orientation(raw))
+	b := u.Bounds()
+	w, h := b.Dx(), b.Dy()
+	if long := max(w, h); long > 1600 {
+		w, h = w*1600/long, h*1600/long
+		dst := image.NewRGBA(image.Rect(0, 0, w, h))
+		xdraw.CatmullRom.Scale(dst, dst.Bounds(), u, b, xdraw.Src, nil)
+		u = dst
+	}
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, u, &jpeg.Options{Quality: 85}); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 func callGate(url, name string, img []byte) *gateOut {
@@ -372,6 +453,7 @@ func overlay(raw []byte, inv *inference.Inventory, path string) {
 	if err != nil {
 		return
 	}
+	src = inference.Upright(src, inference.Orientation(raw)) // the boxes are in the upright frame
 	b := src.Bounds()
 	dst := image.NewRGBA(b)
 	draw.Draw(dst, b, src, b.Min, draw.Src)

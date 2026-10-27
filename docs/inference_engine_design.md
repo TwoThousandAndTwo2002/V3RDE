@@ -1,6 +1,6 @@
 # Icarus — inference_engine design addendum, 2026-10-26
 
-Follows `docs/icarus_addendum_2026-10-26.md`. This document records **what** the multi-item scan pipeline does, **why**, and **the evidence** for each choice, so that a later change can check against it. Status: approved by T9 (2026-10-26); updated 2026-10-27 with runs v4 and the SAM input tests (D19–D23). Every decision lists its sources (§7); from X30 on, each change also carries `docs/sources/XNN.md` (D23).
+Follows `docs/icarus_addendum_2026-10-26.md`. This document records **what** the multi-item scan pipeline does, **why**, and **the evidence** for each choice, so that a later change can check against it. Status: approved by T9 (2026-10-26); updated 2026-10-27 with runs v4 and the SAM input tests (D19–D23), and with real phone photos (X30b, D24–D28). Every decision lists its sources (§7); from X30 on, each change also carries `docs/sources/XNN.md` (D23).
 
 Hackathon feature: #1 multi-item scan (SAM 3.1 + Muse Spark). Work folder before the commit: `~/Documents/Morpheus_transfer/x30/`. Target commit: X30 on `hackathon/meta-2026`.
 
@@ -180,7 +180,8 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 - **Evidence (v4, 7 photos):** split 3 cut the wait from 14.9 s to **6.1 s** (−59%) for +35% cost ($0.026 → $0.035 / photo). On shelf 22 the 3 SAM calls added up to 32 s but took 11.6 s. Split broke some groups ("Go Pure Fruit and Oat Bars" ≠ "Go Pure Fruit Oat Bar"), so names are now normalised; split is used only from 12 named boxes.
 - **Source:** dev.meta.ai/docs/pricing-rate-limits (3,000 requests per minute: parallel calls fit).
 
-### D22. What SAM is sent (open: decided after the real-photo test)
+### D22. What SAM is sent (decided in X30b, see D24 and D28)
+- **Decision (X30b):** SAM gets the upload's own bytes when the photo is upright, else the upright pixels as JPEG q98; the upload itself becomes about 2376 px at JPEG 0.9 (D28). Real phone photos: originals 99.4% correct.
 - **What now:** SAM gets the original bytes of the upload. No change in X30.
 - **Evidence (SAM tests 1 and 2, 110 calls, $0.275):** the wait is mostly upload: shelf 22 as a 14.7 MB PNG took 7.6–12.2 s; the same pixels as a 3.3 MB JPEG q98 took 2.9 s, at 2048 px 2.0 s, with the same items. SAM gives the same answer for the same bytes (original sent twice). Packages keep 95–100% of nameable boxes at every encoding. But SAM "food" lost items on some photos: shelf 16 PNG 50 boxes, JPEG q98 6, q92 13; making a dense produce photo smaller lost items (shelf 14: 84% at 2048 px, 47% at 1536 px).
 - **Why open:** published studies find detection accuracy flat from JPEG quality 100 down to about 40, so q98 should not lose 44 of 50 boxes. Our test photos were web JPEGs saved as PNG, so a new JPEG compresses them a second time. Real phone photos (X30b) decide the rule.
@@ -190,6 +191,27 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 ### D23. Every decision cites its sources (T9, 2026-10-27)
 - **What:** each change carries `docs/sources/XNN.md`: for each decision and experiment, the sources (title, URL, date read, what it supports) and our own result files. The `NEW_WORK.md` entry links it, the commit message has a `Sources:` trailer, and the SUP stops if the file is missing or a decision has no URL.
 - **Why:** every decision can be traced to documentation, a paper, or a verified article where someone else did the same.
+
+---
+
+### D24. Turn every photo upright first (EXIF orientation)
+- **What:** the engine reads the EXIF Orientation tag (1–8) and turns the photo upright before anything else; SAM, the marks, the size levels and the boxes all use the upright frame. An upright photo goes to SAM as its original bytes; a turned photo goes as JPEG q98. A one-item photo still sends the original bytes to Muse (R1).
+- **Why / evidence:** phone cameras keep the sensor's pixel order and store the turn in EXIF (iOS and Android use the same values); Go ignores it. 11 of 20 X30b photos had orientation 6 or 3.
+- **Limit:** HEIC (iPhone default) cannot be decoded in Go; the app always sends JPEG.
+
+### D25. Pet food is not food; only not-food products = a "not food" answer
+- **What:** the prompt lists pet food with paper towels and soap. When every box is not food, the answer is `not_food: true` with the boxes in `not_listed` (the app shows them with "Add anyway"), not an error.
+- **Evidence (X30b):** 24 pet-food boxes on photo 1 were all marked not food, but the run returned "no item passed the contract". The gate passed both pet-food photos (p 0.60, 0.47).
+
+### D26. Tests run at the same time
+- **What:** the probe runs `-parallel` photos at once (default 4; the local gate queues 8). `-parallel 1` is for latency runs, because parallel load raises each call's time. The SAM cache is shared and in-flight aware: a second run of the same photo and concept waits for the first call (SAM is paid once).
+
+### D27. The SUP runs its S3 checks at the same time (template v3)
+- **What:** the Go tests of each module, the Dockerfile checks, Python and the mobile tests run together; each result prints in one piece; the web-dist rebuild stays after them.
+
+### D28. The app uploads at Muse's limit (to build in X32)
+- **What:** the app sends about **2376 px on the long side** (≈ 4,096 image tokens at 16:9) at **JPEG 0.9**, about 1 MB, in place of 1600 px at 0.85.
+- **Evidence (X30b, hand check):** camera originals 313/315 correct (99.4%), app version 291/305 (95.4%); the app version lost counting (bananas ×71 → ×1) and small label text (salads 23/24 → 17/23). The app version was cheaper ($0.037 vs $0.047 / photo) and faster (9.1 vs 13.4 s).
 
 ---
 
@@ -208,8 +230,10 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 | v4 | 7 | marks + coords, low (trays, levels) | $0.026 | $0.0016 | 14.9 s | trays: one listing each |
 | v4 | 7 | same, split 3 | $0.035 | $0.0021 | **6.1 s** | groups split across calls |
 | SAM 1 + 2 | 5 | 110 SAM calls, sizes and encodings | — | — | — | see D22 |
+| X30b | 19 | real phone photos, originals | $0.047 | $0.0025 | 13.4 s | **99.4%** correct |
+| X30b | 19 | same, app upload (1600 px, 0.85) | $0.037 | $0.0021 | 9.1 s | 95.4%; counting lost |
 
-Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**.
+Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**; X30b $1.58; total **$4.41**.
 
 ---
 
@@ -222,7 +246,8 @@ Probe spend so far: $0.36 + $0.77 + $1.05 + $0.37 + $0.13 + $0.15 = **$2.83**.
 5. **Prompt cache:** two separate requests with the same image did not share the cache. Not needed with one pass.
 6. **Bins and crates** (shelf 9): a bin of cans can become one "not listed" box; the cans inside are counted only if SAM finds them.
 7. **Barcode per box** on the server: later improvement.
-8. **Upload size and quality** of the app (1600 px, two JPEG compressions) may hide small items (D22).
+8. **Upload size and quality** of the app (1600 px, two JPEG compressions) hide small items and counts (D28; fixed in X32).
+10. **The gate** passes pet food (X30b) and ignores EXIF orientation (it sees sideways photos); both are gate items for later.
 9. **Tray servings** use a fixed portion (6 / 4 oz); the user corrects them in the app.
 
 ---

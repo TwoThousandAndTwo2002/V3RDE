@@ -208,3 +208,43 @@ func TestAgentWithOneBoxGivesWhole(t *testing.T) {
 		t.Fatalf("%+v", inv.Items)
 	}
 }
+
+// Many runs of the same photo at the same time: SAM is called once.
+func TestSAMCacheOneCallUnderConcurrency(t *testing.T) {
+	var mu sync.Mutex
+	calls := 0
+	f := &fakeAPI{sam: func(string) (int, string) {
+		mu.Lock()
+		calls++
+		mu.Unlock()
+		return 200, samLine(t, [4]int{0, 0, 199, 299}, [4]int{300, 0, 499, 299})
+	}, muse: func(string, map[string]any) map[string]any {
+		return textResp("m", itemsText(ent(1, nil, "Soup"), ent(2, nil, "Beans")))
+	}}
+	e, done := engine(t, f)
+	defer done()
+	e.SAMCache = &SAMCache{}
+	var wg sync.WaitGroup
+	paid := 0
+	var pm sync.Mutex
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			inv, err := e.Run(context.Background(), testPhoto(t), "image/jpeg", ModeAuto)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			pm.Lock()
+			if !inv.Calls[0].Cached {
+				paid++
+			}
+			pm.Unlock()
+		}()
+	}
+	wg.Wait()
+	if calls != 1 || paid != 1 {
+		t.Fatal("SAM calls", calls, "paid", paid)
+	}
+}
