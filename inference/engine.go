@@ -157,7 +157,13 @@ type Inventory struct {
 	Calls    []*Call     `json:"calls"`
 	MS       int64       `json:"ms"`
 	Cost     float64     `json:"cost_usd"` // filled when Run returns
-	mu       sync.Mutex
+	// X32a: every kept box in SAM pixels (frame FrameW x FrameH), for the
+	// ledger; the training set uses them with the stored photo.
+	KeptBoxes [][4]int   `json:"kept_boxes,omitempty"`
+	FrameW    int        `json:"frame_w,omitempty"`
+	FrameH    int        `json:"frame_h,omitempty"`
+	members   []Instance // the boxes that Item.Members index (1-based)
+	mu        sync.Mutex
 }
 
 func (inv *Inventory) add(c *Call) {
@@ -251,6 +257,7 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 	}
 	boxes, err := e.find(ctx, inv, ph)
 	inv.Kept = len(boxes)
+	inv.keepBoxes(boxes)
 	if mode == ModeAuto {
 		switch {
 		case err != nil || len(boxes) == 0:
@@ -266,6 +273,7 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 	if len(named) == 0 { // every box is too small to name: analyze's answer + "closer photo"
 		return inv, e.whole(ctx, inv, ph, nil)
 	}
+	inv.members = named
 	if e.TwoPass {
 		return inv, e.twoPass(ctx, inv, ph, named, mode)
 	}
@@ -653,6 +661,7 @@ func (e *Engine) whole(ctx context.Context, inv *Inventory, ph *photo, boxes []I
 	r.NumberOfServing = analyze.DefaultServings
 	it := Item{Result: r, Count: 1, Source: "whole", Boxes: [][4]int{}, Norm: []Norm{}, Seen: []Seen{}, Members: []int{}}
 	if len(boxes) == 1 {
+		inv.members = boxes
 		it.Boxes, it.Norm, it.Members = [][4]int{boxes[0].Box()}, []Norm{NormBox(boxes[0])}, []int{1}
 		if p := ph.prepared(); p != nil {
 			it.Seen = []Seen{SeenSize(boxes[0], p.W, p.H)}
@@ -1033,6 +1042,32 @@ func group(got map[int]Item, boxes []Instance, p *Prepared) []Item {
 		return area[out[i].Members[0]] > area[out[j].Members[0]]
 	})
 	return out
+}
+
+// keepBoxes records every kept box for the ledger (X32a).
+func (inv *Inventory) keepBoxes(boxes []Instance) {
+	for _, b := range boxes {
+		inv.KeptBoxes = append(inv.KeptBoxes, b.Box())
+	}
+	if len(boxes) > 0 {
+		inv.FrameW, inv.FrameH = boxes[0].W, boxes[0].H
+	}
+}
+
+// LargestBox is the largest box of item it: the listing crop (X32a, T9:
+// a group's photo is its largest instance). ok is false when the item has
+// no box (a whole-photo answer with no SAM box).
+func (inv *Inventory) LargestBox(it Item) (Instance, bool) {
+	var best Instance
+	ok := false
+	for _, n := range it.Members {
+		if n >= 1 && n <= len(inv.members) {
+			if b := inv.members[n-1]; !ok || b.Area() > best.Area() {
+				best, ok = b, true
+			}
+		}
+	}
+	return best, ok
 }
 
 // TopLevel is the analyze-shaped answer: the largest group (ties: box area).

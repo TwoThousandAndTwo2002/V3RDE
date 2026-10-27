@@ -224,6 +224,7 @@ func TestSAMCacheOneCallUnderConcurrency(t *testing.T) {
 	e, done := engine(t, f)
 	defer done()
 	e.SAMCache = &SAMCache{}
+	e.defaults() // once, before the goroutines, as NewService does (X32a: the race test found the missing call)
 	var wg sync.WaitGroup
 	paid := 0
 	var pm sync.Mutex

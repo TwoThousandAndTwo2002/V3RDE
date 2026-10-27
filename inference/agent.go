@@ -167,6 +167,7 @@ func (e *Engine) agent(ctx context.Context, inv *Inventory, ph *photo) error {
 	for _, n := range failed {
 		inv.Rejected = append(inv.Rejected, Rejection{Box: n, Reason: "no valid item in the call(s)"})
 	}
+	inv.members = named
 	inv.Items = group(got, named, p)
 	if len(inv.Items) == 0 {
 		return ErrNoItem

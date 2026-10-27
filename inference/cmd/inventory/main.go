@@ -1,9 +1,12 @@
-// Command inventory runs POST /v1/inventory (X31): the multi-item scan.
-// Secrets are files (mounted read-only), never flags or environment:
+// Command inventory runs the one analysis route (X32a): POST /v1/analyze
+// and /api/analyze (barcode -> gate -> SAM 3.1 + Muse Spark -> dedup), and
+// GET .../photo/{id}. (The binary keeps its X31 name.) Secrets are files
+// (mounted read-only), never flags or environment:
 //
 //	inventory -listen 0.0.0.0:8087 -key-file /run/secrets/meta_key \
 //	          -token-file /run/secrets/analyze_token -gate http://gate:8084 \
-//	          -events /events -cap-usd 20
+//	          -auth http://auth:8081 -barcode http://barcode:8083 \
+//	          -listings http://listings:8082 -photos /photos -events /events -cap-usd 20
 package main
 
 import (
@@ -37,6 +40,10 @@ func main() {
 	keyFile := flag.String("key-file", "/run/secrets/meta_key", "file holding the Meta Model API key")
 	tokenFile := flag.String("token-file", "/run/secrets/analyze_token", "file holding the bearer token callers send (analyze's)")
 	gate := flag.String("gate", "http://127.0.0.1:8084", "food gate base URL")
+	authURL := flag.String("auth", "", "auth base URL (the app's session cookie); empty = bearer only")
+	barcodeURL := flag.String("barcode", "", "barcode catalog base URL; empty = no barcode step")
+	listingsURL := flag.String("listings", "", "listings base URL (dedup); empty = no dedup")
+	photos := flag.String("photos", "/photos", "photo store: uploads + item photos (a volume)")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	upstream := flag.String("upstream", inference.DefaultUpstream, "Meta responses endpoint")
 	effort := flag.String("reasoning-effort", "low", "Muse reasoning effort (X30: low)")
@@ -45,9 +52,9 @@ func main() {
 	capUSD := flag.Float64("cap-usd", 20, "daily spend cap in USD, UTC day (T9, 2026-10-26)")
 	estimate := flag.Float64("reserve-usd", 0.10, "spend reserved per photo while it runs")
 	inFlight := flag.Int("max-in-flight", 3, "photos at the same time; more get 503 busy")
-	burst := flag.Int("rate-burst", 6, "requests per window per client IP")
+	burst := flag.Int("rate-burst", 6, "requests per window per user (bearer: per client IP)")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
-	maxImage := flag.Int64("max-image-bytes", 8<<20, "largest accepted image")
+	maxImage := flag.Int64("max-image-bytes", 5<<20, "largest accepted image (X32a: 5 MB, T9)")
 	// X31c (T9, 2026-10-27): 55 s, under the load balancer's 60 s idle
 	// timeout, so a slow photo gets a clear 504 from Icarus, not one from the LB.
 	timeout := flag.Duration("timeout", 55*time.Second, "per photo, every call included")
@@ -69,12 +76,20 @@ func main() {
 		TrayConcept:    "food tray",
 		Split:          *split,
 	}
-	h := inference.NewService(inference.ServiceConfig{Engine: eng, Auth: analyze.NewBearer(token),
+	if err := os.MkdirAll(*photos, 0o755); err != nil {
+		log.Fatalf("%s: %v", *photos, err)
+	}
+	var session inference.Authenticator
+	if *authURL != "" {
+		session = &inference.AuthClient{URL: *authURL}
+	}
+	h := inference.NewService(inference.ServiceConfig{Engine: eng, Auth: analyze.NewBearer(token), Session: session,
 		Limiter: analyze.NewLimiter(*burst, *window), Budget: budget, Events: ev, GateURL: *gate,
+		BarcodeURL: *barcodeURL, ListingsURL: *listingsURL, Photos: &inference.PhotoStore{Dir: *photos},
 		MaxImage: *maxImage, MaxInFlight: *inFlight, Timeout: *timeout, Origin: *origin, Build: build})
 	srv := &http.Server{Addr: *listen, Handler: h, ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 60 * time.Second, WriteTimeout: *timeout + 10*time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("icarus-inventory listening on %s gate=%s cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
-		*listen, *gate, *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
+	log.Printf("icarus-analyze listening on %s gate=%s auth=%s barcode=%s listings=%s photos=%s cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
+		*listen, *gate, *authURL, *barcodeURL, *listingsURL, *photos, *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
 	log.Fatal(srv.ListenAndServe())
 }

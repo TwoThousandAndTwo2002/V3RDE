@@ -183,3 +183,23 @@ The first live photos through `icarus.thehungreeapp.com` took about 27 s. The bo
 - Tests: inference 47 → 49.
 
 Next: the app shows the boxes first and the names after (X32); merge near-duplicate names in one photo; retrain the gate with shelf and pet-product photos.
+
+---
+
+## 9. One route for every photo: barcode, gate, every item, one answer
+
+**When:** Oct 27 2026.
+**Meta models:** PE-Core-S16-384 food gate; SAM 3.1; Muse Spark 1.3 (Meta Model API).
+**Files:** `inference/service.go`, `inference/service_test.go`, `inference/clients.go`, `inference/photos.go`, `inference/nofood.go`, `inference/nofood_test.go`, `inference/testdata/x32_muse_names.json`, `inference/events.go`, `inference/engine.go`, `inference/agent.go`, `inference/prepare_test.go`, `inference/cmd/inventory/main.go`, `listings/listings.go`, `listings/listings_test.go`, `listings/cmd/listings/main.go`, `deploy/Caddyfile`, `deploy/docker-compose.yml`, `tools/morpheus_stack.sh`, `docs/morpheus/analyze_api.md`; `router/` removed
+**Sources:** `docs/sources/X32a.md`
+
+A photo with no food came back as "200, No food", and the app had three routes for one job. Now there is one: `POST /v1/analyze`.
+
+- **One flow.** The phone's barcode first (catalog hit = fast path); then the Meta food gate (no food = 422, no model call); then SAM 3.1 counts every item and Muse Spark names them.
+- **One answer shape** for one item and for many: `items[]`, each with the eight listing fields unchanged and the count of identical items as the servings.
+- **Clear refusals.** Every error has a fixed `code`: `not_food`, `model_no_food_single`, `model_no_food_multi`, `already_listed` (409), `rate_limited`, `busy`, `daily_cap_reached`, …
+- **Item photos.** The server cuts a crop for each item; the app lists it with `photo_id`, and only its owner can read it.
+- **Nothing lost.** Every SAM box goes in the ledger with what became of it, for the gate and naming training later.
+- Tests: inference 49 → 59, listings 10 → 11; the router module (12) is removed. The old race-test setup in `prepare_test.go` now calls `defaults()` once, as the service does (`-race` found it).
+
+Next: the app's multi-item review and posting screens (X32b, mockup approved), then one deploy.

@@ -10,9 +10,10 @@ import (
 	"time"
 )
 
-// Event is one line per /v1/inventory request in
-// <dir>/events-YYYYMMDD.jsonl (the telemetry sidecar ships the folder).
-// No image bytes, no key, no token. The router logs the same trace_id.
+// Event is one line per request in <dir>/events-YYYYMMDD.jsonl (the
+// telemetry sidecar ships the folder). No image bytes, no key, no token.
+// X32a: one line per /v1/analyze request, every exit included; the field
+// names follow the router "scan" event and the X31 inventory event.
 type Event struct {
 	TS            string      `json:"ts"`
 	Service       string      `json:"service"`
@@ -51,6 +52,38 @@ type Event struct {
 	Model         string      `json:"model"`
 	Build         string      `json:"build"`
 	Error         string      `json:"error,omitempty"`
+	// X32a: the one route
+	Caller          string     `json:"caller,omitempty"`  // session | bearer
+	UserID          string     `json:"user_id,omitempty"` // "" for bearer callers
+	Code            string     `json:"code,omitempty"`    // the error code; "" on 200
+	Source          string     `json:"source,omitempty"`  // barcode | vision
+	PhotoStored     bool       `json:"photo_stored"`
+	Barcode         string     `json:"barcode,omitempty"`
+	BarcodeOutcome  string     `json:"barcode_outcome,omitempty"`
+	BarcodeStatus   int        `json:"barcode_status,omitempty"`
+	BarcodeMS       int64      `json:"barcode_ms,omitempty"`
+	CatalogServings float64    `json:"catalog_servings,omitempty"`
+	Items           int        `json:"items"`                           // items in the answer
+	DroppedNoFood   int        `json:"dropped_model_no_food,omitempty"` // the model's answer said no food
+	DroppedListed   int        `json:"dropped_already_listed,omitempty"`
+	NotNamed        int        `json:"not_named,omitempty"` // counted, not named (over the limit or too small)
+	Dedup           string     `json:"dedup,omitempty"`     // ok | unavailable | skipped (no user)
+	DedupMS         int64      `json:"dedup_ms,omitempty"`
+	FrameW          int        `json:"frame_w,omitempty"` // the frame of the box coordinates
+	FrameH          int        `json:"frame_h,omitempty"`
+	Boxes           []EventBox `json:"boxes,omitempty"`
+	PhotoIDs        []string   `json:"photo_ids,omitempty"`
+}
+
+// EventBox is one kept SAM box and what became of it (X32a, T9: every box
+// is logged, for the training set). Box is [left, top, right, bottom] in
+// SAM pixels on the upright stored photo (Event frame_w x frame_h).
+type EventBox struct {
+	N       int    `json:"n"`
+	Box     [4]int `json:"box"`
+	Outcome string `json:"outcome"`        // item | not_food | model_no_food | already_listed | not_named
+	Item    int    `json:"item,omitempty"` // 1-based item in the answer (outcome item)
+	Name    string `json:"name,omitempty"`
 }
 
 // EventCall is one API call of the request.

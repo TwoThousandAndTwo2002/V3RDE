@@ -1,0 +1,291 @@
+{
+ "source": "Morpheus /v1/analyze metrics (server, status 200), 2026-10-24..27, copied to the Mac before the Morpheus box removal (rm1/data, sha 83f5f5031d8f).",
+ "label_rule": "no_food = the name says that no food was found (read from the name text by T9's rule, 2026-10-27).",
+ "answers": [
+  {
+   "ts": "2026-10-24T04:39:34",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:07",
+   "name": "Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:07",
+   "name": "Organic Rice and Spinach Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:07",
+   "name": "Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:07",
+   "name": "Organic Rice and Spinach Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:12",
+   "name": "Organic Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:12",
+   "name": "Organic Rice Spinach Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:12",
+   "name": "Organic Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:13",
+   "name": "Organic Rice and Spinach Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:18",
+   "name": "Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:19",
+   "name": "Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:19",
+   "name": "Organic Rice and Spinach Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:22:20",
+   "name": "Organic Spinach Rice Pasta",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:53:47",
+   "name": "Health-Ade Kombucha",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T05:56:33",
+   "name": "Health-Ade Kombucha",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T06:18:11",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T07:53:15",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T08:09:11",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T08:23:56",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T08:46:58",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T08:51:16",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T09:06:34",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T09:25:38",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T09:37:30",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T09:44:45",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T09:48:09",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T10:09:00",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T10:29:21",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T10:42:37",
+   "name": "Unknown",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-24T10:44:01",
+   "name": "Chicken Biryani",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T11:06:59",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T18:32:21",
+   "name": "Health-Ade Kombucha Passion Fruit Tangerine",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-24T21:38:53",
+   "name": "No food",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-24T21:39:21",
+   "name": "Gatorade Zero Orange",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T05:00:09",
+   "name": "Fried Artichokes",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T05:11:31",
+   "name": "None",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-25T05:12:19",
+   "name": "Chicken Biryani",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T07:45:01",
+   "name": "Shrimp Fried Rice",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T07:46:30",
+   "name": "Vanilla and Caramel Ice Cream",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T15:03:38",
+   "name": "Gatorade Zero Orange",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T17:01:36",
+   "name": "Gatorade Zero Orange",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-25T23:08:08",
+   "name": "Coffee",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T01:15:21",
+   "name": "Tajin Clasico Seasoning with Lime",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T07:26:59",
+   "name": "Caramel Apple Crumble Sundae",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T07:32:33",
+   "name": "Unknown",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-26T08:53:59",
+   "name": "No food",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-26T08:54:55",
+   "name": "Banana",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T08:57:08",
+   "name": "Vanilla and Chocolate Ice Cream",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T08:58:29",
+   "name": "Ice Cream",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T08:59:15",
+   "name": "No Food",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-26T09:00:16",
+   "name": "No Food Detected",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-26T09:03:17",
+   "name": "unknown",
+   "no_food": true
+  },
+  {
+   "ts": "2026-10-26T09:03:32",
+   "name": "Bread Pudding",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T14:44:51",
+   "name": "Berry Cheesecake Slice",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T14:45:01",
+   "name": "Cheese & Herb Pizza",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-26T14:50:50",
+   "name": "Pepperoni Pizza",
+   "no_food": false
+  },
+  {
+   "ts": "2026-10-27T06:22:15",
+   "name": "Great Value Marinara Pasta Sauce",
+   "no_food": false
+  }
+ ]
+}
