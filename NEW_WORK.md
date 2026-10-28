@@ -438,3 +438,18 @@ Touch-up, rescue, Facebook sharing and voice posting now run in the Icarus stack
 - Safe defaults: Facebook posting is off until the Page is connected, and the rescue mail relay is off (the donor's own mail app or phone).
 - Not deployed by this change: the deploy script does it.
 - Tests: listings 11 -> 15.
+
+---
+
+## 23. A deploy builds only what changed
+
+**When:** Oct 28 2026.
+**Meta models:** none (deploy tooling).
+**Files:** `tools/morpheus_stack.sh`
+**Sources:** `docs/sources/X36c.md`
+
+Each image carries the commit it was built from. Because of that, every deploy compiled every image again, also when its code had not changed. On the box this used up to 1.6 GB of disk for the food gate alone, and the first deploy of #22 stopped on the disk check.
+
+- The stack script can now start the stack with the images that are already built (`STACK_NO_BUILD=1`).
+- The deploy builds only the services whose code changed, one at a time, and keeps the images and their build stamp for the others.
+- Without the setting, the stack script works as before.
