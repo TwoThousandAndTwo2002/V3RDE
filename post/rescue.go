@@ -597,6 +597,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Request-Id", id)
 	lid := r.PathValue("id")
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: "rescue.create", ListingID: lid}
+	ev.From(r)
 	var calls []Call
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
@@ -739,10 +740,12 @@ func telLink(phone string) string {
 }
 
 // mailtoLink is RFC 6068: the address, then subject and body as query
-// fields, percent-encoded (spaces as %20, not +).
+// fields, percent-encoded (spaces as %20, not +). The "@" of the address
+// stays literal (RFC 6068 section 2: addr-spec; some mail apps do not decode
+// %40 in the address part).
 func mailtoLink(to string, d Draft) string {
 	enc := func(s string) string { return strings.ReplaceAll(url.QueryEscape(s), "+", "%20") }
-	return "mailto:" + enc(to) + "?subject=" + enc(d.Subject) + "&body=" + enc(d.Body)
+	return "mailto:" + strings.ReplaceAll(enc(to), "%40", "@") + "?subject=" + enc(d.Subject) + "&body=" + enc(d.Body)
 }
 
 func (c *RescueConfig) get(w http.ResponseWriter, r *http.Request) {
@@ -769,7 +772,9 @@ type sendReq struct {
 func (c *RescueConfig) send(w http.ResponseWriter, r *http.Request) {
 	t0 := c.now()
 	id := analyze.NewRequestID()
+	w.Header().Set("X-Request-Id", id)
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: "rescue.send"}
+	ev.From(r)
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
 		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
@@ -816,14 +821,20 @@ func (c *RescueConfig) send(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, CodeBadRequest, "place_id is not one of this rescue's places")
 		return
 	}
-	to := strings.TrimSpace(in.ToEmail)
-	switch {
-	case place.Email != "" && to != "" && !strings.EqualFold(to, place.Email):
-		fail(http.StatusBadRequest, CodeBadRequest, "this place has a known address; send to it")
+	// X36a (T9 2026-10-28): the relay sends only to the address the directory
+	// gives for this place. With no directory address there is no relay
+	// email; the donor uses the mailto or tel link (their own mail app), so
+	// the Icarus sender cannot carry the donor's text to any address.
+	if place.Email == "" {
+		fail(http.StatusConflict, CodeConflict, "this place has no email in the directory: use the mailto or tel link")
 		return
-	case to == "":
-		to = place.Email
 	}
+	to := strings.TrimSpace(in.ToEmail)
+	if to != "" && !strings.EqualFold(to, place.Email) {
+		fail(http.StatusBadRequest, CodeBadRequest, "the relay sends only to this place's directory address")
+		return
+	}
+	to = place.Email
 	if a, err := mail.ParseAddress(to); err != nil || a.Address != to {
 		fail(http.StatusBadRequest, CodeBadRequest, "to_email is not one email address")
 		return

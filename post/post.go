@@ -380,7 +380,9 @@ func (c *Call) Price() {
 		return
 	}
 	if c.AudioMS > 0 {
-		c.CostUSD = float64(c.AudioMS/1000) * PriceASRPerHour / 3600
+		// whole seconds, rounded UP (X36a): a part second is billed as one,
+		// so the ledger and the cap never count less than the bill.
+		c.CostUSD = float64((c.AudioMS+999)/1000) * PriceASRPerHour / 3600
 		return
 	}
 	fresh := c.InputTokens - c.CachedTokens
@@ -513,6 +515,8 @@ type Event struct {
 	Route         string         `json:"route"`
 	UserID        string         `json:"user_id,omitempty"`
 	Bearer        bool           `json:"bearer,omitempty"`
+	RemoteIP      string         `json:"remote_ip,omitempty"`    // the socket peer (inference/events.go)
+	ForwardedIP   string         `json:"forwarded_ip,omitempty"` // CF-Connecting-IP or X-Forwarded-For[0]
 	ListingID     string         `json:"listing_id,omitempty"`
 	Status        int            `json:"status"`
 	Code          string         `json:"code,omitempty"`
@@ -522,6 +526,11 @@ type Event struct {
 	SpentTodayUSD float64        `json:"spent_today_usd"`
 	Calls         []Call         `json:"calls,omitempty"`
 	Detail        map[string]any `json:"detail,omitempty"`
+}
+
+// From sets the caller's addresses from r (server ClientIPs, as inference).
+func (ev *Event) From(r *http.Request) {
+	ev.RemoteIP, ev.ForwardedIP = analyze.ClientIPs(r)
 }
 
 // Events appends one line per request with fsync, so the spend in the file

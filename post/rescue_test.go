@@ -129,7 +129,7 @@ func TestRescueShelfStableGoesToFoodBanks(t *testing.T) {
 	}
 	p2 := res.Places[1]
 	if p2.Address != "2 Oak Ave, Town, NY, 10001" || p2.Tel != "tel:2125550102" || p2.Email != "help@pantry.example.org" ||
-		!strings.HasPrefix(p2.Mailto, "mailto:help%40pantry.example.org?subject=Donation%20of%2024") {
+		!strings.HasPrefix(p2.Mailto, "mailto:help@pantry.example.org?subject=Donation%20of%2024") {
 		t.Fatalf("place %+v", p2)
 	}
 	if res.Places[0].Email != "" || res.Places[0].Website != "" {
@@ -244,11 +244,18 @@ func TestRescueSendRelay(t *testing.T) {
 	if w := send(`{"place_id":"zz","to_email":"a@b.org"}`, "u1"); w.Code != 400 {
 		t.Fatalf("unknown place: %d", w.Code)
 	}
-	if w := send(`{"place_id":"a3"}`, "u1"); w.Code != 400 {
-		t.Fatalf("no address: %d", w.Code)
+	// X36a: no directory address = no relay email, whatever the donor types
+	for _, b := range []string{`{"place_id":"a3"}`, `{"place_id":"a3","to_email":"bank@example.org"}`,
+		`{"place_id":"a1","to_email":"victim@bank.example","body":"Your account is locked"}`} {
+		if w := send(b, "u1"); w.Code != 409 || !strings.Contains(w.Body.String(), "no email in the directory") {
+			t.Fatalf("%s: %d %s", b, w.Code, w.Body)
+		}
 	}
-	if w := send(`{"place_id":"a3","to_email":"a@b.org, c@d.org"}`, "u1"); w.Code != 400 {
+	if w := send(`{"place_id":"a2","to_email":"a@b.org, c@d.org"}`, "u1"); w.Code != 400 {
 		t.Fatalf("two addresses: %d", w.Code)
+	}
+	if len(*e.sent) != 0 {
+		t.Fatalf("a refused send reached the relay: %v", *e.sent)
 	}
 	// the directory's own address, with the draft; header injection is removed
 	if w := send(`{"place_id":"a2","subject":"Beans\r\nBcc: x@evil.example"}`, "u1"); w.Code != 200 {
@@ -263,16 +270,19 @@ func TestRescueSendRelay(t *testing.T) {
 	if w := send(`{"place_id":"a2"}`, "u1"); w.Code != 409 {
 		t.Fatalf("second send to the same place: %d", w.Code)
 	}
-	if w := send(`{"place_id":"a3","to_email":"bank@example.org"}`, "u1"); w.Code != 200 {
-		t.Fatalf("donor-given address: %d %s", w.Code, w.Body)
-	}
-	e.cfg.SendPerDay = 2
-	if w := send(`{"place_id":"a1","to_email":"k@example.org"}`, "u1"); w.Code != 429 {
-		t.Fatalf("per-day limit: %d", w.Code)
-	}
 	got, _ := e.cfg.Store.Get(res.RescueID, "u1")
-	if len(got.Sent) != 2 {
+	if len(got.Sent) != 1 || len(*e.sent) != 1 {
 		t.Fatalf("sent %v", got.Sent)
+	}
+	// the per-day limit (checked after the address rules, before the relay)
+	e2 := newRS(t, stableDraft, 200, true)
+	defer e2.stop()
+	w2 := do(e2.h, jsonReq("POST", "/api/rescue/l_000000000000000a", `{"zip":"10001"}`, "u1"))
+	var res2 Rescue
+	json.Unmarshal(w2.Body.Bytes(), &res2)
+	e2.cfg.SendPerDay = 0
+	if w := do(e2.h, jsonReq("POST", "/api/rescue/"+res2.RescueID+"/send", `{"place_id":"a2"}`, "u1")); w.Code != 429 || len(*e2.sent) != 0 {
+		t.Fatalf("per-day limit: %d", w.Code)
 	}
 }
 
@@ -312,6 +322,9 @@ func TestParsePlacesAndLinks(t *testing.T) {
 	}
 	if m := mailtoLink("", Draft{Subject: "a b", Body: "c&d"}); m != "mailto:?subject=a%20b&body=c%26d" {
 		t.Fatalf("mailto %s", m)
+	}
+	if m := mailtoLink("a+b@x.org", Draft{Subject: "s@t"}); m != "mailto:a%2Bb@x.org?subject=s%40t&body=" {
+		t.Fatalf("mailto address %s", m)
 	}
 }
 
@@ -363,7 +376,7 @@ func TestRescueSendKnownAddressAndLimiter(t *testing.T) {
 	if w := do(e.h, jsonReq("POST", path, `{"place_id":"a2","to_email":"HELP@pantry.example.org"}`, "u1")); w.Code != 200 {
 		t.Fatalf("same address, other case: %d %s", w.Code, w.Body)
 	}
-	if w := do(e.h, jsonReq("POST", path, `{"place_id":"a3","to_email":"x@example.org"}`, "u1")); w.Code != 429 {
+	if w := do(e.h, jsonReq("POST", path, `{"place_id":"a2"}`, "u1")); w.Code != 429 {
 		t.Fatalf("send limiter: %d", w.Code)
 	}
 }

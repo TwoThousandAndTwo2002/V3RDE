@@ -83,10 +83,20 @@ func main() {
 		if err != nil {
 			log.Printf("posting off: %v", err)
 		} else {
+			// No client Timeout: each Graph call has its own context
+			// (PublishTimeout for the upload, -timeout for an edit), and a
+			// client Timeout would cut the upload short (X36a).
 			cfg.Page = &post.Page{Graph: *graph, Version: *version, PageID: *pageID, Token: pt,
-				HTTP: &http.Client{Timeout: *timeout}}
+				HTTP: &http.Client{}}
 		}
 	}
+	// X36a: a post that Facebook took but the file did not is written again
+	// within a minute, also with -sweep 0 (the default).
+	go func() {
+		for range time.Tick(time.Minute) {
+			cfg.FlushStore()
+		}
+	}()
 	if *sweep > 0 {
 		go func() {
 			for range time.Tick(*sweep) {

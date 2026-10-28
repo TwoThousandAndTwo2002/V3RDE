@@ -388,8 +388,14 @@ type VoiceConfig struct {
 	MaxAudio time.Duration // the longest utterance (60 s)
 	MaxBytes int64         // the largest upload (12 MB)
 	Timeout  time.Duration // both calls (25 s: under the 30 s gateway)
-	Build    string
-	now      func() time.Time
+	// MaxInFlight is how many requests run at the same time; more get 503
+	// busy before the body is read (X36a; inference/service.go MaxInFlight).
+	// One 60 s upload uses about 11 times its size in memory (the multipart
+	// body, the copy, the resample), and the image sets GOMEMLIMIT=200MiB.
+	MaxInFlight int
+	Build       string
+	now         func() time.Time
+	slots       chan struct{}
 }
 
 // NewVoice builds the mux.
@@ -403,13 +409,18 @@ func NewVoice(c *VoiceConfig) http.Handler {
 	if c.Timeout == 0 {
 		c.Timeout = 25 * time.Second
 	}
+	if c.MaxInFlight <= 0 {
+		c.MaxInFlight = 2
+	}
 	if c.now == nil {
 		c.now = time.Now
 	}
+	c.slots = make(chan struct{}, c.MaxInFlight)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "voice", "build": c.Build,
-			"spent_today_usd": c.Budget.Spent(), "asr_model": c.ASR.Model})
+			"spent_today_usd": c.Budget.Spent(), "asr_model": c.ASR.Model,
+			"in_flight": len(c.slots), "max_in_flight": c.MaxInFlight})
 	})
 	mux.HandleFunc("POST /api/voice", c.propose)
 	mux.HandleFunc("POST /v1/voice", c.propose)
@@ -421,6 +432,7 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	id := analyze.NewRequestID()
 	w.Header().Set("X-Request-Id", id)
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: r.URL.Path, Service: "voice", Build: c.Build}
+	ev.From(r)
 	var calls []Call
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
@@ -443,6 +455,13 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	ev.UserID, ev.Bearer = who.User.ID, who.Bearer
 	if !c.Limiter.Allow(who.RateKey) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
+		return
+	}
+	select {
+	case c.slots <- struct{}{}:
+		defer func() { <-c.slots }()
+	default:
+		fail(http.StatusServiceUnavailable, "busy", "voice is busy; try again in a few seconds")
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, c.MaxBytes+64<<10)

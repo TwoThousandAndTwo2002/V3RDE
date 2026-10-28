@@ -9,7 +9,6 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -18,8 +17,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
 func tinyImage(w, h int) *image.RGBA {
@@ -122,7 +119,6 @@ func newTU(t *testing.T, f *metaFake, check bool) *tuEnv {
 	dir := t.TempDir()
 	cfg := &TouchupConfig{
 		Editor:     &ImageEditor{Base: srv.URL, Key: "key", Model: DefaultImage},
-		Auth:       analyze.NewBearer("tok"),
 		Session:    fakeAuth{},
 		Budget:     NewBudget(1, 0.03, nil),
 		Events:     NewEvents(filepath.Join(dir, "events")),
@@ -136,18 +132,21 @@ func newTU(t *testing.T, f *metaFake, check bool) *tuEnv {
 	return &tuEnv{h: NewTouchup(cfg), cfg: cfg, fake: f, items: cfg.ItemPhotos, stop: srv.Close}
 }
 
-func uploadReq(t *testing.T, path string, img []byte) *http.Request {
-	var b bytes.Buffer
-	mw := multipart.NewWriter(&b)
-	h := make(map[string][]string)
-	h["Content-Disposition"] = []string{`form-data; name="image"; filename="a.jpg"`}
-	h["Content-Type"] = []string{"image/jpeg"}
-	pw, _ := mw.CreatePart(h)
-	pw.Write(img)
-	mw.Close()
-	r := httptest.NewRequest("POST", path, &b)
-	r.Header.Set("Content-Type", mw.FormDataContentType())
-	return r
+// seed puts one analyze item photo of user in the item-photo folder and
+// returns its photo_id (the only touch-up input, X36a).
+func seed(t *testing.T, e *tuEnv, user string) string {
+	t.Helper()
+	os.MkdirAll(e.items, 0o755)
+	pid := newHex(16)
+	os.WriteFile(filepath.Join(e.items, pid+".jpg"), tinyJPEG(t), 0o644)
+	os.WriteFile(filepath.Join(e.items, pid+".json"), []byte(`{"photo_id":"`+pid+`","user_id":"`+user+`"}`), 0o644)
+	return pid
+}
+
+// tuReq is POST /api/touchup for a seeded photo of user (query: extra params).
+func tuReq(t *testing.T, e *tuEnv, user, query string) *http.Request {
+	r := httptest.NewRequest("POST", "/api/touchup?photo_id="+seed(t, e, user)+query, nil)
+	return asUser(r, user)
 }
 
 func asUser(r *http.Request, u string) *http.Request {
@@ -165,13 +164,7 @@ func do(h http.Handler, r *http.Request) *httptest.ResponseRecorder {
 func wait(t *testing.T, e *tuEnv, path, user string) Job {
 	t.Helper()
 	for i := 0; i < 200; i++ {
-		r := httptest.NewRequest("GET", path, nil)
-		if user != "" {
-			asUser(r, user)
-		} else {
-			r.Header.Set("Authorization", "Bearer tok")
-		}
-		w := do(e.h, r)
+		w := do(e.h, asUser(httptest.NewRequest("GET", path, nil), user))
 		if w.Code != 200 {
 			t.Fatalf("GET %s: %d %s", path, w.Code, w.Body)
 		}
@@ -200,7 +193,7 @@ func start(t *testing.T, e *tuEnv, r *http.Request) string {
 func TestTouchupDoneStoresItemPhotoAndOwnerOnly(t *testing.T) {
 	e := newTU(t, &metaFake{checkText: `{"same_food": true, "reason": "same items, better light"}`}, true)
 	defer e.stop()
-	id := start(t, e, asUser(uploadReq(t, "/api/touchup?mode=background", tinyJPEG(t)), "u1"))
+	id := start(t, e, tuReq(t, e, "u1", "&mode=background"))
 	j := wait(t, e, "/api/touchup/"+id, "u1")
 	if j.Status != JobDone || j.PhotoID == "" || j.Mode != ModeBackground {
 		t.Fatalf("job %+v", j)
@@ -230,7 +223,8 @@ func TestTouchupDoneStoresItemPhotoAndOwnerOnly(t *testing.T) {
 	}
 	// one event line for the job, with both calls
 	b, _ := os.ReadFile(e.cfg.Events.Path(time.Now()))
-	if !strings.Contains(string(b), `"route":"touchup.job"`) || !strings.Contains(string(b), `"purpose":"touchup:check"`) {
+	if !strings.Contains(string(b), `"route":"touchup.job"`) || !strings.Contains(string(b), `"purpose":"touchup:check"`) ||
+		!strings.Contains(string(b), `"remote_ip":"192.0.2.1"`) {
 		t.Fatalf("events %s", b)
 	}
 }
@@ -238,7 +232,7 @@ func TestTouchupDoneStoresItemPhotoAndOwnerOnly(t *testing.T) {
 func TestTouchupKeepsOriginalWhenFoodChanged(t *testing.T) {
 	e := newTU(t, &metaFake{checkText: `{"same_food": false, "reason": "one apple is missing"}`}, true)
 	defer e.stop()
-	id := start(t, e, asUser(uploadReq(t, "/api/touchup", tinyJPEG(t)), "u1"))
+	id := start(t, e, tuReq(t, e, "u1", ""))
 	j := wait(t, e, "/api/touchup/"+id, "u1")
 	if j.Status != JobKeptOriginal || j.PhotoID != "" || j.Reason != "one apple is missing" || j.Mode != ModeLight {
 		t.Fatalf("job %+v", j)
@@ -266,7 +260,7 @@ func TestTouchupFailsClosed(t *testing.T) {
 	}
 	for _, c := range cases {
 		e := newTU(t, c.fake, c.check)
-		id := start(t, e, asUser(uploadReq(t, "/api/touchup", tinyJPEG(t)), "u1"))
+		id := start(t, e, tuReq(t, e, "u1", ""))
 		if j := wait(t, e, "/api/touchup/"+id, "u1"); j.Status != c.want || j.PhotoID != "" {
 			t.Fatalf("%s: %+v", c.name, j)
 		}
@@ -277,7 +271,7 @@ func TestTouchupFailsClosed(t *testing.T) {
 func TestTouchupPNGEditIsStoredAsJPEG(t *testing.T) {
 	e := newTU(t, &metaFake{editPNG: true, checkText: `{"same_food": true}`}, true)
 	defer e.stop()
-	id := start(t, e, asUser(uploadReq(t, "/api/touchup", tinyJPEG(t)), "u1"))
+	id := start(t, e, tuReq(t, e, "u1", ""))
 	j := wait(t, e, "/api/touchup/"+id, "u1")
 	b, err := ReadItemPhoto(e.cfg.Dir, j.PhotoID, "u1")
 	if err != nil || http.DetectContentType(b) != "image/jpeg" {
@@ -301,40 +295,48 @@ func TestTouchupPhotoIDInput(t *testing.T) {
 	}
 }
 
-func TestTouchupBearerRoute(t *testing.T) {
+// X36a: the only input is photo_id. No upload, no bearer route, so no image
+// reaches the paid calls without the analyze run's gate.
+func TestTouchupOnlyPhotoIDInput(t *testing.T) {
 	e := newTU(t, &metaFake{checkText: `{"same_food": true}`}, true)
 	defer e.stop()
-	r := uploadReq(t, "/v1/touchup", tinyJPEG(t))
-	r.Header.Set("Authorization", "Bearer tok")
-	id := start(t, e, r)
-	if j := wait(t, e, "/v1/touchup/"+id, ""); j.Status != JobDone {
-		t.Fatalf("%+v", j)
+	for _, p := range []string{"/v1/touchup?photo_id=" + seed(t, e, "u1"), "/v1/touchup/x", "/v1/touchup/x/photo"} {
+		for _, m := range []string{"POST", "GET"} {
+			r := httptest.NewRequest(m, p, nil)
+			r.Header.Set("Authorization", "Bearer tok")
+			if w := do(e.h, r); w.Code != 404 && w.Code != 405 {
+				t.Fatalf("%s %s: %d (the bearer route must not exist)", m, p, w.Code)
+			}
+		}
 	}
-	// a session user cannot read a bearer job, and the cookie is not accepted on /v1
-	if w := do(e.h, asUser(httptest.NewRequest("GET", "/api/touchup/"+id, nil), "u1")); w.Code != 404 {
-		t.Fatalf("session read of a bearer job: %d", w.Code)
+	if w := do(e.h, asUser(httptest.NewRequest("POST", "/api/touchup", nil), "u1")); w.Code != 400 ||
+		!strings.Contains(w.Body.String(), "photo_id is required") {
+		t.Fatalf("no photo_id: %d %s", w.Code, w.Body)
 	}
-	if w := do(e.h, asUser(uploadReq(t, "/v1/touchup", tinyJPEG(t)), "u1")); w.Code != 401 {
-		t.Fatalf("cookie on /v1: %d", w.Code)
+	up := asUser(httptest.NewRequest("POST", "/api/touchup?photo_id="+seed(t, e, "u1"), strings.NewReader("jpegbytes")), "u1")
+	up.Header.Set("Content-Type", "image/jpeg")
+	if w := do(e.h, up); w.Code != 400 || !strings.Contains(w.Body.String(), "no body") {
+		t.Fatalf("upload with photo_id: %d %s", w.Code, w.Body)
+	}
+	if w := do(e.h, asUser(httptest.NewRequest("POST", "/api/touchup?photo_id=../../etc/passwd", nil), "u1")); w.Code != 404 {
+		t.Fatalf("bad photo_id: %d", w.Code)
+	}
+	if e.fake.editForm != nil {
+		t.Fatal("a refused request reached the paid edit call")
 	}
 }
 
 func TestTouchupRefusals(t *testing.T) {
 	e := newTU(t, &metaFake{checkText: `{"same_food": true}`}, true)
 	defer e.stop()
-	if w := do(e.h, uploadReq(t, "/api/touchup", tinyJPEG(t))); w.Code != 401 {
+	if w := do(e.h, httptest.NewRequest("POST", "/api/touchup?photo_id="+seed(t, e, "u1"), nil)); w.Code != 401 {
 		t.Fatalf("no session: %d", w.Code)
 	}
-	if w := do(e.h, asUser(uploadReq(t, "/api/touchup?mode=cartoon", tinyJPEG(t)), "u1")); w.Code != 400 {
+	if w := do(e.h, tuReq(t, e, "u1", "&mode=cartoon")); w.Code != 400 {
 		t.Fatalf("free mode: %d", w.Code)
 	}
-	r := asUser(httptest.NewRequest("POST", "/api/touchup", strings.NewReader("x")), "u1")
-	r.Header.Set("Content-Type", "text/plain")
-	if w := do(e.h, r); w.Code != 415 {
-		t.Fatalf("text body: %d", w.Code)
-	}
 	e.cfg.Budget = NewBudget(0.01, 0.03, nil)
-	if w := do(e.h, asUser(uploadReq(t, "/api/touchup", tinyJPEG(t)), "u1")); w.Code != 503 ||
+	if w := do(e.h, tuReq(t, e, "u1", "")); w.Code != 503 ||
 		!strings.Contains(w.Body.String(), CodeDailyCap) {
 		t.Fatalf("cap: %d %s", w.Code, w.Body)
 	}
@@ -342,7 +344,7 @@ func TestTouchupRefusals(t *testing.T) {
 	for i := 0; i < cap(e.cfg.slots); i++ {
 		e.cfg.slots <- struct{}{}
 	}
-	if w := do(e.h, asUser(uploadReq(t, "/api/touchup", tinyJPEG(t)), "u1")); w.Code != 503 ||
+	if w := do(e.h, tuReq(t, e, "u1", "")); w.Code != 503 ||
 		!strings.Contains(w.Body.String(), "busy") {
 		t.Fatalf("busy: %d %s", w.Code, w.Body)
 	}

@@ -1,4 +1,4 @@
-# Icarus post services API (X35, 2026-10-28)
+# Icarus post services API (X35, 2026-10-28; review fixes X36a)
 
 Services that work on a listing after the scan. Each one is a separate Go
 binary in the `post/` module (one image, `post/Dockerfile`). **Status: built
@@ -6,9 +6,9 @@ and tested, not deployed.** The integration step adds the compose services,
 the volumes, the secrets and the Caddy routes.
 
 Shared rules (the same as the analyze service):
-- `/api/...` routes take the app's session cookie (`morpheus_session`); `/v1/...` routes take the analyze bearer token.
+- `/api/...` routes take the app's session cookie (`morpheus_session`); `/v1/...` routes take the analyze bearer token. Touch-up has no `/v1` route (X36a).
 - Every non-2xx body is `{"request_id", "error", "code"}`.
-- Every POST (and every touch-up job) writes one line to `events-YYYYMMDD.jsonl` with its cost; a daily cap per service (UTC day) gives `503 daily_cap_reached`.
+- Every POST (and every touch-up job) writes one line to `events-YYYYMMDD.jsonl` with its cost, `remote_ip` and `forwarded_ip` (as inference); a daily cap per service (UTC day) gives `503 daily_cap_reached`.
 - Rate limits use the socket peer. Set `-trust-forwarded` only behind Caddy (Caddy sets `X-Forwarded-For` itself).
 - **Compose:** when a service sets `entrypoint`, the image CMD does not apply: give every flag in the compose `command` (at least `-listen 0.0.0.0:<port>`, `-auth`, `-listings`, `-dir`/`-data`, `-events`).
 - Secrets are read-only files: `/run/secrets/meta_key`, `/run/secrets/analyze_token` (and the service's own, below). They are never printed.
@@ -19,16 +19,25 @@ Muse Image 1.0 edits the photo; Muse Spark 1.3 checks that the food did not
 change. The original is always kept and stays the default.
 
 ```
-POST /api/touchup?mode=light|background[&photo_id=<32 hex>]    session cookie
-POST /v1/touchup?mode=light|background                         bearer token
-     body: multipart "image" or JSON {"image_base64","mime"} (≤ 5 MB, jpeg/png/webp/gif)
-     — or no body and photo_id = an item photo from /api/analyze that the caller owns
+POST /api/touchup?mode=light|background&photo_id=<32 hex>    session cookie, no body
+     photo_id = an item photo from the analyze run that the caller owns
   -> 202 {"request_id", "touchup_id", "status": "running", "mode"}
 
-GET /api/touchup/{touchup_id}            (or /v1/...)  -> 200 job
-GET /api/touchup/{touchup_id}/photo      (or /v1/...)  -> image/jpeg (status "done" only, else 409)
+GET /api/touchup/{touchup_id}         -> 200 job
+GET /api/touchup/{touchup_id}/photo   -> image/jpeg (status "done" only, else 409)
 GET /healthz
 ```
+
+**Only photo_id (X36a, T9).** The donor taps the touch-up button on the review
+list after the analyze run, so the photo has passed the food gate and is
+upright before any paid call. No upload and no bearer route: the analyze token
+is public (it is in the app bundle).
+
+**The button is only on vision items** (T9, 2026-10-28): an item with
+`source: "barcode"` gets no touch-up button, because its listing image is the
+Open Food Facts front image (the white cutout, X33). A barcode answer comes
+from the catalog before the gate runs, so its photo is not gated; the server
+does not know the source of an item photo, so this rule is in the app.
 
 Job:
 ```json
@@ -40,9 +49,9 @@ Job:
 - `status`: `running` → `done` (the edit passed the check; `photo_id` is the edit), `kept_original` (the check said the food changed, or it could not check), or `failed` (the edit failed).
 - Poll every 1–2 s. A finished job stays readable for 24 h (in memory: a restart forgets it; the edited file stays).
 - The edit is stored in the item-photo format (`<photo_id>.jpg` + `.json` with `photo_id`, `user_id`). To post a listing with it, the listings service must read this folder too (`-item-photos`); that is an integration step.
-- Refusals: 400 `bad_request` (mode), 401, 404 (`photo_id` not found or not yours), 413, 415, 429, 503 `busy` (2 jobs at the same time) or `daily_cap_reached`.
+- Refusals: 400 `bad_request` (mode, no `photo_id`, or a body), 401, 404 (`photo_id` not found or not yours), 429, 503 `busy` (2 jobs at the same time) or `daily_cap_reached`.
 
-Flags (`touchup -h`): `-cap-usd 2`, `-reserve-usd 0.03`, `-max-in-flight 2`, `-rate-burst 4`/min, `-job-timeout 90s`, `-image-reasoning ""` (API default), `-no-check` (then every edit is `kept_original`), `-item-photos` (the analyze photo folder, read-only), `-dir`, `-events`, `-auth`.
+Flags (`touchup -h`): `-auth` and `-item-photos` (the analyze photo folder, read-only) are required; `-cap-usd 2`, `-reserve-usd 0.03`, `-max-in-flight 2`, `-rate-burst 4`/min, `-job-timeout 90s`, `-image-reasoning ""` (API default), `-no-check` (then every edit is `kept_original`), `-dir /data` (it stops at start when the folder cannot be written), `-events`.
 
 ## 2. Rescue (X35b) — `cmd/rescue`, port 8089
 
@@ -75,9 +84,9 @@ Rescue:
 ```
 - `kind`: `food_bank` (shelf-stable: pantries and food banks first) or `meal_program` (perishable: soup kitchens, meal programs, shelters first). Nearest first in each group; 3 places.
 - The app must show `attribution` (CC BY 4.0).
-- The app opens `mailto` (the donor's own mail app) or `tel`. `email` is filled only if the directory gives one; else the donor types the address (or uses `/send` with `to_email`).
+- The app opens `mailto` (the donor's own mail app) or `tel`. `email` is filled only if the directory gives one; else the donor types the address in their own mail app (`/send` is only for a directory address).
 - One rescue per listing: a second POST answers 200 with the first rescue (no new Muse call); while the first one runs, 409 `conflict`.
-- `/send` sends the stored draft (or the donor's edited `subject`/`body`), Reply-To = the donor's email; once per place; 3 per donor per day; rate-limited. When the place has a known `email`, `to_email` must be that address (any case). The SMTP exchange stops after `-smtp-timeout` (20 s).
+- `/send` sends the stored draft (or the donor's edited `subject`/`body`), Reply-To = the donor's email; once per place; 3 per donor per day; rate-limited. It sends **only to the place's directory `email`** (X36a): a place with no directory email gets `409 conflict` (use `mailto` or `tel`), and a `to_email` other than the directory address (any case) gets 400. The SMTP exchange stops after `-smtp-timeout` (20 s).
 - Refusals: 400 (zip / lat-lng / body), 401, 404 (`listing not found`: unknown or not yours), 409 `collected` / `not_expired`, 422 `not_bulk`, 502 (the draft or the directory failed), 503 `daily_cap_reached` / `disabled` (no relay), 504.
 
 Flags: `-min-servings 1` (**the bulk rule: T9 decides**), `-places 3`, `-cap-usd 1`, `-reserve-usd 0.02`, `-timeout 25s`, `-send-per-day 3`, `-smtp-timeout 20s`, `-trust-forwarded`, `-directory https://feedam.org`, `-smtp-addr` / `-smtp-user` / `-smtp-pass-file /run/secrets/smtp_pass` / `-from` (all empty = no relay), `-listings`, `-auth`, `-data`, `-events`.
@@ -104,12 +113,13 @@ Post:
   "text": "Free apples from a neighbor! …", "status": "posted",
   "expires_at": "…", "posted_at": "…", "request_id": "…", "cost_usd": 0.004 }
 ```
-- One post per listing: a second POST answers 409 `already_posted` with the post (409 `conflict` while the first one runs).
+- One post per listing: a second POST answers 409 `already_posted` with the post (409 `conflict` while the first one runs). When Facebook took the post but the file write failed (500), the post stays in memory, so a retry still gets 409 `already_posted` and never posts again; the service writes the file again every minute, whatever `-sweep` is (X36a).
+- The Facebook upload has its own 60 s limit (`PublishTimeout`); the Page client has no shorter timeout. When the 30 s gateway stops the request first, the upload goes on and is recorded; a retry gets 409 with the post.
 - A second Muse Spark call checks the text; a refusal is 422 `post_rejected` (nothing is posted). The title goes to the model as JSON data.
 - The public text never has the pickup text or a link from the model; the service adds `Claim it in the app: <link-base><listing_id>` when `-link-base` is set.
-- **Integration hook:** the listings service calls `POST http://fanout:8090/v1/fanout/status` with `claimed` after a grab, with the internal token `/run/secrets/fanout_status_token` (a new secret; never the analyze token, which is public). The same status again changes nothing; a claimed post stays claimed.
+- **Integration hook:** the listings service calls `POST http://fanout:8090/v1/fanout/status` with `claimed` after a grab, with the internal token `/run/secrets/fanout_status_token` (a new secret; never the analyze token, which is public). The same status again changes nothing; a claimed post stays claimed. While the listing is being posted, the answer is 409 `pending`: the hook must retry (a 404 means no post).
 - `-sweep 1m` marks posts `[EXPIRED]` when the listing timer ran out. Keep it off until the claim hook exists (else a claimed listing could show `[EXPIRED]`).
-- Refusals: 400, 401, 404, 409 `not_active` / `already_posted` / `conflict`, 422 `post_rejected`, 429, 500 (Facebook took it but the record failed: the events line has the `post_id`), 502 (the text broke a rule, or Facebook refused), 503 `disabled` (no Page) / `daily_cap_reached`.
+- Refusals: 400, 401, 404, 409 `not_active` / `already_posted` / `conflict` / `pending`, 422 `post_rejected`, 429, 500 (Facebook took it but the record failed: the events line has the `post_id`), 502 (the text broke a rule, or Facebook refused: the events line has `graph_error`), 503 `disabled` (no Page) / `daily_cap_reached`.
 
 Flags: `-status-token-file /run/secrets/fanout_status_token`, `-page-id`, `-page-token-file /run/secrets/fb_page_token` (a Page access token with `pages_manage_posts`, `pages_read_engagement`, `pages_show_list`), `-graph https://graph.facebook.com`, `-graph-version v25.0`, `-link-base`, `-sweep 0`, `-cap-usd 1`, `-reserve-usd 0.02`, `-timeout 25s`, `-listings`, `-auth`, `-data`, `-events`. No Page id or token = posting off (503), so it can be deployed first.
 
@@ -149,11 +159,12 @@ Proposal:
 - `unclear`: a short question to show when the model could not map something.
 - `dropped`: what the rules refused (for the app and the ledger).
 - The events line keeps the transcript and the proposal, never the audio.
-- Refusals: 400 (not multipart, no audio, bad items), 401, 413 `audio_too_large`, 415 `unsupported_media` / `audio_too_long`, 422 `no_speech`, 429, 502, 503 `daily_cap_reached`, 504.
+- Refusals: 400 (not multipart, no audio, bad items), 401, 413 `audio_too_large`, 415 `unsupported_media` / `audio_too_long`, 422 `no_speech`, 429, 502, 503 `busy` (more than `-max-in-flight` at the same time, before the body is read) / `daily_cap_reached`, 504.
+- Cost: speech is billed in whole seconds, so the ledger rounds each clip up to the next second.
 
 **The app must record WAV.** The web's MediaRecorder gives WebM/Opus, and Android gives AAC, so the app needs a PCM recorder: for example, the Web Audio API with a WAV writer on the web, and a PCM stream module on the phone. This is an integration step.
 
-Flags: `-max-audio 60s`, `-max-bytes 12MB`, `-cap-usd 1`, `-reserve-usd 0.01`, `-rate-burst 10`/min, `-timeout 25s`, `-asr-url`, `-asr-model muse-voice-transcribe-1.0`, `-model`, `-auth`, `-events`, `-trust-forwarded`.
+Flags: `-max-audio 60s`, `-max-bytes 12MB`, `-max-in-flight 2`, `-cap-usd 1`, `-reserve-usd 0.01`, `-rate-burst 10`/min, `-timeout 25s`, `-asr-url`, `-asr-model muse-voice-transcribe-1.0`, `-model`, `-auth`, `-events`, `-trust-forwarded`.
 
 ## 5. The app side of voice (X35e)
 
@@ -161,7 +172,7 @@ The clip is made on the device as the one format the speech endpoint takes:
 WAV, 16 kHz, mono, 16-bit, exact header sizes. The server then sends it on
 byte for byte.
 
-- `useVoiceRecorder()` (`mobile/src/voicerec.ts`) → `{recording, start(), stop(), cancel()}`; `stop()` gives a `VoiceClip` (an `Upload` + `ms`, `rate`, `source`). It stops by itself at 59.5 s.
+- `useVoiceRecorder({onAutoStop?})` (`mobile/src/voicerec.ts`) → `{recording, start(), stop(), cancel()}`; `stop()` gives a `VoiceClip` (an `Upload` + `ms`, `rate`, `source`). It stops by itself at 59.5 s and keeps that clip: `onAutoStop(clip)` gets it, and a `stop()` after it returns the same clip (X36a, `src/clipsession.ts`). A second `start()` while recording throws `VoiceError("failed")`; unmount cancels the clip.
   - **Android / iOS:** expo-audio 58.0.10 `useAudioStream` (16 kHz, mono, int16) + `startFileRecordingAsync({format: "wav"})`. If an Android device refuses 16 kHz, the clip has the device rate and the server converts it.
   - **Web:** `src/webvoice.ts`: `getUserMedia` (https) + the AudioWorklet `/voice-capture-worklet.js` at the device rate, then `src/wav.ts` resamples to 16 kHz.
   - Errors: `VoiceError` with code `denied` (microphone refused), `unsupported` (no https or no AudioWorklet), `failed`.

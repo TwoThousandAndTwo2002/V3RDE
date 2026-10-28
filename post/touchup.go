@@ -5,15 +5,19 @@ package post
 // original and the edit; the edit is offered only when the food did not
 // change. The original is always kept and is the default.
 //
-//	POST /api/touchup?mode=light|background[&photo_id=<id>]   (session cookie)
-//	POST /v1/touchup?mode=light|background                    (bearer token)
-//	      body: the analyze service's formats (multipart "image" or JSON
-//	      image_base64 + mime), or no body with photo_id = an item photo of
-//	      the analyze service that belongs to the caller
-//	      -> 202 {request_id, touchup_id, status:"running"}
-//	GET  /api/touchup/{id}  /v1/touchup/{id}      -> 200 Job
-//	GET  /api/touchup/{id}/photo  /v1/.../photo   -> the edited JPEG (status "done" only)
+//	POST /api/touchup?mode=light|background&photo_id=<id>   (session cookie)
+//	      no body; photo_id = an item photo of the analyze service that
+//	      belongs to the caller -> 202 {request_id, touchup_id, status:"running"}
+//	GET  /api/touchup/{id}        -> 200 Job
+//	GET  /api/touchup/{id}/photo  -> the edited JPEG (status "done" only)
 //	GET  /healthz
+//
+// Only photo_id (X36a, T9 2026-10-28): the donor taps the touch-up button on
+// the review list after the analyze run, so the photo has passed the food
+// gate and is upright (inference Upright) before any paid call here. There is
+// no photo upload and no bearer route: the analyze token is in the app
+// bundle, so it is public (server/guard.go), and a bearer route would let
+// anyone spend this service's cap on any image.
 //
 // Why a job and not one answer: the public name is behind API Gateway, which
 // stops every request at 30 s (X32c, D58); Muse Image is a reasoning model and
@@ -104,7 +108,8 @@ type Job struct {
 	ImageModel    string  `json:"image_model"`
 	CheckModel    string  `json:"check_model,omitempty"`
 	userID        string
-	bearer        bool
+	remoteIP      string
+	forwardedIP   string
 	ended         time.Time
 }
 
@@ -252,7 +257,6 @@ type photoMeta struct {
 	PhotoID       string `json:"photo_id"`
 	UserID        string `json:"user_id"`
 	Kind          string `json:"kind,omitempty"`
-	Bearer        bool   `json:"bearer,omitempty"`
 	SourcePhotoID string `json:"source_photo_id,omitempty"`
 	SourceSHA256  string `json:"source_sha256,omitempty"`
 	EditedSHA256  string `json:"edited_sha256,omitempty"`
@@ -304,14 +308,13 @@ func sha256hex(b []byte) string {
 // TouchupConfig is everything the touch-up handler needs (cmd/touchup).
 type TouchupConfig struct {
 	Editor      *ImageEditor
-	Checker     *Muse // nil = no check: every edit is kept_original (fails closed)
-	Auth        *analyze.Bearer
-	Session     Authenticator
+	Checker     *Muse         // nil = no check: every edit is kept_original (fails closed)
+	Session     Authenticator // the only caller: the app's session cookie
 	Limiter     *Limiter
 	Budget      *Budget
 	Events      *Events
 	Dir         string // edited photos (a volume), item-photo format
-	ItemPhotos  string // the analyze service's photo folder, read-only; "" = no photo_id input
+	ItemPhotos  string // the analyze service's photo folder, read-only (the only input)
 	MaxImage    int64
 	MaxInFlight int
 	JobTimeout  time.Duration // one touch-up, both calls included
@@ -344,11 +347,9 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "touchup", "build": c.Build,
 			"spent_today_usd": c.Budget.Spent(), "image_model": c.Editor.Model})
 	})
-	for _, p := range []string{"/api/touchup", "/v1/touchup"} {
-		mux.HandleFunc("POST "+p, c.start)
-		mux.HandleFunc("GET "+p+"/{id}", c.get)
-		mux.HandleFunc("GET "+p+"/{id}/photo", c.photo)
-	}
+	mux.HandleFunc("POST /api/touchup", c.start)
+	mux.HandleFunc("GET /api/touchup/{id}", c.get)
+	mux.HandleFunc("GET /api/touchup/{id}/photo", c.photo)
 	return mux
 }
 
@@ -363,25 +364,18 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 	id := analyze.NewRequestID()
 	w.Header().Set("X-Request-Id", id)
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: r.URL.Path}
+	ev.From(r)
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
 		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
 		c.record(ev)
 	}
-	var bearer *analyze.Bearer
-	if strings.HasPrefix(r.URL.Path, "/v1/") {
-		bearer = c.Auth
-	}
-	var session Authenticator
-	if strings.HasPrefix(r.URL.Path, "/api/") {
-		session = c.Session
-	}
-	who, ok := Identify(r, session, bearer)
+	who, ok := Identify(r, c.Session, nil)
 	if !ok {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID, ev.Bearer = who.User.ID, who.Bearer
+	ev.UserID = who.User.ID
 	if c.Limiter != nil && !c.Limiter.Allow(who.RateKey) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
 		return
@@ -395,31 +389,21 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, CodeBadRequest, "mode must be light or background")
 		return
 	}
-	var img []byte
-	var mime string
 	src := strings.TrimSpace(r.URL.Query().Get("photo_id"))
-	if src != "" {
-		b, err := ReadItemPhoto(c.ItemPhotos, src, who.User.ID)
-		if err != nil {
-			fail(http.StatusNotFound, CodeNotFound, err.Error())
-			return
-		}
-		img, mime = b, "image/jpeg"
-	} else {
-		b, m, st, msg := analyze.Config{MaxImage: c.MaxImage}.ReadImage(r)
-		if st != 0 {
-			code := CodeBadRequest
-			switch st {
-			case http.StatusRequestEntityTooLarge:
-				code = CodeTooLarge
-			case http.StatusUnsupportedMediaType:
-				code = CodeUnsupported
-			}
-			fail(st, code, msg)
-			return
-		}
-		img, mime = b, m
+	if src == "" {
+		fail(http.StatusBadRequest, CodeBadRequest, "photo_id is required (an item photo from the scan)")
+		return
 	}
+	if r.ContentLength > 0 || r.Header.Get("Content-Type") != "" {
+		fail(http.StatusBadRequest, CodeBadRequest, "no body: the photo comes from photo_id")
+		return
+	}
+	img, err := ReadItemPhoto(c.ItemPhotos, src, who.User.ID)
+	if err != nil {
+		fail(http.StatusNotFound, CodeNotFound, err.Error())
+		return
+	}
+	mime := "image/jpeg"
 	select {
 	case c.slots <- struct{}{}:
 	default:
@@ -433,7 +417,7 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobRunning, Mode: mode, SourcePhotoID: src,
-		ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer}
+		ImageModel: c.Editor.Model, userID: who.User.ID, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP}
 	if c.Checker != nil {
 		job.CheckModel = c.Checker.Model
 	}
@@ -502,7 +486,7 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 	snap := *job
 	c.mu.Unlock()
 	c.record(Event{RequestID: job.RequestID, TS: t0.UTC().Format(time.RFC3339Nano), Route: "touchup.job",
-		UserID: job.userID, Bearer: job.bearer, Status: 200, LatencyMS: ms, CostUSD: cost, Calls: calls,
+		UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, Status: 200, LatencyMS: ms, CostUSD: cost, Calls: calls,
 		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img)}})
@@ -528,7 +512,7 @@ func (c *TouchupConfig) store(job *Job, photoID string, src, edited []byte) erro
 	if err := WriteFileSync(filepath.Join(c.Dir, photoID+".jpg"), edited, 0o644); err != nil {
 		return err
 	}
-	m := photoMeta{PhotoID: photoID, UserID: job.userID, Kind: "touchup", Bearer: job.bearer,
+	m := photoMeta{PhotoID: photoID, UserID: job.userID, Kind: "touchup",
 		SourcePhotoID: job.SourcePhotoID, SourceSHA256: sha256hex(src), EditedSHA256: sha256hex(edited),
 		Mode: job.Mode, ImageModel: job.ImageModel, RequestID: job.RequestID,
 		CreatedAt: c.now().UTC().Format(time.RFC3339Nano)}
@@ -538,14 +522,7 @@ func (c *TouchupConfig) store(job *Job, photoID string, src, edited []byte) erro
 
 // owned finds job id for the caller (one 404 for unknown and not-owned).
 func (c *TouchupConfig) owned(w http.ResponseWriter, r *http.Request) (Job, bool) {
-	var bearer *analyze.Bearer
-	var session Authenticator
-	if strings.HasPrefix(r.URL.Path, "/v1/") {
-		bearer = c.Auth
-	} else {
-		session = c.Session
-	}
-	who, ok := Identify(r, session, bearer)
+	who, ok := Identify(r, c.Session, nil)
 	if !ok {
 		WriteJSON(w, http.StatusUnauthorized, ErrorAnswer{RequestID: analyze.NewRequestID(), Error: "not logged in", Code: CodeUnauthorized})
 		return Job{}, false
@@ -557,7 +534,7 @@ func (c *TouchupConfig) owned(w http.ResponseWriter, r *http.Request) (Job, bool
 		snap = *j
 	}
 	c.mu.Unlock()
-	if !found || snap.bearer != who.Bearer || (!who.Bearer && snap.userID != who.User.ID) {
+	if !found || snap.userID != who.User.ID {
 		WriteJSON(w, http.StatusNotFound, ErrorAnswer{RequestID: analyze.NewRequestID(), Error: "touch-up not found", Code: CodeNotFound})
 		return Job{}, false
 	}

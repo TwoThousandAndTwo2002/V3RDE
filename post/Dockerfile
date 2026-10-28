@@ -35,4 +35,5 @@ ENV GOMEMLIMIT=200MiB
 VOLUME ["/data", "/events"]
 ENTRYPOINT ["/touchup"]
 CMD ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", \
-     "-token-file", "/run/secrets/analyze_token", "-dir", "/data", "-events", "/events"]
+     "-auth", "http://auth:8081", "-item-photos", "/item-photos", \
+     "-dir", "/data", "-events", "/events"]

@@ -399,3 +399,23 @@ The speech model takes one format: WAV, mono, 16-bit, 16 or 24 kHz. Normal recor
 - The app asks for the microphone with one clear text. It does not ask to run audio in the background.
 - No UI yet: the mic button comes next, with its mockup.
 - Tests: mobile 28 -> 31.
+
+---
+
+## 21. Review fixes before the post services go live
+
+**When:** Oct 28 2026.
+**Meta models:** Muse Image 1.0, Muse Spark 1.3, Muse Voice Transcribe 1.0 (no new model).
+**Files:** `post/touchup.go`, `post/rescue.go`, `post/fanout.go`, `post/voice.go`, `post/post.go`, `post/cmd/touchup`, `post/cmd/fanout`, `post/cmd/voice`, `post/Dockerfile`, the post tests, `mobile/src/clipsession.ts` (new), `mobile/src/voicerec.ts`, `mobile/tests/clipsession.test.mts` (new), `mobile/package.json`, `mobile/web-dist/`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X36a.md`
+
+Two reviewers who did not write #16 to #20 read the code before deploy. They found 7 medium defects and some small ones. Each fix has a test.
+
+- Touch-up takes only a photo from the scan (photo_id), from the signed-in donor. That photo has passed the food gate and is upright, so no other image can reach the paid calls. The donor starts it with a button.
+- The rescue mail relay sends only to the address the food directory gives. With no such address, the donor uses their own mail app or the phone.
+- Facebook sharing: one share makes one public post, also when the disk write fails, and a slow upload is not cut short. A claim during a share is retried, not lost.
+- Voice: at most 2 recordings are processed at the same time, as the scan does, so the box keeps its memory. Speech cost rounds up to the whole second.
+- The app keeps the clip when recording stops by itself at the time limit.
+- Every events line has the caller's address, as the scan's does.
+- Built, not deployed.
+- Tests: post 46 -> 51, mobile 31 -> 39.

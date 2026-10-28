@@ -227,7 +227,7 @@ func TestVoiceEditProposal(t *testing.T) {
 	if !strings.Contains(f.museBody, `TRANSCRIPT: \"six trays`) || !strings.Contains(f.museBody, "new_items must be empty") {
 		t.Fatalf("muse prompt %s", f.museBody[:300])
 	}
-	want := 5*PriceASRPerHour/3600 + (800*1.25+120*4.25)/1e6
+	want := 6*PriceASRPerHour/3600 + (800*1.25+120*4.25)/1e6 // 5500 ms is billed as 6 s (rounded up, X36a)
 	if !near(p.CostUSD, want) {
 		t.Fatalf("cost %v want %v", p.CostUSD, want)
 	}
@@ -499,5 +499,46 @@ func TestVoiceItemsInputIsStrict(t *testing.T) {
 	}
 	if w := do(h, voiceReq(t, "/api/voice", good, map[string]string{"items": `[{"item":1,"title":"Pasta","number_of_serving":3}]`}, "u1")); w.Code != 200 {
 		t.Fatalf("contract items: %d %s", w.Code, w.Body)
+	}
+}
+
+// X36a (review finding 6): more requests than MaxInFlight get 503 busy, and
+// the body is not read for them.
+func TestVoiceBusyBeforeTheBodyIsRead(t *testing.T) {
+	f := &voiceFake{}
+	cfg, h, stop := newVoice(t, f)
+	defer stop()
+	for i := 0; i < cap(cfg.slots); i++ {
+		cfg.slots <- struct{}{}
+	}
+	body := &countReader{}
+	r := httptest.NewRequest("POST", "/api/voice", body)
+	r.Header.Set("Content-Type", "multipart/form-data; boundary=x")
+	r.AddCookie(&http.Cookie{Name: SessionCookie, Value: "u1"})
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != 503 || !strings.Contains(w.Body.String(), `"busy"`) || body.n != 0 {
+		t.Fatalf("busy: %d %s (read %d bytes)", w.Code, w.Body, body.n)
+	}
+	if cap(cfg.slots) != 2 {
+		t.Fatalf("default max in flight %d, want 2", cap(cfg.slots))
+	}
+}
+
+type countReader struct{ n int }
+
+func (c *countReader) Read(p []byte) (int, error) { c.n += len(p); return 0, io.EOF }
+
+// X36a: speech is priced by whole seconds, rounded up.
+func TestASRPriceRoundsUp(t *testing.T) {
+	for _, c := range []struct {
+		ms   int
+		secs float64
+	}{{1, 1}, {999, 1}, {1000, 1}, {1001, 2}, {59999, 60}, {60000, 60}} {
+		call := Call{Status: 200, AudioMS: c.ms}
+		call.Price()
+		if want := c.secs * PriceASRPerHour / 3600; !near(call.CostUSD, want) {
+			t.Fatalf("%d ms: $%v, want $%v", c.ms, call.CostUSD, want)
+		}
 	}
 }

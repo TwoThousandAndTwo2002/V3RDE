@@ -191,6 +191,7 @@ type PostStore struct {
 	mu      sync.Mutex
 	items   map[string]Post
 	pending map[string]bool // listing ids being posted now
+	dirty   bool            // memory has posts the file does not (a write failed)
 }
 
 // OpenPosts opens <dir>/posts.json.
@@ -242,24 +243,47 @@ func (s *PostStore) End(lid string) {
 	delete(s.pending, lid)
 }
 
-// Put stores p.
+// Put stores p. Memory is the truth for this process: when the file write
+// fails, p stays in memory (X36a), so a retry finds the post (409
+// already_posted) and does not post to Facebook again, and a later edit uses
+// the right banner. The next Put or Flush that writes rewrites the whole map,
+// so the file catches up (the sweep calls Flush on every tick). A restart
+// before that loses p from the file only; the events line of the publish
+// keeps its post_id.
 func (s *PostStore) Put(p Post) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	old, had := s.items[p.ListingID]
 	s.items[p.ListingID] = p
+	return s.writeLocked()
+}
+
+// Flush writes the file again when an earlier write failed.
+func (s *PostStore) Flush() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.dirty {
+		return nil
+	}
+	return s.writeLocked()
+}
+
+func (s *PostStore) writeLocked() error {
 	b, err := json.MarshalIndent(s.items, "", " ")
 	if err == nil {
 		err = WriteFileSync(s.path, b, 0o600)
 	}
-	if err != nil {
-		if had {
-			s.items[p.ListingID] = old
-		} else {
-			delete(s.items, p.ListingID)
-		}
-	}
+	s.dirty = err != nil
 	return err
+}
+
+// Lookup returns the post of lid, or whether lid is being posted now, under
+// one lock (X36a: two separate reads let a publish finish between them, so a
+// claim got 404 and was lost).
+func (s *PostStore) Lookup(lid string) (p Post, found, pending bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, found = s.items[lid]
+	return p, found, !found && s.pending[lid]
 }
 
 // Due is every posted post whose listing timer ran out at now.
@@ -295,6 +319,11 @@ type FanoutConfig struct {
 	Timeout       time.Duration // the text calls (under the 30 s gateway)
 	// PublishTimeout bounds the Facebook upload. It does not end with the
 	// caller's request, so a post that Facebook accepts is always recorded.
+	// Page.HTTP must have no client Timeout of its own (cmd/fanout), or the
+	// shorter one wins (Go net/http: Client.Timeout applies whatever the
+	// context). When the gateway stops the request first (30 s), the upload
+	// goes on here; a retry then gets 409 already_posted with the post, or 409
+	// conflict while it still runs.
 	PublishTimeout time.Duration
 	Build          string
 	now            func() time.Time
@@ -345,6 +374,7 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Request-Id", id)
 	lid := r.PathValue("id")
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: "fanout.publish", ListingID: lid}
+	ev.From(r)
 	var calls []Call
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
@@ -440,6 +470,7 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 	defer pcancel()
 	postID, photoID, err := c.Page.PublishPhoto(pctx, photo, mime, c.PostText(text, lid))
 	if err != nil {
+		ev.Detail = map[string]any{"graph_error": clip(err.Error(), 300)}
 		fail(http.StatusBadGateway, CodeUpstream, "Facebook refused the post")
 		return
 	}
@@ -478,7 +509,10 @@ func (c *FanoutConfig) get(w http.ResponseWriter, r *http.Request) {
 func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post, bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	p, ok := c.Store.Get(lid)
+	p, ok, pending := c.Store.Lookup(lid)
+	if pending {
+		return Post{}, false, errPending
+	}
 	if !ok {
 		return Post{}, false, ErrNotOwned
 	}
@@ -498,10 +532,15 @@ func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post,
 // errNotRecorded: Facebook took the edit, the store did not.
 var errNotRecorded = errors.New("edited, but could not record it")
 
+// errPending: the listing is being posted now; the caller retries.
+var errPending = errors.New("the post is being published now")
+
 func (c *FanoutConfig) status(w http.ResponseWriter, r *http.Request) {
 	t0 := c.now()
 	id := analyze.NewRequestID()
+	w.Header().Set("X-Request-Id", id)
 	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: "fanout.status", Bearer: true}
+	ev.From(r)
 	fail := func(status int, code, msg string) {
 		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
 		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
@@ -533,6 +572,11 @@ func (c *FanoutConfig) status(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	p, changed, err := c.SetStatus(ctx, in.ListingID, in.Status)
 	switch {
+	case errors.Is(err, errPending):
+		// X36a: the listing is being posted now. 409 (not 404) so the
+		// listings hook retries and the claim is not lost.
+		fail(http.StatusConflict, "pending", "the post is being published now: retry")
+		return
 	case errors.Is(err, ErrNotOwned):
 		fail(http.StatusNotFound, CodeNotFound, "no post for this listing")
 		return
@@ -541,6 +585,7 @@ func (c *FanoutConfig) status(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusInternalServerError, CodeInternal, err.Error())
 		return
 	case err != nil:
+		ev.Detail = map[string]any{"post_id": p.PostID, "graph_error": clip(err.Error(), 300)}
 		fail(http.StatusBadGateway, CodeUpstream, "Facebook refused the edit")
 		return
 	}
@@ -550,11 +595,23 @@ func (c *FanoutConfig) status(w http.ResponseWriter, r *http.Request) {
 	c.record(ev)
 }
 
+// FlushStore writes the post file again after a failed write (cmd/fanout runs
+// it every minute, whatever -sweep is; the sweep runs it too). A failure is
+// one events line.
+func (c *FanoutConfig) FlushStore() {
+	if err := c.Store.Flush(); err != nil {
+		c.record(Event{RequestID: analyze.NewRequestID(), TS: c.now().UTC().Format(time.RFC3339Nano),
+			Route: "fanout.flush", Status: http.StatusInternalServerError, Code: CodeInternal,
+			Error: "the post store is still not written: " + clip(err.Error(), 200)})
+	}
+}
+
 // Sweep marks every due post [EXPIRED] once; it returns how many changed.
 func (c *FanoutConfig) Sweep(ctx context.Context) int {
 	if c.Page == nil {
 		return 0
 	}
+	c.FlushStore()
 	n := 0
 	for _, p := range c.Store.Due(c.now()) {
 		_, changed, err := c.SetStatus(ctx, p.ListingID, PostExpired)

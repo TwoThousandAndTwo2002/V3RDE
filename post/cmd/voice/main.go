@@ -34,6 +34,7 @@ func main() {
 	maxAudio := flag.Duration("max-audio", 60*time.Second, "the longest utterance")
 	maxBytes := flag.Int64("max-bytes", 12<<20, "the largest upload")
 	burst := flag.Int("rate-burst", 10, "requests per window per user (bearer: per client IP)")
+	inFlight := flag.Int("max-in-flight", 2, "requests at the same time; more get 503 busy (memory)")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	timeout := flag.Duration("timeout", 25*time.Second, "per request, both calls included (under the 30 s gateway)")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
@@ -62,6 +63,8 @@ func main() {
 		MaxBytes: *maxBytes,
 		Timeout:  *timeout,
 		Build:    build,
+
+		MaxInFlight: *inFlight,
 	}
 	if *authURL != "" {
 		cfg.Session = &post.AuthClient{URL: *authURL}

@@ -22,6 +22,7 @@ type graphReq struct {
 
 type graphFake struct {
 	status int
+	delay  time.Duration // before each answer
 	mu     sync.Mutex
 	reqs   []graphReq
 }
@@ -46,6 +47,7 @@ func (g *graphFake) server() *httptest.Server {
 		g.mu.Lock()
 		g.reqs = append(g.reqs, gr)
 		g.mu.Unlock()
+		time.Sleep(g.delay)
 		if g.status != 0 {
 			w.WriteHeader(g.status)
 			w.Write([]byte(`{"error":{"message":"(#200) permissions error"}}`))
@@ -320,6 +322,85 @@ func TestFanoutDoubleTapPostsOnce(t *testing.T) {
 	}
 	if n201 != 1 || len(e.graph.reqs) != 1 {
 		t.Fatalf("codes %v, %d graph calls", codes, len(e.graph.reqs))
+	}
+}
+
+// X36a (review finding 4): the post is public but the file write fails. A
+// retry must not post to Facebook again, and the claim edit still works.
+func TestFanoutStoreFailureDoesNotPostTwice(t *testing.T) {
+	e := newFO(t, goodText)
+	defer e.stop()
+	dir := t.TempDir()
+	st, _ := OpenPosts(dir)
+	os.Mkdir(dir+"/posts.json.tmp", 0o700) // the atomic write cannot create its temp file
+	os.Mkdir(dir+"/posts.json.tmp/x", 0o700)
+	e.cfg.Store = st
+	if w := do(e.h, jsonReq("POST", "/api/fanout/l_00000000000000f1", "", "u1")); w.Code != 500 ||
+		!strings.Contains(w.Body.String(), "PAGE_123") {
+		t.Fatalf("first share: %d %s", w.Code, w.Body)
+	}
+	if w := do(e.h, jsonReq("POST", "/api/fanout/l_00000000000000f1", "", "u1")); w.Code != 409 ||
+		!strings.Contains(w.Body.String(), "already_posted") {
+		t.Fatalf("retry: %d %s", w.Code, w.Body)
+	}
+	if n := len(e.graph.reqs); n != 1 {
+		t.Fatalf("%d Facebook posts, want 1", n)
+	}
+	w := do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"claimed"}`, "tok"))
+	if w.Code != 500 || len(e.graph.reqs) != 2 || !strings.HasPrefix(e.graph.reqs[1].form["message"], Banner(PostClaimed)) {
+		t.Fatalf("claim edit: %d %s", w.Code, w.Body)
+	}
+	if p, _ := st.Get("l_00000000000000f1"); p.Status != PostClaimed {
+		t.Fatalf("memory status %s, want claimed (the sweep must not mark it expired)", p.Status)
+	}
+	os.RemoveAll(dir + "/posts.json.tmp") // the disk recovers: the minute Flush catches up
+	e.cfg.FlushStore()
+	s2, _ := OpenPosts(dir)
+	if p, ok := s2.Get("l_00000000000000f1"); !ok || p.PostID != "PAGE_123" || p.Status != PostClaimed {
+		t.Fatalf("file after recovery: %+v %v", p, ok)
+	}
+}
+
+// X36a (review finding 5): a slow upload is bounded by PublishTimeout only.
+func TestFanoutSlowUploadUsesPublishTimeout(t *testing.T) {
+	e := newFO(t, goodText)
+	defer e.stop()
+	e.graph.delay = 300 * time.Millisecond
+	e.cfg.Page.HTTP = &http.Client{} // as cmd/fanout builds it
+	e.cfg.PublishTimeout = 5 * time.Second
+	if w := do(e.h, jsonReq("POST", "/api/fanout/l_00000000000000f1", "", "u1")); w.Code != 201 {
+		t.Fatalf("slow upload: %d %s", w.Code, w.Body)
+	}
+	e.cfg.Store, _ = OpenPosts(t.TempDir())
+	e.cfg.PublishTimeout = 100 * time.Millisecond
+	if w := do(e.h, jsonReq("POST", "/api/fanout/l_00000000000000f1", "", "u1")); w.Code != 502 {
+		t.Fatalf("upload past PublishTimeout: %d", w.Code)
+	}
+	b, _ := os.ReadFile(e.cfg.Events.Path(e.now))
+	if !strings.Contains(string(b), `"graph_error":"graph: `) {
+		t.Fatalf("no graph_error in the events line: %s", b)
+	}
+}
+
+// X36a: a claim while the post is being published is 409 pending (retry),
+// not 404 (lost).
+func TestFanoutClaimDuringPublishIsRetryable(t *testing.T) {
+	e := newFO(t, goodText)
+	defer e.stop()
+	if _, _, busy := e.cfg.Store.Begin("l_00000000000000f1"); busy {
+		t.Fatal("busy")
+	}
+	w := do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"claimed"}`, "tok"))
+	if w.Code != 409 || !strings.Contains(w.Body.String(), `"pending"`) || w.Header().Get("X-Request-Id") == "" {
+		t.Fatalf("claim during publish: %d %s", w.Code, w.Body)
+	}
+	e.cfg.Store.End("l_00000000000000f1")
+	if w := do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"claimed"}`, "tok")); w.Code != 404 {
+		t.Fatalf("no post: %d", w.Code)
+	}
+	// one lock: pending and found are never both read stale (the third review)
+	if _, found, pending := e.cfg.Store.Lookup("l_00000000000000f1"); found || pending {
+		t.Fatal("lookup of an idle listing")
 	}
 }
 
