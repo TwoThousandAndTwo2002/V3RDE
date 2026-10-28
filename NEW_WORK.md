@@ -486,3 +486,20 @@ The listings service (a donor posts a meal, a receiver grabs it) existed before 
 - New: a grab that is not written changes nothing, so the listing can be grabbed when the disk is back. Photos are written through a temp file, so a crash cannot leave half a photo. Two listings in one second are in time order.
 - The post services build and pass their tests again.
 - Tests: listings 27 (new), post 51 (unchanged).
+
+---
+
+## 26. The sign-in service, written new for V3RDE
+
+**When:** Oct 28 2026.
+**Meta model:** none (sign-in for the app and the post services).
+**Files:** `auth/auth.go`, `auth/password.go`, `auth/store.go`, `auth/handler.go`, `auth/events.go`, `auth/cmd/auth/main.go`, `auth/Dockerfile`, `auth/go.mod`, `auth/auth_test.go` (all new)
+**Sources:** `docs/sources/X38c.md`
+
+The sign-in service (email and password, a session cookie) existed before the Hackathon. V3RDE does not copy it: this is new code.
+
+- It keeps the routes, the status codes, the error texts, the session cookie, the data file and the password hash format, so the accounts on the box keep working. A test logs in with a data file written by the old service.
+- Checked against the old service: its own tests pass on the new code, and an independent security review sent the same requests to both.
+- New, from that review: a damaged stored password hash can never match, cannot make a login slow, and takes the same time as a real check. The rate limit removes idle addresses.
+- Open: the rate-limit address comes from a header that a caller can set; the deploy change will fix it in Caddy for every service.
+- Tests: auth 22 (new).
