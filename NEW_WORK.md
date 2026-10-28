@@ -300,3 +300,24 @@ The pipeline has thresholds set by hand. To tune them on real use, the ledger ne
 - Tests: inference 61 -> 62, mobile 26 -> 28.
 
 Next: the barcode front-of-package image; then a replay bench that tunes the thresholds on labelled photos.
+
+---
+
+## 16. Photo touch-up, checked by a second model
+
+**When:** Oct 28 2026.
+**Meta models:** Muse Image 1.0, Muse Spark 1.3 (Meta Model API).
+**Files:** `post/` (new module: `post.go`, `touchup.go`, `cmd/touchup/main.go`, `Dockerfile`, tests), `docs/morpheus/post_api.md` (new)
+**Sources:** `docs/sources/X35a.md`
+
+A donor's photo is often dark or cluttered. The new touch-up service makes it look better for the post, and it never changes the food.
+
+- Muse Image 1.0 edits the photo in one of two fixed modes: light (exposure, white balance, sharpness) or background (the same, and a plain surface behind the food). The user never writes a prompt.
+- Muse Spark 1.3 then compares the original and the edit. The edit is offered only when every item, label and count is the same. In all other cases the original stays.
+- It runs as a job (202, then poll), because the public gateway stops a request at 30 s.
+- The edit is stored like an item photo, so a listing can use it later. Only its owner can read it.
+- Its own events file and daily cap ($2 by default).
+- Built, not deployed: no compose or Caddy route yet.
+- Tests: post 16 (new module).
+
+Next: the rescue service for listings that nobody claimed.

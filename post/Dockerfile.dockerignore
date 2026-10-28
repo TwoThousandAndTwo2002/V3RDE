@@ -1,0 +1,6 @@
+# Only the two folders the post image needs (BuildKit reads
+# <Dockerfile>.dockerignore next to the Dockerfile).
+*
+!server/go.mod
+!server/*.go
+!post/
