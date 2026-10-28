@@ -1,11 +1,10 @@
-# Icarus — work built during the Meta Global AI Developer Hackathon
+# V3RDE — work built during the Meta Global AI Developer Hackathon
 
-This file is the record of what is **new** in the Hackathon. Judges can see every new line with one compare:
+This file is the record of what is **new** in the Hackathon. Every commit in this repository was made at or after the kickoff (Oct 26 2026, 12:00 PM ET). Each entry below names the date, the Meta model it uses, its files and its sources.
 
-    https://github.com/TwoThousandAndTwo2002/Icarus/compare/hackathon-start...hackathon/meta-2026
-
-- **`main` at tag `hackathon-start`** is the base: the food-rescue app and its services as they were **before** the Hackathon. It is a scrubbed snapshot of our private prior product (commit `79c7d69`, built Oct 21–26 2026). It is not new work.
-- **Branch `hackathon/meta-2026`** holds only work started at or after the kickoff (Oct 26 2026, 12:00 PM ET). Each entry below names the commit, the date and time (ET), and the Meta model it uses.
+- **Entries 1–23** were first built during the Hackathon in our earlier repository (Icarus). They were moved here with their commit history (`git filter-repo`, only the new-work folders), so their dates and messages are the original ones. Some of them name files of that repository that are not here yet (for example `tools/morpheus_stack.sh`).
+- **From entry 24**, the parts of the app that existed **before** the Hackathon (the analyze server, auth, listings, barcode, telemetry, the food-gate service and the deploy files) are written again here as new code. Each of these entries says which earlier part it replaces and what it keeps the same (for example an API contract that the app already uses). The features of those parts are not new; the code is.
+- Branches: `services` (the services) and `ui` (the app) merge into `main`.
 
 Times: the kickoff was Oct 26, 12:00 PM ET; the building period is Oct 27 – Nov 4.
 
@@ -453,3 +452,20 @@ Each image carries the commit it was built from. Because of that, every deploy c
 - The stack script can now start the stack with the images that are already built (`STACK_NO_BUILD=1`).
 - The deploy builds only the services whose code changed, one at a time, and keeps the images and their build stamp for the others.
 - Without the setting, the stack script works as before.
+
+---
+
+## 24. The analyze server, written new for V3RDE
+
+**When:** Oct 28 2026.
+**Meta model:** Muse Spark 1.3 (no new model).
+**Files:** `server/contract.go`, `server/access.go`, `server/muse.go`, `server/handler.go`, `server/metrics.go`, `server/cmd/analyze/main.go`, `server/Dockerfile`, `server/go.mod`, `server/server_test.go` (all new)
+**Sources:** `docs/sources/X38a.md`
+
+The analyze server (`POST /v1/analyze`: one food photo in, the eight-field listing out) existed before the Hackathon. V3RDE does not copy it: this is new code. The inference and post services import it.
+
+- It keeps the same contract, so the app and the inference service do not change: the same prompt (a test pins its sha256), the same eight fields, routes, status codes and error texts.
+- Checked against the old server: its own tests pass on the new code, and a fuzz test of the contract code found no difference.
+- The rate limit now removes idle addresses, so its memory does not grow until a restart.
+- The inference service builds and passes its tests on it again. The post services also need listings (a later entry).
+- Tests: server 26 (new), inference 62 (unchanged).
