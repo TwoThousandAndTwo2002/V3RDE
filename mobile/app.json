@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "V3RDE",
+    "slug": "v3rde",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "v3rde",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kkombuchaas.v3rde"
+    },
+    "android": {
+      "package": "com.kkombuchaas.v3rde",
+      "adaptiveIcon": {
+        "backgroundColor": "#BC202C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single",
+      "bundler": "metro",
+      "name": "V3RDE",
+      "shortName": "V3RDE",
+      "themeColor": "#BC202C",
+      "backgroundColor": "#FFFFFF"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "V3RDE uses the camera to photograph food you want to share.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "V3RDE uses the microphone when you say what to change in a listing.",
+          "recordAudioAndroid": true,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "V3RDE lets you pick a photo of food you want to share."
+        }
+      ],
+      "expo-font"
+    ],
+    "owner": "kkombuchaas-team"
+  }
+}
