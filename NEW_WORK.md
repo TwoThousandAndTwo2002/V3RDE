@@ -503,3 +503,19 @@ The sign-in service (email and password, a session cookie) existed before the Ha
 - New, from that review: a damaged stored password hash can never match, cannot make a login slow, and takes the same time as a real check. The rate limit removes idle addresses.
 - Open: the rate-limit address comes from a header that a caller can set; the deploy change will fix it in Caddy for every service.
 - Tests: auth 22 (new).
+
+---
+
+## 27. The barcode lookup, written new for V3RDE
+
+**When:** Oct 28 2026.
+**Meta model:** none (a scanned barcode fills the listing without a model call).
+**Files:** `barcode/gtin.go`, `barcode/product.go`, `barcode/store.go`, `barcode/store_sqlite.go`, `barcode/open_sqlite.go`, `barcode/open_stub.go`, `barcode/handler.go`, `barcode/events.go`, `barcode/cmd/barcode/main.go`, `barcode/Dockerfile`, `barcode/go.mod`, `barcode/go.sum`, and the tests (all new)
+**Sources:** `docs/sources/X38d.md`
+
+The barcode lookup (a scanned code in, the catalog's product out) existed before the Hackathon. V3RDE does not copy it: this is new code. The inference service calls it first for every photo with a barcode.
+
+- It keeps the answer that the inference service reads, the four outcomes (found, not in the catalog, not a valid code, catalog not loaded), the events line and the catalog check: the catalog file must have the pinned sha256 and row count, else every lookup answers "not loaded" (it fails closed).
+- Checked against the old service: its own tests pass on the new code, and an independent review sent 39,002 codes to both with no difference.
+- New: a too-short catalog pin is an error, not a crash.
+- Tests: barcode 20 (new), and 2 SQLite tests that run in the image build.
