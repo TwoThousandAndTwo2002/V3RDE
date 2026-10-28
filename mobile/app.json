@@ -9,10 +9,10 @@
     "scheme": "v3rde",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kkombuchaas.v3rde"
+      "bundleIdentifier": "com.kkombuchaas.V3RDE"
     },
     "android": {
-      "package": "com.kkombuchaas.v3rde",
+      "package": "com.kkombuchaas.V3RDE",
       "adaptiveIcon": {
         "backgroundColor": "#BC202C",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -51,3 +51,16 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **EAS:** the `preview` profile builds an APK. The EAS project for slug `v3rde` is made with `eas init` after this change.
 - Not yet type-checked or exported for the web: `voicerec.ts` and `webcam.ts` need `api.ts` and `logic.ts`, which come next.
 - Tests: mobile 11 (`npm test`).
+
+---
+
+## UI 3. The package ID is `com.kkombuchaas.V3RDE`
+
+**When:** Oct 28 2026.
+**Meta model:** none.
+**Files:** `mobile/app.json`
+**Sources:** `docs/sources/U3.md`
+
+- T9: the app name is upper case in the package ID. The Android package and the iOS bundle ID are now `com.kkombuchaas.V3RDE`.
+- The URL scheme stays `v3rde` (Android matches schemes case-sensitively and asks for lower case). The slug stays `v3rde`.
+- No APK or iOS build was made with the earlier ID, so no installed app changes.
