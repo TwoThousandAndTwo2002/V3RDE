@@ -419,3 +419,22 @@ Two reviewers who did not write #16 to #20 read the code before deploy. They fou
 - Every events line has the caller's address, as the scan's does.
 - Built, not deployed.
 - Tests: post 46 -> 51, mobile 31 -> 39.
+
+---
+
+## 22. The post services join the stack
+
+**When:** Oct 28 2026.
+**Meta models:** Muse Image 1.0, Muse Spark 1.3, Muse Voice Transcribe 1.0 (no new model).
+**Files:** `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/morpheus_stack.sh`, `listings/listings.go`, `listings/hook.go` (new), `listings/hook_test.go` (new), `listings/cmd/listings/main.go`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X36b.md`
+
+Touch-up, rescue, Facebook sharing and voice posting now run in the Icarus stack, next to the scan.
+
+- One image holds the four services; each runs with its own data, events, memory limit and telemetry sidecar.
+- The app reaches them with its session: `/api/touchup`, `/api/rescue/…`, `/api/fanout/…`, `/api/voice`. Their internal routes have no public address.
+- A listing can use a touched-up photo. Only its owner can use it.
+- After a receiver grabs a listing, listings tells the sharing service, so the Facebook post can show [CLAIMED]. This uses its own secret, made on the box. Expired posts get [EXPIRED].
+- Safe defaults: Facebook posting is off until the Page is connected, and the rescue mail relay is off (the donor's own mail app or phone).
+- Not deployed by this change: the deploy script does it.
+- Tests: listings 11 -> 15.

@@ -1,7 +1,7 @@
 # Icarus post services API (X35, 2026-10-28; review fixes X36a)
 
 Services that work on a listing after the scan. Each one is a separate Go
-binary in the `post/` module (one image, `post/Dockerfile`). **Status: built
+binary in the `post/` module (one image, `post/Dockerfile`). **X36b: in the stack** (compose services `touchup`, `rescue`, `fanout`, `voice` + sidecars; Caddy routes `/api/touchup*`, `/api/rescue/*`, `/api/fanout/*`, `/api/voice`; `/v1/fanout/*`, `/v1/touchup*`, `/v1/voice*`, `/v1/rescue*` answer 404; listings takes edited photos and runs the claim hook; compose sets the caps with `TOUCHUP_CAP_USD`, `RESCUE_CAP_USD`, `FANOUT_CAP_USD`, `VOICE_CAP_USD`, `RESCUE_MIN_SERVINGS`, `FANOUT_PAGE_ID`, `FANOUT_LINK_BASE`). Before X36b: **Status: built
 and tested, not deployed.** The integration step adds the compose services,
 the volumes, the secrets and the Caddy routes.
 
