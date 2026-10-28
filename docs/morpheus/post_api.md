@@ -112,3 +112,45 @@ Post:
 - Refusals: 400, 401, 404, 409 `not_active` / `already_posted` / `conflict`, 422 `post_rejected`, 429, 500 (Facebook took it but the record failed: the events line has the `post_id`), 502 (the text broke a rule, or Facebook refused), 503 `disabled` (no Page) / `daily_cap_reached`.
 
 Flags: `-status-token-file /run/secrets/fanout_status_token`, `-page-id`, `-page-token-file /run/secrets/fb_page_token` (a Page access token with `pages_manage_posts`, `pages_read_engagement`, `pages_show_list`), `-graph https://graph.facebook.com`, `-graph-version v25.0`, `-link-base`, `-sweep 0`, `-cap-usd 1`, `-reserve-usd 0.02`, `-timeout 25s`, `-listings`, `-auth`, `-data`, `-events`. No Page id or token = posting off (503), so it can be deployed first.
+
+## 4. Voice posting (X35d) — `cmd/voice`, port 8091
+
+Muse Voice Transcribe 1.0 turns one utterance into text; Muse Spark 1.3 maps
+it to changes of the review list. The answer is a **proposal**: the app shows
+it highlighted and posts nothing until the donor taps "Post".
+
+```
+POST /api/voice     session cookie        POST /v1/voice     bearer token
+     multipart: "audio"       WAV, PCM, ≤ 60 s (measured from the samples, not the header), ≤ 12 MB
+                              (mono 16-bit 16/24 kHz with exact sizes is sent as is; stereo, 8-48 kHz,
+                              8/24/32-bit or a streaming header is rewritten; WebM/Opus/AAC → 415)
+                "items"       optional JSON: [{"item":1,"title":"Pasta tray","number_of_serving":3}]
+                              (only these 3 keys; title 1-80 bytes; servings 1-99; else 400)
+                "pickup_text" optional, the current text
+                "lang"        optional, the device's BCP 47 tag (es-MX → languageBias Spanish)
+  -> 200 proposal
+GET  /healthz
+```
+
+Proposal:
+```json
+{ "request_id": "…", "transcript": "six trays of pasta, the salad is gone, pick up at the back door before 5",
+  "changes": [ {"item": 1, "number_of_serving": 6}, {"item": 2, "remove": true} ],
+  "new_items": [],
+  "pickup_text": "Back door, before 5 pm",
+  "unclear": "",
+  "dropped": ["a new item (Bread): the photo is the source of truth"],
+  "audio": {"sample_rate": 24000, "channels": 1, "bit_depth": 16, "ms": 2000, "converted": false},
+  "cost_usd": 0.0012, "latency_ms": 3100, "models": ["muse-voice-transcribe-1.0", "muse-spark-1.3"] }
+```
+- **The listing contract only:** `title` (≤ 80 bytes), `number_of_serving` (1–99), `pickup_text` (the directions, ≤ 200 bytes), from `listings/` itself. No description. Any other key from the model is dropped and listed in `dropped`.
+- `changes`: only the fields the donor changed (absent = no change). `remove: true` removes the item.
+- With `items`: no new items (the photo is the source of truth). Without `items`: `new_items` (at most 10), each `needs_photo: true`. The listings service needs a photo for every listing, so the app must ask for one (an integration decision).
+- `unclear`: a short question to show when the model could not map something.
+- `dropped`: what the rules refused (for the app and the ledger).
+- The events line keeps the transcript and the proposal, never the audio.
+- Refusals: 400 (not multipart, no audio, bad items), 401, 413 `audio_too_large`, 415 `unsupported_media` / `audio_too_long`, 422 `no_speech`, 429, 502, 503 `daily_cap_reached`, 504.
+
+**The app must record WAV.** The web's MediaRecorder gives WebM/Opus, and Android gives AAC, so the app needs a PCM recorder: for example, the Web Audio API with a WAV writer on the web, and a PCM stream module on the phone. This is an integration step.
+
+Flags: `-max-audio 60s`, `-max-bytes 12MB`, `-cap-usd 1`, `-reserve-usd 0.01`, `-rate-burst 10`/min, `-timeout 25s`, `-asr-url`, `-asr-model muse-voice-transcribe-1.0`, `-model`, `-auth`, `-events`, `-trust-forwarded`.

@@ -363,6 +363,7 @@ type Call struct {
 	OutputTokens int     `json:"output_tokens,omitempty"`
 	CachedTokens int     `json:"cached_tokens,omitempty"`
 	Images       int     `json:"images,omitempty"`
+	AudioMS      int     `json:"audio_ms,omitempty"` // speech: billed per whole second
 	CostUSD      float64 `json:"cost_usd"`
 	UpstreamID   string  `json:"upstream_id,omitempty"`
 	Error        string  `json:"error,omitempty"`
@@ -376,6 +377,10 @@ func (c *Call) Price() {
 	}
 	if c.Images > 0 {
 		c.CostUSD = float64(c.Images) * PriceImagePerImage
+		return
+	}
+	if c.AudioMS > 0 {
+		c.CostUSD = float64(c.AudioMS/1000) * PriceASRPerHour / 3600
 		return
 	}
 	fresh := c.InputTokens - c.CachedTokens

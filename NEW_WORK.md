@@ -361,3 +361,23 @@ A donor can share a live listing with the neighborhood on the Icarus Facebook Pa
 - One post per listing, also when the donor taps twice. Only the owner can share it. Only the listings service can mark a post [CLAIMED], with its own internal token.
 - Built, not deployed: no Page token yet.
 - Tests: post 27 -> 35.
+
+---
+
+## 19. Voice posting: say what to change
+
+**When:** Oct 28 2026.
+**Meta models:** Muse Voice Transcribe 1.0, Muse Spark 1.3 (Meta Model API).
+**Files:** `post/voice.go`, `post/wav.go`, `post/voice_test.go`, `post/cmd/voice/main.go` (new), `post/third_party/GO_AUDIO_LICENSE.txt` (new), `post/go.mod`, `post/go.sum` (new), `post/Dockerfile`, `post/Dockerfile.dockerignore`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X35d.md`
+
+After a scan, the donor can speak instead of typing: "6 trays of pasta, the salad is gone, pick up at the back door before 5".
+
+- Muse Voice Transcribe turns the recording into text. The item titles are sent as keywords, and the device language as a hint.
+- Muse Spark maps the text to changes of the scanned items, in the listing contract only: title, servings, remove, and the pickup text (the directions). There is no description field.
+- Code checks every change against the listing contract, with the limits imported from the listings service: only items that exist, servings 1 to 99, a title up to 80 bytes, a pickup text up to 200 bytes. A test runs every proposal through the listings service's own check. Any other field is dropped and listed. Voice cannot add food that the photo does not show.
+- With no scan, voice makes a draft of new items, and each one still needs a photo.
+- The app shows the changes, and nothing posts until the donor taps "Post". The ledger keeps the transcript, never the audio.
+- The WAV reader is our own and does not trust the file header: every chunk must fit in the bytes received, and the length comes from the real samples. The WAV writer reuses go-audio/wav (Apache-2.0). The request shape follows Meta's own cookbook.
+- Built, not deployed.
+- Tests: post 35 -> 46 (and 329,094 fuzz runs of the WAV reader with no failure).

@@ -1,7 +1,7 @@
-# Icarus post services (X35): touchup, rescue, fanout. Static Go binaries on
+# Icarus post services (X35): touchup, rescue, fanout, voice. Static Go binaries on
 # scratch, like inference. Build context = the repo root (compose: context ".",
-# dockerfile post/Dockerfile), because the module imports ../server.
-# post/Dockerfile.dockerignore keeps the context to these two folders. One
+# dockerfile post/Dockerfile), because the module imports ../server and ../listings.
+# post/Dockerfile.dockerignore keeps the context to these folders. One
 # image holds every binary in post/cmd; compose picks one per service with
 # "entrypoint". The key and the token are read-only file mounts; events and
 # the stores are volumes owned by the service user.
@@ -9,8 +9,13 @@ FROM golang:1.26-alpine AS build
 WORKDIR /src
 COPY server/go.mod ./server/
 COPY server/*.go ./server/
-COPY post/go.mod ./post/
+# X35d: the voice service imports the listing contract (listings/: limits + Validate).
+COPY listings/go.mod ./listings/
+COPY listings/*.go ./listings/
+COPY post/go.mod post/go.sum ./post/
 WORKDIR /src/post
+# X35d: the voice service uses github.com/go-audio/wav (Apache-2.0).
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY post/ ./
 # Tests run BEFORE ARG BUILD (X23): a new commit sha does not re-run them.
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod CGO_ENABLED=0 go test -trimpath -count=1 ./...
@@ -22,6 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /out/ /
+COPY --from=build /src/post/third_party/GO_AUDIO_LICENSE.txt /licenses/GO_AUDIO_LICENSE.txt
 COPY --from=build --chown=65534:65534 /data /data
 COPY --from=build --chown=65534:65534 /events /events
 USER 65534:65534
