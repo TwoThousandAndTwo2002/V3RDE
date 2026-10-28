@@ -342,3 +342,22 @@ When a listing's timer runs out and nobody claimed it, the donor can still give 
 - Tests: post 16 -> 27.
 
 Next: share a listing on the Icarus Facebook Page.
+
+---
+
+## 18. Share a listing on the Icarus Facebook Page
+
+**When:** Oct 28 2026.
+**Meta model:** Muse Spark 1.3 (Meta Model API); Facebook Pages API (Graph API v25.0).
+**Files:** `post/fanout.go`, `post/fanout_test.go`, `post/cmd/fanout/main.go` (new), `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X35c.md`
+
+A donor can share a live listing with the neighborhood on the Icarus Facebook Page, and nobody makes a wasted trip.
+
+- Muse Spark writes a short public post from the photo, the title and the servings. The post never has the pickup text, a link from the model, or a safety claim.
+- The photo and the text go to the Page in one photo post, with a link to claim the food in the app.
+- When the food is claimed, the post is edited to start with [CLAIMED]. When the timer runs out, a sweep can mark it [EXPIRED].
+- A second Muse Spark call checks the text before it goes public. The listing title goes to the model as data, not as instructions.
+- One post per listing, also when the donor taps twice. Only the owner can share it. Only the listings service can mark a post [CLAIMED], with its own internal token.
+- Built, not deployed: no Page token yet.
+- Tests: post 27 -> 35.
