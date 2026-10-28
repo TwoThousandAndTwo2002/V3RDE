@@ -381,3 +381,21 @@ After a scan, the donor can speak instead of typing: "6 trays of pasta, the sala
 - The WAV reader is our own and does not trust the file header: every chunk must fit in the bytes received, and the length comes from the real samples. The WAV writer reuses go-audio/wav (Apache-2.0). The request shape follows Meta's own cookbook.
 - Built, not deployed.
 - Tests: post 35 -> 46 (and 329,094 fuzz runs of the WAV reader with no failure).
+
+---
+
+## 20. The voice clip is made on the phone
+
+**When:** Oct 28 2026.
+**Meta model:** Muse Voice Transcribe 1.0 (the format it takes).
+**Files:** `mobile/src/wav.ts`, `mobile/src/webvoice.ts`, `mobile/src/voicerec.ts`, `mobile/public/voice-capture-worklet.js`, `mobile/tests/wav.test.mts` (new), `mobile/src/api.ts`, `mobile/app.json`, `mobile/package.json`, `mobile/package-lock.json`, `mobile/web-dist/`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X35e.md`
+
+The speech model takes one format: WAV, mono, 16-bit, 16 or 24 kHz. Normal recorders do not give it, so the app now makes it on the device and the server sends it on unchanged.
+
+- Android and iOS: Expo's own audio module (expo-audio, the version the SDK pins) records 16 kHz mono 16-bit PCM into a WAV file.
+- Web: Expo's audio stream does nothing on the web (we read its code), so the app records with the browser's Web Audio API and makes the WAV itself.
+- Checked in Chromium with a fake microphone: a 440 Hz tone came out as a 16 kHz WAV with a pitch of 439.8 Hz, and the server's own WAV check sent it byte for byte.
+- The app asks for the microphone with one clear text. It does not ask to run audio in the background.
+- No UI yet: the mic button comes next, with its mockup.
+- Tests: mobile 28 -> 31.

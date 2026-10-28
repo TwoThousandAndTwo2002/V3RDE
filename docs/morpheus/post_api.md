@@ -154,3 +154,16 @@ Proposal:
 **The app must record WAV.** The web's MediaRecorder gives WebM/Opus, and Android gives AAC, so the app needs a PCM recorder: for example, the Web Audio API with a WAV writer on the web, and a PCM stream module on the phone. This is an integration step.
 
 Flags: `-max-audio 60s`, `-max-bytes 12MB`, `-cap-usd 1`, `-reserve-usd 0.01`, `-rate-burst 10`/min, `-timeout 25s`, `-asr-url`, `-asr-model muse-voice-transcribe-1.0`, `-model`, `-auth`, `-events`, `-trust-forwarded`.
+
+## 5. The app side of voice (X35e)
+
+The clip is made on the device as the one format the speech endpoint takes:
+WAV, 16 kHz, mono, 16-bit, exact header sizes. The server then sends it on
+byte for byte.
+
+- `useVoiceRecorder()` (`mobile/src/voicerec.ts`) → `{recording, start(), stop(), cancel()}`; `stop()` gives a `VoiceClip` (an `Upload` + `ms`, `rate`, `source`). It stops by itself at 59.5 s.
+  - **Android / iOS:** expo-audio 58.0.10 `useAudioStream` (16 kHz, mono, int16) + `startFileRecordingAsync({format: "wav"})`. If an Android device refuses 16 kHz, the clip has the device rate and the server converts it.
+  - **Web:** `src/webvoice.ts`: `getUserMedia` (https) + the AudioWorklet `/voice-capture-worklet.js` at the device rate, then `src/wav.ts` resamples to 16 kHz.
+  - Errors: `VoiceError` with code `denied` (microphone refused), `unsupported` (no https or no AudioWorklet), `failed`.
+- `api.voice(clip, items, pickupText, lang)` sends `audio`, `items` (only `item`, `title`, `number_of_serving`), `pickup_text`, `lang` to `/api/voice` (35 s timeout).
+- Native builds need a new APK/IPA: expo-audio is a native module. The web app needs only the web-dist deploy.
