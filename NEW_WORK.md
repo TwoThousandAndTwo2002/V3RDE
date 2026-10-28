@@ -321,3 +321,24 @@ A donor's photo is often dark or cluttered. The new touch-up service makes it lo
 - Tests: post 16 (new module).
 
 Next: the rescue service for listings that nobody claimed.
+
+---
+
+## 17. Rescue: food that nobody claimed goes to a food program
+
+**When:** Oct 28 2026.
+**Meta model:** Muse Spark 1.3 (Meta Model API).
+**Files:** `post/rescue.go`, `post/rescue_test.go`, `post/cmd/rescue/main.go` (new), `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X35b.md`
+
+When a listing's timer runs out and nobody claimed it, the donor can still give the food away.
+
+- Muse Spark looks at the photo and decides: shelf-stable (cans, dry goods) or perishable. It writes a short inquiry that asks the program if it can accept the food and when the donor can drop it off. It does not say the food is safe.
+- The Feed America directory gives the nearest places by ZIP or location: food banks and pantries for shelf-stable food, soup kitchens and meal programs for perishable food.
+- The donor sees the draft and the places, and sends it from their own mail app (mailto) or calls (tel). A server mail relay is optional and off by default.
+- Only the donor's own listing, still active, after its timer ran out. A bulk rule (servings) is a setting.
+- Built, not deployed.
+- One rescue per listing. If the relay is on, it sends only to the place's known address, with a time limit and a rate limit.
+- Tests: post 16 -> 27.
+
+Next: share a listing on the Icarus Facebook Page.

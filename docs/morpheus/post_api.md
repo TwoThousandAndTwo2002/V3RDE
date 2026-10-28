@@ -43,3 +43,43 @@ Job:
 - Refusals: 400 `bad_request` (mode), 401, 404 (`photo_id` not found or not yours), 413, 415, 429, 503 `busy` (2 jobs at the same time) or `daily_cap_reached`.
 
 Flags (`touchup -h`): `-cap-usd 2`, `-reserve-usd 0.03`, `-max-in-flight 2`, `-rate-burst 4`/min, `-job-timeout 90s`, `-image-reasoning ""` (API default), `-no-check` (then every edit is `kept_original`), `-item-photos` (the analyze photo folder, read-only), `-dir`, `-events`, `-auth`.
+
+## 2. Rescue (X35b) — `cmd/rescue`, port 8089
+
+For a listing that nobody claimed before its timer ran out. Muse Spark 1.3
+decides shelf-stable or perishable from the photo and drafts an inquiry; the
+Feed America directory gives the nearest places; the donor sends it.
+
+```
+POST /api/rescue/{listing_id}       session cookie, the caller's own listing
+     {"zip": "10001"}  or  {"lat": 40.75, "lng": -73.99}
+  -> 200 rescue
+GET  /api/rescue/{rescue_id}        -> 200 rescue (owner only)
+POST /api/rescue/{rescue_id}/send   {"place_id": "a2", "to_email": "…"[, "subject", "body"]}
+  -> 200 {"request_id", "sent": true, "rescue_id", "place_id"}   (only with a mail relay)
+GET  /healthz
+```
+
+Rescue:
+```json
+{ "rescue_id": "…", "request_id": "…", "listing_id": "l_…", "title": "Canned beans",
+  "number_of_serving": 24, "kind": "food_bank", "shelf_stable": true,
+  "reason": "sealed cans keep without a refrigerator",
+  "draft": { "subject": "…", "body": "…" },
+  "places": [ { "id": "a2", "name": "City Food Pantry", "type": "pantry",
+                "address": "2 Oak Ave, Town, NY, 10001", "phone": "212-555-0102",
+                "distance_miles": 1.5, "website": "https://…", "email": "…(only when the directory has one)",
+                "tel": "tel:2125550102", "mailto": "mailto:…?subject=…&body=…" } ],
+  "attribution": "Feed America (feedam.org), CC BY 4.0",
+  "created_at": "…", "cost_usd": 0.004, "sent": [] }
+```
+- `kind`: `food_bank` (shelf-stable: pantries and food banks first) or `meal_program` (perishable: soup kitchens, meal programs, shelters first). Nearest first in each group; 3 places.
+- The app must show `attribution` (CC BY 4.0).
+- The app opens `mailto` (the donor's own mail app) or `tel`. `email` is filled only if the directory gives one; else the donor types the address (or uses `/send` with `to_email`).
+- One rescue per listing: a second POST answers 200 with the first rescue (no new Muse call); while the first one runs, 409 `conflict`.
+- `/send` sends the stored draft (or the donor's edited `subject`/`body`), Reply-To = the donor's email; once per place; 3 per donor per day; rate-limited. When the place has a known `email`, `to_email` must be that address (any case). The SMTP exchange stops after `-smtp-timeout` (20 s).
+- Refusals: 400 (zip / lat-lng / body), 401, 404 (`listing not found`: unknown or not yours), 409 `collected` / `not_expired`, 422 `not_bulk`, 502 (the draft or the directory failed), 503 `daily_cap_reached` / `disabled` (no relay), 504.
+
+Flags: `-min-servings 1` (**the bulk rule: T9 decides**), `-places 3`, `-cap-usd 1`, `-reserve-usd 0.02`, `-timeout 25s`, `-send-per-day 3`, `-smtp-timeout 20s`, `-trust-forwarded`, `-directory https://feedam.org`, `-smtp-addr` / `-smtp-user` / `-smtp-pass-file /run/secrets/smtp_pass` / `-from` (all empty = no relay), `-listings`, `-auth`, `-data`, `-events`.
+
+Not confirmed: the directory's result field names (the public docs show `results`; the parser accepts the likely names). Check them on the first live call.
