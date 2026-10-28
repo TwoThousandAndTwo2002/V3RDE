@@ -469,3 +469,20 @@ The analyze server (`POST /v1/analyze`: one food photo in, the eight-field listi
 - The rate limit now removes idle addresses, so its memory does not grow until a restart.
 - The inference service builds and passes its tests on it again. The post services also need listings (a later entry).
 - Tests: server 26 (new), inference 62 (unchanged).
+
+---
+
+## 25. The listings service, written new for V3RDE
+
+**When:** Oct 28 2026.
+**Meta model:** none (the listings of the scan and the post services).
+**Files:** `listings/listing.go`, `listings/store.go`, `listings/handler.go`, `listings/hook.go`, `listings/events.go`, `listings/cmd/listings/main.go`, `listings/Dockerfile`, `listings/go.mod`, `listings/listings_test.go` (all new)
+**Sources:** `docs/sources/X38b.md`
+
+The listings service (a donor posts a meal, a receiver grabs it) existed before the Hackathon. V3RDE does not copy it: this is new code. The post services import it.
+
+- It keeps the routes, the status codes, the error texts, the JSON of a listing and the data file format, so the app and the data on the box do not change. It keeps the Hackathon parts too: a listing from a scan photo or a touched-up photo (entries 9 and 22), and the claim hook that marks the Facebook post [CLAIMED] (entry 22).
+- Checked against the old service: its own tests pass on the new code, and an independent review compared the two request by request and the data file both ways.
+- New: a grab that is not written changes nothing, so the listing can be grabbed when the disk is back. Photos are written through a temp file, so a crash cannot leave half a photo. Two listings in one second are in time order.
+- The post services build and pass their tests again.
+- Tests: listings 27 (new), post 51 (unchanged).
