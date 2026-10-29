@@ -137,6 +137,10 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 		return Listing{}, err
 	}
 	now := s.now().UTC()
+	ttl := s.ttl
+	if in.TTL > 0 { // X44h: a test account's own timer (the handler checked it)
+		ttl = in.TTL
+	}
 	id := newID("l_")
 	file := id + photoExt[in.Mime]
 	photo := filepath.Join(s.photos, file)
@@ -146,7 +150,7 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 	r := stored{PhotoFile: file, Listing: Listing{
 		ID: id, OwnerID: ownerID, Title: in.Title, NumberOfServing: in.NumberOfServing,
 		PhotoURL: "/api/listings/" + id + "/photo", PickupText: in.PickupText, Status: "active",
-		CreatedAt: now.Format(time.RFC3339Nano), ExpiresAt: now.Add(s.ttl).Format(time.RFC3339Nano),
+		CreatedAt: now.Format(time.RFC3339Nano), ExpiresAt: now.Add(ttl).Format(time.RFC3339Nano),
 		RequestID: in.RequestID,
 	}}
 	s.mu.Lock()

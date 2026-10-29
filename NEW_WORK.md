@@ -717,3 +717,18 @@ The app already reports what the donor changed before posting: the names, the se
 - When there are enough labels, it suggests a new value for the size limit that marks an item "check this" (now 96 px). A person makes the change.
 - It runs on the box: `docker run --rm --entrypoint /calibrate -v <analyze events>:/events:ro v3rde-analyze`.
 - Tests: inference 79 -> 83.
+
+---
+
+## 41. A 30-second listing timer for the tests
+
+**When:** Oct 29 2026.
+**Meta models:** none (the listings service).
+**Files:** `listings/listing.go`, `listings/store.go`, `listings/handler.go`, `listings/cmd/listings/main.go`, `listings/listings_test.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/X44h.md`
+
+The rescue test needs a listing that nobody claimed before its timer ran out, and the timer is 30 minutes.
+
+- A test account can now post a listing with its own timer (`ttl_seconds`, 30 s to 30 minutes), so the rescue test runs in one minute.
+- Only the test accounts named in the settings can do this. Every other user gets 403, and the timer stays 30 minutes.
+- Tests: listings 27 -> 28.

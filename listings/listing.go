@@ -15,6 +15,7 @@
 //
 //	POST /api/listings               multipart: title, number_of_serving, pickup_text, request_id,
 //	                                 and photo (a file) or photo_id (an item photo of the caller) -> 201 listing
+//	                                 X44h: ttl_seconds (30-1800), test accounts only (-test-ttl-emails), else 403
 //	GET  /api/listings?after=<id>    active and not expired, newest first, 20 per page -> {items, next}
 //	GET  /api/listings/mine          the caller's listings, any status, newest first -> {items}
 //	POST /api/listings/{id}/grab     -> 200 listing | 409 collected or expired | 403 own listing | 404
@@ -84,7 +85,14 @@ type Input struct {
 	RequestID       string
 	Photo           []byte
 	Mime            string
+	// TTL (X44h): a test account's own timer, MinTestTTL..DefaultTTL; 0 = the
+	// store's TTL. Only the handler sets it, and only for a test account.
+	TTL time.Duration
 }
+
+// MinTestTTL is the shortest timer a test account can ask for (X44h, T9
+// 2026-10-29: the rescue test must not wait 30 minutes).
+const MinTestTTL = 30 * time.Second
 
 // Validate trims the text fields and applies the rules in this order; the
 // error text is what the app shows.

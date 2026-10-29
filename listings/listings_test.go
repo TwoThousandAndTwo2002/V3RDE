@@ -917,3 +917,54 @@ func TestRecorderNeverBlocks(t *testing.T) {
 	var none *Recorder
 	none.Record(Event{}) // a nil recorder does nothing
 }
+
+// X44h (T9 2026-10-29): a test account may set its listing's timer
+// (ttl_seconds, 30 s to 30 min) so the rescue test does not wait 30 minutes;
+// any other caller gets 403 and no listing; without the field the timer is
+// the store's 30 minutes.
+func TestTestAccountTTL(t *testing.T) {
+	e := newEnv(t, nil)
+	e.h = New(Config{Store: e.st, Auth: fakeAuth{}, TestTTLEmails: map[string]bool{"u_test@example.org": true}})
+	with := func(user, ttl string) (*httptest.ResponseRecorder, map[string]any) {
+		f := okFields()
+		f["ttl_seconds"] = ttl
+		return call(e.h, form(t, user, f, jpeg, "image/jpeg"))
+	}
+	w, body := with("u_test", "30")
+	if w.Code != 201 {
+		t.Fatalf("test account: %d %v", w.Code, body)
+	}
+	created, _ := time.Parse(time.RFC3339Nano, body["created_at"].(string))
+	expires, _ := time.Parse(time.RFC3339Nano, body["expires_at"].(string))
+	if expires.Sub(created) != 30*time.Second {
+		t.Fatalf("timer %v", expires.Sub(created))
+	}
+	id := body["id"].(string)
+	e.tick(30 * time.Second)
+	if _, err := e.st.Grab(id, "u_r"); err != ErrExpired {
+		t.Fatalf("after 30 s: %v", err)
+	}
+	for _, c := range []struct {
+		user, ttl string
+		code      int
+		msg       string
+	}{
+		{"u_other", "30", 403, "ttl_seconds is for test accounts only"},
+		{"u_test", "29", 400, "ttl_seconds must be 30-1800"},
+		{"u_test", "1801", 400, "ttl_seconds must be 30-1800"},
+		{"u_test", "soon", 400, "ttl_seconds must be 30-1800"},
+	} {
+		if w, body := with(c.user, c.ttl); w.Code != c.code || body["error"] != c.msg {
+			t.Errorf("%s ttl %s: %d %v", c.user, c.ttl, w.Code, body)
+		}
+	}
+	if n := len(e.st.Mine("u_other")); n != 0 {
+		t.Fatal("a refused ttl made a listing")
+	}
+	l := e.create(t, "u_test") // no field: the store's timer
+	c2, _ := time.Parse(time.RFC3339Nano, l.CreatedAt)
+	x2, _ := time.Parse(time.RFC3339Nano, l.ExpiresAt)
+	if x2.Sub(c2) != 30*time.Minute {
+		t.Fatalf("default timer %v", x2.Sub(c2))
+	}
+}

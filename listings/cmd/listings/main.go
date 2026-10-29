@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	listings "github.com/TwoThousandAndTwo2002/Icarus/listings"
@@ -27,7 +28,14 @@ func main() {
 	touchupPhotos := flag.String("touchup-photos", "", "the touch-up service's edited photos, read-only (photo_id); \"\" = off")
 	fanoutURL := flag.String("fanout", "", "fan-out status route for the claim hook, e.g. http://fanout:8090/v1/fanout/status; \"\" = off")
 	fanoutTokenFile := flag.String("fanout-token-file", "/run/secrets/fanout_status_token", "the claim hook's own secret (never the analyze token)")
+	testEmails := flag.String("test-ttl-emails", "", "X44h: comma-separated test account emails that may send ttl_seconds (30 s up to the TTL); \"\" = none")
 	flag.Parse()
+	testTTL := map[string]bool{}
+	for _, e := range strings.Split(*testEmails, ",") {
+		if e = strings.ToLower(strings.TrimSpace(e)); e != "" {
+			testTTL[e] = true
+		}
+	}
 
 	st, err := listings.Open(*data, *ttl)
 	if err != nil {
@@ -43,7 +51,7 @@ func main() {
 	}
 	var h http.Handler = listings.New(listings.Config{Store: st,
 		Auth:       &listings.AuthClient{URL: *authURL, HTTP: &http.Client{Timeout: 5 * time.Second}},
-		ItemPhotos: *itemPhotos, TouchupPhotos: *touchupPhotos, Claim: claim})
+		ItemPhotos: *itemPhotos, TouchupPhotos: *touchupPhotos, Claim: claim, TestTTLEmails: testTTL})
 	if *events != "" {
 		if err := os.MkdirAll(*events, 0o755); err != nil {
 			log.Fatalf("events dir: %v", err)
@@ -52,8 +60,8 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: h, ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("v3rde-listings listening on %s data=%s auth=%s ttl=%s events=%q item-photos=%q touchup-photos=%q claim-hook=%q build=%s",
-		*listen, *data, *authURL, *ttl, *events, *itemPhotos, *touchupPhotos, *fanoutURL, build)
+	log.Printf("v3rde-listings listening on %s data=%s auth=%s ttl=%s events=%q item-photos=%q touchup-photos=%q claim-hook=%q test-ttl-accounts=%d build=%s",
+		*listen, *data, *authURL, *ttl, *events, *itemPhotos, *touchupPhotos, *fanoutURL, len(testTTL), build)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}

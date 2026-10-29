@@ -49,7 +49,9 @@ services:
     command: ["-listen", "0.0.0.0:8082", "-data", "/data", "-auth", "http://auth:8081", "-events", "/events",
               "-item-photos", "/item-photos", "-touchup-photos", "/touchup-photos",
               "-fanout", "http://fanout:8090/v1/fanout/status",
-              "-fanout-token-file", "/run/secrets/fanout_status_token"]
+              "-fanout-token-file", "/run/secrets/fanout_status_token",
+              # X44h: the test accounts that may set a short timer (ttl_seconds) for tests
+              "-test-ttl-emails", "${LISTINGS_TEST_TTL_EMAILS:-x42-touchup-test@example.org,x44-receiver-test@example.org,x44-stress-1@example.org,x44-stress-2@example.org,x44-stress-3@example.org}"]
     volumes:
       - v3rde_listings:/data
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro

@@ -3,6 +3,7 @@ package listings
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -114,6 +115,9 @@ type Config struct {
 	TouchupPhotos string
 	// Claim tells fan-out after a grab; nil = off.
 	Claim *ClaimHook
+	// TestTTLEmails (X44h): the test accounts (lower case) that may send
+	// ttl_seconds on create; nil = nobody. Every other caller gets 403.
+	TestTTLEmails map[string]bool
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
@@ -171,6 +175,18 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 	n, _ := strconv.Atoi(strings.TrimSpace(r.FormValue("number_of_serving")))
 	in := Input{Title: r.FormValue("title"), NumberOfServing: n, PickupText: r.FormValue("pickup_text"),
 		RequestID: r.FormValue("request_id")}
+	if v := strings.TrimSpace(r.FormValue("ttl_seconds")); v != "" { // X44h: test accounts only
+		if !rt.TestTTLEmails[strings.ToLower(strings.TrimSpace(u.Email))] {
+			fail(w, http.StatusForbidden, "ttl_seconds is for test accounts only")
+			return
+		}
+		sec, err := strconv.Atoi(v)
+		if err != nil || time.Duration(sec)*time.Second < MinTestTTL || time.Duration(sec)*time.Second > DefaultTTL {
+			fail(w, http.StatusBadRequest, fmt.Sprintf("ttl_seconds must be %d-%d", int(MinTestTTL.Seconds()), int(DefaultTTL.Seconds())))
+			return
+		}
+		in.TTL = time.Duration(sec) * time.Second
+	}
 	photoID := strings.TrimSpace(r.FormValue("photo_id"))
 	if f, hdr, err := r.FormFile("photo"); err == nil {
 		defer f.Close()
