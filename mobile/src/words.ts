@@ -123,3 +123,19 @@ export const REVIEW = {
   notPosted: "This item did not post. It stays here.",
   nonePosted: "No item posted. Try again.",
 } as const;
+
+/** The photo touch-up on the review (the original stays the default). */
+export const TOUCH = {
+  light: "Better light",
+  background: "Plain background",
+  working: "Touching up the photo…",
+  original: "Original",
+  edit: "Touched up",
+  choose: "Choose the photo to post:",
+  kept: "The photo stays as it is: the check saw a change to the food.",
+  failed: "The touch-up did not work. The photo stays as it is.",
+  busy: "The touch-up is busy. Try again in a minute.",
+  paused: "Touch-up is paused for today.",
+  wait: "Wait for the touch-up to end, then post.",
+  ofItem: (n: number) => "of item " + n,
+} as const;

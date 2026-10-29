@@ -126,6 +126,7 @@ export const size = {
   timeW: 88,         // the time pill of a listing card (one width for every time)
   timePadY: 2,       // its padding (top, bottom)
   loadAhead: 320,    // a list loads its next page when it is this near its end (pt)
+  choiceThumb: 64,   // a photo to choose on the review (the original or the touched-up photo)
 } as const;
 
 /**

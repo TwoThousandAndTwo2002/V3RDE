@@ -261,3 +261,18 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Checks:** the form checks run before any request. After the post, a toast and the list loads again.
 - **Labels:** what the user did with the answer goes to `/api/analyze/labels` one time (posted, retake or closed).
 - The toast moves up (`size.toastBottom` 88) so it does not cover the bottom pill.
+
+---
+
+## UI 16. Photo touch-up on the review
+
+**When:** Oct 29 2026.
+**Meta model:** Muse Image 1.0 (the edit) and Muse Spark 1.3 (the check that the food did not change), through the touch-up service of branch `services` (`POST /api/touchup`, `GET /api/touchup/{id}`, `GET /api/touchup/{id}/photo`).
+**Files:** `mobile/src/screens/TouchUp.tsx`, `mobile/src/touchup.ts`, `mobile/tests/touchup.test.mts`, `mobile/src/screens/Review.tsx`, `mobile/src/api.ts`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U16.md`
+
+- **Written new:** the touch-up controls; the rewrite guard finds no line of the earlier app's mobile code.
+- **Choices:** "Better light" or "Plain background" on each item with a server photo (the touch-up service takes only `photo_id`, so a photo has passed the food gate first).
+- **Job:** the app asks for the state every 2 s, at most 2 minutes. Done: the original and the edit side by side; the original stays chosen until the user taps the edit. Kept original (the check saw a change to the food), failed, busy and the daily limit each have one line.
+- **Post:** the chosen photo posts (`photo_id` of the edit); Post waits while a touch-up runs.
+- **Open (branch services):** the listings service must take the `photo_id` of an edit (mount the touch-up folder; X35 handoff step 3).

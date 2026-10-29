@@ -123,6 +123,7 @@ Values are font size / line height in pt.
 | `size.timeW` | 88 | the earlier app | the time pill of a listing card (one width for every time) |
 | `size.timePadY` | 2 | the earlier app | its padding (top, bottom) |
 | `size.loadAhead` | 320 | the earlier app | a list loads its next page when it is this near its end (pt) |
+| `size.choiceThumb` | 64 | a choice | a photo to choose on the review (the original or the touched-up photo) |
 
 ## Glyphs (`glyph`)
 
@@ -285,6 +286,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - A large `Sheet` over the photo (wide: the photo at the left, `space.foot` to the fields). One item: "Your listing", the field "Title", the source line (`space.inset` under it: "From the barcode …" or "The scanner says: …"), "Servings" with − and + (`size.iconBig`), the field "Pickup details". Several items: "n items found", "Check each item. Remove what you do not want to share.", a `ReviewCard` for each item with the item photo of the server, and "Pickup details (for all items)".
 - The pills "Start over" and "Post listing" / "Post n listings" (busy: "Posting…"); while several post, "Posting i of n…" shows over them. A failed item stays with "This item did not post. It stays here."; the title says "n items not posted".
 - The form checks come before any request (`capture.ts`: title 1 to 80, servings 1 to 99, pickup 1 to 200). After the post, a toast: "Listed. It stays up for 30 minutes." or "n listings are posted. They stay up for 30 minutes."
+
+## Touch-up (`mobile/src/screens/TouchUp.tsx`, rules in `mobile/src/touchup.ts`)
+
+- In each review card with an item photo of the server (and under the source line of the one-item form): the text links "Better light" and "Plain background", `space.gutter` apart. A tap starts a touch-up job; "Touching up the photo…" with a spinner shows while it runs (the app asks every 2 s, at most 2 minutes).
+- When the edit passed the food check: "Choose the photo to post:" and two photos side by side (`size.choiceThumb`, `radius.photo`), "Original" and "Touched up"; the chosen one has a `size.focusBorder` `accent` border. The original is chosen until the user taps the edit (a radio group).
+- When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the links stay, so the user can try again.
+- Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
 
 ## Mockups
 

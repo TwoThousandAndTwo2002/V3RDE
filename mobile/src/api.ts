@@ -125,6 +125,19 @@ export function analyze(photo: Upload, barcode = "", capture?: Record<string, un
   return request<any>("POST", "/api/analyze", { form, timeoutMs: 75_000 });
 }
 
+/** A touch-up job (branch services, post/touchup.go): running, then done (photo_id = the edit), kept_original
+ *  (the check found a change to the food) or failed. */
+export type TouchupJob = { touchup_id: string; status: string; mode?: string; photo_id?: string; reason?: string };
+
+/** Touch-up of an item photo of the scan (session cookie). The edit runs as a job; the original stays. */
+export const touchup = Object.freeze({
+  start: (photoId: string, mode: "light" | "background") =>
+    request<TouchupJob>("POST", "/api/touchup?mode=" + mode + "&photo_id=" + encodeURIComponent(photoId)),
+  get: (id: string) => request<TouchupJob>("GET", "/api/touchup/" + encodeURIComponent(id)),
+  /** The path of the edited photo (status done only). */
+  photoPath: (id: string) => "/api/touchup/" + encodeURIComponent(id) + "/photo",
+});
+
 /** The user's corrections to an answer (logic.labelReport). Best effort: a failed report never stops a post. */
 export function analyzeLabels(report: object): Promise<void> {
   return request<void>("POST", "/api/analyze/labels", { json: report, timeoutMs: 10_000 }).catch(() => undefined);

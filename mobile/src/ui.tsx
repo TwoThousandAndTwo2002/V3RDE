@@ -228,10 +228,10 @@ export function FieldButton({ title, label, onPress }: { title: string; label?: 
 }
 
 /** An action in a line of text ("Create one"): `type.button`, `link`, underlined; a screen reader reads a button. */
-export function TextLink({ children, onPress, testID }: { children: React.ReactNode; onPress: () => void; testID?: string }) {
+export function TextLink({ children, onPress, testID, name }: { children: React.ReactNode; onPress: () => void; testID?: string; name?: string }) {
   const col = useColors();
   return (
-    <Text testID={testID} accessibilityRole="button" onPress={onPress}
+    <Text testID={testID} accessibilityRole="button" accessibilityLabel={name} onPress={onPress}
       style={[type.button, { color: col.link, textDecorationLine: "underline" }]}>{children}</Text>
   );
 }
@@ -550,8 +550,8 @@ export function Grid({ columns, children: cards }: { columns: number; children: 
  * One found item in the review list: the item photo (94 pt), then two rows: the title field with ✕ (remove),
  * and − servings +. `n` is the item number (1, 2, …) for the labels. `error` shows under the rows.
  */
-export function ReviewCard({ uri, n, title, servings, error, onTitle, onServings, onRemove, onLess, onMore }: {
-  uri?: string; n: number; title: string; servings: number | string; error?: string;
+export function ReviewCard({ uri, n, title, servings, error, extra, onTitle, onServings, onRemove, onLess, onMore }: {
+  uri?: string; n: number; title: string; servings: number | string; error?: string; extra?: React.ReactNode;
   onTitle?: (t: string) => void; onServings?: (t: string) => void; onRemove: () => void; onLess: () => void; onMore: () => void;
 }) {
   const col = useColors();
@@ -571,6 +571,7 @@ export function ReviewCard({ uri, n, title, servings, error, onTitle, onServings
           </View>
           <IconBtn glyph="plus" label={"More servings of item " + n} onPress={onMore} />
         </Row>
+        {extra}
         {error ? <ErrorText lines={2}>{error}</ErrorText> : null}
       </View>
     </View>
