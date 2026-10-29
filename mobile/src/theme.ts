@@ -127,6 +127,7 @@ export const size = {
   timePadY: 2,       // its padding (top, bottom)
   loadAhead: 320,    // a list loads its next page when it is this near its end (pt)
   choiceThumb: 64,   // a photo to choose on the review (the original or the touched-up photo)
+  proposalMax: 140,  // the lines of a voice proposal scroll above this height (the list stays in view on a phone)
 } as const;
 
 /**
@@ -144,6 +145,8 @@ export const glyph = {
   give: "M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z",
   receive: "M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5",
   menu: "M3 5.5 H17 M3 10 H17 M3 14.5 H17",
+  mic: "M10 1.5 A3 3 0 0 1 13 4.5 V10 A3 3 0 0 1 7 10 V4.5 A3 3 0 0 1 10 1.5 Z M4 9.5 A6 6 0 0 0 16 9.5 M10 15.5 V18.5 M7 18.5 H13",
+  stop: "M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z",
   upload: "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
 } as const;
 

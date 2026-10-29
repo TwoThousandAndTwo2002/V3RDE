@@ -3,7 +3,8 @@
 // the item photo the server cut, and one pickup for all. Post sends one listing for each item, one after the
 // other; a posted item leaves the list, a failed one stays with its error. What the user did with the answer goes
 // to /api/analyze/labels one time (posted, retake or closed). An item with a server photo can be touched up
-// (UI 16, TouchUp.tsx); the photo the user chose is the one that posts.
+// (UI 16, TouchUp.tsx); the photo the user chose is the one that posts. The microphone gives voice changes
+// (UI 17, Voice.tsx).
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, TextInput, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
@@ -19,8 +20,9 @@ import { useSession } from "../session";
 import { REVIEW } from "../words";
 import type { Answer } from "./Capture";
 import { TouchUp } from "./TouchUp";
+import { VoiceBar } from "./Voice";
 import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
-import { TOUCH } from "../words";
+import { TOUCH, VOICE } from "../words";
 
 /** One card of the review list, with the item photo of the server (or the touched-up photo the user chose). */
 function ItemCard({ it, n, touch, editId, onChange, onRemove }: {
@@ -53,6 +55,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const live = useRef(true);
   useEffect(() => () => { live.current = false; }, []);
   const removed = useRef(new Set<number>()); // items the user removed: their jobs stop
+  const talking = useRef(false); // a voice clip is out or its proposal waits
   const setOne = (item: number, t: TouchState) => live.current && setTouch((all) => ({ ...all, [item]: t }));
   const startTouch = async (item: number, photoId: string, mode: "light" | "background") => {
     const since = Date.now();
@@ -98,6 +101,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const post = async () => {
     if (busy.current || items.length === 0) return;
     if (working) return setProblem(TOUCH.wait); // a touch-up that still runs decides the photo
+    if (talking.current) return setProblem(VOICE.first); // a voice proposal is not applied or kept yet
     const pickupWrong = listingProblem("-", 1, pickup); // the pickup is for all items: no item name with it
     if (pickupWrong) return setProblem(pickupWrong);
     for (const it of items) {
@@ -200,6 +204,10 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
               </View>
             ) : fields}
           </SheetBody>
+          {items.length > 0 && !sending ? (
+            <VoiceBar items={items} pickup={pickup} onOpen={(o) => { talking.current = o; }}
+              onApply={(next, place) => { setItems(next); setPickup(place); setProblem(""); }} />
+          ) : null}
           <View accessibilityLiveRegion="polite" aria-live="polite">
             {progress ? <Muted center style={{ marginTop: space.gap }}>{progress}</Muted> : null}</View>
           <Rise i={last}>

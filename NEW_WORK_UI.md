@@ -276,3 +276,18 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Job:** the app asks for the state every 2 s, at most 2 minutes. Done: the original and the edit side by side; the original stays chosen until the user taps the edit. Kept original (the check saw a change to the food), failed, busy and the daily limit each have one line.
 - **Post:** the chosen photo posts (`photo_id` of the edit); Post waits while a touch-up runs.
 - **Open (branch services):** the listings service must take the `photo_id` of an edit (mount the touch-up folder; X35 handoff step 3).
+
+---
+
+## UI 17. Voice changes on the review
+
+**When:** Oct 29 2026.
+**Meta model:** Muse Voice Transcribe 1.0 (the clip to text) and Muse Spark 1.3 (the text to changes), through the voice service of branch `services` (`POST /api/voice`).
+**Files:** `mobile/src/screens/Voice.tsx`, `mobile/src/voice.ts`, `mobile/tests/voice.test.mts`, `mobile/src/screens/Review.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U17.md`
+
+- **Written new:** the microphone and the proposal on the review; the recording is the carried voice part (UI 1: `voicerec.ts`, a 16 kHz mono WAV made on the device).
+- **Tap to talk** (a default: T9 left hold-to-talk or tap-to-talk open): tap to start, tap again to stop; the clip stops by itself before the service limit.
+- **Proposal:** one line for each change (servings, title, remove, pickup, a question when the service was not sure); "Apply changes" or "Keep as is". A new item that was only said is not added (a listing needs a photo).
+- Nothing changes until "Apply changes", and nothing posts until Post.
+- **Native:** the recorder is a native module (expo-audio): the APK needs a new EAS build; the web needs only the web build.

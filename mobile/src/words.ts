@@ -139,3 +139,29 @@ export const TOUCH = {
   wait: "Wait for the touch-up to end, then post.",
   ofItem: (n: number) => "of item " + n,
 } as const;
+
+/** Voice changes on the review (tap to talk, tap to stop). */
+export const VOICE = {
+  say: "Say what to change",
+  start: "Start talking",
+  stop: "Stop talking",
+  listening: "Listening… Tap to stop.",
+  working: "Reading what you said…",
+  heard: (t: string) => "You said: \u201c" + t + "\u201d",
+  apply: "Apply changes",
+  keep: "Keep as is",
+  ok: "OK",
+  micOff: "Allow the microphone to talk.",
+  failed: "Could not read what you said. Try again.",
+  rename: (n: number, from: string, to: string) => "Item " + n + ": \u201c" + from + "\u201d to \u201c" + to + "\u201d",
+  servings: (n: number, from: string, to: number) => "Item " + n + ": " + from + " to " + to + " servings",
+  remove: (n: number, title: string) => "Remove item " + n + ": " + title,
+  pickup: (text: string) => "Pickup: " + text,
+  question: (text: string) => "Question: " + text,
+  notAdded: (title: string, n: number) => "Not added (a listing needs a photo): " + title + ", " + n + " servings",
+  removedBefore: "Not used: a change for an item that you removed.",
+  dropped: (text: string) => "Not used: " + text,
+  unnamed: (n: number) => "Item " + n,
+  first: "Apply or keep the voice changes first.",
+  none: "No change found in what you said.",
+} as const;

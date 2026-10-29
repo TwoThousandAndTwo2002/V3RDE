@@ -124,6 +124,7 @@ Values are font size / line height in pt.
 | `size.timePadY` | 2 | the earlier app | its padding (top, bottom) |
 | `size.loadAhead` | 320 | the earlier app | a list loads its next page when it is this near its end (pt) |
 | `size.choiceThumb` | 64 | a choice | a photo to choose on the review (the original or the touched-up photo) |
+| `size.proposalMax` | 140 | a choice (U17 check: the box took 40 % of a phone sheet) | the lines of a voice proposal scroll above this height |
 
 ## Glyphs (`glyph`)
 
@@ -142,6 +143,8 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `glyph.give` | M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z | a choice (drawn new) | a camera: the Give card of the role sheet |
 | `glyph.receive` | M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5 | a choice (drawn new) | a bowl with steam: the Receive card |
 | `glyph.menu` | M3 5.5 H17 M3 10 H17 M3 14.5 H17 | a choice (drawn new) | ☰: opens the role sheet from a screen |
+| `glyph.mic` | M10 1.5 A3 3 0 0 1 13 4.5 V10 A3 3 0 0 1 7 10 V4.5 A3 3 0 0 1 10 1.5 Z M4 9.5 A6 6 0 0 0 16 9.5 M10 15.5 V18.5 M7 18.5 H13 | a choice (drawn new) | the microphone: talk to change the review |
+| `glyph.stop` | M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z | a choice (drawn new) | stop talking |
 
 ## Shade (`shade`)
 
@@ -293,6 +296,11 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - When the edit passed the food check: "Choose the photo to post:" and two photos side by side (`size.choiceThumb`, `radius.photo`), "Original" and "Touched up"; the chosen one has a `size.focusBorder` `accent` border. The original is chosen until the user taps the edit (a radio group).
 - When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the links stay, so the user can try again.
 - Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
+
+## Voice (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`)
+
+- On the review, over the pills (`space.gap` above): the microphone (`IconBtn`, `size.iconBig`, glyph mic; glyph stop while it listens) and a `muted` line: "Say what to change", "Listening… Tap to stop.", "Reading what you said…" (with a spinner). Tap to talk, tap again to stop; the clip stops by itself before the service limit.
+- The proposal: a `card` box with a `size.border` `accent` border, `radius.card`, `space.group` padding: "You said: “…”" (2 lines at most), then one line for each change ("Item 1: 2 to 6 servings", "Remove item 3: …", "Pickup: …", "Question: …"; a new item is "Not added (a listing needs a photo): …"), the lines scroll above `size.proposalMax`; then "Keep as is" and "Apply changes" (only "OK" when nothing changes). Changes for an item removed since, and what the service did not use, show as "Not used: …". Post waits until the proposal is applied or kept. Nothing changes until "Apply changes", and nothing posts until Post.
 
 ## Mockups
 
