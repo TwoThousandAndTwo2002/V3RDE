@@ -9,6 +9,7 @@ import { LinearGradient as ShadeGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
 import { photoUrl as photoUri } from "./api";
+import { LIMITS } from "./capture";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 
 // ---------------------------------------------------------------- text
@@ -462,7 +463,8 @@ export function Toast({ text }: { text: string }): React.ReactElement {
   }, [text]);
   return (
     <View pointerEvents="none" accessibilityLiveRegion="polite" aria-live="polite"
-      style={{ position: "absolute", left: space.gutter, right: space.gutter, bottom: size.toastBottom + inset.bottom, alignItems: "center" }}>
+      style={{ position: "absolute", left: space.gutter, right: space.gutter, alignItems: "center",
+        bottom: (layoutFor(useWindowDimensions().width).dialogs ? size.toastBottomWide : size.toastBottom) + inset.bottom }}>
       {text ? (
         <Text testID="toast" style={[type.body, { color: col.bg, backgroundColor: col.fg, borderRadius: radius.round, overflow: "hidden",
           paddingHorizontal: camera.hintPadX, paddingVertical: camera.hintPadY, textAlign: "center" }]}>{text}</Text>
@@ -549,7 +551,7 @@ export function Grid({ columns, children: cards }: { columns: number; children: 
  * and − servings +. `n` is the item number (1, 2, …) for the labels. `error` shows under the rows.
  */
 export function ReviewCard({ uri, n, title, servings, error, onTitle, onServings, onRemove, onLess, onMore }: {
-  uri?: string; n: number; title: string; servings: number; error?: string;
+  uri?: string; n: number; title: string; servings: number | string; error?: string;
   onTitle?: (t: string) => void; onServings?: (t: string) => void; onRemove: () => void; onLess: () => void; onMore: () => void;
 }) {
   const col = useColors();
@@ -559,7 +561,7 @@ export function ReviewCard({ uri, n, title, servings, error, onTitle, onServings
       <Photo uri={uri} side={size.thumb} round="photo" style={{ alignSelf: "center" }} />
       <View style={{ flex: 1, gap: space.gap }}>
         <Row tight>
-          <View style={{ flex: 1 }}><Field accessibilityLabel={"Title of item " + n} value={title} onChangeText={onTitle} /></View>
+          <View style={{ flex: 1 }}><Field accessibilityLabel={"Title of item " + n} value={title} onChangeText={onTitle} maxLength={LIMITS.title} /></View>
           <IconBtn glyph="close" label={"Remove item " + n} onPress={onRemove} />
         </Row>
         <Row tight>

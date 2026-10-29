@@ -116,7 +116,8 @@ Values are font size / line height in pt.
 | `size.header` | 56 | the earlier app | the ☰ header of a phone or tablet screen |
 | `size.topBar` | 64 | the earlier app | the top bar of a wide screen (the brand, the role tabs, Log out) |
 | `size.tabPadX` | 16 | the earlier app | a role tab and the Log out button of the top bar: text to the edge (sides) |
-| `size.toastBottom` | 28 | the earlier app | a toast: its bottom to the screen bottom |
+| `size.toastBottomWide` | 28 | the earlier app | the same on a wide screen (no bottom pill there) |
+| `size.toastBottom` | 88 | the earlier app (28), raised (U15 check: the toast covered the "+ New listing" pill) | a toast: its bottom to the screen bottom (over the bottom pill of a phone screen) |
 | `size.feedPhoto` | 290 | the earlier app | the photo of a listing card on Receive |
 | `size.minePhoto` | 220 | the earlier app | the photo of a listing card on Give (Your listings) |
 | `size.timeW` | 88 | the earlier app | the time pill of a listing card (one width for every time) |
@@ -278,6 +279,12 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - The camera (the approved X25 shots): phone: full screen on `cameraBg`, ✕ at `camera.edge`, the hint pill (`Hint`), upload at `camera.side` × `camera.uploadBottom`, the shutter. Wide screen: `CardDialog` with the live picture (`camera.ratio`, `radius.card`, the shutter `camera.cardShutterBottom` from its bottom), the pills "Upload a photo" and "Cancel" `space.gutter` under it, and the hint in `muted` `space.gap` under them. On the web an image can be dropped on the window; while it is over the window the picture has a `size.focusBorder` `accent` border and the hint says "Drop to use this image".
 - After the shutter, each step is a small `Sheet` over the photo: "Use this photo?" (with "Barcode …" after a barcode read; "Try again?" with the error line after a retry answer), "Analyzing… n.n s" with the progress bar `space.bar` under it (it fills in the 75 s the app waits), and one sheet for each answer code (not food, no name for one or for several items, already listed, the daily limit). A sheet with a line has the pills `space.gutter` under it; without a line, `space.foot`.
 - Esc (web) and Back go one step back; the photo stays until Retake.
+
+## Review (`mobile/src/screens/Review.tsx`; the approved X32 mockup)
+
+- A large `Sheet` over the photo (wide: the photo at the left, `space.foot` to the fields). One item: "Your listing", the field "Title", the source line (`space.inset` under it: "From the barcode …" or "The scanner says: …"), "Servings" with − and + (`size.iconBig`), the field "Pickup details". Several items: "n items found", "Check each item. Remove what you do not want to share.", a `ReviewCard` for each item with the item photo of the server, and "Pickup details (for all items)".
+- The pills "Start over" and "Post listing" / "Post n listings" (busy: "Posting…"); while several post, "Posting i of n…" shows over them. A failed item stays with "This item did not post. It stays here."; the title says "n items not posted".
+- The form checks come before any request (`capture.ts`: title 1 to 80, servings 1 to 99, pickup 1 to 200). After the post, a toast: "Listed. It stays up for 30 minutes." or "n listings are posted. They stay up for 30 minutes."
 
 ## Mockups
 

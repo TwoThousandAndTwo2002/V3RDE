@@ -245,3 +245,19 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Give:** "+ New listing"; the flow opens by itself when nothing of the giver is up.
 - **Rules:** `capture.ts` (the timer, the bar, barcodes, the form checks, the servings stepper), with tests; `photo.ts` (the photo at the upload size).
 - The review of the found items comes in UI 15; until then a sheet shows the count.
+
+---
+
+## UI 15. The new-listing flow: the review and Post
+
+**When:** Oct 29 2026.
+**Meta model:** none in the app (the items come from the analyze route; the label report goes to `/api/analyze/labels`).
+**Files:** `mobile/src/screens/Review.tsx`, `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Give.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/docs/style_guide.md`
+**Sources:** `docs/sources/U15.md`
+
+- **Written again:** the review is new code on the U5 parts, in the layout of the approved X32 mockup; the rewrite guard finds no line of the earlier app's mobile code.
+- **One item:** "Your listing": title, the source line ("From the barcode …" or "The scanner says: …"), servings with − and +, pickup details, "Post listing". The listing uses the item photo of the server when there is one, else the photo itself.
+- **Several items:** "n items found", a card for each item (the item photo, title, ✕, − servings +), one pickup for all, "Post n listings"; the items post one after the other ("Posting i of n…"); a failed item stays with its error, and Post again sends only those.
+- **Checks:** the form checks run before any request. After the post, a toast and the list loads again.
+- **Labels:** what the user did with the answer goes to `/api/analyze/labels` one time (posted, retake or closed).
+- The toast moves up (`size.toastBottom` 88) so it does not cover the bottom pill.

@@ -11,7 +11,7 @@ import { Grid, ListingCard, Muted, Pill, Title, useNow } from "../ui";
 import NewListing from "./Capture";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
-import { GIVE, RECEIVE, servings } from "../words";
+import { GIVE, RECEIVE, postedText, servings } from "../words";
 
 export default function GiveScreen() {
   const { say, ended } = useSession();
@@ -50,7 +50,8 @@ export default function GiveScreen() {
                 time={timeText(l, RECEIVE, clockNow)} timeName={RECEIVE.timeLeft} gone={isGone(l, clockNow)} tall={false} />
             ))}</Grid>}</ScrollView>
       {page.dialogs ? null : <View style={[lane, { paddingVertical: space.item }]}>{add}</View>}
-      {capturing ? <NewListing onClose={() => { setCapturing(false); reload(); }} /> : null}
+      {capturing ? <NewListing onClose={() => { setCapturing(false); reload(); }}
+        onPosted={(n) => { setCapturing(false); say(postedText(n)); reload(); }} /> : null}
     </View>
   );
 }

@@ -119,7 +119,8 @@ export const size = {
   header: 56,        // the ☰ header of a phone or tablet screen
   topBar: 64,        // the top bar of a wide screen (the brand, the role tabs, Log out)
   tabPadX: 16,       // a role tab and the Log out button of the top bar: text to the edge (sides)
-  toastBottom: 28,   // a toast: its bottom to the screen bottom
+  toastBottom: 88,   // a toast: its bottom to the screen bottom (over the bottom pill of a phone screen)
+  toastBottomWide: 28, // the same on a wide screen (no bottom pill there)
   feedPhoto: 290,    // the photo of a listing card on Receive
   minePhoto: 220,    // the photo of a listing card on Give (Your listings)
   timeW: 88,         // the time pill of a listing card (one width for every time)

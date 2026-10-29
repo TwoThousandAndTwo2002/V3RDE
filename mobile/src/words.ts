@@ -105,3 +105,21 @@ export const CAPTURE = {
   pausedLine: "The scanner reached the limit for today. A barcode still works.",
   closeFlow: "Close",
 } as const;
+
+/** The review of the found items (the approved X32 words, made simpler). */
+export const REVIEW = {
+  one: "Your listing",
+  check: "Check each item. Remove what you do not want to share.",
+  title: "Title",
+  servings: "Servings",
+  fewer: "Fewer servings",
+  more: "More servings",
+  pickup: "Pickup details",
+  pickupAll: "Pickup details (for all items)",
+  pickupHint: "Where to collect, for example Lobby of 12 Main St",
+  startOver: "Start over",
+  post: "Post listing",
+  posting: "Posting…",
+  notPosted: "This item did not post. It stays here.",
+  nonePosted: "No item posted. Try again.",
+} as const;

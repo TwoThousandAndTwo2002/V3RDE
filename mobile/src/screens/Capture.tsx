@@ -2,14 +2,14 @@
 // approved X25 and X32 mockups). The camera: full screen on a phone; a card dialog with "Upload a photo" and
 // drag-and-drop on a wide screen. It reads retail barcodes; a read takes the photo. After the shutter every step is
 // a sheet over the photo: "Use this photo?", "Analyzing… n.n s", and a sheet for each answer code. The photo is
-// always kept until Retake. The review of the found items comes in UI 15.
+// always kept until Retake. Then the review of the found items (Review.tsx, UI 15), and Post.
 import { useEffect, useRef, useState } from "react";
 import { Modal, StyleSheet, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
 import { CameraView, useCameraPermissions as useCameraAccess, type BarcodeScanningResult, type BarcodeType } from "expo-camera";
 import * as Picker from "expo-image-picker";
 import { ApiError, analyze, type Upload } from "../api";
-import { analyzeKind, answerToItems, foundTitle, retryText, type AnalyzeKind, type ItemForm } from "../logic";
+import { analyzeKind, answerToItems, retryText, type AnalyzeKind, type ItemForm } from "../logic";
 import { SHOT_QUALITY, analyzeShare, barcodeOf, elapsedText } from "../capture";
 import { asUri, fromBlob, fromUri } from "../photo";
 import { freeze, raise, still, unfreeze, videoIn, videoState } from "../webcam";
@@ -17,6 +17,7 @@ import { camera, layoutFor, radius, size, space, useColors } from "../theme";
 import { CameraBtn, CardDialog, ErrorText, Hint, Muted, Pill, Progress, Rise, Row, Sheet, Shutter, TextLink, Title } from "../ui";
 import { useSession } from "../session";
 import { CAPTURE } from "../words";
+import Review from "./Review";
 
 /** The retail barcodes the catalog knows (EAN and UPC). */
 const CODES: BarcodeType[] = ["ean13", "ean8", "upc_a", "upc_e"];
@@ -59,11 +60,7 @@ function Choice({ photo, title, line, left, right, testID }: {
   );
 }
 
-export default function Capture({ onClose, review }: {
-  onClose: () => void;
-  /** UI 15: the review of the found items; without it a placeholder sheet shows the count. */
-  review?: (answer: Answer, shot: Upload, startOver: () => void) => React.ReactNode;
-}) {
+export default function Capture({ onClose, onPosted }: { onClose: () => void; onPosted: (n: number) => void }) {
   const col = useColors();
   const { ended } = useSession();
   const page = layoutFor(useWindowDimensions().width);
@@ -190,7 +187,9 @@ export default function Capture({ onClose, review }: {
   };
 
   // Back (phone) and Esc (web: the Modal gives it) go one step back; not while the photo is analyzed
+  const posting = useRef(false); // the review posts its listings: Back and Esc wait
   const back = () => {
+    if (posting.current) return;
     if (!shot) onClose();
     else if (step.kind !== "busy") startOver();
   };
@@ -214,10 +213,8 @@ export default function Capture({ onClose, review }: {
   if (shot) {
     const photo = shot.uri;
     if (step.kind === "found") {
-      body = review ? review(step.answer, shot, startOver) : (
-        <Choice testID="found" photo={photo} title={foundTitle(step.answer.items.length)} line=""
-          left={[CAPTURE.retake, startOver]} right={[CAPTURE.closeFlow, onClose]} />
-      );
+      body = <Review answer={step.answer} shot={shot} barcode={code} onStartOver={startOver} onPosted={onPosted}
+        onBusy={(b) => { posting.current = b; }} />;
     } else if (step.kind === "busy") {
       body = <Sheet testID="analyzing" kind="small" photo={photo}><Analyzing since={step.since} /></Sheet>;
     } else if (step.kind === "not_food") {
