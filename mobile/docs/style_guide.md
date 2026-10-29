@@ -268,6 +268,10 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - More listings load when the list is `size.loadAhead` from its end, and at once while the cards do not fill the screen; on a phone, pull down to load again. Empty: "Nothing is offered now. Look again in a few minutes."
 - After Grab: a small `Sheet` over the listing photo: "You grabbed it", the title and the pickup text, and the pills "Maps" (a map search) and "WhatsApp" (a message to the giver). The ✕, a tap on the photo, Esc or Back closes it. A listing that someone took first (409) shows as collected, with a toast.
 
+## Give (`mobile/src/screens/Give.tsx`)
+
+- "Your listings" with the same layout as Receive; the listing card has the photo `size.minePhoto` tall and only the title, the servings and the time pill. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
+
 ## Mockups
 
 A new or changed screen is shown to T9 before its code change: rendered from the real parts in a copy of the app, exported for the web and captured with Playwright (phone 390 × 844 at 3×, desktop 1440 × 900 at 2×), with real photos. The review page shows phone shots at true size. Nothing is drawn by hand, and nothing is stretched. An independent check compares the shots with the approved shots.

@@ -1,7 +1,7 @@
 // Tests of the app words (src/words.ts), written new for V3RDE (NEW_WORK_UI.md, UI 10).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { RECEIVE, ROLE, grabMessage, roleCard, servings } from "../src/words.ts";
+import { GIVE, RECEIVE, ROLE, grabMessage, postedText, roleCard, servings } from "../src/words.ts";
 
 test("the role sheet uses the words T9 agreed", () => {
   assert.equal(ROLE.title, "What do you want to do?");
@@ -21,4 +21,10 @@ test("the Receive words", () => {
   assert.equal(grabMessage({ title: "Pasta", number_of_serving: 6, pickup_text: "Back door" }, "sam@example.com"),
     'Hi! I grabbed "Pasta" on V3RDE (6 servings). Pickup: Back door. I am sam@example.com. When can I come?');
   for (const v of Object.values(RECEIVE)) assert.ok(v.split(/\s+/).length <= 20, v);
+});
+
+test("the Give words", () => {
+  assert.equal(GIVE.title, "Your listings");
+  assert.equal(postedText(1), "Listed. It stays up for 30 minutes.");
+  assert.equal(postedText(3), "3 listings are posted. They stay up for 30 minutes.");
 });

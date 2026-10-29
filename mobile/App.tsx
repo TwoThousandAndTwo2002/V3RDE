@@ -12,17 +12,18 @@ import { useFonts as useFontFiles } from "expo-font";
 import { Poppins_400Regular as regularFile } from "@expo-google-fonts/poppins/400Regular";
 import { Poppins_600SemiBold as semiboldFile } from "@expo-google-fonts/poppins/600SemiBold";
 import { auth, type User as Account } from "./src/api";
-import { font, layoutFor, motion, space, useColors } from "./src/theme";
-import { Muted, Title, Toast } from "./src/ui";
+import { font, layoutFor, motion, useColors } from "./src/theme";
+import { Toast } from "./src/ui";
 import { Doodles as Wallpaper } from "./src/doodles";
 import { resetToken } from "./src/signin";
-import { FRAME, roleCard, type RoleName } from "./src/words";
+import { FRAME, type RoleName } from "./src/words";
 import { SessionContext, type Session } from "./src/session";
 import SignIn from "./src/screens/Login";
 import { ForgotPassword, NewPassword } from "./src/screens/Reset";
 import { RoleSheet } from "./src/screens/Role";
 import { Frame } from "./src/screens/Frame";
 import ReceiveScreen from "./src/screens/Receive";
+import GiveScreen from "./src/screens/Give";
 
 /** Where the role sheet is: over the auth screen it came from (phone), over the doodles, or over the doodles
  *  after the wide-screen handoff (no dim). */
@@ -44,16 +45,8 @@ async function openingToken(): Promise<string> {
   return resetToken(await Linking.getInitialURL());
 }
 
-/** The screen of a role. The Give screen comes in the next change; until then a title. */
-function RoleScreen({ who, role }: { who: Account; role: RoleName }) {
-  if (role === "receive") return <ReceiveScreen />;
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: space.gutter, gap: space.gap }}>
-      <Title center>{roleCard(role).title}</Title>
-      <Muted center>{who.email}</Muted>
-    </View>
-  );
-}
+/** The screen of a role. */
+const RoleScreen = ({ role }: { role: RoleName }) => (role === "receive" ? <ReceiveScreen /> : <GiveScreen />);
 
 const Shell = () => {
   const [ready] = useFontFiles({ [font.regular]: regularFile, [font.semibold]: semiboldFile });
@@ -127,7 +120,7 @@ const Shell = () => {
       {ready && stage.kind === "in" && session ? (
         <SessionContext.Provider value={session}>
           <Frame role={stage.role} onRole={session.goTo} onMenu={() => setStage({ ...stage, menu: true })} onLogout={logout}>
-            <RoleScreen who={stage.who} role={stage.role} /></Frame>
+            <RoleScreen role={stage.role} /></Frame>
         </SessionContext.Provider>
       ) : null}
       {ready && stage.kind === "role" ? (

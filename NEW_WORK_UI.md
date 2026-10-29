@@ -216,3 +216,16 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Grab:** one request at a time; then a small sheet over the listing photo, "You grabbed it", with "Maps" (a map search) and "WhatsApp" (a message to the giver). A listing that someone took first (409) shows as collected, with a toast. The user's own listings show "Your listing" and no Grab.
 - **Parts:** `ListingCard`, `TimePill`, `Grid`, `usePhoto`, `useNow`; the `Sheet` part gets a ✕ (`onClose`) and keeps clear of the home bar.
 - **Rules:** `listing.ts` (time left, gone, pages without doubles, links, camera first), with tests.
+
+---
+
+## UI 13. The Give screen: Your listings
+
+**When:** Oct 29 2026.
+**Meta model:** none.
+**Files:** `mobile/src/screens/Give.tsx`, `mobile/App.tsx`, `mobile/src/words.ts`, `mobile/tests/words.test.mts`, `mobile/docs/style_guide.md`
+**Sources:** `docs/sources/U13.md`
+
+- **Written again:** Give is new code on the U12 card and grid; the rewrite guard finds no line of the earlier app's mobile code.
+- **Your listings:** the giver's listings (`GET /api/listings/mine`), photo first in 1, 2 or 3 columns, with the live time pill; a listing that is gone is faint. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
+- The new-listing flow (camera, scan, review, post) comes in UI 14 and UI 15.

@@ -58,3 +58,16 @@ export function servings(n: number): string {
 export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string }, email: string): string {
   return `Hi! I grabbed "${l.title}" on V3RDE (${servings(l.number_of_serving)}). Pickup: ${l.pickup_text}. I am ${email}. When can I come?`;
 }
+
+/** The Give screen: the listings of the giver. */
+export const GIVE = {
+  title: "Your listings",
+  loading: "Loading…",
+  empty: "Nothing is listed yet. Take a photo of a meal to share it.",
+  add: "+ New listing",
+} as const;
+
+/** The toast after a post: one listing or several. */
+export function postedText(n: number): string {
+  return n > 1 ? n + " listings are posted. They stay up for 30 minutes." : "Listed. It stays up for 30 minutes.";
+}
