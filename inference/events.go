@@ -81,6 +81,8 @@ type Event struct {
 	// X32g: what the user did with the answer (step "labels"; request_id =
 	// the analyze request it labels). The truth for tuning thresholds.
 	Labels *LabelSet `json:"labels,omitempty"`
+	// X41a: the item photo bundle (step "photos_bundle"; no image bytes)
+	Bundle *BundleStat `json:"bundle,omitempty"`
 }
 
 // LabelSet is the app's report on one answer (X32g, T9 2026-10-27: "we are

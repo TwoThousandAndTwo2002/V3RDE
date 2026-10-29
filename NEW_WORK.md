@@ -579,3 +579,17 @@ The deploy files (the compose file, the edge configuration and the stack script)
 - New: each image has its own build stamp (the last commit that changed its code). A deploy that does not change an image keeps it, and its telemetry shows the commit it really runs.
 - Until the app (ui branch) is merged, `/` shows a holding page; all API routes are live.
 - Checked: the edge configuration was validated with Caddy 2.8.4 and tested with false address headers on each route.
+
+## 32. All item photos of one scan in one call
+
+**When:** Oct 29 2026.
+**Meta model:** none (it serves the item photos of a Muse Spark + SAM 3.1 answer).
+**Files:** `inference/bundle.go`, `inference/bundle_test.go` (new); `inference/service.go`, `inference/events.go` (the route and the event); `docs/analyze_photos_api.md` (new)
+**Sources:** `docs/sources/X41a.md`
+
+After a scan with several items, the app can now get every item photo in one call (`POST /api/analyze/photos`), already made small (800 px, about 40 KB each), instead of one call per item.
+
+- Each photo must belong to the caller and to that scan; if one does not, the call gives "not found".
+- The photos are made small at the same time on the CPU cores of the box, and are turned upright; a repeat call comes from a cache.
+- An independent review found 8 defects; all are fixed.
+- Tests: inference 72 (10 new).

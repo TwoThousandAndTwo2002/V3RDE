@@ -13,7 +13,8 @@ package inference
 //	answer + one event line (every exit)
 //
 // GET /v1/analyze/photo/{id} and /api/analyze/photo/{id} serve an item
-// photo to its owner (the app's review list).
+// photo to its owner (the app's review list). X41a: POST .../photos gives
+// every item photo of one answer in one call (bundle.go).
 
 import (
 	"bytes"
@@ -145,7 +146,12 @@ func NewService(c ServiceConfig) http.Handler {
 	for _, p := range []string{"/v1/analyze", "/api/analyze"} {
 		mux.HandleFunc(p, c.analyze)
 		mux.HandleFunc("GET "+p+"/photo/{id}", c.photo)
-		mux.HandleFunc("POST "+p+"/labels", c.labels) // X32g
+		mux.HandleFunc("POST "+p+"/labels", c.labels)                                         // X32g
+		mux.HandleFunc("POST "+p+"/photos", c.photos)                                         // X41a: every item photo of one answer
+		mux.HandleFunc("OPTIONS "+p+"/photos", func(w http.ResponseWriter, _ *http.Request) { // its CORS preflight
+			c.cors(w)
+			w.WriteHeader(http.StatusNoContent)
+		})
 	}
 	return mux
 }
