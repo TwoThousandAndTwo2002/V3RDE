@@ -22,7 +22,7 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
   const passwordBox = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const submit = async (mode: "login" | "signup") => {
-    if (busy.current) return;
+    if (busy.current || leaving) return; // not again from under the role sheet
     setProblem("");
     setUnknown(false);
     const wrong = formProblem(email, password);

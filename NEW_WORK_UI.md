@@ -169,3 +169,18 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Behaviour:** one request at a time; the links do nothing while a request waits; the cursor starts in the new-password field; "Check your email" is read out by a screen reader; a start error does not leave a blank screen, and a link that comes during start wins.
 - **Check:** one independent check (T9: at most one, at most 15 minutes) found 5 issues; all are fixed and checked in the real app.
 - Tests: mobile 49 (46 + 3 new).
+
+---
+
+## UI 10. The role sheet
+
+**When:** Oct 29 2026.
+**Meta model:** none.
+**Files:** `mobile/src/screens/Role.tsx`, `mobile/src/words.ts`, `mobile/tests/words.test.mts`, `mobile/App.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`, `mobile/package-lock.json`
+**Sources:** `docs/sources/U10.md`
+
+- **Written again:** the role sheet is new code on the U5 parts. The rewrite guard finds no line of the earlier app's mobile code.
+- **Words (T9, Oct 29: the earlier words, made simpler):** "What do you want to do?", Give "Share your food", Receive "Find food near you", "Log out". They are in `words.ts`, with tests.
+- **Parts:** `Popup`, a sheet over the screen on view (a dim layer that fades in, a tap on it or Esc closes it when the sheet can close); the glyphs give (a camera), receive (a bowl) and menu (☰), drawn new.
+- **When it shows:** right after sign-in on a phone (over the sign-in screen); right after sign-in on a wide screen (the sign-in card fades out, then the role dialog rises over the doodles, no dim); at start with a session (over the doodles). Until the Give and Receive screens come (UI 12, UI 13), a role shows its name and a pill that opens the sheet again.
+- **react-native 0.88.0 → 0.88.1:** Expo SDK 58 (expo 58.0.21, Oct 28) now expects react-native 0.88.1, and `expo install --check` fails on 0.88.0 (the first U10 run on Oct 29 stopped there). The lock file changes only the react-native packages.

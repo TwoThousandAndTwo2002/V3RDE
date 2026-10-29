@@ -1,6 +1,6 @@
 // V3RDE shared UI parts, written new for V3RDE (NEW_WORK_UI.md, UI 5; mobile/docs/style_guide.md).
 // Every colour, size and font comes from theme.ts (tests/style.test.mts checks it).
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef as useBox, useState } from "react";
 import * as RN from "react-native";
 import { ActivityIndicator, Animated, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from "react-native";
@@ -50,11 +50,16 @@ export function ErrorText({ children, center, lines, style }: {
 
 // ---------------------------------------------------------------- icons and buttons
 
-export type Glyph = "close" | "minus" | "plus" | "upload";
+export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu";
 
-/** A line glyph (close ✕, minus −, plus +, upload): one SVG path with round ends, in its own square box. */
+/** The square box of each glyph (pt). */
+const GLYPH_BOX: Record<Glyph, number> = {
+  close: glyph.box, minus: glyph.box, plus: glyph.box, upload: glyph.uploadBox, give: glyph.iconBox, receive: glyph.iconBox, menu: glyph.iconBox,
+};
+
+/** A line glyph (close ✕, minus −, plus +, upload, give, receive, menu ☰): one SVG path with round ends, in its own square box. */
 export function GlyphIcon({ name, color }: { name: Glyph; color: string }) {
-  const box = name === "upload" ? glyph.uploadBox : glyph.box;
+  const box = GLYPH_BOX[name];
   return (
     <Svg width={box} height={box} viewBox={`0 0 ${box} ${box}`} accessible={false}>
       <Path d={glyph[name]} stroke={color} strokeWidth={glyph.stroke} strokeLinecap="round" strokeLinejoin="round" fill="none" />
@@ -297,6 +302,97 @@ export function Sheet({ kind, wide, photo, children, testID }: {
         minHeight: large ? undefined : size.sheetSmall, transform: [{ translateY: shift }] }}>
         <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
           style={{ flexShrink: 1, flexGrow: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot }}>
+          <View style={{ alignSelf: "center", width: size.handleW, height: size.handleH, borderRadius: radius.round,
+            backgroundColor: col.handle, marginTop: size.handleTop, marginBottom: space.gutter }} />
+          {children}
+        </Frost></Animated.View>
+    </View>
+  );
+}
+
+/** The props that make a view a modal dialog for screen readers (iOS: accessibilityViewIsModal; web: dialog). */
+const MODAL = { accessibilityViewIsModal: true, role: "dialog" as const, "aria-modal": true };
+
+/**
+ * Web: the focus goes into `el` and Tab and Shift+Tab stay in it (a modal dialog, WAI-ARIA APG). Returns the
+ * function that ends it and gives the focus back.
+ */
+function trapFocus(el: HTMLElement | null): (() => void) | undefined {
+  if (!el || typeof document === "undefined") return undefined;
+  const before = document.activeElement as HTMLElement | null;
+  const inside = () => Array.from(el.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, input, textarea, a[href]'));
+  before?.blur?.();
+  const first = inside()[0];
+  first?.focus?.();
+  const tab = (e: KeyboardEvent) => {
+    if (e.key !== "Tab") return;
+    const all = inside();
+    if (all.length === 0) return;
+    const at = all.indexOf(document.activeElement as HTMLElement);
+    const next = e.shiftKey ? (at <= 0 ? all.length - 1 : at - 1) : (at === -1 || at === all.length - 1 ? 0 : at + 1);
+    e.preventDefault();
+    all[next].focus();
+  };
+  document.addEventListener("keydown", tab, true);
+  return () => { document.removeEventListener("keydown", tab, true); before?.focus?.(); };
+}
+
+/**
+ * A sheet over the screen on view (the role sheet). Behind it: `scrimDim` (it fades in in `motion.dimMs`), or no
+ * dim with `dim={false}`. Compact width: a bottom sheet with the grab bar, `size.sheetMedium` of the screen height.
+ * Wide: a centred dialog, `size.dialogSmall` wide. With `onDismiss`, a tap on the dim layer or Esc (web) closes it.
+ */
+export function Popup({ dim = true, onDismiss, dismissName, children, testID }: {
+  dim?: boolean; onDismiss?: () => void; dismissName?: string; children: React.ReactNode; testID?: string;
+}) {
+  const { width, height } = useWindowDimensions();
+  const dialogs = layoutFor(width).dialogs;
+  const col = useColors();
+  const [rise] = useState(() => new Animated.Value(0));
+  const [fade] = useState(() => new Animated.Value(0));
+  useEffect(function riseIn() {
+    Animated.spring(rise, { toValue: 1, useNativeDriver: true, bounciness: motion.sheetBounce, speed: motion.sheetSpeed }).start();
+    Animated.timing(fade, { toValue: 1, duration: motion.dimMs, useNativeDriver: true }).start();
+  }, [rise, fade]);
+  const box = useBox<React.ComponentRef<typeof View>>(null);
+  useEffect(function escCloses() {
+    if (RN.Platform.OS !== "web" || !onDismiss) return;
+    const escape = (e: KeyboardEvent) => e.key === "Escape" && onDismiss();
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, [onDismiss]);
+  useEffect(function backCloses() {
+    if (RN.Platform.OS === "web" || !onDismiss) return;
+    const sub = RN.BackHandler.addEventListener("hardwareBackPress", () => { onDismiss(); return true; });
+    return () => sub.remove();
+  }, [onDismiss]);
+  useEffect(function focusStaysIn() {
+    if (RN.Platform.OS !== "web") return;
+    return trapFocus(box.current as unknown as HTMLElement | null);
+  }, []);
+  const shift = rise.interpolate({ inputRange: [0, 1], outputRange: [height * motion.sheetShift, 0] });
+  const tapOut = onDismiss ? (
+    <Pressable accessibilityRole="button" accessibilityLabel={dismissName} onPress={onDismiss} style={StyleSheet.absoluteFill} />
+  ) : null;
+  const layer = dim ? <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: col.scrimDim, opacity: fade }]} /> : null;
+  if (dialogs) {
+    return (
+      <View testID={testID} style={StyleSheet.absoluteFill}>
+        {layer}{tapOut}
+        <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }]}>
+          <Animated.View ref={box} {...MODAL} style={{ width: Math.min(size.dialogSmall, width - 2 * space.gutter), transform: [{ translateY: shift }] }}>
+            <Frost round={{ borderRadius: radius.sheet }} style={{ padding: space.pad }}>{children}</Frost></Animated.View>
+        </View>
+      </View>
+    );
+  }
+  return (
+    <View testID={testID} style={StyleSheet.absoluteFill}>
+      {layer}{tapOut}
+      <Animated.View ref={box} {...MODAL} style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(height * size.sheetMedium),
+        maxHeight: Math.round(height * size.sheetLarge), transform: [{ translateY: shift }] }}>
+        <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
+          style={{ flex: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot }}>
           <View style={{ alignSelf: "center", width: size.handleW, height: size.handleH, borderRadius: radius.round,
             backgroundColor: col.handle, marginTop: size.handleTop, marginBottom: space.gutter }} />
           {children}

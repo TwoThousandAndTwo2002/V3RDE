@@ -101,6 +101,7 @@ Values are font size / line height in pt.
 | `size.handleTop` | 10 | X32 | sheet top to the grab bar |
 | `size.sheetLarge` | 0.85 | X32: the sheet starts at 127 of 844 pt | a large phone sheet is as tall as its content, but at most this share of the screen height (rounded to a whole pt) |
 | `size.sheetSmall` | 210 | X25: the small sheet starts at 634 of 844 pt | a small phone sheet is at least this tall; its content starts at the top |
+| `size.sheetMedium` | 0.44 | the earlier app (the role sheet) | a medium phone sheet (the role sheet): this share of the screen height |
 | `size.dialogWide` | 860 | X32: 860 | a dialog with the photo on the left |
 | `size.dialogSmall` | 440 | X32: 440 | a dialog with a title, a line and two pills |
 | `size.dialogCamera` | 640 | X25: 640 | the camera dialog on a wide screen (a 4:3 photo, 608 pt wide) |
@@ -119,11 +120,15 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 |---|---|---|---|
 | `glyph.box` | 12 | X32: ✕ and + 11.5–11.7 (ink), − 12.0 wide | the box of close, minus and plus |
 | `glyph.uploadBox` | 15 | X25: 15.0 × 15.1 (ink) | the box of upload |
+| `glyph.iconBox` | 20 | a choice (the earlier app's icon size) | the box of give, receive and menu |
 | `glyph.stroke` | 1.67 | X32: − 1.68 pt (phone), 1.65 pt (desktop) | the line width |
 | `glyph.close` | M0.835 0.835 L11.165 11.165 M11.165 0.835 L0.835 11.165 | X32 | ✕ (remove an item; close the camera) |
 | `glyph.minus` | M0.835 6 H11.165 | X32 | − (fewer servings) |
 | `glyph.plus` | M0.835 6 H11.165 M6 0.835 V11.165 | X32 | + (more servings) |
 | `glyph.upload` | M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11 | X25 | upload: an arrow up over an open tray with round bottom corners |
+| `glyph.give` | M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z | a choice (drawn new) | a camera: the Give card of the role sheet |
+| `glyph.receive` | M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5 | a choice (drawn new) | a bowl with steam: the Receive card |
+| `glyph.menu` | M3 5.5 H17 M3 10 H17 M3 14.5 H17 | a choice (drawn new) | ☰: opens the role sheet from a screen |
 
 ## Shade (`shade`)
 
@@ -163,6 +168,7 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `motion.sheetShift` | 0.2 | Choice | a sheet starts this share of the window height below its place |
 | `motion.handoffMs` | 300 | Ref-login | wide screens: the sign-in card fades out in this time after sign-in |
 | `motion.handoffLift` | 40 | Ref-login | and rises this far (pt) |
+| `motion.dimMs` | 250 | the earlier app | the dim layer behind a sheet over a screen fades in in this time |
 
 ## Doodles (`doodle`)
 
@@ -228,6 +234,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 - Ask: "Reset your password", "We send a link to your email", the email field, the pill "Send link" (busy: "Sending…"), and the TextLink "Back to sign in" `space.gutter` under the field. Then "Check your email" with "If an account uses <email>, a link to set a new password is on its way. It works for 30 minutes." and the pill "Back to sign in". The same answer for every email.
 - The link (web `/reset#token=…`, app `v3rde://reset#token=…`: after - The layout is `AuthFrame`, the same as sign-in.
+
+## Role sheet (`mobile/src/screens/Role.tsx`, words in `mobile/src/words.ts`)
+
+- A `Popup` (a sheet over the screen on view): `scrimDim` behind it (it fades in in `motion.dimMs`), then the frosted layer. Phone: a bottom sheet with the grab bar, `size.sheetMedium` of the screen height. Wide screen: a centred dialog, `size.dialogSmall` wide, `space.pad` padding, `radius.sheet`.
+- "What do you want to do?" (`type.title`), then two role cards `space.gutter` under it and `space.item` apart, then the secondary pill "Log out" `space.gutter` under them. The rows rise one after the other (`Rise`).
+- A role card: `card`, `size.border` `line` (`accent` when it is the role on view or under the mouse), `radius.card`, `space.group` padding and gap; a `size.iconBig` disc in `accentSoft` with the glyph in `accent`; the name (`type.button`) over a `muted` line. Give: a camera, "Share your food". Receive: a bowl, "Find food near you".
+- When it shows: right after sign-in on a phone (over the sign-in screen, which stays under the dim); right after sign-in on a wide screen (the sign-in card fades out, then the role dialog rises over the doodles with no dim); when the app opens with a session (over the doodles, with the dim); from ☰ on a screen (then a tap on the dim, Esc or Back closes it).
 
 ## Mockups
 

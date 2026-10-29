@@ -103,6 +103,7 @@ export const size = {
   handleTop: 10,     // sheet top to the grab bar
   sheetLarge: 0.85,  // a large phone sheet: at most this share of the screen height (else as tall as its content)
   sheetSmall: 210,   // a small phone sheet: at least this tall (its content starts at the top)
+  sheetMedium: 0.44, // a medium phone sheet (the role sheet): this share of the screen height
   dialogWide: 860,   // a dialog with the photo on the left
   dialogSmall: 440,  // a dialog with a title, a line and two pills
   dialogCamera: 640, // the camera dialog on a wide screen (a 4:3 photo, 608 pt wide)
@@ -121,10 +122,14 @@ export const size = {
 export const glyph = {
   box: 12,         // the square box of close, minus and plus
   uploadBox: 15,   // the square box of upload
+  iconBox: 20,     // the square box of give (a camera), receive (a bowl) and menu
   stroke: 1.67,    // the line width
   close: "M0.835 0.835 L11.165 11.165 M11.165 0.835 L0.835 11.165",
   minus: "M0.835 6 H11.165",
   plus: "M0.835 6 H11.165 M6 0.835 V11.165",
+  give: "M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z",
+  receive: "M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5",
+  menu: "M3 5.5 H17 M3 10 H17 M3 14.5 H17",
   upload: "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
 } as const;
 
@@ -177,6 +182,7 @@ export const motion = {
   sheetShift: 0.2,  // a sheet starts this share of the window height below its place
   handoffMs: 300,   // wide screens: the sign-in card fades out in this time after sign-in
   handoffLift: 40,  // and rises this far (pt)
+  dimMs: 250,       // the dim layer behind a sheet over a screen fades in in this time
 } as const;
 
 /**

@@ -68,7 +68,7 @@ export function NewPassword({ token, onSignedIn, onAgain, leaving }: {
   const [waiting, setWaiting] = useState(false);
   const busy = useRef(false);
   const save = async () => {
-    if (busy.current) return;
+    if (busy.current || leaving) return; // not again from under the role sheet
     setProblem("");
     setExpired(false);
     if (fresh.length < MIN_PASSWORD) return setProblem(RESET.short);
