@@ -20,6 +20,9 @@ change. The original is always kept and stays the default.
 
 ```
 POST /api/touchup?mode=light|background&photo_id=<32 hex>    session cookie, no body
+POST /v1/touchup?...  (same query)                           bearer token, no body (X42e);
+     photo_id = an item photo from /v1/analyze (a bearer photo); the job and
+     its photos are then read with /v1/touchup/{id}... and the token
      photo_id = an item photo from the analyze run that the caller owns
   -> 202 {"request_id", "touchup_id", "status": "running", "mode"}
 
@@ -32,8 +35,13 @@ GET /healthz
 
 **Only photo_id (X36a, T9).** The donor taps the touch-up button on the review
 list after the analyze run, so the photo has passed the food gate and is
-upright before any paid call. No upload and no bearer route: the analyze token
-is public (it is in the app bundle).
+upright before any paid call. No upload.
+
+**Bearer route (X42e, T9 2026-10-29).** `/v1/touchup...` (and `/v1/voice`) are
+a second way in, for outside callers with the bearer token. `/v1` takes only
+the token and `/api` only the session; a bearer caller can use only photos from
+`/v1/analyze`, and only bearer callers see a bearer job. The token is the
+analyze token, so the daily caps ($2 touch-up, $1 voice) limit what it can spend.
 
 **The button is only on vision items** (T9, 2026-10-28): an item with
 `source: "barcode"` gets no touch-up button, because its listing image is the

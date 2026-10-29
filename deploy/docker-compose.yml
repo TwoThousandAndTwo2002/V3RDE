@@ -110,11 +110,13 @@ services:
     <<: *post
     entrypoint: ["/touchup"]
     command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
+              "-token-file", "/run/secrets/analyze_token",   # X42e: /v1/touchup for the bearer token
               "-item-photos", "/item-photos", "-dir", "/data", "-events", "/events",
               "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-trust-forwarded"]
     mem_limit: 256m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/touchup:/events

@@ -1,7 +1,8 @@
 // Command touchup runs the photo touch-up service (X35a): Muse Image 1.0
 // edits, Muse Spark 1.3 checks, the original is always kept. Secrets are
-// files (read-only mounts), never flags or environment. The only caller is
-// the app's session (X36a): the photo is an analyze item photo (photo_id).
+// files (read-only mounts), never flags or environment. Callers: the app's
+// session (/api/touchup) and, X42e, the bearer token (/v1/touchup); the photo
+// is always an analyze item photo (photo_id) of that caller.
 //
 //	touchup -listen 0.0.0.0:8088 -key-file /run/secrets/meta_key \
 //	        -auth http://auth:8081 -item-photos /item-photos -dir /data \
@@ -17,6 +18,7 @@ import (
 	"time"
 
 	"github.com/TwoThousandAndTwo2002/Icarus/post"
+	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
 var build = "dev" // -ldflags "-X main.build=<git sha>"
@@ -25,6 +27,7 @@ func main() {
 	listen := flag.String("listen", "127.0.0.1:8088", "address to listen on")
 	keyFile := flag.String("key-file", "/run/secrets/meta_key", "file holding the Meta Model API key")
 	authURL := flag.String("auth", "", "auth base URL (the app's session cookie); required")
+	tokenFile := flag.String("token-file", "", "file holding the bearer token (analyze's) for /v1/touchup; empty = no bearer route")
 	base := flag.String("base", post.DefaultBase, "Meta Model API base URL")
 	imageModel := flag.String("image-model", post.DefaultImage, "Muse Image model id")
 	imageReasoning := flag.String("image-reasoning", "", "reasoning_strength for the edit (high|low); empty = API default")
@@ -60,12 +63,21 @@ func main() {
 		log.Fatalf("-dir %s is not writable: %v", *dir, err)
 	}
 	_ = os.Remove(probe)
+	var bearer *analyze.Bearer
+	if *tokenFile != "" {
+		token, err := post.ReadSecret(*tokenFile, "bearer token")
+		if err != nil {
+			log.Fatal(err)
+		}
+		bearer = analyze.NewBearer(token)
+	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
 	hc := &http.Client{Timeout: *jobTimeout}
 	cfg := &post.TouchupConfig{
 		Editor:      &post.ImageEditor{Base: *base, Key: key, Model: *imageModel, Reasoning: *imageReasoning, HTTP: hc},
 		Session:     &post.AuthClient{URL: *authURL},
+		Auth:        bearer,
 		Limiter:     post.NewLimiter(*burst, *window),
 		Budget:      budget,
 		Events:      ev,
@@ -80,7 +92,7 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: post.NewTouchup(cfg), ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("icarus-touchup listening on %s image=%s check=%v auth=%s item-photos=%q dir=%s cap=$%.2f spent_today=$%.4f build=%s (key %d bytes)",
-		*listen, *imageModel, !*noCheck, *authURL, *itemPhotos, *dir, *capUSD, budget.Spent(), build, len(key))
+	log.Printf("icarus-touchup listening on %s image=%s check=%v auth=%s bearer=%v item-photos=%q dir=%s cap=$%.2f spent_today=$%.4f build=%s (key %d bytes)",
+		*listen, *imageModel, !*noCheck, *authURL, bearer != nil, *itemPhotos, *dir, *capUSD, budget.Spent(), build, len(key))
 	log.Fatal(srv.ListenAndServe())
 }

@@ -45,9 +45,11 @@
 		}
 	}
 
-	# The post services (session cookie). Touch-up, rescue and fan-out take
-	# small JSON bodies; voice takes one WAV of at most 12 MB (60 s).
-	@touchup path /api/touchup /api/touchup/*
+	# The post services. /api/... = the session cookie; touch-up and voice
+	# also have /v1/... for the bearer token (X42e, T9 2026-10-29: a second way
+	# in for outside callers). Touch-up, rescue and fan-out take small JSON
+	# bodies; voice takes one WAV of at most 12 MB (60 s).
+	@touchup path /api/touchup /api/touchup/* /v1/touchup /v1/touchup/*
 	handle @touchup {
 		request_body {
 			max_size 64KB
@@ -72,7 +74,8 @@
 			import caller
 		}
 	}
-	handle /api/voice {
+	@voice path /api/voice /v1/voice
+	handle @voice {
 		request_body {
 			max_size 13MB
 		}
@@ -85,8 +88,9 @@
 	}
 
 	# No public route to the internal routes of the post services: the claim
-	# hook (/v1/fanout/status, its own secret) and the bearer routes.
-	@internal path /v1/fanout /v1/fanout/* /v1/touchup /v1/touchup/* /v1/voice /v1/voice/* /v1/rescue /v1/rescue/*
+	# hook (/v1/fanout/status, its own secret) and the bearer routes of rescue
+	# and fan-out.
+	@internal path /v1/fanout /v1/fanout/* /v1/rescue /v1/rescue/* /v1/voice/*
 	handle @internal {
 		header Content-Type application/json
 		respond `{"error":"not found","code":"not_found"}` 404

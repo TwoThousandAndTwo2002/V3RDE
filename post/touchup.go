@@ -111,6 +111,7 @@ type Job struct {
 	// review (GET .../rejected). The app never shows it as a listing photo.
 	RejectedEdit bool `json:"rejected_edit,omitempty"`
 	userID       string
+	bearer       bool // made by a bearer caller (/v1): only bearer callers see it
 	remoteIP     string
 	forwardedIP  string
 	ended        time.Time
@@ -272,8 +273,19 @@ type photoMeta struct {
 // ReadItemPhoto reads an item photo of dir that belongs to userID (one
 // error for unknown and not-owned: OWASP API1:2023).
 func ReadItemPhoto(dir, id, userID string) ([]byte, error) {
+	if userID == "" { // a session user always has an id; "" is the bearer owner
+		return nil, errors.New("photo_id not found")
+	}
+	return readItemPhoto(dir, id, userID)
+}
+
+// ReadBearerItemPhoto is an item photo of a bearer caller (/v1/analyze owns
+// its photos as user ""); X42e, for /v1/touchup only.
+func ReadBearerItemPhoto(dir, id string) ([]byte, error) { return readItemPhoto(dir, id, "") }
+
+func readItemPhoto(dir, id, userID string) ([]byte, error) {
 	errNo := errors.New("photo_id not found")
-	if dir == "" || !ValidPhotoID(id) || userID == "" {
+	if dir == "" || !ValidPhotoID(id) {
 		return nil, errNo
 	}
 	mb, err := os.ReadFile(filepath.Join(dir, id+".json"))
@@ -311,8 +323,9 @@ func sha256hex(b []byte) string {
 // TouchupConfig is everything the touch-up handler needs (cmd/touchup).
 type TouchupConfig struct {
 	Editor      *ImageEditor
-	Checker     *Muse         // nil = no check: every edit is kept_original (fails closed)
-	Session     Authenticator // the only caller: the app's session cookie
+	Checker     *Muse           // nil = no check: every edit is kept_original (fails closed)
+	Session     Authenticator   // the app's session cookie: /api/touchup...
+	Auth        *analyze.Bearer // X42e: the bearer token: /v1/touchup... (nil = no bearer route)
 	Limiter     *Limiter
 	Budget      *Budget
 	Events      *Events
@@ -350,10 +363,12 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "touchup", "build": c.Build,
 			"spent_today_usd": c.Budget.Spent(), "image_model": c.Editor.Model})
 	})
-	mux.HandleFunc("POST /api/touchup", c.start)
-	mux.HandleFunc("GET /api/touchup/{id}", c.get)
-	mux.HandleFunc("GET /api/touchup/{id}/photo", c.photo)
-	mux.HandleFunc("GET /api/touchup/{id}/rejected", c.rejected) // X42d: a refused edit, for review
+	for _, p := range []string{"/api/touchup", "/v1/touchup"} { // X42e: /v1 = the bearer token
+		mux.HandleFunc("POST "+p, c.start)
+		mux.HandleFunc("GET "+p+"/{id}", c.get)
+		mux.HandleFunc("GET "+p+"/{id}/photo", c.photo)
+		mux.HandleFunc("GET "+p+"/{id}/rejected", c.rejected) // X42d: a refused edit, for review
+	}
 	return mux
 }
 
@@ -374,7 +389,7 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
 		c.record(ev)
 	}
-	who, ok := Identify(r, c.Session, nil)
+	who, ok := c.identify(r)
 	if !ok {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
@@ -405,7 +420,11 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, CodeBadRequest, "no body: the photo comes from photo_id")
 		return
 	}
-	img, err := ReadItemPhoto(c.ItemPhotos, src, who.User.ID)
+	read := func() ([]byte, error) { return ReadItemPhoto(c.ItemPhotos, src, who.User.ID) }
+	if who.Bearer {
+		read = func() ([]byte, error) { return ReadBearerItemPhoto(c.ItemPhotos, src) }
+	}
+	img, err := read()
 	if err != nil {
 		fail(http.StatusNotFound, CodeNotFound, err.Error())
 		return
@@ -424,7 +443,7 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobRunning, Mode: mode, SourcePhotoID: src,
-		ImageModel: c.Editor.Model, userID: who.User.ID, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP}
+		ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP}
 	if c.Checker != nil {
 		job.CheckModel = c.Checker.Model
 	}
@@ -566,8 +585,20 @@ func (c *TouchupConfig) rejected(w http.ResponseWriter, r *http.Request) {
 }
 
 // owned finds job id for the caller (one 404 for unknown and not-owned).
+// identify: /v1/... takes only the bearer token, /api/... only the session
+// cookie (X42e, as the voice service does).
+func (c *TouchupConfig) identify(r *http.Request) (Caller, bool) {
+	if strings.HasPrefix(r.URL.Path, "/v1/") {
+		if c.Auth == nil {
+			return Caller{}, false
+		}
+		return Identify(r, nil, c.Auth)
+	}
+	return Identify(r, c.Session, nil)
+}
+
 func (c *TouchupConfig) owned(w http.ResponseWriter, r *http.Request) (Job, bool) {
-	who, ok := Identify(r, c.Session, nil)
+	who, ok := c.identify(r)
 	if !ok {
 		WriteJSON(w, http.StatusUnauthorized, ErrorAnswer{RequestID: analyze.NewRequestID(), Error: "not logged in", Code: CodeUnauthorized})
 		return Job{}, false
@@ -579,7 +610,7 @@ func (c *TouchupConfig) owned(w http.ResponseWriter, r *http.Request) (Job, bool
 		snap = *j
 	}
 	c.mu.Unlock()
-	if !found || snap.userID != who.User.ID {
+	if !found || snap.userID != who.User.ID || snap.bearer != who.Bearer {
 		WriteJSON(w, http.StatusNotFound, ErrorAnswer{RequestID: analyze.NewRequestID(), Error: "touch-up not found", Code: CodeNotFound})
 		return Job{}, false
 	}

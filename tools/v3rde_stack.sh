@@ -146,7 +146,7 @@ up() {
   check "/ (holding page or app)" 200 "$u/"
   check "POST /v1/analyze" 401 -X POST "$u/v1/analyze"
   check "POST /api/analyze" 401 -X POST "$u/api/analyze"
-  for p in /api/touchup /api/rescue/l_0000000000000000 /api/fanout/l_0000000000000000 /api/voice; do check "POST $p" 401 -X POST "$u$p"; done
+  for p in /api/touchup /api/rescue/l_0000000000000000 /api/fanout/l_0000000000000000 /api/voice /v1/touchup /v1/voice; do check "POST $p" 401 -X POST "$u$p"; done
   for p in /api/scan /api/inventory /v1/inventory; do check "POST $p" 410 -X POST "$u$p"; done
   check "POST /v1/fanout/status" 404 -X POST "$u/v1/fanout/status"
   local s

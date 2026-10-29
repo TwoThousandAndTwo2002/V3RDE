@@ -619,3 +619,16 @@ When the check says that an edit changed the food, the app still keeps the origi
 - Only the owner can see it (`GET /api/touchup/{id}/rejected`); it can never become a listing photo.
 - Also: a touch-up test from entry 33 that failed at random (about 1 run in 7) now waits for its jobs.
 - Tests: post 53 (1 new).
+
+## 35. Photo touch-up and voice update for outside callers
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Image 1.0, Muse Spark 1.3 and Muse Voice Transcribe 1.0, as in entries 16 and 19.
+**Files:** `post/touchup.go`, `post/touchup_test.go`, `post/cmd/touchup/main.go`, `deploy/Caddyfile`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X42e.md`
+
+Outside callers with the bearer token (for example Postman or a partner) can now use photo touch-up (`/v1/touchup`) and voice update (`/v1/voice`), as they already could use the scan (`/v1/analyze`).
+
+- A token caller can touch up only photos from its own token scans, and the app's users and token callers never see each other's photos or jobs.
+- The daily spend caps still apply to every caller.
+- Tests: post 54 (1 new).

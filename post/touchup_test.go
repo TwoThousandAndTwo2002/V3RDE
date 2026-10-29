@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -211,6 +212,12 @@ func TestTouchupDoneStoresItemPhotoAndOwnerOnly(t *testing.T) {
 	if b, err := ReadItemPhoto(e.cfg.Dir, j.PhotoID, "u1"); err != nil || len(b) == 0 {
 		t.Fatalf("owner read: %v", err)
 	}
+	if _, err := ReadBearerItemPhoto(e.cfg.Dir, j.PhotoID); err == nil {
+		t.Fatal("a bearer caller read a user's edited photo")
+	}
+	if _, err := ReadItemPhoto(e.cfg.Dir, j.PhotoID, ""); err == nil {
+		t.Fatal("an empty user id read a photo")
+	}
 	if _, err := ReadItemPhoto(e.cfg.Dir, j.PhotoID, "u2"); err == nil {
 		t.Fatal("another user read the edit")
 	}
@@ -347,8 +354,8 @@ func TestTouchupOnlyPhotoIDInput(t *testing.T) {
 		for _, m := range []string{"POST", "GET"} {
 			r := httptest.NewRequest(m, p, nil)
 			r.Header.Set("Authorization", "Bearer tok")
-			if w := do(e.h, r); w.Code != 404 && w.Code != 405 {
-				t.Fatalf("%s %s: %d (the bearer route must not exist)", m, p, w.Code)
+			if w := do(e.h, r); w.Code != 401 && w.Code != 404 && w.Code != 405 {
+				t.Fatalf("%s %s: %d (no token configured: the bearer route must refuse)", m, p, w.Code)
 			}
 		}
 	}
@@ -446,4 +453,66 @@ func TestTouchupEmptyBodyWithContentType(t *testing.T) {
 		wait(t, e, "/api/touchup/"+a["touchup_id"].(string), "u1")
 		e.stop()
 	}
+}
+
+// X42e (T9, 2026-10-29): the bearer token is a second way in (/v1/touchup).
+// /v1 takes only the token, /api only the session; a job is seen only by the
+// same kind of caller that started it; a bearer caller uses bearer photos.
+func TestTouchupBearerRoute(t *testing.T) {
+	e := newTU(t, &metaFake{checkText: `{"same_food": true, "reason": "same"}`}, true)
+	defer e.stop()
+	e.cfg.Auth = analyze.NewBearer("tok")
+	e.h = NewTouchup(e.cfg)
+	bearer := func(r *http.Request) *http.Request { r.Header.Set("Authorization", "Bearer tok"); return r }
+	bp := seed(t, e, "") // a photo of a bearer caller (from /v1/analyze)
+	up := seed(t, e, "u1")
+	// a bearer job, start to edit
+	w := do(e.h, bearer(httptest.NewRequest("POST", "/v1/touchup?mode=light&photo_id="+bp, nil)))
+	if w.Code != 202 {
+		t.Fatalf("bearer start: %d %s", w.Code, w.Body)
+	}
+	var a map[string]any
+	_ = json.Unmarshal(w.Body.Bytes(), &a)
+	id := a["touchup_id"].(string)
+	var j Job
+	for i := 0; i < 200; i++ {
+		g := do(e.h, bearer(httptest.NewRequest("GET", "/v1/touchup/"+id, nil)))
+		_ = json.Unmarshal(g.Body.Bytes(), &j)
+		if g.Code != 200 || j.Status != JobRunning {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if j.Status != JobDone {
+		t.Fatalf("bearer job: %+v", j)
+	}
+	if g := do(e.h, bearer(httptest.NewRequest("GET", "/v1/touchup/"+id+"/photo", nil))); g.Code != 200 || g.Header().Get("Content-Type") != "image/jpeg" {
+		t.Fatalf("bearer photo: %d", g.Code)
+	}
+	for name, r := range map[string]*http.Request{
+		"a session user cannot see a bearer job":    asUser(httptest.NewRequest("GET", "/api/touchup/"+id, nil), "u1"),
+		"a bearer caller cannot use a user's photo": bearer(httptest.NewRequest("POST", "/v1/touchup?photo_id="+up, nil)),
+	} {
+		if g := do(e.h, r); g.Code != 404 {
+			t.Errorf("%s: %d %s", name, g.Code, g.Body)
+		}
+	}
+	// each path takes only its own kind of caller
+	if g := do(e.h, asUser(httptest.NewRequest("POST", "/v1/touchup?photo_id="+up, nil), "u1")); g.Code != 401 {
+		t.Errorf("a session on /v1: %d", g.Code)
+	}
+	if g := do(e.h, bearer(httptest.NewRequest("POST", "/api/touchup?photo_id="+bp, nil))); g.Code != 401 {
+		t.Errorf("a token on /api: %d", g.Code)
+	}
+	wrong := httptest.NewRequest("POST", "/v1/touchup?photo_id="+bp, nil)
+	wrong.Header.Set("Authorization", "Bearer nope")
+	if g := do(e.h, wrong); g.Code != 401 {
+		t.Errorf("a wrong token: %d", g.Code)
+	}
+	// a session job is not seen through /v1
+	sid := start(t, e, tuReq(t, e, "u1", ""))
+	if g := do(e.h, bearer(httptest.NewRequest("GET", "/v1/touchup/"+sid, nil))); g.Code != 404 {
+		t.Errorf("a bearer caller sees a session job: %d", g.Code)
+	}
+	wait(t, e, "/api/touchup/"+sid, "u1")
 }
