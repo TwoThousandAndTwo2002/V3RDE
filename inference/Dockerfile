@@ -17,6 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
 ARG BUILD=dev
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /inventory ./cmd/inventory \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /calibrate ./cmd/calibrate \
+ && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /touchupcompare ./cmd/touchupcompare \
  && mkdir -p /events && chown 65534:65534 /events
 
 FROM scratch
@@ -24,6 +25,8 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 COPY --from=build /inventory /inventory
 # X44g: the labels report (docker run --rm --entrypoint /calibrate -v <analyze events>:/events:ro ...)
 COPY --from=build /calibrate /calibrate
+# X48f: the touch-up v2 comparison (docker run --rm --entrypoint /touchupcompare -v <photos>:/photos:ro ...)
+COPY --from=build /touchupcompare /touchupcompare
 COPY --from=build /src/inference/third_party/SAM_LICENSE.txt /licenses/SAM_LICENSE.txt
 COPY --from=build --chown=65534:65534 /events /events
 USER 65534:65534

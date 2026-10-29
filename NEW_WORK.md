@@ -879,3 +879,19 @@ On the web the lists did not scroll: older listings and the next pages of Receiv
 - Receive does not show your own listings. You see them under Give. When a page holds only your listings, the list asks for the next page at once.
 - Tests: mobile 83 -> 86.
 
+## 53. Touch-up v2: a prototype and a side-by-side page
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Spark 1.3 (chooses the settings), SAM 3.1 ("food" mask), Muse Image 1.0 (background only). Only in the comparison tool; the touch-up service does not change.
+**Files:** `server/enhance.go` (new), `server/enhance_test.go` (new), `inference/touchupv2.go` (new), `inference/touchupv2_test.go` (new), `inference/cmd/touchupcompare/main.go` (new), `inference/Dockerfile`
+**Sources:** `docs/sources/X48f.md`
+
+The touch-up of today takes about 28 s and can change the food. T9 asked for a sharper, bigger photo of the item, made faster.
+
+- **enhance:** code only. Crop, enlarge up to 2x, contrast, colour balance, exposure, colour and sharpness. No Meta call, no cost, under half a second.
+- **smart:** Muse Spark looks at the photo and gives only the settings (numbers). The same code makes the edit.
+- **smart_bg:** smart, then Muse Image paints a plain background. Only that background is used. The food pixels come from the real photo through a SAM mask of "food".
+- `touchupcompare` makes all variants and today's touch-up for the newest item photos on the box, with the time and the cost of each. The script `x48f_touchup_compare.sh` brings a side-by-side page to the Mac.
+- T9 chooses the default from that page. Nothing changes in the app until then.
+- Tests: server 26 -> 32, inference 86 -> 89.
+
