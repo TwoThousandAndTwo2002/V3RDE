@@ -564,3 +564,18 @@ The food gate (it says if a photo shows food before any paid model call) existed
 - A new test runs a tiny model through LiteRT and compares it with TensorFlow Lite's Python interpreter. It found a defect in a first version of the new code (a pointer that cgo refuses); that is fixed.
 - Checked against the old code: its own tests pass on the new code, and an independent review compared the two; its findings are fixed.
 - Tests: gate 26 (new); with the LiteRT and libjpeg-turbo tags 29, and these run in every image build.
+
+## 31. The deploy files, written new for V3RDE
+
+**When:** Oct 29 2026.
+**Meta model:** none (the stack that runs the services and their Meta calls).
+**Files:** `deploy/docker-compose.yml`, `deploy/Caddyfile`, `deploy/web/index.html`, `tools/v3rde_stack.sh` (all new)
+**Sources:** `docs/sources/X40a.md`
+
+The deploy files (the compose file, the edge configuration and the stack script) existed before the Hackathon. V3RDE does not copy them: this is new code.
+
+- It keeps the services, their ports, routes, limits and secrets as files mounted read-only. The names are now `v3rde` (project, images, volumes, settings). The sign-in cookie keeps its name.
+- New: the edge sets the caller's address itself on every route, so a caller cannot choose the address that their rate limit uses.
+- New: each image has its own build stamp (the last commit that changed its code). A deploy that does not change an image keeps it, and its telemetry shows the commit it really runs.
+- Until the app (ui branch) is merged, `/` shows a holding page; all API routes are live.
+- Checked: the edge configuration was validated with Caddy 2.8.4 and tested with false address headers on each route.

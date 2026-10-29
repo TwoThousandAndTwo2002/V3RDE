@@ -1,0 +1,224 @@
+# V3RDE stack (written new for V3RDE, NEW_WORK.md 31).
+#   bash tools/v3rde_stack.sh up|down|logs|smoke
+# Only caddy publishes a port, on 127.0.0.1 (Apache, behind the load
+# balancer, fronts it). Secrets are host files mounted read-only: nothing
+# secret is in an image, an env variable or `docker inspect`.
+#
+# Build stamps (D151): each image has its OWN stamp, V3RDE_BUILD_<IMAGE> =
+# the last commit that changed that image's build context (the stack script
+# sets them). An image whose code did not change keeps its stamp, so its
+# build is a cache hit and its sidecar shows the commit it really runs.
+name: v3rde
+
+x-sidecar: &sidecar
+  build: {context: ./telemetry, args: {BUILD: "${V3RDE_BUILD_TELEMETRY:-dev}"}}
+  image: v3rde-telemetry
+  restart: unless-stopped
+  entrypoint: ["/sidecar"]
+
+x-post: &post
+  build: {context: ., dockerfile: post/Dockerfile, args: {BUILD: "${V3RDE_BUILD_POST:-dev}"}}
+  image: v3rde-post
+  restart: unless-stopped
+
+services:
+  caddy:
+    image: caddy:2.8.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${V3RDE_PORT:-8080}:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${V3RDE_WEB:-./deploy/web}:/srv:ro   # D152: a holding page until the ui branch is merged
+    depends_on: [analyze, auth, listings]
+
+  auth:
+    build: {context: ./auth, args: {BUILD: "${V3RDE_BUILD_AUTH:-dev}"}}
+    image: v3rde-auth
+    restart: unless-stopped
+    command: ["-listen", "0.0.0.0:8081", "-db", "/data/auth.json",
+              "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events"]
+    volumes:
+      - v3rde_auth:/data
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events
+
+  listings:
+    build: {context: ./listings, args: {BUILD: "${V3RDE_BUILD_LISTINGS:-dev}"}}
+    image: v3rde-listings
+    restart: unless-stopped
+    command: ["-listen", "0.0.0.0:8082", "-data", "/data", "-auth", "http://auth:8081", "-events", "/events",
+              "-item-photos", "/item-photos", "-touchup-photos", "/touchup-photos",
+              "-fanout", "http://fanout:8090/v1/fanout/status",
+              "-fanout-token-file", "/run/secrets/fanout_status_token"]
+    volumes:
+      - v3rde_listings:/data
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/touchup-photos:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/fanout_status_token:/run/secrets/fanout_status_token:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/listings:/events
+    depends_on: [auth]
+
+  barcode:
+    build: {context: ./barcode, args: {BUILD: "${V3RDE_BUILD_BARCODE:-dev}"}}
+    image: v3rde-barcode
+    restart: unless-stopped
+    command: ["-listen", "0.0.0.0:8083", "-catalog", "/assets/products.sqlite", "-events", "/events"]
+    volumes:
+      - ${V3RDE_ASSETS:-/opt/v3rde/assets}/products.sqlite:/assets/products.sqlite:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/barcode:/events
+
+  gate:
+    build: {context: ./gate, args: {BUILD: "${V3RDE_BUILD_GATE:-dev}"}}
+    image: v3rde-gate
+    restart: unless-stopped
+    # PE-Core-S16-384 (Meta, Apache-2.0) is the only gate (D32); the pins are
+    # the gate's defaults too (X38g, D145). No shadow gate.
+    command: ["-listen", "0.0.0.0:8084", "-model", "/assets/gate_pe_s16_f16w_384.tflite",
+              "-head", "/assets/gate_head_pe_s16_384_deploy.json",
+              "-model-sha256", "c0618012abe6a22664285b85ae0d7820e3013342965cb74aa6767404a5ff649e",
+              "-head-sha256", "7ba764ea8b562bef0948678dba5a1d103b0772ce2df46f3959d181d093c507a4",
+              "-events", "/events", "-threads", "1"]
+    volumes:
+      - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_pe_s16_f16w_384.tflite:/assets/gate_pe_s16_f16w_384.tflite:ro
+      - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_head_pe_s16_384_deploy.json:/assets/gate_head_pe_s16_384_deploy.json:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/gate:/events
+
+  # The one analysis route: POST /v1/analyze (bearer token) and /api/analyze
+  # (session cookie). $20/day cap; 6/min per user (bearer: per address).
+  analyze:
+    build: {context: ., dockerfile: inference/Dockerfile, args: {BUILD: "${V3RDE_BUILD_ANALYZE:-dev}"}}
+    image: v3rde-analyze
+    restart: unless-stopped
+    command: ["-listen", "0.0.0.0:8087", "-key-file", "/run/secrets/meta_key",
+              "-token-file", "/run/secrets/analyze_token", "-gate", "http://gate:8084", "-events", "/events",
+              "-auth", "http://auth:8081", "-barcode", "http://barcode:8083", "-listings", "http://listings:8082",
+              "-photos", "/photos", "-max-image-bytes", "5242880",
+              "-cap-usd", "${ANALYZE_CAP_USD:-20}", "-max-in-flight", "${ANALYZE_IN_FLIGHT:-3}",
+              "-rate-burst", "${ANALYZE_RATE_BURST:-6}"]
+    mem_limit: 700m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}:/photos
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/events
+    depends_on: [gate, auth, barcode, listings]
+
+  # The post services: one image, one binary each ("entrypoint" replaces the
+  # image CMD, so every flag is in "command"). -trust-forwarded: Caddy sets
+  # X-Forwarded-For to {client_ip} itself on every route (D150).
+  touchup:
+    <<: *post
+    entrypoint: ["/touchup"]
+    command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
+              "-item-photos", "/item-photos", "-dir", "/data", "-events", "/events",
+              "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-trust-forwarded"]
+    mem_limit: 256m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/data
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/touchup:/events
+    depends_on: [auth]
+
+  rescue:
+    <<: *post
+    entrypoint: ["/rescue"]
+    command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
+              "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
+              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-min-servings", "${RESCUE_MIN_SERVINGS:-1}", "-trust-forwarded"]
+    mem_limit: 224m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - v3rde_rescue:/data
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/rescue:/events
+    depends_on: [auth, listings]
+
+  fanout:
+    <<: *post
+    entrypoint: ["/fanout"]
+    command: ["-listen", "0.0.0.0:8090", "-key-file", "/run/secrets/meta_key",
+              "-status-token-file", "/run/secrets/fanout_status_token",
+              "-page-id", "${FANOUT_PAGE_ID:-}", "-link-base", "${FANOUT_LINK_BASE:-}",
+              "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
+              "-cap-usd", "${FANOUT_CAP_USD:-1}", "-sweep", "1m", "-trust-forwarded"]
+    mem_limit: 224m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/fanout_status_token:/run/secrets/fanout_status_token:ro
+      - v3rde_fanout:/data
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/fanout:/events
+    depends_on: [auth, listings]
+
+  voice:
+    <<: *post
+    entrypoint: ["/voice"]
+    command: ["-listen", "0.0.0.0:8091", "-key-file", "/run/secrets/meta_key",
+              "-token-file", "/run/secrets/analyze_token", "-auth", "http://auth:8081", "-events", "/events",
+              "-cap-usd", "${VOICE_CAP_USD:-1}", "-max-in-flight", "2", "-trust-forwarded"]
+    mem_limit: 320m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/voice:/events
+    depends_on: [auth]
+
+  # Telemetry: one sidecar per service (in its PID namespace) + the ledger.
+  # -build is the stamp of the SERVICE's image (D151), not of the deploy.
+  sidecar-analyze:
+    <<: *sidecar
+    pid: "service:analyze"
+    command: ["-service", "analyze", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_ANALYZE:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/analyze:/spool"]
+  sidecar-auth:
+    <<: *sidecar
+    pid: "service:auth"
+    command: ["-service", "auth", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_AUTH:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/auth:/spool"]
+  sidecar-listings:
+    <<: *sidecar
+    pid: "service:listings"
+    command: ["-service", "listings", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_LISTINGS:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/listings:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/listings:/spool"]
+  sidecar-barcode:
+    <<: *sidecar
+    pid: "service:barcode"
+    command: ["-service", "barcode", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_BARCODE:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/barcode:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/barcode:/spool"]
+  sidecar-gate:
+    <<: *sidecar
+    pid: "service:gate"
+    command: ["-service", "gate", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_GATE:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/gate:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/gate:/spool"]
+  sidecar-touchup:
+    <<: *sidecar
+    pid: "service:touchup"
+    command: ["-service", "touchup", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_POST:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/touchup:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/touchup:/spool"]
+  sidecar-rescue:
+    <<: *sidecar
+    pid: "service:rescue"
+    command: ["-service", "rescue", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_POST:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/rescue:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/rescue:/spool"]
+  sidecar-fanout:
+    <<: *sidecar
+    pid: "service:fanout"
+    command: ["-service", "fanout", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_POST:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/fanout:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/fanout:/spool"]
+  sidecar-voice:
+    <<: *sidecar
+    pid: "service:voice"
+    command: ["-service", "voice", "-events", "/events", "-spool", "/spool", "-build", "${V3RDE_BUILD_POST:-dev}"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/voice:/events:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/telemetry/voice:/spool"]
+
+  ledger:
+    <<: *sidecar
+    entrypoint: ["/ledger"]
+    command: ["-spool", "/spool", "-dir", "/ledger-data", "-listen", "0.0.0.0:8086"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/telemetry:/spool:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/ledger:/ledger-data"]
+
+# Explicit names: the volumes are v3rde_auth ... (not v3rde_v3rde_auth).
+volumes:
+  v3rde_auth: {name: v3rde_auth}
+  v3rde_listings: {name: v3rde_listings}
+  v3rde_rescue: {name: v3rde_rescue}
+  v3rde_fanout: {name: v3rde_fanout}

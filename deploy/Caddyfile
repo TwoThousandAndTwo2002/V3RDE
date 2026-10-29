@@ -1,0 +1,151 @@
+# V3RDE edge (written new for V3RDE, NEW_WORK.md 31). One origin for the
+# app and the services, so the browser needs no CORS. Caddy listens on :80
+# in the compose network; the host publishes it on 127.0.0.1:8080 and Apache
+# (behind the load balancer) fronts that port.
+#
+# D150 (the D135 fix): the services rate-limit by CF-Connecting-IP or by the
+# first X-Forwarded-For entry. A caller can send both. So on EVERY route
+# Caddy sets both headers to {client_ip}: "header_up" with a value sets the
+# header and overwrites what the caller sent. {client_ip} comes from
+# X-Forwarded-For, read from the right: the first address that is not a
+# private one (the load balancer and Apache are private), so a caller
+# cannot choose it.
+{
+	admin off
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+		trusted_proxies_strict
+		client_ip_headers X-Forwarded-For
+	}
+}
+
+# One set of proxy headers for every route.
+(caller) {
+	header_up X-Forwarded-For {client_ip}
+	header_up CF-Connecting-IP {client_ip}
+}
+
+:80 {
+	encode gzip
+
+	# The one analysis route: /v1/analyze (shared bearer token) and
+	# /api/analyze (session cookie); the service checks the caller. The image
+	# limit is 5 MB (the service checks it); a JSON body is 4/3 of the image.
+	@analyze path /v1/analyze /v1/analyze/* /api/analyze /api/analyze/*
+	handle @analyze {
+		request_body {
+			max_size 7MB
+		}
+		reverse_proxy analyze:8087 {
+			import caller
+			transport http {
+				response_header_timeout 70s
+			}
+		}
+	}
+
+	# The post services (session cookie). Touch-up, rescue and fan-out take
+	# small JSON bodies; voice takes one WAV of at most 12 MB (60 s).
+	@touchup path /api/touchup /api/touchup/*
+	handle @touchup {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy touchup:8088 {
+			import caller
+		}
+	}
+	handle /api/rescue/* {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy rescue:8089 {
+			import caller
+		}
+	}
+	handle /api/fanout/* {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy fanout:8090 {
+			import caller
+		}
+	}
+	handle /api/voice {
+		request_body {
+			max_size 13MB
+		}
+		reverse_proxy voice:8091 {
+			import caller
+			transport http {
+				response_header_timeout 40s
+			}
+		}
+	}
+
+	# No public route to the internal routes of the post services: the claim
+	# hook (/v1/fanout/status, its own secret) and the bearer routes.
+	@internal path /v1/fanout /v1/fanout/* /v1/touchup /v1/touchup/* /v1/voice /v1/voice/* /v1/rescue /v1/rescue/*
+	handle @internal {
+		header Content-Type application/json
+		respond `{"error":"not found","code":"not_found"}` 404
+	}
+
+	# Routes that the one analysis route replaced: 410 with the way forward.
+	@removed path /api/scan /api/inventory /v1/inventory
+	handle @removed {
+		header Content-Type application/json
+		respond `{"error":"this route was removed; use POST /v1/analyze","code":"route_removed"}` 410
+	}
+
+	handle /api/auth/* {
+		request_body {
+			max_size 64KB
+		}
+		reverse_proxy auth:8081 {
+			import caller
+		}
+	}
+
+	handle /api/listings* {
+		request_body {
+			max_size 6MB
+		}
+		reverse_proxy listings:8082 {
+			import caller
+		}
+	}
+
+	handle /healthz {
+		respond `{"ok":true,"service":"edge"}` 200 {
+			close
+		}
+	}
+
+	# The app. Until the ui branch is merged this is the holding page in
+	# deploy/web (D152). Paths that are not files serve index.html. Expo's
+	# content-hashed files are cached for a year, but only when the file is
+	# there: a missing one gets index.html with no-store, so a browser never
+	# keeps the page at a file's address for a year. The rest is no-store.
+	handle {
+		root * /srv
+		@hashed {
+			path /_expo/static/* /assets/*
+			file
+		}
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@other not {
+			path /_expo/static/* /assets/*
+			file
+		}
+		header @other Cache-Control "no-store"
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
