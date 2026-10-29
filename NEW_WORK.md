@@ -593,3 +593,16 @@ After a scan with several items, the app can now get every item photo in one cal
 - The photos are made small at the same time on the CPU cores of the box, and are turned upright; a repeat call comes from a cache.
 - An independent review found 8 defects; all are fixed.
 - Tests: inference 72 (10 new).
+
+## 33. Photo touch-up works through the public site
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Image 1.0 (the edit) and Muse Spark 1.3 (the check), as in entry 16.
+**Files:** `post/touchup.go`, `post/touchup_test.go`, `gate/events.go`, `gate/gate_test.go`
+**Sources:** `docs/sources/X42c.md`
+
+The first live test of photo touch-up on the new box found that every touch-up through the public site was refused ("no body"), because the request reached the service with a Content-Type header and an empty body.
+
+- Now only a real body is refused (the rule that no photo is uploaded stays).
+- Also: a food gate test that failed at random (about 1 run in 15) is fixed.
+- Tests: post 52 (1 new); gate 26.

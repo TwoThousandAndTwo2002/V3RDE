@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -49,12 +50,13 @@ type Event struct {
 // the event is dropped and counted. The folder is a volume; the sidecar
 // ships it.
 type Recorder struct {
-	Dir     string
-	ch      chan Event
-	dropped atomic.Int64
-	written atomic.Int64
-	done    chan struct{}
-	now     func() time.Time
+	Dir       string
+	ch        chan Event
+	dropped   atomic.Int64
+	written   atomic.Int64
+	done      chan struct{}
+	now       func() time.Time
+	closeOnce sync.Once
 }
 
 // NewRecorder starts the writer with a buffer of buf events.
@@ -82,9 +84,10 @@ func (r *Recorder) Dropped() int64 { return r.dropped.Load() }
 // Written is the number of events written.
 func (r *Recorder) Written() int64 { return r.written.Load() }
 
-// Close writes what is queued and stops the writer.
+// Close writes what is queued and stops the writer. A second Close does
+// nothing (X42c: a test closes it, and its cleanup closes it again).
 func (r *Recorder) Close() {
-	close(r.ch)
+	r.closeOnce.Do(func() { close(r.ch) })
 	<-r.done
 }
 

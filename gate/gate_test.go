@@ -274,7 +274,7 @@ func events(t *testing.T, rec *Recorder) []Event {
 
 func gateWith(t *testing.T, m Embedder, h *Head) (http.Handler, *Recorder) {
 	t.Helper()
-	rec := NewRecorder(t.TempDir(), 64)
+	rec := testRecorder(t, 64)
 	return New(Config{Model: m, Head: h, ModelSHA256: "msum", HeadSHA256: "hsum", Build: "b1", Recorder: rec}), rec
 }
 
@@ -329,7 +329,7 @@ func TestNotFoodAndBodies(t *testing.T) {
 
 func TestFailsClosed(t *testing.T) {
 	img := photo(t)
-	rec := NewRecorder(t.TempDir(), 8)
+	rec := testRecorder(t, 8)
 	g := New(Config{LoadError: "model sha256 abc is not the pin", Recorder: rec})
 	w, m := post(t, g, "image/png", img, "")
 	if w.Code != 200 || m["verdict"] != Unavailable || m["food"] != false || m["p"] != -1.0 || m["why"] != "gate not loaded: model sha256 abc is not the pin" {
@@ -401,7 +401,7 @@ func TestQueueFullIsBusy(t *testing.T) {
 	f := &fakeModel{v: []float32{1, 0}, block: make(chan struct{}), entered: make(chan int, 4)}
 	var once sync.Once
 	t.Cleanup(func() { once.Do(func() { close(f.block) }) }) // a failed check does not leave goroutines blocked
-	rec := NewRecorder(t.TempDir(), 64)
+	rec := testRecorder(t, 64)
 	g := New(Config{Model: f, Head: head(2, 0.5, 0, nil), Recorder: rec, Queue: 1})
 	img := photo(t)
 	codes := make(chan int, 2)
@@ -467,7 +467,7 @@ func TestShadowNeverRunsAfterABusyAnswer(t *testing.T) {
 	t.Cleanup(func() { once.Do(func() { close(block) }) })
 	pf := &fakeModel{v: []float32{1, 0}, block: block, entered: make(chan int, 4)}
 	shadow := &Shadow{Model: &fakeModel{v: []float32{1, 0}}, Head: head(2, 0.5, 0, nil)}
-	rec := NewRecorder(t.TempDir(), 64)
+	rec := testRecorder(t, 64)
 	g := New(Config{Model: pf, Head: head(2, 0.5, 0, nil), Recorder: rec, Queue: 1, Shadow: shadow})
 	img := photo(t)
 	done := make(chan struct{}, 2)
@@ -492,7 +492,7 @@ func TestShadowNeverRunsAfterABusyAnswer(t *testing.T) {
 
 func TestShadowNeverChangesTheAnswer(t *testing.T) {
 	shadow := &Shadow{Model: &fakeModel{v: []float32{0, 1}}, Head: head(2, 0.01, 0, []float64{0, 9}), ModelSHA256: "smodel", HeadSHA256: "shead"}
-	rec := NewRecorder(t.TempDir(), 64)
+	rec := testRecorder(t, 64)
 	g := New(Config{Model: &fakeModel{v: []float32{1, 0}}, Head: head(2, 0.9, 0, nil), Recorder: rec, Build: "b", Shadow: shadow})
 	w, m := post(t, g, "image/png", photo(t), "scan-7")
 	shadow.Wait()
@@ -518,7 +518,7 @@ func TestShadowNeverChangesTheAnswer(t *testing.T) {
 func TestShadowIsSkippedWhenBusyAndNeverOnErrors(t *testing.T) {
 	block := make(chan struct{})
 	shadow := &Shadow{Model: &fakeModel{v: []float32{1, 0}, block: block}, Head: head(2, 0.5, 0, nil)}
-	rec := NewRecorder(t.TempDir(), 64)
+	rec := testRecorder(t, 64)
 	g := New(Config{Model: &fakeModel{v: []float32{1, 0}}, Head: head(2, 0.5, 0, nil), Recorder: rec, Shadow: shadow})
 	post(t, g, "image/png", photo(t), "") // the shadow holds its slot
 	post(t, g, "image/png", photo(t), "") // skipped
@@ -588,4 +588,15 @@ func TestRecorderUsesTheUTCDay(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "events-20261029.jsonl")); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// testRecorder is a Recorder whose writer is stopped before t's TempDir is
+// removed (t.Cleanup runs last-in first-out). X42c: without it the writer
+// could still make the day's file during the removal, and the test failed
+// with "directory not empty" (seen 1 time in 15 runs).
+func testRecorder(t *testing.T, buf int) *Recorder {
+	t.Helper()
+	r := NewRecorder(t.TempDir(), buf)
+	t.Cleanup(r.Close)
+	return r
 }

@@ -318,6 +318,11 @@ func TestTouchupOnlyPhotoIDInput(t *testing.T) {
 	if w := do(e.h, up); w.Code != 400 || !strings.Contains(w.Body.String(), "no body") {
 		t.Fatalf("upload with photo_id: %d %s", w.Code, w.Body)
 	}
+	chunked := asUser(httptest.NewRequest("POST", "/api/touchup?photo_id="+seed(t, e, "u1"), strings.NewReader("x")), "u1")
+	chunked.ContentLength = -1 // a body with no length (chunked)
+	if w := do(e.h, chunked); w.Code != 400 || !strings.Contains(w.Body.String(), "no body") {
+		t.Fatalf("chunked body: %d %s", w.Code, w.Body)
+	}
 	if w := do(e.h, asUser(httptest.NewRequest("POST", "/api/touchup?photo_id=../../etc/passwd", nil), "u1")); w.Code != 404 {
 		t.Fatalf("bad photo_id: %d", w.Code)
 	}
@@ -365,4 +370,31 @@ func TestAsJPEGAndAspect(t *testing.T) {
 		t.Fatalf("aspect of junk %q", s)
 	}
 	_ = io.Discard
+}
+
+// X42c: on the public path a request with no body arrived with
+// "Content-Type: application/x-www-form-urlencoded" and Content-Length 0
+// (X42b, Caddy's access log). It must start the job, not give 400.
+func TestTouchupEmptyBodyWithContentType(t *testing.T) {
+	for _, tc := range []struct {
+		ct     string
+		length int64
+		body   io.Reader
+	}{
+		{"application/x-www-form-urlencoded", 0, strings.NewReader("")},
+		{"application/json", 0, strings.NewReader("")},
+		{"", -1, http.NoBody}, // no body, unknown length
+	} {
+		e := newTU(t, &metaFake{checkText: `{"same_food": true}`}, true) // a new service: 2 jobs at a time
+		r := asUser(httptest.NewRequest("POST", "/api/touchup?mode=light&photo_id="+seed(t, e, "u1"), tc.body), "u1")
+		if tc.ct != "" {
+			r.Header.Set("Content-Type", tc.ct)
+		}
+		r.ContentLength = tc.length
+		w := do(e.h, r)
+		e.stop()
+		if w.Code != http.StatusAccepted || !strings.Contains(w.Body.String(), `"touchup_id"`) {
+			t.Fatalf("%q, length %d: %d %s", tc.ct, tc.length, w.Code, w.Body)
+		}
+	}
 }

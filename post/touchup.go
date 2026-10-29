@@ -394,7 +394,10 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, CodeBadRequest, "photo_id is required (an item photo from the scan)")
 		return
 	}
-	if r.ContentLength > 0 || r.Header.Get("Content-Type") != "" {
+	// X42c: only a real body is refused. A Content-Type with an empty body
+	// is allowed: on the public path a request with no body reached the
+	// service with "application/x-www-form-urlencoded" and Content-Length 0.
+	if hasBody(r) {
 		fail(http.StatusBadRequest, CodeBadRequest, "no body: the photo comes from photo_id")
 		return
 	}
@@ -559,4 +562,18 @@ func (c *TouchupConfig) photo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/jpeg")
 	w.Header().Set("Cache-Control", "private, max-age=3600")
 	http.ServeFile(w, r, filepath.Join(c.Dir, j.PhotoID+".jpg"))
+}
+
+// hasBody reports whether the request carries at least one byte of body
+// (a known length over 0, or a chunked body that is not empty).
+func hasBody(r *http.Request) bool {
+	if r.ContentLength > 0 {
+		return true
+	}
+	if r.ContentLength == 0 || r.Body == nil || r.Body == http.NoBody {
+		return false
+	}
+	var b [1]byte
+	n, _ := io.ReadFull(r.Body, b[:])
+	return n > 0
 }
