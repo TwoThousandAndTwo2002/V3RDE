@@ -16,7 +16,7 @@ The checks before the photo is read (caller, rate limit, image type and size) an
 
 ## Poll
 
-`GET /api/analyze/scan/{scan_id}` (or `/v1/...` with the token), about once a second, until `status` is not `running`. Only the caller that started the job sees it (the same user, or the token); any other caller gets `404 not_found`. A job is kept 10 minutes after it ends.
+`GET /api/analyze/scan/{scan_id}` (or `/v1/...` with the token), until `status` is not `running`: a held poll (below), or about once a second. Only the caller that started the job sees it (the same user, or the token); any other caller gets `404 not_found`. A job is kept 10 minutes after it ends.
 
 ```json
 200 {
@@ -25,9 +25,12 @@ The checks before the photo is read (caller, rate limit, image type and size) an
   "stage": "naming",              // checking | finding | naming | done
   "boxes": [[120, 80, 470, 610], [500, 90, 880, 640]],   // 0-1000 grid of the upright photo: [left, top, right, bottom]
   "named": [{"n": 1, "name": "Tomato soup"}],             // box n = boxes[n-1]
-  "elapsed_ms": 6120
+  "elapsed_ms": 6120,
+  "version": 4                    // X48c: goes up by one at each change
 }
 ```
+
+**Held poll (X48c, `docs/sources/X48c.md`):** `GET .../scan/{scan_id}?since=<version>&wait=<ms>`. When the job's `version` is not `since`, or the job ended, the answer comes at once. Else the service holds the request until the job changes, or until `wait` ends (at most 10 s; the app sends 8000). Send the `version` of the last answer and ask again at once: no change is lost and there is no sleep between polls. With no `wait` (or a bad value) the GET answers at once, as before.
 
 - `checking`: the barcode, the food gate. `finding`: SAM 3.1 looks for the items. `naming`: the boxes are known; names come in as each Muse Spark call ends.
 - `boxes` is empty until SAM is done. With 0 or 1 box, the next answer is the whole-photo answer (no names come before it).

@@ -15,8 +15,13 @@ package inference
 //
 // Why polling and not a stream: the public name is an API Gateway HTTP API,
 // and API Gateway streams a response only for REST APIs (docs/sources/X44b.md),
-// so the app asks again (about once a second). Each poll is a short request,
-// far under the 30 s limit.
+// so the app asks again. Each poll is a short request, far under the 30 s limit.
+//
+// X48c: a held poll. GET .../scan/{id}?since=V&wait=MS answers at once when
+// the job's version is not V (or the job ended); else it holds the request
+// until the job changes or MS ends (at most ScanHoldMax). The app sends the
+// version it has, so it sees each change as it happens, with no sleep between
+// polls. With no wait the GET answers at once, as before.
 
 import (
 	"bytes"
@@ -39,6 +44,9 @@ const (
 const (
 	ScanKeep    = 10 * time.Minute
 	ScanMaxJobs = 64
+	// ScanHoldMax is the longest held poll (X48c), far under the 30 s limit
+	// of the API Gateway integration.
+	ScanHoldMax = 10 * time.Second
 )
 
 // NamedBox is one named box of a running scan.
@@ -58,11 +66,14 @@ type ScanJob struct {
 	HTTPStatus int             `json:"http_status,omitempty"`
 	Answer     json.RawMessage `json:"answer,omitempty"`
 	ElapsedMS  int64           `json:"elapsed_ms"`
-	kind       string
-	userID     string
-	started    time.Time
-	ended      time.Time
-	named      map[int]string
+	// Version goes up by one at each change (stage, boxes, a name, the end).
+	Version int           `json:"version"`
+	changed chan struct{} // closed at each change (X48c)
+	kind    string
+	userID  string
+	started time.Time
+	ended   time.Time
+	named   map[int]string
 }
 
 // scanJobs holds the jobs of one service.
@@ -103,7 +114,8 @@ func (s *scanJobs) start(id, requestID, kind, userID string) *ScanJob {
 		}
 	}
 	j := &ScanJob{ScanID: id, RequestID: requestID, Status: ScanRunning, Stage: "checking", Boxes: []Norm{},
-		Named: []NamedBox{}, kind: kind, userID: userID, started: now, named: map[int]string{}}
+		Named: []NamedBox{}, kind: kind, userID: userID, started: now, named: map[int]string{},
+		changed: make(chan struct{})}
 	s.jobs[id] = j
 	return j
 }
@@ -111,9 +123,17 @@ func (s *scanJobs) start(id, requestID, kind, userID string) *ScanJob {
 func (s *scanJobs) stage(j *ScanJob, stage string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if j.Status == ScanRunning {
+	if j.Status == ScanRunning && j.Stage != stage {
 		j.Stage = stage
+		j.bump()
 	}
+}
+
+// bump marks a change: the version goes up and the held polls answer (s.mu held).
+func (j *ScanJob) bump() {
+	j.Version++
+	close(j.changed)
+	j.changed = make(chan struct{})
 }
 
 // progress takes the engine's reports (any goroutine).
@@ -123,16 +143,20 @@ func (s *scanJobs) progress(j *ScanJob, p Progress) {
 	if j.Status != ScanRunning {
 		return
 	}
-	if p.Stage != "" {
-		j.Stage = p.Stage
+	moved := false
+	if p.Stage != "" && p.Stage != j.Stage {
+		j.Stage, moved = p.Stage, true
 	}
 	if p.Boxes != nil {
-		j.Boxes = append([]Norm(nil), p.Boxes...)
+		j.Boxes, moved = append([]Norm(nil), p.Boxes...), true
 	}
 	for n, name := range p.Named {
-		if name != "" {
-			j.named[n] = name
+		if name != "" && j.named[n] != name {
+			j.named[n], moved = name, true
 		}
+	}
+	if moved {
+		j.bump()
 	}
 }
 
@@ -149,6 +173,43 @@ func (s *scanJobs) finish(j *ScanJob, status int, body []byte) {
 		j.Status = ScanDone
 	}
 	j.ended = s.now()
+	j.bump()
+}
+
+// hold is get, held until the job's version is not since, the job ended,
+// hold ended or done is closed (the caller went away). hold <= 0: at once.
+func (s *scanJobs) hold(done <-chan struct{}, id, kind, userID string, since int, hold time.Duration) (ScanJob, bool) {
+	if hold > ScanHoldMax {
+		hold = ScanHoldMax
+	}
+	var t <-chan time.Time
+	if hold > 0 {
+		tm := time.NewTimer(hold)
+		defer tm.Stop()
+		t = tm.C
+	}
+	for {
+		s.mu.Lock()
+		j, ok := s.jobs[id]
+		if !ok || j.kind != kind || j.userID != userID {
+			s.mu.Unlock()
+			return ScanJob{}, false
+		}
+		if hold <= 0 || j.Version != since || !j.ended.IsZero() {
+			c := s.copyOf(j)
+			s.mu.Unlock()
+			return c, true
+		}
+		ch := j.changed
+		s.mu.Unlock()
+		select {
+		case <-ch:
+		case <-done:
+			hold = 0
+		case <-t:
+			hold = 0
+		}
+	}
 }
 
 // get is a copy of job id when kind and userID own it.
@@ -159,7 +220,13 @@ func (s *scanJobs) get(id, kind, userID string) (ScanJob, bool) {
 	if !ok || j.kind != kind || j.userID != userID {
 		return ScanJob{}, false
 	}
+	return s.copyOf(j), true
+}
+
+// copyOf is a copy of j for the answer (s.mu held).
+func (s *scanJobs) copyOf(j *ScanJob) ScanJob {
 	c := *j
+	c.changed = nil
 	c.Boxes = append([]Norm{}, j.Boxes...)
 	c.Named = []NamedBox{}
 	for n, name := range j.named {
@@ -171,7 +238,7 @@ func (s *scanJobs) get(id, kind, userID string) (ScanJob, bool) {
 		end = s.now()
 	}
 	c.ElapsedMS = end.Sub(j.started).Milliseconds()
-	return c, true
+	return c
 }
 
 // capture is the ResponseWriter of a scan that runs as a job.

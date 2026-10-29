@@ -4,7 +4,7 @@ import { strict as assert } from "node:assert";
 import {
   answerToItems, labelReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
-  scanStep,
+  scanStep, scanPoll, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
 
 const ID = "0123456789abcdef0123456789abcdef";
@@ -133,6 +133,18 @@ test("scanStep (U18): wait while the scan job runs, then its answer or its error
   const no = { request_id: ID, error: "no food detected in the image", code: "not_food" };
   assert.deepEqual(scanStep({ status: "failed", http_status: 422, answer: no }), { kind: "error", status: 422, body: no });
   assert.deepEqual(scanStep({ status: "failed", http_status: 0 }), { kind: "error", status: 502, body: null });
+});
+
+test("scanPoll (X48c): a held poll at the version the app has; a second's wait with no version", () => {
+  const p = "/api/analyze/scan/" + ID;
+  assert.deepEqual(scanPoll(p, { status: "running", version: 3 }),
+    { path: p + "?since=3&wait=" + SCAN_HOLD_MS, sleepMs: 0, timeoutMs: SCAN_HOLD_MS + 10_000 });
+  assert.equal(scanPoll(p, { version: 0 }).path, p + "?since=0&wait=" + SCAN_HOLD_MS);
+  for (const old of [{ scan_id: ID, status: "running" }, null, { version: "2" }, { version: -1 }, { version: 1.5 }]) {
+    assert.deepEqual(scanPoll(p, old), { path: p, sleepMs: SCAN_POLL_MS, timeoutMs: 10_000 });
+  }
+  assert.deepEqual(scanPoll(p, null, true), { path: p, sleepMs: 0, timeoutMs: 10_000 }, "the first poll: at once");
+  assert.ok(SCAN_HOLD_MS + 10_000 < 30_000, "under the 30 s limit of the public name");
 });
 
 test("analyzeKind (U18): the limit of one user for the day gives the daily-limit sheet", () => {

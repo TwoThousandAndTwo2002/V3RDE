@@ -74,6 +74,19 @@ export function analyzeKind(body: any): AnalyzeKind {
 // one-request route gives (200, or an error body with its code).
 export const SCAN_POLL_MS = 1000; // the service asks for about one poll a second
 export const SCAN_WAIT_MS = 75_000;
+export const SCAN_HOLD_MS = 8000; // X48c: the service holds one poll until the job changes (at most 10 s)
+
+/** The next poll of a scan job (X48c). The first poll: a plain GET at once (the 202 has no version). A job with a
+ *  version: a held poll at once (since = that version), so each change comes back as it happens. A service with no
+ *  version (before X48c), or a lost answer: wait SCAN_POLL_MS, then a plain GET. */
+export function scanPoll(path: string, job: any, first = false): { path: string; sleepMs: number; timeoutMs: number } {
+  if (first) return { path, sleepMs: 0, timeoutMs: 10_000 };
+  const v = job && typeof job === "object" ? job.version : undefined;
+  if (typeof v === "number" && Number.isInteger(v) && v >= 0) {
+    return { path: `${path}?since=${v}&wait=${SCAN_HOLD_MS}`, sleepMs: 0, timeoutMs: SCAN_HOLD_MS + 10_000 };
+  }
+  return { path, sleepMs: SCAN_POLL_MS, timeoutMs: 10_000 };
+}
 export type ScanStep = { kind: "wait" } | { kind: "answer"; body: any } | { kind: "error"; status: number; body: any };
 export function scanStep(job: any): ScanStep {
   if (!job || typeof job !== "object" || job.status === "running" || job.http_status === undefined) return { kind: "wait" };

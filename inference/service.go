@@ -31,6 +31,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -632,7 +633,8 @@ func ledgerBoxes(ev *Event, inv *Inventory, answerOf map[int]int, noFood, listed
 
 // scanJob is GET .../scan/{id}: the job, to the caller that started it (the
 // same kind of caller and the same user); 404 for anything else, so an id
-// cannot be probed (OWASP API1:2023).
+// cannot be probed (OWASP API1:2023). With ?since=V&wait=MS the answer is
+// held until the job changes (X48c).
 func (c *ServiceConfig) scanJob(w http.ResponseWriter, r *http.Request) {
 	c.cors(w)
 	w.Header().Set("Cache-Control", "no-store")
@@ -641,7 +643,15 @@ func (c *ServiceConfig) scanJob(w http.ResponseWriter, r *http.Request) {
 		writeJSONResp(w, http.StatusUnauthorized, ErrorAnswer{Error: "sign in, or send the bearer token", Code: CodeUnauthorized})
 		return
 	}
-	j, found := c.scans.get(r.PathValue("id"), kind, u.ID)
+	// X48c: ?since=V&wait=MS holds the answer until the job is not at version V
+	// (scanjob.go); a bad or missing value is no hold.
+	since, err1 := strconv.Atoi(r.URL.Query().Get("since"))
+	wait, err2 := strconv.Atoi(r.URL.Query().Get("wait"))
+	hold := time.Duration(0)
+	if err1 == nil && err2 == nil && wait > 0 {
+		hold = time.Duration(wait) * time.Millisecond
+	}
+	j, found := c.scans.hold(r.Context().Done(), r.PathValue("id"), kind, u.ID, since, hold)
 	if !found {
 		writeJSONResp(w, http.StatusNotFound, ErrorAnswer{Error: "no such scan", Code: CodeNotFound})
 		return

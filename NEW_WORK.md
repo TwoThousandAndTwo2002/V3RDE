@@ -833,3 +833,19 @@ Through API Gateway every request seemed to come from the same address, so all c
 - The SME set API Gateway to send the caller's real address in the header `X-Client-Ip`. API Gateway replaces any value the caller sends.
 - The edge reads that address first, then the old header, and gives it to every service.
 - The edge does not pass `X-Client-Ip` on to the services.
+
+## 50. The app sees each step of a scan at once
+
+**When:** Oct 29 2026.
+**Meta models:** none (no model change).
+**Files:** `inference/scanjob.go`, `inference/service.go`, `inference/scanjob_test.go`, `mobile/src/logic.ts`, `mobile/src/api.ts`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`, `docs/analyze_scan_job_api.md`, `mobile/docs/web.md`
+**Sources:** `docs/sources/X48c.md`
+
+The app asked for the scan job once a second, so the answer came up to 1 s late.
+
+- Each scan job has a version. It goes up at each change: the stage, the boxes, a name, the end.
+- The app sends the version it has and `wait=8000`. The service holds the answer until the job changes, or for at most 10 s.
+- The app asks again at once. It does not sleep between polls, and it asks for the first time at once.
+- An older service has no version: the app then asks once a second, as before.
+- Tests: inference 84 -> 86, mobile 81 -> 82.
+
