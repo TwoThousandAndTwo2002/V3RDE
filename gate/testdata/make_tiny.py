@@ -1,0 +1,18 @@
+import json, numpy as np, tensorflow as tf
+tf.random.set_seed(7)
+inp = tf.keras.Input(shape=(8, 8, 3), batch_size=1)
+x = tf.keras.layers.Conv2D(6, 3, activation="relu")(inp)
+x = tf.keras.layers.GlobalAveragePooling2D()(x)
+x = tf.keras.layers.Dense(4)(x)
+out = tf.keras.layers.UnitNormalization()(x)
+m = tf.keras.Model(inp, out)
+conv = tf.lite.TFLiteConverter.from_keras_model(m)
+b = conv.convert()
+open("testdata/tiny.tflite", "wb").write(b)
+it = tf.lite.Interpreter(model_content=b); it.allocate_tensors()
+n = 8 * 8 * 3
+xin = np.array([((i * 7919) % 255) / 255.0 for i in range(n)], dtype=np.float32).reshape(1, 8, 8, 3)
+it.set_tensor(it.get_input_details()[0]["index"], xin); it.invoke()
+y = it.get_tensor(it.get_output_details()[0]["index"]).reshape(-1)
+json.dump({"argmax": int(np.argmax(y)), "y": [float(v) for v in y]}, open("testdata/tiny_ref.json", "w"))
+print(y, it.get_input_details()[0]["shape"], it.get_output_details()[0]["shape"])

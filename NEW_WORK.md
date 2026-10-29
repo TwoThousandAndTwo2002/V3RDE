@@ -547,3 +547,20 @@ The telemetry (a sidecar next to each service that records its CPU, memory and e
 - Checked against the old code: its own tests pass on the new code, and an independent review fed the same files to both in 300 random runs with no difference.
 - New, from that review: a line is on the disk before its read position is saved, so a power cut does not lose it; one broken file or line no longer stops the rest.
 - Tests: telemetry 19 (new).
+
+## 30. The food gate, written new for V3RDE
+
+**When:** Oct 29 2026.
+**Meta model:** PE-Core-S16-384 (Perception Encoder), the gate of entries 1 to 3.
+**Files:** `gate/gate.go`, `gate/preprocess.go`, `gate/decode_std.go`, `gate/decode_turbo.go`, `gate/litert.go`, `gate/open_litert.go`, `gate/open_stub.go`, `gate/handler.go`, `gate/events.go`, `gate/cmd/gate/main.go`, `gate/Dockerfile`, `gate/go.mod`, the tests and `gate/testdata/` (all new)
+**Sources:** `docs/sources/X38g.md`
+
+The food gate (it says if a photo shows food before any paid model call) existed before the Hackathon. V3RDE does not copy it: this is new code.
+
+- It keeps the routes, the answers, the events and the "fails closed" rule, so the services that call it do not change.
+- The defaults are now the PE-Core gate and its pinned files (D32); the old defaults were the earlier gate.
+- The LiteRT library is pinned for each CPU type, so the image also builds on an ARM box.
+- The decode and the resize give Pillow 12.3.0's bytes; the tests compare them with Pillow's own output.
+- A new test runs a tiny model through LiteRT and compares it with TensorFlow Lite's Python interpreter. It found a defect in a first version of the new code (a pointer that cgo refuses); that is fixed.
+- Checked against the old code: its own tests pass on the new code, and an independent review compared the two; its findings are fixed.
+- Tests: gate 26 (new); with the LiteRT and libjpeg-turbo tags 29, and these run in every image build.
