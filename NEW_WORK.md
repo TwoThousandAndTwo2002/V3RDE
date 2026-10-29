@@ -563,3 +563,22 @@ A translator can change or lose a placeholder such as `{n}`, or translate a name
 - The prompt gives the target language, the tag rule (#49) and the message id as the only context of a short text.
 - Regression tests (`i18n/muse/muse_test.go`, 5 tests, fake server). The i18n module now has 16 tests.
 - Not deployed by this change.
+
+---
+
+## 51. Lost in translation: rung 1, translate and score every message
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `i18n/rung/rung.go`, `i18n/rung/score.go`, `i18n/rung/util.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`, `qe/score.sh`
+**Sources:** `docs/sources/L4c.md`
+
+- `go run ./cmd/translate -lang es-419 -out <dir>` (in `i18n/`): every message of `en.json` goes to Muse Spark Open `k` times (default 1) with its tags (#49), 8 requests at a time.
+- Each answer is checked and its tags are put back. MetricX-24 (QE mode, the image of #44/#45) scores all good answers in one container run (`qe/score.sh`). For each message the answer with the lowest score is kept.
+- A message of only kept names (`V3RDE`, `WhatsApp`) is copied with no call.
+- The output goes outside the repo: `<lang>.json` (the kept text, its score, and the ids with no good answer) and `<lang>.ledger.jsonl` (one line for each try: the masked text, the raw answer, the error or score, the settings, the reasoning tokens and the `en.json` commit). A later change commits a reviewed result.
+- The scores rank the answers of one message. They are not an accuracy measure.
+- Regression tests (`i18n/rung/rung_test.go`, 2 tests, fake model and fake scorer). The i18n module now has 18 tests.
+- Not deployed by this change.
