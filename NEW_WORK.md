@@ -865,3 +865,17 @@ The scanner finds more than the title and the servings, but a listing kept only 
 - The app does not show the details yet. That needs a mockup first.
 - Tests: listings 28 -> 29, mobile 82 -> 83.
 
+## 52. The lists scroll, and Receive shows food of others only
+
+**When:** Oct 29 2026.
+**Meta models:** none (no model change).
+**Files:** `mobile/src/screens/Frame.tsx`, `mobile/src/screens/Give.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/ui.tsx` (`ScreenHead`), `mobile/src/listing.ts` (`othersOnly`), `mobile/src/words.ts`, `mobile/tests/listing.test.mts`, `mobile/tests/style.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48e.md`
+
+On the web the lists did not scroll: older listings and the next pages of Receive were out of reach.
+
+- The frame now has the height of the window, and each list scrolls inside it. Receive loads its next page as you scroll.
+- The title of Give and of Receive is in one row of the same height, so it does not move when you change the role.
+- Receive does not show your own listings. You see them under Give. When a page holds only your listings, the list asks for the next page at once.
+- Tests: mobile 83 -> 86.
+

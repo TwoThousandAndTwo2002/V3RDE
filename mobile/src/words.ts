@@ -43,7 +43,6 @@ export const RECEIVE = {
   maps: "Maps",
   chat: "WhatsApp",
   close: "Close",
-  yours: "Your listing",
   collected: "Collected",
   expired: "Expired",
   timeLeft: "Time left",

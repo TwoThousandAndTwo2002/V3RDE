@@ -1,14 +1,14 @@
 // Receive, written new for V3RDE (NEW_WORK_UI.md, UI 12; mobile/docs/style_guide.md "Receive").
 // "Available now": the listings that are up, photo first, in 1, 2 or 3 columns; more come as the list scrolls
 // (pull down to load again on a phone). Grab takes one; then a small sheet over its photo gives the pickup with
-// Maps and WhatsApp links. A listing of the user has no Grab.
+// Maps and WhatsApp links. The user's own listings are not in this list (U19: they are under Give).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking, Modal, RefreshControl, ScrollView, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
 import { ApiError, listings, type Listing } from "../api";
-import { addPage, chatLink, isGone, mapLink, timeText, withChange } from "../listing";
+import { chatLink, isGone, loadOthers, mapLink, othersOnly, timeText, withChange } from "../listing";
 import { layoutFor, size, space, useColors } from "../theme";
-import { Grid, ListingCard, Muted, Pill, Rise, Row, Sheet, Title, useNow, usePhoto } from "../ui";
+import { Grid, ListingCard, Muted, Pill, Rise, Row, ScreenHead, Sheet, Title, useNow, usePhoto } from "../ui";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
 import { RECEIVE, grabMessage, servings } from "../words";
@@ -41,8 +41,10 @@ export default function ReceiveScreen() {
     const round = again ? ++f.round : f.round; // a refresh makes the answers of earlier loads stale
     f.busy = true;
     try {
-      const got = addPage(again ? [] : f.items, await listings.active(again ? "" : f.next));
-      if (round !== f.round) return;
+      // U19: pages until one brings food of others (the user's own listings are not shown)
+      const got = await loadOthers((after) => listings.active(after), again ? [] : f.items, again ? "" : f.next, who.id,
+        () => round !== f.round);
+      if (!got || round !== f.round) return;
       Object.assign(f, { items: got.items, next: got.next, end: got.next === "" });
       setShown(got.items);
     } catch (err) {
@@ -56,7 +58,7 @@ export default function ReceiveScreen() {
         setPulling(false);
       }
     }
-  }, [ended, say]);
+  }, [ended, say, who.id]);
   useEffect(() => { more(true); }, [more]);
 
   const grab = async (l: Listing) => {
@@ -91,16 +93,15 @@ export default function ReceiveScreen() {
   }, [taken]);
 
   const side = page.topBar ? space.pad : space.gutter;
-  const cards = shown.map((l) => {
+  const others = othersOnly(shown, who.id);
+  const cards = others.map((l) => {
     const gone = isGone(l, now);
-    const mine = !!who.id && l.owner_id === who.id;
     return (
       <ListingCard key={l.id} testID={"card-" + l.id} photoPath={l.photo_url} title={l.title} line={servings(l.number_of_serving)}
         time={timeText(l, RECEIVE, now)} timeName={RECEIVE.timeLeft} gone={gone} tall extra={(
           <>
             <Muted lines={1}>{l.pickup_text}</Muted>
-            {mine ? <Muted>{RECEIVE.yours}</Muted> : null}
-            {!mine && !gone ? (
+            {!gone ? (
               <View style={{ marginTop: space.gap }}>
                 <Pill testID={"grab-" + l.id} title={RECEIVE.grab} name={RECEIVE.grab + ": " + l.title} busy={taking === l.id}
                   busyName={RECEIVE.grabbing} onPress={() => grab(l)} /></View>
@@ -123,8 +124,8 @@ export default function ReceiveScreen() {
         onContentSizeChange={(_w, h) => { if (viewH.current > 0 && h < viewH.current + size.loadAhead) more(); }}
         refreshControl={RN.Platform.OS === "web" ? undefined : (
           <RefreshControl refreshing={pulling} tintColor={col.accent} onRefresh={() => { setPulling(true); more(true); }} />)}>
-        <View style={{ marginBottom: space.gutter }}><Title>{RECEIVE.title}</Title></View>
-        {first ? <Muted>{RECEIVE.loading}</Muted> : shown.length === 0
+        <ScreenHead title={RECEIVE.title} />
+        {first || (others.length === 0 && !feed.current.end) ? <Muted>{RECEIVE.loading}</Muted> : others.length === 0
           ? <Muted center style={{ paddingVertical: space.bar }}>{RECEIVE.empty}</Muted>
           : <Grid columns={page.columns}>{cards}</Grid>}</ScrollView>
       <Modal visible={!!taken} transparent animationType="none" statusBarTranslucent onRequestClose={() => setTaken(null)}>

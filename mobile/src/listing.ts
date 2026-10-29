@@ -36,6 +36,28 @@ export function addPage(shown: Listing[], page: { items?: Listing[]; next?: stri
   return { items: [...shown, ...fresh], next: page.next ?? "" };
 }
 
+/** U19 (T9 2026-10-29: "for receive i dont want to see my own listings"): the feed without the user's own
+ *  listings; with no user id, all of them. */
+export function othersOnly(items: Listing[], userId: string | undefined): Listing[] {
+  return userId ? items.filter((l) => l.owner_id !== userId) : items;
+}
+
+/** U19: one load of the Receive feed. It asks for pages until a page brings a listing of someone else, the feed
+ *  ends, or `max` pages: a page of only the user's own listings adds nothing on the screen, so no scroll and no
+ *  size change would ask again. `stale()` true (a refresh started): null. The page fetch is the only network part. */
+export async function loadOthers(page: (after: string) => Promise<{ items?: Listing[]; next?: string }>,
+  shown: Listing[], after: string, userId: string | undefined, stale: () => boolean = () => false, max = 5,
+): Promise<{ items: Listing[]; next: string } | null> {
+  let got = { items: shown, next: after };
+  for (let k = 0; k < max; k++) {
+    const before = got.items.length;
+    got = addPage(got.items, await page(got.next));
+    if (stale()) return null;
+    if (got.next === "" || othersOnly(got.items.slice(before), userId).length > 0) break;
+  }
+  return got;
+}
+
 /** The feed after a grab: the grabbed listing takes the fields the services sent back. */
 export function withChange(items: Listing[], change: Partial<Listing> & { id: string }): Listing[] {
   return items.map((l) => (l.id === change.id ? { ...l, ...change } : l));

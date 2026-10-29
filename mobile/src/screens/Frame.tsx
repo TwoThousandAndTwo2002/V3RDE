@@ -64,9 +64,11 @@ export function Frame({ role, onRole, onMenu, onLogout, children }: {
     </View>
   );
   return (
-    <View style={{ flexGrow: 1 }}>
+    // U19: flex 1 + minHeight 0 bound the frame to the window, so the list of a role scrolls in it (with flexGrow
+    // only, the frame grew to the height of the whole list and the page could not scroll to older items)
+    <View style={{ flex: 1, minHeight: 0 }}>
       {bar}
-      <View nativeID="role-panel" {...(page.topBar ? { role: "tabpanel" as const } : {})} style={{ flex: 1 }}>{children}</View>
+      <View nativeID="role-panel" {...(page.topBar ? { role: "tabpanel" as const } : {})} style={{ flex: 1, minHeight: 0 }}>{children}</View>
     </View>
   );
 }

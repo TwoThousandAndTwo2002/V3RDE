@@ -146,3 +146,15 @@ test("the style guide lists no token that theme.ts does not have", () => {
     if (/^[a-z][A-Za-z]+$/.test(k) && l.includes("#") ) assert.ok(k in colours, `style_guide.md lists colour ${k}, which theme.ts does not have`);
   }
 });
+
+test("U19: the frame is bounded and both role screens use the one title row", () => {
+  const frame = code(join(ROOT, "src/screens/Frame.tsx"));
+  assert.match(frame, /<View style=\{\{ flex: 1, minHeight: 0 \}\}>\s*\{bar\}/, "the frame: flex 1 + minHeight 0 (else the list cannot scroll)");
+  assert.match(frame, /nativeID="role-panel"[^>]*style=\{\{ flex: 1, minHeight: 0 \}\}/, "the role panel: flex 1 + minHeight 0");
+  for (const name of ["Give", "Receive"]) {
+    const src = code(join(ROOT, `src/screens/${name}.tsx`));
+    assert.match(src, /<ScreenHead title=/, `${name} uses ScreenHead`);
+    assert.match(src, /<ScrollView/, `${name} scrolls`);
+  }
+  assert.doesNotMatch(code(join(ROOT, "src/screens/Receive.tsx")), /owner_id === who/, "Receive filters with othersOnly");
+});

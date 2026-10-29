@@ -545,6 +545,17 @@ export function Grid({ columns, children: cards }: { columns: number; children: 
   );
 }
 
+// ---------------------------------------------------------------- screen head
+
+/** U19: the title row of a role screen (Give, Receive): one height (a control), so the title is at the same level
+ *  in both roles, with or without the "+ New listing" pill next to it. */
+export function ScreenHead({ title, action }: { title: string; action?: React.ReactNode }) {
+  return (
+    <View style={{ minHeight: size.control, marginBottom: space.gutter, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <Title>{title}</Title>{action ?? null}</View>
+  );
+}
+
 // ---------------------------------------------------------------- review card
 
 /**

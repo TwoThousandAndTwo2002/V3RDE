@@ -1,7 +1,7 @@
 // Tests of the listing rules (src/listing.ts), written new for V3RDE (NEW_WORK_UI.md, UI 12).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { addPage, cameraFirst, chatLink, clock, isGone, mapLink, secondsLeft, timeText, withChange } from "../src/listing.ts";
+import { addPage, cameraFirst, chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText, withChange } from "../src/listing.ts";
 
 const T = Date.parse("2026-10-29T12:00:00Z");
 const at = (s: number) => new Date(T + s * 1000).toISOString();
@@ -14,6 +14,39 @@ test("time left and the clock", () => {
   assert.equal(clock(90), "1:30");
   assert.equal(clock(5), "0:05");
   assert.equal(clock(3725), "1:02:05");
+});
+
+test("othersOnly (U19): Receive shows no listing of the user", () => {
+  const a = { ...L("a", 60), owner_id: "u1" }, b = { ...L("b", 60), owner_id: "u2" }, c = L("c", 60);
+  assert.deepEqual(othersOnly([a, b, c], "u1").map((l) => l.id), ["b", "c"]);
+  assert.deepEqual(othersOnly([a, b, c], "").map((l) => l.id), ["a", "b", "c"]);
+  assert.deepEqual(othersOnly([a, b, c], undefined).map((l) => l.id), ["a", "b", "c"]);
+});
+
+test("loadOthers (U19): pages of only own listings do not stop the feed", async () => {
+  const own = (id: string) => ({ ...L(id, 60), owner_id: "me" }), other = (id: string) => ({ ...L(id, 60), owner_id: "x" });
+  const pages: Record<string, { items: any[]; next: string }> = {
+    "": { items: [own("a"), own("b")], next: "b" }, b: { items: [own("c")], next: "c" }, c: { items: [other("d")], next: "d" },
+    d: { items: [other("e")], next: "" },
+  };
+  const asked: string[] = [];
+  const page = async (after: string) => { asked.push(after); return pages[after]; };
+  const got = await loadOthers(page, [], "", "me");
+  assert.deepEqual(asked, ["", "b", "c"], "three pages in one load: the third brings food of others");
+  assert.deepEqual(got!.items.map((l) => l.id), ["a", "b", "c", "d"]);
+  assert.equal(got!.next, "d");
+  // the end of the feed stops it; max stops it; a refresh makes it stale
+  const all = await loadOthers(async () => ({ items: [own("z")], next: "" }), [], "", "me");
+  assert.deepEqual(all, { items: [{ ...L("z", 60), owner_id: "me" }], next: "" });
+  let n = 0;
+  const loop = await loadOthers(async () => ({ items: [own("p" + n++)], next: "more" }), [], "", "me", () => false, 3);
+  assert.equal(n, 3);
+  assert.equal(loop!.next, "more");
+  assert.equal(await loadOthers(page, [], "", "me", () => true), null);
+  // no user id: one page, as before
+  asked.length = 0;
+  await loadOthers(page, [], "", undefined);
+  assert.deepEqual(asked, [""]);
 });
 
 test("gone: collected or out of time", () => {

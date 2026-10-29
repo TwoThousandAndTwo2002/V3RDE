@@ -7,7 +7,7 @@ import { ScrollView, View, useWindowDimensions } from "react-native";
 import { ApiError, listings, type Listing } from "../api";
 import { cameraFirst, isGone, timeText } from "../listing";
 import { layoutFor, space } from "../theme";
-import { Grid, ListingCard, Muted, Pill, Title, useNow } from "../ui";
+import { Grid, ListingCard, Muted, Pill, ScreenHead, useNow } from "../ui";
 import NewListing from "./Capture";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
@@ -41,8 +41,7 @@ export default function GiveScreen() {
     <View style={{ flex: 1, minHeight: 0 }}>
       <Wallpaper />
       <ScrollView contentContainerStyle={[lane, { paddingTop: page.topBar ? space.pad : 0, paddingBottom: space.pad }]}>
-        <View style={{ marginBottom: space.gutter, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Title>{GIVE.title}</Title>{page.dialogs ? add : null}</View>
+        <ScreenHead title={GIVE.title} action={page.dialogs ? add : null} />
         {mine === null ? <Muted>{GIVE.loading}</Muted> : mine.length === 0
           ? <Muted center style={{ paddingVertical: space.bar }}>{GIVE.empty}</Muted>
           : <Grid columns={page.columns}>{mine.map((l) => (

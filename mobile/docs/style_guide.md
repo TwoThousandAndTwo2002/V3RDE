@@ -268,14 +268,15 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 ## Receive (`mobile/src/screens/Receive.tsx`, words in `mobile/src/words.ts`, rules in `mobile/src/listing.ts`)
 
-- "Available now" (`type.title`) `space.gutter` over the cards; the content is at most `maxWidth` wide and centred, `space.gutter` at the sides (`space.pad` with the top bar, and `space.pad` above). The doodles are behind it.
-- The cards in `columns` columns, `space.grid` apart. A listing card: the photo `size.feedPhoto` tall in `radius.card` (`accentSoft` while it loads); on it a `panel` panel, `space.inset` from the card edges, `radius.photo`, `space.group` padding, `space.hair` between lines: the title (`type.button`, at most 2 lines), the servings with the time pill at the right (`size.timeW`, m:ss in `onAccent` on `accent`; "Collected" or "Expired" in `muted` on `iconFill`), the pickup text (1 line), and the Grab pill `space.gap` under it. A listing of the user shows "Your listing" and no Grab. A card that is gone has `opacity.gone`.
+- "Available now" (`type.title`) in a `ScreenHead` (a row `size.control` high, so the title is at the same level as on Give, U19) `space.gutter` over the cards; the content is at most `maxWidth` wide and centred, `space.gutter` at the sides (`space.pad` with the top bar, and `space.pad` above). The doodles are behind it.
+- The cards in `columns` columns, `space.grid` apart. A listing card: the photo `size.feedPhoto` tall in `radius.card` (`accentSoft` while it loads); on it a `panel` panel, `space.inset` from the card edges, `radius.photo`, `space.group` padding, `space.hair` between lines: the title (`type.button`, at most 2 lines), the servings with the time pill at the right (`size.timeW`, m:ss in `onAccent` on `accent`; "Collected" or "Expired" in `muted` on `iconFill`), the pickup text (1 line), and the Grab pill `space.gap` under it. The user's own listings are not shown (U19; they are under Give). A card that is gone has `opacity.gone`.
 - More listings load when the list is `size.loadAhead` from its end, and at once while the cards do not fill the screen; on a phone, pull down to load again. Empty: "Nothing is offered now. Look again in a few minutes."
 - After Grab: a small `Sheet` over the listing photo: "You grabbed it", the title and the pickup text, and the pills "Maps" (a map search) and "WhatsApp" (a message to the giver). The ✕, a tap on the photo, Esc or Back closes it. A listing that someone took first (409) shows as collected, with a toast.
 
 ## Give (`mobile/src/screens/Give.tsx`)
 
-- "Your listings" with the same layout as Receive; the listing card has the photo `size.minePhoto` tall and only the title, the servings and the time pill. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
+- The list of each role scrolls inside the frame (U19: the frame is `flex: 1` with `minHeight: 0`, so it is never taller than the window).
+- "Your listings" in the same `ScreenHead` as Receive (with "+ New listing" at its right on a wide screen) and the same layout as Receive; the listing card has the photo `size.minePhoto` tall and only the title, the servings and the time pill. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
 
 ## Capture (`mobile/src/screens/Capture.tsx`, words in `mobile/src/words.ts`, rules in `mobile/src/capture.ts`)
 
