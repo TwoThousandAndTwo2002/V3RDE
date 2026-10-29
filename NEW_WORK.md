@@ -490,3 +490,24 @@ In #44, each change to a package pin built the whole package layer again and dow
 - Each run of the apply script shows, for every build step, whether it came from the cache.
 - A new regression test keeps this in place (`qe/test_qe.py`, 7 tests). The smoke test and its scores are the same as in #44.
 - Not deployed by this change.
+
+---
+
+## 47. Lost in translation: one English source file and the language list
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`. It reads the app code of `ui` at one pinned commit.
+**Meta models:** none in this change. The file is the input that Muse Spark Open will translate.
+**Files:** `i18n/` (a Go module: `lex.go`, `extract.go`, `gitread.go`, `languages.go`, `cmd/extract`, `i18n_test.go`, `testdata/`), `i18n/en.json`, `i18n/skipped.json`, `i18n/rules.json`, `i18n/source.json`, `i18n/languages.json`
+**Sources:** `docs/sources/L3.md`
+
+The English text of the app was in many files (`words.ts`, `signin.ts`, `logic.ts`, `ui.tsx` and others). Some lines were made by joining parts with `+`, which a translator cannot put in a different word order.
+
+- A Go extractor reads every `.ts` and `.tsx` file of `mobile/src` on branch `ui` at the commit in `i18n/source.json`, directly from git. It does not copy or change the app code.
+- Each line of text becomes one message in `i18n/en.json`, with an id (`VOICE.rename`), the full text with its values as placeholders (`Item {n}: “{from}” to “{to}”`), and the file and line it comes from. This includes the screen-reader labels.
+- Every other string of the app is in `i18n/skipped.json` with the rule that skipped it (code word, compared value, style or test id, color, SVG path, URL). A person can read the two files and see that no text is missing. The few decisions that a rule cannot make are in `i18n/rules.json`, each with a reason.
+- Some messages are parts that the app joins (for example `item found` for `plural()`). They are marked with the function they go to. The app must change to whole messages and per-language plural forms before those lines translate well; that is work for the `ui` branch, not this change.
+- `i18n/languages.json` lists English (source), Spanish for Latin America (`es-419`, first), Brazilian Portuguese (`pt-BR`), Simplified Chinese (`zh-Hans`), Hindi (`hi`) and Modern Standard Arabic (`ar-001`, right to left), and the names that stay in English (`V3RDE`, `WhatsApp`).
+- Regression tests (`i18n/i18n_test.go`, 7 tests): the lexer (comments, regex, escapes, nested templates), JSX text fails, the message rules, stale rules fail, `en.json` and `skipped.json` are what the extractor makes from the pinned commit, the language list (each native name in its own script), and the format of `en.json`.
+- When the app text changes on `ui`: put the new commit in `i18n/source.json` and run `go run ./cmd/extract` in `i18n/`.
+- Not deployed by this change.

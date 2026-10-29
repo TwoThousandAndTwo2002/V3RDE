@@ -1,0 +1,1165 @@
+{
+  "source": {
+    "branch": "ui",
+    "commit": "c36d8a7ded305d51c3757d4e85aaa4fa926d93b2",
+    "dir": "mobile/src"
+  },
+  "language": "en",
+  "messages": [
+    {
+      "id": "api.request.timed_out_try_again",
+      "text": "Timed out, try again",
+      "where": "api.ts:64"
+    },
+    {
+      "id": "api.request.network_error_check_the",
+      "text": "Network error, check the connection",
+      "where": "api.ts:64"
+    },
+    {
+      "id": "api.analyze.stopped",
+      "text": "Stopped",
+      "where": "api.ts:135",
+      "arg": "ApiError"
+    },
+    {
+      "id": "api.analyze.timed_out_try_again",
+      "text": "Timed out, try again",
+      "where": "api.ts:136",
+      "arg": "ApiError"
+    },
+    {
+      "id": "api.analyze.try_again",
+      "text": "Try again",
+      "where": "api.ts:143",
+      "arg": "ApiError"
+    },
+    {
+      "id": "api.photoUrl.photo",
+      "text": "photo {status}",
+      "params": [
+        "status"
+      ],
+      "where": "api.ts:193",
+      "arg": "ApiError"
+    },
+    {
+      "id": "api.photoUrl.photo_read_failed",
+      "text": "photo read failed",
+      "where": "api.ts:198",
+      "arg": "Error"
+    },
+    {
+      "id": "FORM_WORDS.title",
+      "text": "Give a title of 1 to 80 characters",
+      "where": "capture.ts:34"
+    },
+    {
+      "id": "FORM_WORDS.servings",
+      "text": "Give servings from 1 to 99",
+      "where": "capture.ts:35"
+    },
+    {
+      "id": "FORM_WORDS.pickup",
+      "text": "Give pickup details of 1 to 200 characters",
+      "where": "capture.ts:36"
+    },
+    {
+      "id": "capture.sourceNote.from_the_barcode",
+      "text": "From the barcode {barcode}",
+      "params": [
+        "barcode"
+      ],
+      "where": "capture.ts:61"
+    },
+    {
+      "id": "capture.sourceNote.the_scanner_says",
+      "text": "The scanner says: {description}",
+      "params": [
+        "description"
+      ],
+      "where": "capture.ts:62"
+    },
+    {
+      "id": "clipsession.a_recording_is_already",
+      "text": "A recording is already running",
+      "where": "clipsession.ts:16",
+      "arg": "super"
+    },
+    {
+      "id": "clipsession.the_recording_was_cancelled",
+      "text": "The recording was cancelled",
+      "where": "clipsession.ts:22",
+      "arg": "super"
+    },
+    {
+      "id": "clipsession.not_recording",
+      "text": "Not recording",
+      "where": "clipsession.ts:108",
+      "arg": "Error"
+    },
+    {
+      "id": "logic.retryText.the_scanner_is_busy",
+      "text": "The scanner is busy. Wait a few seconds — your photo is kept.",
+      "where": "logic.ts:87"
+    },
+    {
+      "id": "logic.retryText.too_many_photos_this",
+      "text": "Too many photos this minute. Wait a minute — your photo is kept.",
+      "where": "logic.ts:88"
+    },
+    {
+      "id": "logic.retryText.the_food_check_is",
+      "text": "The food check is not available right now — your photo is kept.",
+      "where": "logic.ts:89"
+    },
+    {
+      "id": "logic.retryText.this_photo_took_too",
+      "text": "This photo took too long. Try a closer photo of fewer items — your photo is kept.",
+      "where": "logic.ts:90"
+    },
+    {
+      "id": "logic.retryText.the_food_scanner_is",
+      "text": "The food scanner is busy, try again — your photo is kept.",
+      "where": "logic.ts:91"
+    },
+    {
+      "id": "logic.retryText.request_failed",
+      "text": "Request failed ({status})",
+      "params": [
+        "status"
+      ],
+      "where": "logic.ts:92"
+    },
+    {
+      "id": "logic.foundTitle.item_found",
+      "text": "item found",
+      "where": "logic.ts:99",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.foundTitle.items_found",
+      "text": "items found",
+      "where": "logic.ts:99",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postTitle.post",
+      "text": "Post {plural}",
+      "params": [
+        "plural"
+      ],
+      "where": "logic.ts:100"
+    },
+    {
+      "id": "logic.postTitle.listing",
+      "text": "listing",
+      "where": "logic.ts:100",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postTitle.listings",
+      "text": "listings",
+      "where": "logic.ts:100",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postingText",
+      "text": "Posting {i} of {n}…",
+      "params": [
+        "i",
+        "n"
+      ],
+      "where": "logic.ts:101"
+    },
+    {
+      "id": "logic.notPostedTitle.item_not_posted",
+      "text": "item not posted",
+      "where": "logic.ts:102",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.notPostedTitle.items_not_posted",
+      "text": "items not posted",
+      "where": "logic.ts:102",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postedSummary.listing",
+      "text": "listing",
+      "where": "logic.ts:104",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postedSummary.listings",
+      "text": "listings",
+      "where": "logic.ts:104",
+      "arg": "plural"
+    },
+    {
+      "id": "logic.postedSummary.1_item_is",
+      "text": "1 item is",
+      "where": "logic.ts:104"
+    },
+    {
+      "id": "logic.postedSummary.items_are",
+      "text": "{left} items are",
+      "params": [
+        "left"
+      ],
+      "where": "logic.ts:104"
+    },
+    {
+      "id": "logic.postedSummary.posted_kept_here_try",
+      "text": "{plural} posted. {p2} kept here; try again.",
+      "params": [
+        "plural",
+        "p2"
+      ],
+      "where": "logic.ts:104"
+    },
+    {
+      "id": "FIXED_TEXT.401",
+      "text": "Please log in again",
+      "where": "logic.ts:165"
+    },
+    {
+      "id": "FIXED_TEXT.429",
+      "text": "Too many requests, wait a minute",
+      "where": "logic.ts:166"
+    },
+    {
+      "id": "logic.errorMessage.the_food_scanner_is",
+      "text": "The food scanner is busy, try again",
+      "where": "logic.ts:174"
+    },
+    {
+      "id": "logic.errorMessage.the_service_is_busy",
+      "text": "The service is busy, try again",
+      "where": "logic.ts:174"
+    },
+    {
+      "id": "logic.errorMessage.request_failed",
+      "text": "Request failed ({status})",
+      "params": [
+        "status"
+      ],
+      "where": "logic.ts:176"
+    },
+    {
+      "id": "SIGN_IN.title",
+      "text": "Share or find a meal",
+      "where": "signin.ts:9"
+    },
+    {
+      "id": "SIGN_IN.line",
+      "text": "Sign in or sign up",
+      "where": "signin.ts:10"
+    },
+    {
+      "id": "SIGN_IN.email",
+      "text": "Email",
+      "where": "signin.ts:11"
+    },
+    {
+      "id": "SIGN_IN.emailHint",
+      "text": "you@email.com",
+      "where": "signin.ts:12"
+    },
+    {
+      "id": "SIGN_IN.password",
+      "text": "Password",
+      "where": "signin.ts:13"
+    },
+    {
+      "id": "SIGN_IN.rule",
+      "text": "{MIN_PASSWORD} characters or more",
+      "params": [
+        "MIN_PASSWORD"
+      ],
+      "where": "signin.ts:14"
+    },
+    {
+      "id": "SIGN_IN.incomplete",
+      "text": "Enter your email and a password of {MIN_PASSWORD} characters or more",
+      "params": [
+        "MIN_PASSWORD"
+      ],
+      "where": "signin.ts:15"
+    },
+    {
+      "id": "SIGN_IN.badEmail",
+      "text": "Enter an email like you@email.com",
+      "where": "signin.ts:16"
+    },
+    {
+      "id": "SIGN_IN.waiting",
+      "text": "Signing in…",
+      "where": "signin.ts:17"
+    },
+    {
+      "id": "SIGN_IN.noAccount",
+      "text": "No account found.",
+      "where": "signin.ts:18"
+    },
+    {
+      "id": "SIGN_IN.create",
+      "text": "Create one",
+      "where": "signin.ts:19"
+    },
+    {
+      "id": "SIGN_IN.go",
+      "text": "Continue",
+      "where": "signin.ts:20"
+    },
+    {
+      "id": "SIGN_IN.show",
+      "text": "Show",
+      "where": "signin.ts:21"
+    },
+    {
+      "id": "SIGN_IN.hide",
+      "text": "Hide",
+      "where": "signin.ts:22"
+    },
+    {
+      "id": "SIGN_IN.showName",
+      "text": "Show password",
+      "where": "signin.ts:23"
+    },
+    {
+      "id": "SIGN_IN.hideName",
+      "text": "Hide password",
+      "where": "signin.ts:24"
+    },
+    {
+      "id": "RESET.forgot",
+      "text": "Forgot password?",
+      "where": "signin.ts:59"
+    },
+    {
+      "id": "RESET.askTitle",
+      "text": "Reset your password",
+      "where": "signin.ts:60"
+    },
+    {
+      "id": "RESET.askLine",
+      "text": "We send a link to your email",
+      "where": "signin.ts:61"
+    },
+    {
+      "id": "RESET.send",
+      "text": "Send link",
+      "where": "signin.ts:62"
+    },
+    {
+      "id": "RESET.sending",
+      "text": "Sending…",
+      "where": "signin.ts:63"
+    },
+    {
+      "id": "RESET.back",
+      "text": "Back to sign in",
+      "where": "signin.ts:64"
+    },
+    {
+      "id": "RESET.sentTitle",
+      "text": "Check your email",
+      "where": "signin.ts:65"
+    },
+    {
+      "id": "RESET.sent",
+      "text": "If an account uses {email}, a link to set a new password is on its way. It works for {RESET_MINUTES} minutes.",
+      "params": [
+        "email",
+        "RESET_MINUTES"
+      ],
+      "where": "signin.ts:66"
+    },
+    {
+      "id": "RESET.newTitle",
+      "text": "Set a new password",
+      "where": "signin.ts:67"
+    },
+    {
+      "id": "RESET.newLine",
+      "text": "Choose a password of {MIN_PASSWORD} characters or more",
+      "params": [
+        "MIN_PASSWORD"
+      ],
+      "where": "signin.ts:68"
+    },
+    {
+      "id": "RESET.newPassword",
+      "text": "New password",
+      "where": "signin.ts:69"
+    },
+    {
+      "id": "RESET.save",
+      "text": "Save password",
+      "where": "signin.ts:70"
+    },
+    {
+      "id": "RESET.saving",
+      "text": "Saving…",
+      "where": "signin.ts:71"
+    },
+    {
+      "id": "RESET.short",
+      "text": "Use {MIN_PASSWORD} characters or more",
+      "params": [
+        "MIN_PASSWORD"
+      ],
+      "where": "signin.ts:72"
+    },
+    {
+      "id": "RESET.expired",
+      "text": "This link has expired or was used.",
+      "where": "signin.ts:73"
+    },
+    {
+      "id": "RESET.again",
+      "text": "Send a new link",
+      "where": "signin.ts:74"
+    },
+    {
+      "id": "ui.Shutter",
+      "text": "Take photo",
+      "where": "ui.tsx:126"
+    },
+    {
+      "id": "ui.ReviewCard.title_of_item",
+      "text": "Title of item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "ui.tsx:565"
+    },
+    {
+      "id": "ui.ReviewCard.remove_item",
+      "text": "Remove item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "ui.tsx:566"
+    },
+    {
+      "id": "ui.ReviewCard.fewer_servings_of_item",
+      "text": "Fewer servings of item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "ui.tsx:569"
+    },
+    {
+      "id": "ui.ReviewCard.servings_of_item",
+      "text": "Servings of item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "ui.tsx:571"
+    },
+    {
+      "id": "ui.ReviewCard.more_servings_of_item",
+      "text": "More servings of item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "ui.tsx:573"
+    },
+    {
+      "id": "voicerec.start.allow_the_microphone_to",
+      "text": "Allow the microphone to talk to the app",
+      "where": "voicerec.ts:77",
+      "arg": "VoiceError"
+    },
+    {
+      "id": "voicerec.start.the_microphone_did_not",
+      "text": "The microphone did not start",
+      "where": "voicerec.ts:83",
+      "arg": "VoiceError"
+    },
+    {
+      "id": "webcam.frame.no_canvas",
+      "text": "no canvas",
+      "where": "webcam.ts:55",
+      "arg": "Error"
+    },
+    {
+      "id": "webcam.frame.no_blob",
+      "text": "no blob",
+      "where": "webcam.ts:58",
+      "arg": "Error"
+    },
+    {
+      "id": "webcam.no_canvas",
+      "text": "no canvas",
+      "where": "webcam.ts:82",
+      "arg": "Error"
+    },
+    {
+      "id": "webcam.no_blob",
+      "text": "no blob",
+      "where": "webcam.ts:86",
+      "arg": "Error"
+    },
+    {
+      "id": "webvoice.startWebCapture.this_browser_cannot_record",
+      "text": "This browser cannot record here (https is needed)",
+      "where": "webvoice.ts:25",
+      "arg": "VoiceError"
+    },
+    {
+      "id": "webvoice.startWebCapture.allow_the_microphone_to",
+      "text": "Allow the microphone to talk to the app",
+      "where": "webvoice.ts:32"
+    },
+    {
+      "id": "webvoice.startWebCapture.the_microphone_did_not",
+      "text": "The microphone did not start",
+      "where": "webvoice.ts:32"
+    },
+    {
+      "id": "webvoice.startWebCapture.the_microphone_did_not_2",
+      "text": "The microphone did not start",
+      "where": "webvoice.ts:51",
+      "arg": "VoiceError"
+    },
+    {
+      "id": "ROLE.title",
+      "text": "What do you want to do?",
+      "where": "words.ts:6"
+    },
+    {
+      "id": "ROLE.give",
+      "text": "Give",
+      "where": "words.ts:7"
+    },
+    {
+      "id": "ROLE.giveLine",
+      "text": "Share your food",
+      "where": "words.ts:8"
+    },
+    {
+      "id": "ROLE.receive",
+      "text": "Receive",
+      "where": "words.ts:9"
+    },
+    {
+      "id": "ROLE.receiveLine",
+      "text": "Find food near you",
+      "where": "words.ts:10"
+    },
+    {
+      "id": "ROLE.logout",
+      "text": "Log out",
+      "where": "words.ts:11"
+    },
+    {
+      "id": "ROLE.close",
+      "text": "Close",
+      "where": "words.ts:12"
+    },
+    {
+      "id": "ROLE.selected",
+      "text": "Selected",
+      "where": "words.ts:13"
+    },
+    {
+      "id": "ROLE.change",
+      "text": "Change role",
+      "where": "words.ts:14"
+    },
+    {
+      "id": "FRAME.brand",
+      "text": "V3RDE",
+      "where": "words.ts:28"
+    },
+    {
+      "id": "FRAME.menu",
+      "text": "Menu",
+      "where": "words.ts:29"
+    },
+    {
+      "id": "FRAME.tabs",
+      "text": "Roles",
+      "where": "words.ts:30"
+    },
+    {
+      "id": "FRAME.expired",
+      "text": "Your session has ended. Sign in again.",
+      "where": "words.ts:31"
+    },
+    {
+      "id": "RECEIVE.title",
+      "text": "Available now",
+      "where": "words.ts:36"
+    },
+    {
+      "id": "RECEIVE.loading",
+      "text": "Loading…",
+      "where": "words.ts:37"
+    },
+    {
+      "id": "RECEIVE.empty",
+      "text": "Nothing is offered now. Look again in a few minutes.",
+      "where": "words.ts:38"
+    },
+    {
+      "id": "RECEIVE.grab",
+      "text": "Grab",
+      "where": "words.ts:39"
+    },
+    {
+      "id": "RECEIVE.grabbing",
+      "text": "Grabbing…",
+      "where": "words.ts:40"
+    },
+    {
+      "id": "RECEIVE.gone",
+      "text": "This food is gone",
+      "where": "words.ts:41"
+    },
+    {
+      "id": "RECEIVE.grabbed",
+      "text": "You grabbed it",
+      "where": "words.ts:42"
+    },
+    {
+      "id": "RECEIVE.maps",
+      "text": "Maps",
+      "where": "words.ts:43"
+    },
+    {
+      "id": "RECEIVE.chat",
+      "text": "WhatsApp",
+      "where": "words.ts:44"
+    },
+    {
+      "id": "RECEIVE.close",
+      "text": "Close",
+      "where": "words.ts:45"
+    },
+    {
+      "id": "RECEIVE.yours",
+      "text": "Your listing",
+      "where": "words.ts:46"
+    },
+    {
+      "id": "RECEIVE.collected",
+      "text": "Collected",
+      "where": "words.ts:47"
+    },
+    {
+      "id": "RECEIVE.expired",
+      "text": "Expired",
+      "where": "words.ts:48"
+    },
+    {
+      "id": "RECEIVE.timeLeft",
+      "text": "Time left",
+      "where": "words.ts:49"
+    },
+    {
+      "id": "words.servings.1_serving",
+      "text": "1 serving",
+      "where": "words.ts:54"
+    },
+    {
+      "id": "words.servings.servings",
+      "text": "{n} servings",
+      "params": [
+        "n"
+      ],
+      "where": "words.ts:54"
+    },
+    {
+      "id": "words.grabMessage",
+      "text": "Hi! I grabbed \"{title}\" on V3RDE ({servings}). Pickup: {pickup_text}. I am {email}. When can I come?",
+      "params": [
+        "title",
+        "servings",
+        "pickup_text",
+        "email"
+      ],
+      "where": "words.ts:59"
+    },
+    {
+      "id": "GIVE.title",
+      "text": "Your listings",
+      "where": "words.ts:64"
+    },
+    {
+      "id": "GIVE.loading",
+      "text": "Loading…",
+      "where": "words.ts:65"
+    },
+    {
+      "id": "GIVE.empty",
+      "text": "Nothing is listed yet. Take a photo of a meal to share it.",
+      "where": "words.ts:66"
+    },
+    {
+      "id": "GIVE.add",
+      "text": "+ New listing",
+      "where": "words.ts:67"
+    },
+    {
+      "id": "words.postedText.listings_are_posted_they",
+      "text": "{n} listings are posted. They stay up for 30 minutes.",
+      "params": [
+        "n"
+      ],
+      "where": "words.ts:72"
+    },
+    {
+      "id": "words.postedText.listed_it_stays_up",
+      "text": "Listed. It stays up for 30 minutes.",
+      "where": "words.ts:72"
+    },
+    {
+      "id": "CAPTURE.hint",
+      "text": "Point at a barcode, or take a photo of the food",
+      "where": "words.ts:77"
+    },
+    {
+      "id": "CAPTURE.dropHint",
+      "text": "or drop an image here",
+      "where": "words.ts:78"
+    },
+    {
+      "id": "CAPTURE.dropNow",
+      "text": "Drop to use this image",
+      "where": "words.ts:79"
+    },
+    {
+      "id": "CAPTURE.close",
+      "text": "Close the camera",
+      "where": "words.ts:80"
+    },
+    {
+      "id": "CAPTURE.upload",
+      "text": "Upload a photo",
+      "where": "words.ts:81"
+    },
+    {
+      "id": "CAPTURE.shoot",
+      "text": "Take photo",
+      "where": "words.ts:82"
+    },
+    {
+      "id": "CAPTURE.cancel",
+      "text": "Cancel",
+      "where": "words.ts:83"
+    },
+    {
+      "id": "CAPTURE.allow",
+      "text": "Allow camera access to take a photo.",
+      "where": "words.ts:84"
+    },
+    {
+      "id": "CAPTURE.allowLink",
+      "text": "Allow camera",
+      "where": "words.ts:85"
+    },
+    {
+      "id": "CAPTURE.blocked",
+      "text": "Camera access is off. Upload a photo.",
+      "where": "words.ts:86"
+    },
+    {
+      "id": "CAPTURE.shotFailed",
+      "text": "The photo failed. Try again.",
+      "where": "words.ts:87"
+    },
+    {
+      "id": "CAPTURE.use",
+      "text": "Use this photo?",
+      "where": "words.ts:88"
+    },
+    {
+      "id": "CAPTURE.again",
+      "text": "Try again?",
+      "where": "words.ts:89"
+    },
+    {
+      "id": "CAPTURE.retake",
+      "text": "Retake",
+      "where": "words.ts:90"
+    },
+    {
+      "id": "CAPTURE.usePhoto",
+      "text": "Use photo",
+      "where": "words.ts:91"
+    },
+    {
+      "id": "CAPTURE.tryAgain",
+      "text": "Try again",
+      "where": "words.ts:92"
+    },
+    {
+      "id": "CAPTURE.barcode",
+      "text": "Barcode {code}",
+      "params": [
+        "code"
+      ],
+      "where": "words.ts:93"
+    },
+    {
+      "id": "CAPTURE.analyzing",
+      "text": "Analyzing…",
+      "where": "words.ts:94"
+    },
+    {
+      "id": "CAPTURE.notFood",
+      "text": "Try a food item",
+      "where": "words.ts:95"
+    },
+    {
+      "id": "CAPTURE.notFoodLine",
+      "text": "This does not look like food. Take a photo of the food item.",
+      "where": "words.ts:96"
+    },
+    {
+      "id": "CAPTURE.noNameOne",
+      "text": "The scanner cannot name this item",
+      "where": "words.ts:97"
+    },
+    {
+      "id": "CAPTURE.noNameOneLine",
+      "text": "Take a closer photo of the food item.",
+      "where": "words.ts:98"
+    },
+    {
+      "id": "CAPTURE.noNameMany",
+      "text": "The scanner cannot name these items",
+      "where": "words.ts:99"
+    },
+    {
+      "id": "CAPTURE.noNameManyLine",
+      "text": "Take a closer photo of fewer items.",
+      "where": "words.ts:100"
+    },
+    {
+      "id": "CAPTURE.listed",
+      "text": "Already listed",
+      "where": "words.ts:101"
+    },
+    {
+      "id": "CAPTURE.listedLine",
+      "text": "This item is already up in Your listings.",
+      "where": "words.ts:102"
+    },
+    {
+      "id": "CAPTURE.seeMine",
+      "text": "See my listings",
+      "where": "words.ts:103"
+    },
+    {
+      "id": "CAPTURE.paused",
+      "text": "Scanning is paused",
+      "where": "words.ts:104"
+    },
+    {
+      "id": "CAPTURE.pausedLine",
+      "text": "The scanner reached the limit for today. A barcode still works.",
+      "where": "words.ts:105"
+    },
+    {
+      "id": "CAPTURE.closeFlow",
+      "text": "Close",
+      "where": "words.ts:106"
+    },
+    {
+      "id": "REVIEW.one",
+      "text": "Your listing",
+      "where": "words.ts:111"
+    },
+    {
+      "id": "REVIEW.check",
+      "text": "Check each item. Remove what you do not want to share.",
+      "where": "words.ts:112"
+    },
+    {
+      "id": "REVIEW.title",
+      "text": "Title",
+      "where": "words.ts:113"
+    },
+    {
+      "id": "REVIEW.servings",
+      "text": "Servings",
+      "where": "words.ts:114"
+    },
+    {
+      "id": "REVIEW.fewer",
+      "text": "Fewer servings",
+      "where": "words.ts:115"
+    },
+    {
+      "id": "REVIEW.more",
+      "text": "More servings",
+      "where": "words.ts:116"
+    },
+    {
+      "id": "REVIEW.pickup",
+      "text": "Pickup details",
+      "where": "words.ts:117"
+    },
+    {
+      "id": "REVIEW.pickupAll",
+      "text": "Pickup details (for all items)",
+      "where": "words.ts:118"
+    },
+    {
+      "id": "REVIEW.pickupHint",
+      "text": "Where to collect, for example Lobby of 12 Main St",
+      "where": "words.ts:119"
+    },
+    {
+      "id": "REVIEW.startOver",
+      "text": "Start over",
+      "where": "words.ts:120"
+    },
+    {
+      "id": "REVIEW.post",
+      "text": "Post listing",
+      "where": "words.ts:121"
+    },
+    {
+      "id": "REVIEW.posting",
+      "text": "Posting…",
+      "where": "words.ts:122"
+    },
+    {
+      "id": "REVIEW.notPosted",
+      "text": "This item did not post. It stays here.",
+      "where": "words.ts:123"
+    },
+    {
+      "id": "REVIEW.nonePosted",
+      "text": "No item posted. Try again.",
+      "where": "words.ts:124"
+    },
+    {
+      "id": "TOUCH.light",
+      "text": "Better light",
+      "where": "words.ts:129"
+    },
+    {
+      "id": "TOUCH.background",
+      "text": "Plain background",
+      "where": "words.ts:130"
+    },
+    {
+      "id": "TOUCH.working",
+      "text": "Touching up the photo…",
+      "where": "words.ts:131"
+    },
+    {
+      "id": "TOUCH.original",
+      "text": "Original",
+      "where": "words.ts:132"
+    },
+    {
+      "id": "TOUCH.edit",
+      "text": "Touched up",
+      "where": "words.ts:133"
+    },
+    {
+      "id": "TOUCH.choose",
+      "text": "Choose the photo to post:",
+      "where": "words.ts:134"
+    },
+    {
+      "id": "TOUCH.kept",
+      "text": "The photo stays as it is: the check saw a change to the food.",
+      "where": "words.ts:135"
+    },
+    {
+      "id": "TOUCH.failed",
+      "text": "The touch-up did not work. The photo stays as it is.",
+      "where": "words.ts:136"
+    },
+    {
+      "id": "TOUCH.busy",
+      "text": "The touch-up is busy. Try again in a minute.",
+      "where": "words.ts:137"
+    },
+    {
+      "id": "TOUCH.paused",
+      "text": "Touch-up is paused for today.",
+      "where": "words.ts:138"
+    },
+    {
+      "id": "TOUCH.wait",
+      "text": "Wait for the touch-up to end, then post.",
+      "where": "words.ts:139"
+    },
+    {
+      "id": "TOUCH.ofItem",
+      "text": "of item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "words.ts:140"
+    },
+    {
+      "id": "VOICE.say",
+      "text": "Say what to change",
+      "where": "words.ts:145"
+    },
+    {
+      "id": "VOICE.start",
+      "text": "Start talking",
+      "where": "words.ts:146"
+    },
+    {
+      "id": "VOICE.stop",
+      "text": "Stop talking",
+      "where": "words.ts:147"
+    },
+    {
+      "id": "VOICE.listening",
+      "text": "Listening… Tap to stop.",
+      "where": "words.ts:148"
+    },
+    {
+      "id": "VOICE.working",
+      "text": "Reading what you said…",
+      "where": "words.ts:149"
+    },
+    {
+      "id": "VOICE.heard",
+      "text": "You said: “{t}”",
+      "params": [
+        "t"
+      ],
+      "where": "words.ts:150"
+    },
+    {
+      "id": "VOICE.apply",
+      "text": "Apply changes",
+      "where": "words.ts:151"
+    },
+    {
+      "id": "VOICE.keep",
+      "text": "Keep as is",
+      "where": "words.ts:152"
+    },
+    {
+      "id": "VOICE.ok",
+      "text": "OK",
+      "where": "words.ts:153"
+    },
+    {
+      "id": "VOICE.micOff",
+      "text": "Allow the microphone to talk.",
+      "where": "words.ts:154"
+    },
+    {
+      "id": "VOICE.failed",
+      "text": "Could not read what you said. Try again.",
+      "where": "words.ts:155"
+    },
+    {
+      "id": "VOICE.noSpeech",
+      "text": "No speech was heard. Try again.",
+      "where": "words.ts:156"
+    },
+    {
+      "id": "VOICE.busy",
+      "text": "Voice is busy. Try again in a minute.",
+      "where": "words.ts:157"
+    },
+    {
+      "id": "VOICE.paused",
+      "text": "Voice is paused for today.",
+      "where": "words.ts:158"
+    },
+    {
+      "id": "VOICE.rename",
+      "text": "Item {n}: “{from}” to “{to}”",
+      "params": [
+        "n",
+        "from",
+        "to"
+      ],
+      "where": "words.ts:159"
+    },
+    {
+      "id": "VOICE.servings",
+      "text": "Item {n}: {from} to {to} servings",
+      "params": [
+        "n",
+        "from",
+        "to"
+      ],
+      "where": "words.ts:160"
+    },
+    {
+      "id": "VOICE.remove",
+      "text": "Remove item {n}: {title}",
+      "params": [
+        "n",
+        "title"
+      ],
+      "where": "words.ts:161"
+    },
+    {
+      "id": "VOICE.pickup",
+      "text": "Pickup: {text}",
+      "params": [
+        "text"
+      ],
+      "where": "words.ts:162"
+    },
+    {
+      "id": "VOICE.question",
+      "text": "Question: {text}",
+      "params": [
+        "text"
+      ],
+      "where": "words.ts:163"
+    },
+    {
+      "id": "VOICE.notAdded",
+      "text": "Not added (a listing needs a photo): {title}, {n} servings",
+      "params": [
+        "title",
+        "n"
+      ],
+      "where": "words.ts:164"
+    },
+    {
+      "id": "VOICE.removedBefore",
+      "text": "Not used: a change for an item that you removed.",
+      "where": "words.ts:165"
+    },
+    {
+      "id": "VOICE.dropped",
+      "text": "Not used: {text}",
+      "params": [
+        "text"
+      ],
+      "where": "words.ts:166"
+    },
+    {
+      "id": "VOICE.unnamed",
+      "text": "Item {n}",
+      "params": [
+        "n"
+      ],
+      "where": "words.ts:167"
+    },
+    {
+      "id": "VOICE.first",
+      "text": "Apply or keep the voice changes first.",
+      "where": "words.ts:168"
+    },
+    {
+      "id": "VOICE.none",
+      "text": "No change found in what you said.",
+      "where": "words.ts:169"
+    }
+  ]
+}

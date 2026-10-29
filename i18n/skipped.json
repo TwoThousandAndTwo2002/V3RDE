@@ -1,0 +1,4534 @@
+{
+  "source": {
+    "branch": "ui",
+    "commit": "c36d8a7ded305d51c3757d4e85aaa4fa926d93b2",
+    "dir": "mobile/src"
+  },
+  "skipped": [
+    {
+      "where": "api.ts:13",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:13",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:13",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:17",
+      "text": "1",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:54",
+      "text": "Content-Type",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:54",
+      "text": "application/json",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:61",
+      "text": "include",
+      "rule": "code prop credentials"
+    },
+    {
+      "where": "api.ts:63",
+      "text": "AbortError",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:68",
+      "text": "Content-Type",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:68",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:68",
+      "text": "application/json",
+      "rule": "code call includes"
+    },
+    {
+      "where": "api.ts:76",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:92",
+      "text": "GET",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:92",
+      "text": "/api/auth/me",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:93",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:93",
+      "text": "/api/auth/signup",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:94",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:94",
+      "text": "/api/auth/login",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:95",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:95",
+      "text": "/api/auth/logout",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:97",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:97",
+      "text": "/api/auth/reset",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:99",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:99",
+      "text": "/api/auth/reset/confirm",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:104",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:105",
+      "text": "?after=",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:105",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:106",
+      "text": "GET",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:106",
+      "text": "/api/listings",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:108",
+      "text": "GET",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:108",
+      "text": "/api/listings/mine",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:109",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:109",
+      "text": "/api/listings/",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:109",
+      "text": "/grab",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:111",
+      "text": "title",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:111",
+      "text": "number_of_serving",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:112",
+      "text": "pickup_text",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:112",
+      "text": "request_id",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:113",
+      "text": "photo_id",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:114",
+      "text": "photo",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:115",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:115",
+      "text": "/api/listings",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:124",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:125",
+      "text": "barcode",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:126",
+      "text": "image",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:127",
+      "text": "capture",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:130",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:130",
+      "text": "/api/analyze?async=1",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:131",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:132",
+      "text": "/api/analyze/scan/",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:139",
+      "text": "GET",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:147",
+      "text": "answer",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:148",
+      "text": "error",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:148",
+      "text": "/api/analyze",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:158",
+      "text": "light",
+      "rule": "code prop mode"
+    },
+    {
+      "where": "api.ts:158",
+      "text": "background",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:159",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:159",
+      "text": "/api/touchup?mode=",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:159",
+      "text": "&photo_id=",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:160",
+      "text": "GET",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:160",
+      "text": "/api/touchup/",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:162",
+      "text": "/api/touchup/",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:162",
+      "text": "/photo",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:167",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:167",
+      "text": "/api/analyze/labels",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:172",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:172",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "api.ts:173",
+      "text": "pickup_text",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:173",
+      "text": "lang",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:174",
+      "text": "audio",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:177",
+      "text": "items",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:179",
+      "text": "POST",
+      "rule": "http method"
+    },
+    {
+      "where": "api.ts:179",
+      "text": "/api/voice",
+      "rule": "code word"
+    },
+    {
+      "where": "api.ts:188",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "api.ts:191",
+      "text": "include",
+      "rule": "code prop credentials"
+    },
+    {
+      "where": "capture.ts:25",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "capture.ts:25",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "capture.ts:26",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "capture.ts:45",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "capture.ts:56",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "capture.ts:63",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "clipsession.ts:32",
+      "text": "idle",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:32",
+      "text": "starting",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:32",
+      "text": "recording",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:32",
+      "text": "finishing",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:32",
+      "text": "stopped",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:35",
+      "text": "idle",
+      "rule": "code word"
+    },
+    {
+      "where": "clipsession.ts:55",
+      "text": "starting",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:55",
+      "text": "recording",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:62",
+      "text": "starting",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:62",
+      "text": "recording",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:62",
+      "text": "finishing",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:64",
+      "text": "starting",
+      "rule": "code prop state"
+    },
+    {
+      "where": "clipsession.ts:86",
+      "text": "recording",
+      "rule": "code prop state"
+    },
+    {
+      "where": "clipsession.ts:96",
+      "text": "starting",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:103",
+      "text": "finishing",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:103",
+      "text": "stopped",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:105",
+      "text": "stopped",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:108",
+      "text": "recording",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:112",
+      "text": "finishing",
+      "rule": "code prop state"
+    },
+    {
+      "where": "clipsession.ts:116",
+      "text": "finishing",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:116",
+      "text": "stopped",
+      "rule": "code prop state"
+    },
+    {
+      "where": "clipsession.ts:126",
+      "text": "recording",
+      "rule": "compared"
+    },
+    {
+      "where": "clipsession.ts:137",
+      "text": "idle",
+      "rule": "code prop state"
+    },
+    {
+      "where": "doodles.tsx:13",
+      "text": "M12 7.5c-2-1.6-6.2-1.2-6.6 3.4-.4 4.8 2.6 9.2 4.4 9.6 1 .2 1.4-.6 2.2-.6s1.2.8 2.2.6c1.8-.4 4.8-4.8 4.4-9.6C18.2 6.3 14 5.9 12 7.5zM12 7.5c0-1.8.6-3 1.6-3.8M13.6 5.8c1.2-1.4 3-1.8 4.2-1-1 1.4-2.6 1.8-4.2 1z",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:14",
+      "text": "M12 5c-1.6 0-2.2 1.4-2.2 3.2 0 1.8-3.8 3.6-3.8 7.6a6 6 0 0 0 12 0c0-4-3.8-5.8-3.8-7.6C14.2 6.4 13.6 5 12 5zM12 5V2.6M12.4 3.6c1.2-1 2.6-1 3.4-.2",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:15",
+      "text": "M5 19.5C7 15 11 10.5 14.5 8.4a2.6 2.6 0 0 1 3 3C15.4 14.9 10.9 18.9 6.5 21c-1.3.6-2.1-.2-1.5-1.5zM15.8 8l.4-4.6M16.8 9.2l4.4-1.4M16.4 8.4l3.4-3.4M9.6 15.4l1.6 1.4M12.2 12.6l1.4 1.2",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:16",
+      "text": "M5 11.4C2.8 11.4 2.8 7 6 7h12c3.2 0 3.2 4.4 1 4.4V19H5zM9.4 8.8l-1.2 2.2M13 8.8l-1.2 2.2M16.6 8.8l-1.2 2.2",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:17",
+      "text": "M3 10.5a9 2.6 0 1 0 18 0 9 2.6 0 1 0-18 0M3 10.5c.6 5.6 4.4 9 9 9s8.4-3.4 9-9M13.5 3l3 6.2M17.5 2.6l1 6.6",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:18",
+      "text": "M6 7.5h12l-1.6 13.5H7.6zM5 4.5h14v3H5zM9 2.5h6v2M7.2 12.5h9.6",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:19",
+      "text": "M4 5.2c5.2-2 11-1.4 16.4 2.6L12.4 21zM5.6 7.6c4.4-1.4 9-1 13 1.4M10 11.4a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0M12.2 15.6a1 1 0 1 0 2 0 1 1 0 1 0-2 0",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:20",
+      "text": "M2.8 12c4.2-6 11-6 14.8 0-3.8 6-10.6 6-14.8 0zM17.6 12l3.6-3.4v6.8zM7 11.2v.1M11 9.4c1 1.6 1 3.6 0 5.2",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:21",
+      "text": "M5.6 9.2c.8-4 6-5.4 9.2-3.4s6.4 2.6 5.4 6.6-2.4 7.2-7.4 7.2-9.2-1-8.4-5c.4-2 .6-3.6 1.2-5.4zM10 12.4a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:22",
+      "text": "M3 16.5l13.5-9 4.5 4.5v8.5H3zM3 16.5h18M8.5 18.4a.1.1 0 1 0 .2 0M14.5 14.2a.1.1 0 1 0 .2 0",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:23",
+      "text": "M4.6 17.2a3 3 0 1 0 6 0 3 3 0 1 0-6 0M13 18.2a3 3 0 1 0 6 0 3 3 0 1 0-6 0M7.6 14.2C8.8 9 11.6 5.6 15 3.6M16 15.2c0-4.2.2-8.2-1-11.6M15 3.6c1.6-.6 3.4 0 4.4 1.4-1.8.8-3.4.4-4.4-1.4z",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:24",
+      "text": "M3.5 12c1.5-4.5 5-7 8.5-7s7 2.5 8.5 7c-1.5 4.5-5 7-8.5 7s-7-2.5-8.5-7zM2.4 12h1.1M20.5 12h1.1M8.6 10c.9-1 2-1.6 3.2-1.8",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:25",
+      "text": "M5.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M10.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M15.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M8 13a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M13 13a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M10.5 17.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M13 6V3.2c1.2-.8 2.6-.8 3.6 0",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:26",
+      "text": "M6 12.4h12l-1.6 8H7.6zM5.4 12.4C4 12.4 4 8.2 7.2 8.2c.4-3 3-4.2 4.8-4.2s4.4 1.2 4.8 4.2c3.2 0 3.2 4.2 1.8 4.2M10 12.4l.4 8M14 12.4l-.4 8",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:27",
+      "text": "M14.6 4.6a5.2 5.2 0 0 1 4.8 7.4c-1.2 2.6-4.4 3.4-6.6 4.4L9.4 18a2 2 0 1 1-2.8 2.8 2 2 0 1 1-2.8-2.8 2 2 0 1 1 2.8-2.8L8.2 11.6c1-2.2 1.8-5.4 4.4-6.6.6-.3 1.3-.4 2-.4z",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:28",
+      "text": "M12 21c-4-2-7.5-6.5-7-10.5.4-2.6 2.6-3.6 7-3.6s6.6 1 7 3.6c.5 4-3 8.5-7 10.5zM8.4 7l3.6-3.2 3.6 3.2M12 3.8V2.2M9.6 12v.2M14.4 12v.2M12 15.6v.2",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:29",
+      "text": "M6.8 10.5l5.2 11 5.2-11zM5.8 10.5a6.2 6.2 0 0 1 12.4 0zM9 13.6l5.6 2.9M10.7 18l3.5-1.8",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:30",
+      "text": "M3 8.5h18a9 9 0 0 1-18 0zM5.6 8.5a6.4 6.4 0 0 0 12.8 0M9.4 11.4v.4M12 13.2v.4M14.6 11.4v.4",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:31",
+      "text": "M4 10.5a8 5.5 0 0 1 16 0zM3.5 13.5h17M5 16.5h14v1a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17.5zM8.5 7.6v.1M12 6.6v.1M15.5 7.6v.1",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:32",
+      "text": "M10 13.6l.5 7.4h3l.5-7.4M8.2 13.6a3.6 3.6 0 0 1-.4-7.1 4.2 4.2 0 0 1 8.4 0 3.6 3.6 0 0 1-.4 7.1z",
+      "rule": "svg path"
+    },
+    {
+      "where": "doodles.tsx:46",
+      "text": "dark",
+      "rule": "compared"
+    },
+    {
+      "where": "doodles.tsx:54",
+      "text": "reduceMotionChanged",
+      "rule": "code call addEventListener"
+    },
+    {
+      "where": "doodles.tsx:65",
+      "text": "none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "doodles.tsx:65",
+      "text": "no-hide-descendants",
+      "rule": "code prop importantForAccessibility"
+    },
+    {
+      "where": "doodles.tsx:70",
+      "text": "none",
+      "rule": "code prop fill"
+    },
+    {
+      "where": "doodles.tsx:70",
+      "text": "round",
+      "rule": "code prop strokeLinecap"
+    },
+    {
+      "where": "doodles.tsx:70",
+      "text": "round",
+      "rule": "code prop strokeLinejoin"
+    },
+    {
+      "where": "doodles.tsx:73",
+      "text": "translate({p1} {p2}) rotate({turn} {half} {half}) scale({scale})",
+      "rule": "code prop transform"
+    },
+    {
+      "where": "listing.ts:6",
+      "text": "expires_at",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:16",
+      "text": "0",
+      "rule": "no letters"
+    },
+    {
+      "where": "listing.ts:17",
+      "text": "{h}:{two}:{two_2}",
+      "rule": "no letters"
+    },
+    {
+      "where": "listing.ts:17",
+      "text": "{m}:{two}",
+      "rule": "no letters"
+    },
+    {
+      "where": "listing.ts:21",
+      "text": "status",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:21",
+      "text": "expires_at",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:22",
+      "text": "collected",
+      "rule": "compared"
+    },
+    {
+      "where": "listing.ts:26",
+      "text": "status",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:26",
+      "text": "expires_at",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:27",
+      "text": "collected",
+      "rule": "compared"
+    },
+    {
+      "where": "listing.ts:36",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "listing.ts:46",
+      "text": "https://www.google.com/maps/search/?api=1&query=",
+      "rule": "url"
+    },
+    {
+      "where": "listing.ts:51",
+      "text": "https://wa.me/?text=",
+      "rule": "url"
+    },
+    {
+      "where": "listing.ts:55",
+      "text": "status",
+      "rule": "code word"
+    },
+    {
+      "where": "listing.ts:55",
+      "text": "expires_at",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:23",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:25",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:25",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:26",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:27",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:37",
+      "text": "posted",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:37",
+      "text": "retake",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:37",
+      "text": "closed",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:38",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:44",
+      "text": "posted",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:53",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:53",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "not_food",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "nofood_single",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "nofood_multi",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "already_listed",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "daily_cap",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "unavailable",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:58",
+      "text": "retry",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:61",
+      "text": "not_food",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:61",
+      "text": "not_food",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:62",
+      "text": "model_no_food_single",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:62",
+      "text": "nofood_single",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:63",
+      "text": "model_no_food_multi",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:63",
+      "text": "nofood_multi",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:64",
+      "text": "already_listed",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:64",
+      "text": "already_listed",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:65",
+      "text": "daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:65",
+      "text": "daily_cap",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:66",
+      "text": "caller_daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:66",
+      "text": "daily_cap",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:67",
+      "text": "gate_unavailable",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:67",
+      "text": "unavailable",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:69",
+      "text": "retry",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:77",
+      "text": "wait",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:77",
+      "text": "answer",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:77",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:79",
+      "text": "object",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:79",
+      "text": "running",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:79",
+      "text": "wait",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:81",
+      "text": "done",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:81",
+      "text": "answer",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:82",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "logic.ts:87",
+      "text": "busy",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:88",
+      "text": "rate_limited",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:89",
+      "text": "gate_unavailable",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:90",
+      "text": "timeout",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:92",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:97",
+      "text": "1 {one}",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:97",
+      "text": "{n} {many}",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:109",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:110",
+      "text": "/api/analyze/photo/{photoId}",
+      "rule": "code word"
+    },
+    {
+      "where": "logic.ts:110",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:155",
+      "text": "http://",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "logic.ts:155",
+      "text": "https://",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "logic.ts:157",
+      "text": "/",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:158",
+      "text": "/",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:158",
+      "text": "/",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:169",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "logic.ts:170",
+      "text": "object",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:171",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "logic.ts:174",
+      "text": "/analyze",
+      "rule": "code call includes"
+    },
+    {
+      "where": "logic.ts:176",
+      "text": ")",
+      "rule": "no letters"
+    },
+    {
+      "where": "photo.ts:11",
+      "text": "photo.jpg",
+      "rule": "code prop name"
+    },
+    {
+      "where": "photo.ts:11",
+      "text": "image/jpeg",
+      "rule": "code prop type"
+    },
+    {
+      "where": "photo.ts:32",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "photo.ts:38",
+      "text": "data:image/jpeg;base64,",
+      "rule": "url"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:12",
+      "text": "aria-hidden",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:12",
+      "text": "no-hide-descendants",
+      "rule": "code prop importantForAccessibility"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:18",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:23",
+      "text": "none",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:23",
+      "text": "auto",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:25",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:25",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:26",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:35",
+      "text": "ios",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:35",
+      "text": "padding",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:36",
+      "text": "none",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:36",
+      "text": "auto",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/AuthFrame.tsx:38",
+      "text": "handled",
+      "rule": "code prop keyboardShouldPersistTaps"
+    },
+    {
+      "where": "screens/Capture.tsx:23",
+      "text": "ean13",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:23",
+      "text": "ean8",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:23",
+      "text": "upc_a",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:23",
+      "text": "upc_e",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:30",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:30",
+      "text": "busy",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:30",
+      "text": "found",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:31",
+      "text": "retry",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:31",
+      "text": "unavailable",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:41",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:52",
+      "text": "small",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:56",
+      "text": "-left",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:56",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:57",
+      "text": "-right",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:73",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:74",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:75",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:92",
+      "text": "blob:",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "screens/Capture.tsx:94",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:99",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:99",
+      "text": "upload",
+      "rule": "code prop source"
+    },
+    {
+      "where": "screens/Capture.tsx:100",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:100",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:106",
+      "text": "blob:",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "screens/Capture.tsx:110",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:114",
+      "text": "barcode",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:114",
+      "text": "shutter",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:116",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:123",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:123",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:125",
+      "text": "photo.jpg",
+      "rule": "code prop name"
+    },
+    {
+      "where": "screens/Capture.tsx:125",
+      "text": "image/jpeg",
+      "rule": "code prop type"
+    },
+    {
+      "where": "screens/Capture.tsx:130",
+      "text": "native",
+      "rule": "code prop source"
+    },
+    {
+      "where": "screens/Capture.tsx:141",
+      "text": "images",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:155",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:156",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:156",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:156",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:163",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:163",
+      "text": "busy",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:176",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:177",
+      "text": "found",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:177",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:177",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:178",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:178",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:185",
+      "text": "retry",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:185",
+      "text": "unavailable",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:185",
+      "text": "ask",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:195",
+      "text": "busy",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:199",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:205",
+      "text": "image/",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "screens/Capture.tsx:207",
+      "text": "dragover",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:207",
+      "text": "dragleave",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:207",
+      "text": "drop",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:209",
+      "text": "dragover",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:209",
+      "text": "dragleave",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:209",
+      "text": "drop",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:216",
+      "text": "found",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:219",
+      "text": "busy",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:220",
+      "text": "analyzing",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:220",
+      "text": "small",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:221",
+      "text": "not_food",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:222",
+      "text": "not-food",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:224",
+      "text": "nofood_single",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:225",
+      "text": "no-name-one",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:227",
+      "text": "nofood_multi",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:228",
+      "text": "no-name-many",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:230",
+      "text": "already_listed",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:231",
+      "text": "already-listed",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:233",
+      "text": "daily_cap",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:234",
+      "text": "daily-cap",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:239",
+      "text": "use-photo",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:239",
+      "text": "small",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:243",
+      "text": "retake",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:243",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:244",
+      "text": "use",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:254",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:259",
+      "text": "front",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:259",
+      "text": "back",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Capture.tsx:263",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Capture.tsx:263",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/Capture.tsx:265",
+      "text": "allow",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:270",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Capture.tsx:270",
+      "text": " · ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:272",
+      "text": "camera",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:273",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Capture.tsx:273",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "screens/Capture.tsx:279",
+      "text": "upload",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:279",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:280",
+      "text": "cancel",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:280",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Capture.tsx:288",
+      "text": "camera",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Capture.tsx:290",
+      "text": "close",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "screens/Capture.tsx:292",
+      "text": "upload",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "screens/Capture.tsx:299",
+      "text": "none",
+      "rule": "code prop animationType"
+    },
+    {
+      "where": "screens/Frame.tsx:13",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:15",
+      "text": "ArrowLeft",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:15",
+      "text": "ArrowRight",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:16",
+      "text": "give",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:16",
+      "text": "receive",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Frame.tsx:16",
+      "text": "give",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Frame.tsx:18",
+      "text": "[data-testid=\"tab-{other}\"]",
+      "rule": "code call querySelector"
+    },
+    {
+      "where": "screens/Frame.tsx:30",
+      "text": "tab-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Frame.tsx:30",
+      "text": "tab",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/Frame.tsx:30",
+      "text": "role-panel",
+      "rule": "code prop controls"
+    },
+    {
+      "where": "screens/Frame.tsx:31",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/Frame.tsx:42",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Frame.tsx:42",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "screens/Frame.tsx:42",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Frame.tsx:42",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Frame.tsx:46",
+      "text": "header",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/Frame.tsx:47",
+      "text": "tablist",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/Frame.tsx:47",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Frame.tsx:49",
+      "text": "give",
+      "rule": "code prop role"
+    },
+    {
+      "where": "screens/Frame.tsx:49",
+      "text": "give",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:49",
+      "text": "give",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Frame.tsx:50",
+      "text": "receive",
+      "rule": "code prop role"
+    },
+    {
+      "where": "screens/Frame.tsx:50",
+      "text": "receive",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Frame.tsx:50",
+      "text": "receive",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Frame.tsx:51",
+      "text": "flex-end",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Frame.tsx:52",
+      "text": "topbar-logout",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Frame.tsx:52",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/Frame.tsx:53",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/Frame.tsx:61",
+      "text": "menu",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "screens/Frame.tsx:61",
+      "text": "menu",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Frame.tsx:69",
+      "text": "role-panel",
+      "rule": "code prop nativeID"
+    },
+    {
+      "where": "screens/Frame.tsx:69",
+      "text": "tabpanel",
+      "rule": "code prop role"
+    },
+    {
+      "where": "screens/Give.tsx:38",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Give.tsx:38",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "screens/Give.tsx:39",
+      "text": "new",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Give.tsx:44",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Give.tsx:44",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Give.tsx:44",
+      "text": "space-between",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/Give.tsx:49",
+      "text": "mine-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:15",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:16",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:18",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:24",
+      "text": "login",
+      "rule": "code prop mode"
+    },
+    {
+      "where": "screens/Login.tsx:24",
+      "text": "signup",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:26",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:34",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:51",
+      "text": "email",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:52",
+      "text": "none",
+      "rule": "code prop autoCapitalize"
+    },
+    {
+      "where": "screens/Login.tsx:52",
+      "text": "email",
+      "rule": "code prop autoComplete"
+    },
+    {
+      "where": "screens/Login.tsx:52",
+      "text": "emailAddress",
+      "rule": "code prop textContentType"
+    },
+    {
+      "where": "screens/Login.tsx:52",
+      "text": "email-address",
+      "rule": "code prop keyboardType"
+    },
+    {
+      "where": "screens/Login.tsx:53",
+      "text": "email",
+      "rule": "code prop inputMode"
+    },
+    {
+      "where": "screens/Login.tsx:53",
+      "text": "next",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Login.tsx:54",
+      "text": "password",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:55",
+      "text": "none",
+      "rule": "code prop autoCapitalize"
+    },
+    {
+      "where": "screens/Login.tsx:56",
+      "text": "new-password",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:56",
+      "text": "current-password",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:56",
+      "text": "newPassword",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:56",
+      "text": "password",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:57",
+      "text": "go",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Login.tsx:57",
+      "text": "submit",
+      "rule": "code prop submitBehavior"
+    },
+    {
+      "where": "screens/Login.tsx:57",
+      "text": "login",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:63",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Login.tsx:63",
+      "text": "create",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:63",
+      "text": "signup",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Login.tsx:65",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Login.tsx:66",
+      "text": "forgot",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:70",
+      "text": "continue",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Login.tsx:70",
+      "text": "login",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Receive.tsx:18",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Receive.tsx:18",
+      "text": "_blank",
+      "rule": "code call open"
+    },
+    {
+      "where": "screens/Receive.tsx:18",
+      "text": "noopener",
+      "rule": "code call open"
+    },
+    {
+      "where": "screens/Receive.tsx:30",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:33",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:44",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:46",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:75",
+      "text": "collected",
+      "rule": "code prop status"
+    },
+    {
+      "where": "screens/Receive.tsx:82",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:87",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Receive.tsx:88",
+      "text": "Escape",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Receive.tsx:89",
+      "text": "keydown",
+      "rule": "code call addEventListener"
+    },
+    {
+      "where": "screens/Receive.tsx:90",
+      "text": "keydown",
+      "rule": "code call removeEventListener"
+    },
+    {
+      "where": "screens/Receive.tsx:98",
+      "text": "card-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Receive.tsx:105",
+      "text": "grab-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Receive.tsx:105",
+      "text": ": ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:116",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:116",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "screens/Receive.tsx:124",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Receive.tsx:130",
+      "text": "none",
+      "rule": "code prop animationType"
+    },
+    {
+      "where": "screens/Receive.tsx:132",
+      "text": "grab-sheet",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Receive.tsx:132",
+      "text": "small",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Receive.tsx:134",
+      "text": " · ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Receive.tsx:136",
+      "text": "maps",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Receive.tsx:136",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Receive.tsx:137",
+      "text": "chat",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:13",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:15",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:16",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:21",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:38",
+      "text": "back",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:39",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/Reset.tsx:39",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "screens/Reset.tsx:46",
+      "text": "send",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:50",
+      "text": "email",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:51",
+      "text": "none",
+      "rule": "code prop autoCapitalize"
+    },
+    {
+      "where": "screens/Reset.tsx:51",
+      "text": "email",
+      "rule": "code prop autoComplete"
+    },
+    {
+      "where": "screens/Reset.tsx:51",
+      "text": "emailAddress",
+      "rule": "code prop textContentType"
+    },
+    {
+      "where": "screens/Reset.tsx:51",
+      "text": "email-address",
+      "rule": "code prop keyboardType"
+    },
+    {
+      "where": "screens/Reset.tsx:52",
+      "text": "email",
+      "rule": "code prop inputMode"
+    },
+    {
+      "where": "screens/Reset.tsx:52",
+      "text": "send",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Reset.tsx:52",
+      "text": "submit",
+      "rule": "code prop submitBehavior"
+    },
+    {
+      "where": "screens/Reset.tsx:54",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Reset.tsx:55",
+      "text": "backlink",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:64",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:66",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:72",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:79",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:90",
+      "text": "save",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:94",
+      "text": "password",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Reset.tsx:95",
+      "text": "none",
+      "rule": "code prop autoCapitalize"
+    },
+    {
+      "where": "screens/Reset.tsx:95",
+      "text": "new-password",
+      "rule": "code prop autoComplete"
+    },
+    {
+      "where": "screens/Reset.tsx:95",
+      "text": "newPassword",
+      "rule": "code prop textContentType"
+    },
+    {
+      "where": "screens/Reset.tsx:96",
+      "text": "go",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Reset.tsx:96",
+      "text": "submit",
+      "rule": "code prop submitBehavior"
+    },
+    {
+      "where": "screens/Reset.tsx:101",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Reset.tsx:101",
+      "text": "again",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Review.tsx:48",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:49",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:51",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:60",
+      "text": "light",
+      "rule": "code prop mode"
+    },
+    {
+      "where": "screens/Review.tsx:60",
+      "text": "background",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:62",
+      "text": "working",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:62",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:65",
+      "text": "working",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:66",
+      "text": "working",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:74",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:74",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:75",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:79",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:81",
+      "text": "offer",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:83",
+      "text": "working",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:84",
+      "text": "offer",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:84",
+      "text": "edit",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:92",
+      "text": "closed",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:95",
+      "text": "retake",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:105",
+      "text": "-",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:109",
+      "text": ": ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:111",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:123",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:135",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:136",
+      "text": "posted",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:147",
+      "text": "pickup",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Review.tsx:148",
+      "text": "done",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Review.tsx:148",
+      "text": "blurAndSubmit",
+      "rule": "code prop submitBehavior"
+    },
+    {
+      "where": "screens/Review.tsx:149",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:154",
+      "text": "barcode",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:154",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:158",
+      "text": "title",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Review.tsx:158",
+      "text": "next",
+      "rule": "code prop returnKeyType"
+    },
+    {
+      "where": "screens/Review.tsx:166",
+      "text": "minus",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "screens/Review.tsx:168",
+      "text": "servings",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Review.tsx:168",
+      "text": "number-pad",
+      "rule": "code prop keyboardType"
+    },
+    {
+      "where": "screens/Review.tsx:169",
+      "text": "numeric",
+      "rule": "code prop inputMode"
+    },
+    {
+      "where": "screens/Review.tsx:170",
+      "text": "plus",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "screens/Review.tsx:194",
+      "text": "ios",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Review.tsx:194",
+      "text": "padding",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:195",
+      "text": "your-listing",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:195",
+      "text": "review-list",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Review.tsx:195",
+      "text": "large",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:201",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Review.tsx:201",
+      "text": "flex-start",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Review.tsx:202",
+      "text": "card",
+      "rule": "code prop round"
+    },
+    {
+      "where": "screens/Review.tsx:209",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Review.tsx:211",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/Review.tsx:211",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "screens/Review.tsx:215",
+      "text": "start-over",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Review.tsx:215",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Review.tsx:216",
+      "text": "post",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Role.tsx:16",
+      "text": "role-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Role.tsx:16",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/Role.tsx:18",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "screens/Role.tsx:18",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Role.tsx:22",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/Role.tsx:22",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "screens/Role.tsx:34",
+      "text": "role-sheet",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Role.tsx:37",
+      "text": "give",
+      "rule": "code prop role"
+    },
+    {
+      "where": "screens/Role.tsx:37",
+      "text": "give",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Role.tsx:37",
+      "text": "give",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Role.tsx:39",
+      "text": "receive",
+      "rule": "code prop role"
+    },
+    {
+      "where": "screens/Role.tsx:39",
+      "text": "receive",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Role.tsx:39",
+      "text": "receive",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Role.tsx:41",
+      "text": "logout",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Role.tsx:41",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/TouchUp.tsx:18",
+      "text": "radio",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/TouchUp.tsx:19",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "screens/TouchUp.tsx:21",
+      "text": "photo",
+      "rule": "code prop round"
+    },
+    {
+      "where": "screens/TouchUp.tsx:28",
+      "text": "light",
+      "rule": "code prop mode"
+    },
+    {
+      "where": "screens/TouchUp.tsx:28",
+      "text": "background",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:28",
+      "text": "original",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:28",
+      "text": "edit",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:30",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/TouchUp.tsx:32",
+      "text": "offer",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:34",
+      "text": "working",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:36",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/TouchUp.tsx:36",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "screens/TouchUp.tsx:40",
+      "text": "offer",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:42",
+      "text": "radiogroup",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "screens/TouchUp.tsx:42",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/TouchUp.tsx:42",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "screens/TouchUp.tsx:46",
+      "text": "original-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/TouchUp.tsx:46",
+      "text": "original",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:47",
+      "text": "original",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:48",
+      "text": "edit-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/TouchUp.tsx:48",
+      "text": "edit",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:49",
+      "text": "edit",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:54",
+      "text": "kept",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:55",
+      "text": "failed",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:56",
+      "text": "error",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/TouchUp.tsx:59",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/TouchUp.tsx:59",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "screens/TouchUp.tsx:61",
+      "text": "wrap",
+      "rule": "code prop flexWrap"
+    },
+    {
+      "where": "screens/TouchUp.tsx:62",
+      "text": "light-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/TouchUp.tsx:62",
+      "text": "light",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/TouchUp.tsx:63",
+      "text": "background-",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/TouchUp.tsx:63",
+      "text": "background",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Voice.tsx:18",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:18",
+      "text": "sending",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:18",
+      "text": "proposal",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:18",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:27",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:34",
+      "text": "sending",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:34",
+      "text": "proposal",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:39",
+      "text": "sending",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:42",
+      "text": "ios",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:42",
+      "text": ". ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Voice.tsx:43",
+      "text": "proposal",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:47",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:47",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Voice.tsx:48",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:53",
+      "text": "sending",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:55",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:59",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:64",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:64",
+      "text": "denied",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:68",
+      "text": "proposal",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:71",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:73",
+      "text": "voice-proposal",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Voice.tsx:77",
+      "text": "• ",
+      "rule": "no letters"
+    },
+    {
+      "where": "screens/Voice.tsx:79",
+      "text": "voice-keep",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Voice.tsx:79",
+      "text": "secondary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "screens/Voice.tsx:80",
+      "text": "voice-apply",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Voice.tsx:88",
+      "text": "sending",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:92",
+      "text": "mic",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "screens/Voice.tsx:92",
+      "text": "stop",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Voice.tsx:92",
+      "text": "mic",
+      "rule": "code word"
+    },
+    {
+      "where": "screens/Voice.tsx:93",
+      "text": "sending",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:96",
+      "text": "error",
+      "rule": "compared"
+    },
+    {
+      "where": "screens/Voice.tsx:101",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "screens/Voice.tsx:101",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "session.ts:17",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "session.ts:17",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:43",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:47",
+      "text": "login",
+      "rule": "code prop mode"
+    },
+    {
+      "where": "signin.ts:47",
+      "text": "signup",
+      "rule": "code word"
+    },
+    {
+      "where": "signin.ts:48",
+      "text": "login",
+      "rule": "compared"
+    },
+    {
+      "where": "signin.ts:48",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:78",
+      "text": "reset link expired",
+      "rule": "listed: the auth service's error text, compared, never shown"
+    },
+    {
+      "where": "signin.ts:85",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:86",
+      "text": "v3rde://",
+      "rule": "code call startsWith"
+    },
+    {
+      "where": "signin.ts:86",
+      "text": "/",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:86",
+      "text": "v3rde://",
+      "rule": "url"
+    },
+    {
+      "where": "signin.ts:86",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "signin.ts:88",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "theme.ts:11",
+      "text": "#F6F5F5",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:12",
+      "text": "#FFFFFF",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:13",
+      "text": "#232323",
+      "rule": "no letters"
+    },
+    {
+      "where": "theme.ts:14",
+      "text": "#6D6D78",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:15",
+      "text": "#9F9DA4",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:16",
+      "text": "#DDDDDD",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:17",
+      "text": "#BC202C",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:18",
+      "text": "#FFFFFF",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:19",
+      "text": "#FFD4D7",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:20",
+      "text": "#C43140",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:21",
+      "text": "#F3F3F3",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:22",
+      "text": "#DCDEDD",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:23",
+      "text": "rgba(255,255,255,0.55)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:24",
+      "text": "light",
+      "rule": "code prop blurTint"
+    },
+    {
+      "where": "theme.ts:25",
+      "text": "rgba(0,0,0,0)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:26",
+      "text": "rgba(0,0,0,0.15)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:27",
+      "text": "rgba(0,0,0,0.7)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:28",
+      "text": "#000000",
+      "rule": "no letters"
+    },
+    {
+      "where": "theme.ts:29",
+      "text": "rgba(0,0,0,0.45)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:30",
+      "text": "#FFFFFF",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:31",
+      "text": "rgba(0,0,0,0.43)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:32",
+      "text": "#BC202C",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:33",
+      "text": "#BC202C",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:34",
+      "text": "rgba(255,255,255,0.97)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:37",
+      "text": "#141414",
+      "rule": "no letters"
+    },
+    {
+      "where": "theme.ts:38",
+      "text": "#1E1E20",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:39",
+      "text": "#F3F3F3",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:40",
+      "text": "#A1A1AA",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:41",
+      "text": "#6D6D78",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:42",
+      "text": "#3A3A3F",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:43",
+      "text": "#BC202C",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:44",
+      "text": "#FFFFFF",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:45",
+      "text": "#4A1D22",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:46",
+      "text": "#FF727D",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:47",
+      "text": "#2A2A2E",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:48",
+      "text": "#4A4A50",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:49",
+      "text": "rgba(20,20,22,0.62)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:50",
+      "text": "dark",
+      "rule": "code prop blurTint"
+    },
+    {
+      "where": "theme.ts:51",
+      "text": "rgba(0,0,0,0)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:52",
+      "text": "rgba(0,0,0,0.15)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:53",
+      "text": "rgba(0,0,0,0.7)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:54",
+      "text": "#000000",
+      "rule": "no letters"
+    },
+    {
+      "where": "theme.ts:55",
+      "text": "rgba(0,0,0,0.45)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:56",
+      "text": "#FFFFFF",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:57",
+      "text": "rgba(0,0,0,0.6)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:58",
+      "text": "#FF727D",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:59",
+      "text": "#FF727D",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:60",
+      "text": "rgba(30,30,32,0.97)",
+      "rule": "color"
+    },
+    {
+      "where": "theme.ts:66",
+      "text": "dark",
+      "rule": "compared"
+    },
+    {
+      "where": "theme.ts:142",
+      "text": "M0.835 0.835 L11.165 11.165 M11.165 0.835 L0.835 11.165",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:143",
+      "text": "M0.835 6 H11.165",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:144",
+      "text": "M0.835 6 H11.165 M6 0.835 V11.165",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:145",
+      "text": "M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:146",
+      "text": "M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:147",
+      "text": "M3 5.5 H17 M3 10 H17 M3 14.5 H17",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:148",
+      "text": "M10 1.5 A3 3 0 0 1 13 4.5 V10 A3 3 0 0 1 7 10 V4.5 A3 3 0 0 1 10 1.5 Z M4 9.5 A6 6 0 0 0 16 9.5 M10 15.5 V18.5 M7 18.5 H13",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:149",
+      "text": "M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:150",
+      "text": "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
+      "rule": "svg path"
+    },
+    {
+      "where": "theme.ts:175",
+      "text": "Poppins_400Regular",
+      "rule": "code word"
+    },
+    {
+      "where": "theme.ts:176",
+      "text": "Poppins_600SemiBold",
+      "rule": "code word"
+    },
+    {
+      "where": "theme.ts:234",
+      "text": "compact",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "theme.ts:234",
+      "text": "medium",
+      "rule": "code word"
+    },
+    {
+      "where": "theme.ts:234",
+      "text": "expanded",
+      "rule": "code word"
+    },
+    {
+      "where": "theme.ts:236",
+      "text": "expanded",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "theme.ts:237",
+      "text": "medium",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "theme.ts:238",
+      "text": "compact",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:11",
+      "text": "idle",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:11",
+      "text": "working",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:12",
+      "text": "offer",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:12",
+      "text": "original",
+      "rule": "code prop chosen"
+    },
+    {
+      "where": "touchup.ts:12",
+      "text": "edit",
+      "rule": "code word"
+    },
+    {
+      "where": "touchup.ts:13",
+      "text": "kept",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:13",
+      "text": "failed",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:13",
+      "text": "error",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:17",
+      "text": "done",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:17",
+      "text": "offer",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:17",
+      "text": "original",
+      "rule": "code prop chosen"
+    },
+    {
+      "where": "touchup.ts:18",
+      "text": "kept_original",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:18",
+      "text": "kept",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:19",
+      "text": "running",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:19",
+      "text": "queued",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:19",
+      "text": "working",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:20",
+      "text": "failed",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "touchup.ts:25",
+      "text": "offer",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:25",
+      "text": "edit",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:30",
+      "text": "daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:30",
+      "text": "caller_daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:31",
+      "text": "busy",
+      "rule": "compared"
+    },
+    {
+      "where": "touchup.ts:31",
+      "text": "rate_limited",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:20",
+      "text": "header",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:20",
+      "text": "center",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:20",
+      "text": "left",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:36",
+      "text": "center",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:36",
+      "text": "left",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:47",
+      "text": "alert",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:48",
+      "text": "center",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:48",
+      "text": "left",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "close",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "minus",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "plus",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "upload",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "give",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "receive",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "menu",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "mic",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:56",
+      "text": "stop",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:68",
+      "text": "0 0 {box} {box}",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:69",
+      "text": "round",
+      "rule": "code prop strokeLinecap"
+    },
+    {
+      "where": "ui.tsx:69",
+      "text": "round",
+      "rule": "code prop strokeLinejoin"
+    },
+    {
+      "where": "ui.tsx:69",
+      "text": "none",
+      "rule": "code prop fill"
+    },
+    {
+      "where": "ui.tsx:79",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:80",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:80",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:87",
+      "text": "primary",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "ui.tsx:88",
+      "text": "primary",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:88",
+      "text": "secondary",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:92",
+      "text": "secondary",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:95",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:98",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:98",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:109",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "ui.tsx:109",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:118",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:119",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:120",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:120",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:130",
+      "text": "box-none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:130",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:130",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:131",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:133",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:133",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:143",
+      "text": "none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:143",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:143",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:144",
+      "text": "alert",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:144",
+      "text": "assertive",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:144",
+      "text": "none",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:145",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:146",
+      "text": "center",
+      "rule": "code prop textAlign"
+    },
+    {
+      "where": "ui.tsx:156",
+      "text": "progressbar",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:157",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:158",
+      "text": "{p1}%",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:158",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:174",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:174",
+      "text": "none",
+      "rule": "code prop outlineStyle"
+    },
+    {
+      "where": "ui.tsx:197",
+      "text": "card",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:197",
+      "text": "round",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:199",
+      "text": "center",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:199",
+      "text": "left",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:200",
+      "text": "top",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:200",
+      "text": "center",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:205",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:206",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:225",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:235",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:236",
+      "text": "underline",
+      "rule": "code prop textDecorationLine"
+    },
+    {
+      "where": "ui.tsx:256",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:257",
+      "text": "dark",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:257",
+      "text": "dark",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:257",
+      "text": "light",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:269",
+      "text": "cover",
+      "rule": "code prop resizeMode"
+    },
+    {
+      "where": "ui.tsx:270",
+      "text": "none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:282",
+      "text": "large",
+      "rule": "code prop kind"
+    },
+    {
+      "where": "ui.tsx:282",
+      "text": "small",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:296",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:297",
+      "text": "sheet-close",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "ui.tsx:297",
+      "text": "close",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "ui.tsx:297",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:304",
+      "text": "box-none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:304",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:304",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:312",
+      "text": "large",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:316",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:320",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "ui.tsx:329",
+      "text": "dialog",
+      "rule": "code prop role"
+    },
+    {
+      "where": "ui.tsx:336",
+      "text": "undefined",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:338",
+      "text": "[tabindex]:not([tabindex=\"-1\"]), button, input, textarea, a[href]",
+      "rule": "listed: CSS selector of the focus trap"
+    },
+    {
+      "where": "ui.tsx:343",
+      "text": "Tab",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:351",
+      "text": "keydown",
+      "rule": "code call addEventListener"
+    },
+    {
+      "where": "ui.tsx:352",
+      "text": "keydown",
+      "rule": "code call removeEventListener"
+    },
+    {
+      "where": "ui.tsx:375",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:376",
+      "text": "Escape",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:377",
+      "text": "keydown",
+      "rule": "code call addEventListener"
+    },
+    {
+      "where": "ui.tsx:378",
+      "text": "keydown",
+      "rule": "code call removeEventListener"
+    },
+    {
+      "where": "ui.tsx:381",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:382",
+      "text": "hardwareBackPress",
+      "rule": "code call addEventListener"
+    },
+    {
+      "where": "ui.tsx:386",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:391",
+      "text": "button",
+      "rule": "code prop accessibilityRole"
+    },
+    {
+      "where": "ui.tsx:393",
+      "text": "none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:398",
+      "text": "box-none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:398",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:398",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:408",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:412",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "ui.tsx:425",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:425",
+      "text": "center",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:426",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:447",
+      "text": "100%",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:449",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:450",
+      "text": "cover",
+      "rule": "code prop resizeMode"
+    },
+    {
+      "where": "ui.tsx:463",
+      "text": "ios",
+      "rule": "compared"
+    },
+    {
+      "where": "ui.tsx:466",
+      "text": "none",
+      "rule": "code prop pointerEvents"
+    },
+    {
+      "where": "ui.tsx:466",
+      "text": "polite",
+      "rule": "code prop accessibilityLiveRegion"
+    },
+    {
+      "where": "ui.tsx:466",
+      "text": "polite",
+      "rule": "code prop live"
+    },
+    {
+      "where": "ui.tsx:467",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:467",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:470",
+      "text": "toast",
+      "rule": "code prop testID"
+    },
+    {
+      "where": "ui.tsx:470",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:471",
+      "text": "center",
+      "rule": "code prop textAlign"
+    },
+    {
+      "where": "ui.tsx:481",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:484",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:505",
+      "text": " ",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:505",
+      "text": "center",
+      "rule": "code prop alignItems"
+    },
+    {
+      "where": "ui.tsx:507",
+      "text": "tabular-nums",
+      "rule": "code word"
+    },
+    {
+      "where": "ui.tsx:522",
+      "text": "hidden",
+      "rule": "code prop overflow"
+    },
+    {
+      "where": "ui.tsx:524",
+      "text": "cover",
+      "rule": "code prop resizeMode"
+    },
+    {
+      "where": "ui.tsx:526",
+      "text": "absolute",
+      "rule": "code prop position"
+    },
+    {
+      "where": "ui.tsx:529",
+      "text": "space-between",
+      "rule": "code prop justifyContent"
+    },
+    {
+      "where": "ui.tsx:540",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "ui.tsx:540",
+      "text": "wrap",
+      "rule": "code prop flexWrap"
+    },
+    {
+      "where": "ui.tsx:542",
+      "text": "{p1}%",
+      "rule": "no letters"
+    },
+    {
+      "where": "ui.tsx:560",
+      "text": "row",
+      "rule": "code prop flexDirection"
+    },
+    {
+      "where": "ui.tsx:562",
+      "text": "photo",
+      "rule": "code prop round"
+    },
+    {
+      "where": "ui.tsx:562",
+      "text": "center",
+      "rule": "code prop alignSelf"
+    },
+    {
+      "where": "ui.tsx:566",
+      "text": "close",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "ui.tsx:569",
+      "text": "minus",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "ui.tsx:571",
+      "text": "number-pad",
+      "rule": "code prop keyboardType"
+    },
+    {
+      "where": "ui.tsx:573",
+      "text": "plus",
+      "rule": "code prop glyph"
+    },
+    {
+      "where": "voice.ts:23",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:23",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "voice.ts:25",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:26",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:27",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:28",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:42",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:43",
+      "text": "number",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:69",
+      "text": "string",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:70",
+      "text": "number",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:89",
+      "text": "no_speech",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:90",
+      "text": "daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:90",
+      "text": "caller_daily_cap_reached",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:91",
+      "text": "busy",
+      "rule": "compared"
+    },
+    {
+      "where": "voice.ts:91",
+      "text": "rate_limited",
+      "rule": "compared"
+    },
+    {
+      "where": "voicerec.ts:36",
+      "text": "web",
+      "rule": "code prop source"
+    },
+    {
+      "where": "voicerec.ts:36",
+      "text": "native",
+      "rule": "code word"
+    },
+    {
+      "where": "voicerec.ts:65",
+      "text": "failed",
+      "rule": "code word"
+    },
+    {
+      "where": "voicerec.ts:70",
+      "text": "int16",
+      "rule": "code prop encoding"
+    },
+    {
+      "where": "voicerec.ts:77",
+      "text": "denied",
+      "rule": "code word"
+    },
+    {
+      "where": "voicerec.ts:80",
+      "text": "wav",
+      "rule": "code prop format"
+    },
+    {
+      "where": "voicerec.ts:83",
+      "text": "failed",
+      "rule": "code word"
+    },
+    {
+      "where": "voicerec.ts:89",
+      "text": "voice.wav",
+      "rule": "code prop name"
+    },
+    {
+      "where": "voicerec.ts:89",
+      "text": "audio/wav",
+      "rule": "code prop type"
+    },
+    {
+      "where": "voicerec.ts:89",
+      "text": "native",
+      "rule": "code prop source"
+    },
+    {
+      "where": "voicerec.ts:112",
+      "text": "audio/wav",
+      "rule": "code prop type"
+    },
+    {
+      "where": "voicerec.ts:113",
+      "text": "voice.wav",
+      "rule": "code prop name"
+    },
+    {
+      "where": "voicerec.ts:113",
+      "text": "audio/wav",
+      "rule": "code prop type"
+    },
+    {
+      "where": "voicerec.ts:113",
+      "text": "web",
+      "rule": "code prop source"
+    },
+    {
+      "where": "voicerec.ts:125",
+      "text": "web",
+      "rule": "compared"
+    },
+    {
+      "where": "wav.ts:71",
+      "text": "RIFF",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:73",
+      "text": "WAVE",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:74",
+      "text": "fmt ",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:82",
+      "text": "data",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:102",
+      "text": "RIFF",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:102",
+      "text": "WAVE",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:102",
+      "text": "fmt ",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "wav.ts:102",
+      "text": "data",
+      "rule": "listed: WAV file header bytes"
+    },
+    {
+      "where": "webcam.ts:12",
+      "text": "photo",
+      "rule": "code prop source"
+    },
+    {
+      "where": "webcam.ts:12",
+      "text": "frame",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:21",
+      "text": "none",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:28",
+      "text": "video",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:42",
+      "text": "function",
+      "rule": "compared"
+    },
+    {
+      "where": "webcam.ts:52",
+      "text": "canvas",
+      "rule": "code call createElement"
+    },
+    {
+      "where": "webcam.ts:54",
+      "text": "2d",
+      "rule": "code call getContext"
+    },
+    {
+      "where": "webcam.ts:57",
+      "text": "frame",
+      "rule": "code prop source"
+    },
+    {
+      "where": "webcam.ts:58",
+      "text": "image/jpeg",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:79",
+      "text": "canvas",
+      "rule": "code call createElement"
+    },
+    {
+      "where": "webcam.ts:81",
+      "text": "2d",
+      "rule": "code call getContext"
+    },
+    {
+      "where": "webcam.ts:83",
+      "text": "high",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:86",
+      "text": "image/jpeg",
+      "rule": "code word"
+    },
+    {
+      "where": "webcam.ts:94",
+      "text": "function",
+      "rule": "compared"
+    },
+    {
+      "where": "webcam.ts:99",
+      "text": "photo",
+      "rule": "code prop source"
+    },
+    {
+      "where": "webvoice.ts:10",
+      "text": "/voice-capture-worklet.js",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:13",
+      "text": "denied",
+      "rule": "code prop code"
+    },
+    {
+      "where": "webvoice.ts:13",
+      "text": "unsupported",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:13",
+      "text": "failed",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:14",
+      "text": "code",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:23",
+      "text": "undefined",
+      "rule": "compared"
+    },
+    {
+      "where": "webvoice.ts:24",
+      "text": "undefined",
+      "rule": "compared"
+    },
+    {
+      "where": "webvoice.ts:25",
+      "text": "unsupported",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:31",
+      "text": "NotAllowedError",
+      "rule": "compared"
+    },
+    {
+      "where": "webvoice.ts:32",
+      "text": "denied",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:32",
+      "text": "failed",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:40",
+      "text": "voice-capture",
+      "rule": "code word"
+    },
+    {
+      "where": "webvoice.ts:47",
+      "text": "suspended",
+      "rule": "compared"
+    },
+    {
+      "where": "webvoice.ts:51",
+      "text": "failed",
+      "rule": "code word"
+    },
+    {
+      "where": "words.ts:17",
+      "text": "give",
+      "rule": "code word"
+    },
+    {
+      "where": "words.ts:17",
+      "text": "receive",
+      "rule": "code word"
+    },
+    {
+      "where": "words.ts:21",
+      "text": "give",
+      "rule": "compared"
+    },
+    {
+      "where": "words.ts:22",
+      "text": "give",
+      "rule": "compared"
+    },
+    {
+      "where": "words.ts:23",
+      "text": ". ",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:23",
+      "text": ". ",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:23",
+      "text": "",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:150",
+      "text": "”",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:159",
+      "text": ": “",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:159",
+      "text": "”",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:160",
+      "text": ": ",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:161",
+      "text": ": ",
+      "rule": "no letters"
+    },
+    {
+      "where": "words.ts:164",
+      "text": ", ",
+      "rule": "no letters"
+    }
+  ]
+}
