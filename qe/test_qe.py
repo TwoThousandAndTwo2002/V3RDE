@@ -50,6 +50,28 @@ class QETest(unittest.TestCase):
         self.assertEqual(kw, {"torch_dtype": "auto", "low_cpu_mem_usage": True})
         self.assertFalse(Fake.from_pretrained("m", low_cpu_mem_usage=False)[2]["low_cpu_mem_usage"])
 
+    def test_build_cache(self):
+        """L2: BuildKit cache mounts for pip and apt, no --no-cache-dir, and the layer order
+        (torch, then MetricX's requirements and the small pins, then our code)."""
+        d = read("Dockerfile")
+        self.assertTrue(d.startswith("# syntax=docker/dockerfile:1"))
+        self.assertNotIn("--no-cache-dir", d)
+        runs = [b for b in re.split(r"\n(?=[A-Z]+ )", d) if b.startswith("RUN ")]
+        pip_runs = [b for b in runs if "pip install" in b]
+        self.assertEqual(len(pip_runs), 2)
+        for b in pip_runs:
+            self.assertIn("--mount=type=cache,target=/root/.cache/pip", b)
+        apt = [b for b in runs if "apt-get install" in b]
+        self.assertEqual(len(apt), 1)
+        self.assertIn("--mount=type=cache,target=/var/cache/apt,sharing=locked", apt[0])
+        self.assertIn("--mount=type=cache,target=/var/lib/apt,sharing=locked", apt[0])
+        self.assertIn("rm -f /etc/apt/apt.conf.d/docker-clean", d)
+        i_torch = d.index('pip install "torch==2.1.2"')
+        i_req = d.index("pip install -r requirements.txt")
+        i_copy = d.index("COPY run_predict.py")
+        self.assertLess(i_torch, i_req)
+        self.assertLess(i_req, i_copy)
+
     def test_memory_limit_no_swap(self):
         """D6: a hard limit, and --memory-swap equal to --memory (no swap)."""
         s = read("smoke.sh")

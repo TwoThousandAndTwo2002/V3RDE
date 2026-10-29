@@ -472,3 +472,21 @@ Muse Spark Open returns no log probabilities on our endpoint, so a translation c
 - A smoke test scores six English to Spanish pairs, three of them bad on purpose. It checks that the pipeline runs; it is not an accuracy measure.
 - Regression tests (`qe/test_qe.py`, 6 tests) keep the fixes in place: the package pins, the full-precision model, the low-memory load, the memory limit, and the smoke input format.
 - Not deployed by this change.
+
+---
+
+## 45. Lost in translation: the estimator image rebuilds from its cache
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `qe/Dockerfile`, `qe/test_qe.py`
+**Sources:** `docs/sources/L2.md`
+
+In #44, each change to a package pin built the whole package layer again and downloaded torch again.
+
+- The image keeps pip's and apt's downloads in build cache mounts, so a rebuilt layer downloads only what changed.
+- The layers go from the least often changed (system packages, torch) to the most often changed (our own code), so a change near the end does not rebuild what is before it.
+- Each run of the apply script shows, for every build step, whether it came from the cache.
+- A new regression test keeps this in place (`qe/test_qe.py`, 7 tests). The smoke test and its scores are the same as in #44.
+- Not deployed by this change.
