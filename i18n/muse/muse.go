@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -48,6 +49,8 @@ type Client struct {
 	HTTP     *http.Client
 	Retries  int                                        // extra tries for 429, 5xx and network errors
 	Sleep    func(context.Context, time.Duration) error // for tests
+	Pace     *Pacer                                     // steady rate under the RPM limit (nil: none)
+	Jitter   func() time.Duration                       // added to each backoff wait
 }
 
 // KeyFile is where the Baseten key is kept: $V3RDE_CFG/baseten_api_key, else
@@ -123,10 +126,20 @@ func FromEnv() (*Client, error) {
 	return New(base, key), nil
 }
 
-// New makes a client with the default settings, a 120 s timeout and 3 retries.
+// New makes a client with the default settings, a 120 s timeout, 6 retries and a pacer.
 func New(base, key string) *Client {
 	return &Client{BaseURL: strings.TrimRight(base, "/"), Key: key, Settings: Default(),
-		HTTP: &http.Client{Timeout: 120 * time.Second}, Retries: 3, Sleep: sleepCtx}
+		HTTP: &http.Client{Timeout: 120 * time.Second}, Retries: 6, Sleep: sleepCtx, Pace: NewPacer(),
+		Jitter: func() time.Duration { return time.Duration(rand.Int64N(int64(time.Second))) }}
+}
+
+// Backoff is the wait before try+1 when the answer gives no Retry-After:
+// 1 s, 2 s, 4 s ... up to 32 s (6 waits: 63 s, more than one minute of limit).
+func Backoff(try int) time.Duration {
+	if try > 5 {
+		try = 5
+	}
+	return time.Duration(1<<try) * time.Second
 }
 
 func sleepCtx(ctx context.Context, d time.Duration) error {
@@ -194,8 +207,9 @@ func retryable(err error) bool {
 	return !errors.Is(err, ErrNoAnswer) && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded)
 }
 
-// Chat sends one request (n = 1) and returns the answer text. It tries again
-// after 429, 5xx and network errors (Retry-After, else 1 s, 2 s, 4 s).
+// Chat sends one request (n = 1) and returns the answer text. Each try waits for
+// its slot of the pacer. It tries again after 429, 5xx and network errors
+// (Retry-After, else Backoff and a jitter).
 func (c *Client) Chat(ctx context.Context, system, user string) (Reply, error) {
 	body, err := json.Marshal(request{Settings: c.Settings, Messages: []message{{"system", system}, {"user", user}}})
 	if err != nil {
@@ -203,6 +217,11 @@ func (c *Client) Chat(ctx context.Context, system, user string) (Reply, error) {
 	}
 	var last error
 	for try := 0; try <= c.Retries; try++ {
+		if c.Pace != nil {
+			if err := c.Pace.Wait(ctx); err != nil {
+				return Reply{}, err
+			}
+		}
 		r, wait, err := c.once(ctx, body)
 		if err == nil {
 			return r, nil
@@ -212,7 +231,10 @@ func (c *Client) Chat(ctx context.Context, system, user string) (Reply, error) {
 			break
 		}
 		if wait == 0 {
-			wait = time.Duration(1<<try) * time.Second
+			wait = Backoff(try)
+			if c.Jitter != nil {
+				wait += c.Jitter()
+			}
 		}
 		if e := c.Sleep(ctx, wait); e != nil {
 			return Reply{}, e
@@ -240,6 +262,9 @@ func (c *Client) once(ctx context.Context, body []byte) (Reply, time.Duration, e
 		return Reply{}, 0, err
 	}
 	defer res.Body.Close()
+	if c.Pace != nil {
+		c.Pace.fromHeader(res.Header.Get("x-ratelimit-limit-requests"))
+	}
 	raw, err := io.ReadAll(io.LimitReader(res.Body, 4<<20))
 	if err != nil {
 		return Reply{}, 0, err

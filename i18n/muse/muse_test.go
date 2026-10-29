@@ -36,6 +36,7 @@ func fake(t *testing.T, h func(w http.ResponseWriter, body map[string]any)) (*Cl
 	t.Cleanup(srv.Close)
 	c := New(srv.URL+"/v1", key)
 	c.Sleep = func(context.Context, time.Duration) error { return nil }
+	c.Pace = nil
 	return c, &calls
 }
 
@@ -170,5 +171,57 @@ func TestKeyFile(t *testing.T) {
 	t.Setenv("V3RDE_CFG", dir)
 	if KeyFile() != p {
 		t.Fatalf("KeyFile %s", KeyFile())
+	}
+}
+
+// After 429 with no Retry-After the waits are 1, 2, 4, 8, 16, 32 s (plus the
+// jitter): 6 retries, 7 tries, more than one minute in all.
+func TestBackoff(t *testing.T) {
+	c, calls := fake(t, func(w http.ResponseWriter, b map[string]any) { w.WriteHeader(429) })
+	var waits []time.Duration
+	c.Sleep = func(_ context.Context, d time.Duration) error { waits = append(waits, d); return nil }
+	c.Jitter = func() time.Duration { return 0 }
+	if _, err := c.Chat(context.Background(), "s", "u"); err == nil || *calls != 7 {
+		t.Fatalf("%v, %d calls", err, *calls)
+	}
+	want := []time.Duration{1, 2, 4, 8, 16, 32}
+	var sum time.Duration
+	for i, w := range want {
+		if waits[i] != w*time.Second {
+			t.Fatalf("waits %v", waits)
+		}
+		sum += waits[i]
+	}
+	if len(waits) != 6 || sum <= time.Minute {
+		t.Fatalf("waits %v", waits)
+	}
+}
+
+// The pacer takes the limit from x-ratelimit-limit-requests and spaces the
+// requests evenly; SetRPM fixes it.
+func TestPacer(t *testing.T) {
+	c, _ := fake(t, func(w http.ResponseWriter, b map[string]any) {
+		w.Header().Set("x-ratelimit-limit-requests", "30")
+		answer(w, "Hola", "stop")
+	})
+	now := time.Unix(1000, 0)
+	var waits []time.Duration
+	p := NewPacer()
+	p.Now = func() time.Time { return now }
+	p.Sleep = func(_ context.Context, d time.Duration) error { waits = append(waits, d); return nil }
+	c.Pace = p
+	// call 1 has no limit yet; call 2 takes the slot that call 1 left; then 2 s apart
+	for i := 0; i < 4; i++ {
+		if _, err := c.Chat(context.Background(), "s", "u"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if p.RPM() != 30 || len(waits) != 2 || waits[0] != 2*time.Second || waits[1] != 4*time.Second {
+		t.Fatalf("rpm %d waits %v", p.RPM(), waits)
+	}
+	p.SetRPM(15)
+	p.fromHeader("120")
+	if p.RPM() != 15 {
+		t.Fatalf("a fixed limit must stay: %d", p.RPM())
 	}
 }

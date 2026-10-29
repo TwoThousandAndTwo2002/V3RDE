@@ -81,7 +81,37 @@ type Result struct {
 	Model    string   `json:"model"`
 	K        int      `json:"k"`
 	Messages []Chosen `json:"messages"`
-	Missing  []string `json:"missing"` // ids with no valid candidate
+	Missing  []string `json:"missing"`                 // ids with no valid candidate
+	Previous []string `json:"previous_runs,omitempty"` // earlier runs kept by Merge
+}
+
+// Merge adds the messages of a resume run (add) to an earlier result (old):
+// the order of msgs, a new answer for an id replaces the old one, and the
+// missing ids are the ones that neither run has. Old must be the same
+// language, en.json commit, model and k.
+func Merge(old, add Result, msgs []i18n.Message) (Result, error) {
+	if old.Lang != add.Lang || old.Commit != add.Commit || old.Model != add.Model || old.K != add.K {
+		return Result{}, fmt.Errorf("resume: the earlier result is %s/%s/%s/k=%d, this run is %s/%s/%s/k=%d",
+			old.Lang, old.Commit, old.Model, old.K, add.Lang, add.Commit, add.Model, add.K)
+	}
+	by := map[string]Chosen{}
+	for _, c := range old.Messages {
+		by[c.ID] = c
+	}
+	for _, c := range add.Messages {
+		by[c.ID] = c
+	}
+	out := add
+	out.Messages, out.Missing = nil, []string{}
+	out.Previous = append(append([]string{}, old.Previous...), old.Run)
+	for _, m := range msgs {
+		if c, ok := by[m.ID]; ok {
+			out.Messages = append(out.Messages, c)
+		} else {
+			out.Missing = append(out.Missing, m.ID)
+		}
+	}
+	return out, nil
 }
 
 // Run translates msgs, scores them and writes one ledger line per try.

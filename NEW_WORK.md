@@ -599,3 +599,21 @@ In #51, `cmd/translate` read the key only from `BASETEN_API_KEY`, so each new sh
 - `cmd/translate` reads the key from that file (`-key-file`). A file with another mode, or with more than the key, stops the run. With no file, it uses `BASETEN_API_KEY`. With neither, the error names the setup script. The key is never in an error message.
 - A new regression test (`i18n/muse/muse_test.go`, 6 tests). The i18n module now has 19 tests.
 - Not deployed by this change.
+
+---
+
+## 53. Lost in translation: requests at a steady rate, and a resume run
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/muse/pace.go`, `i18n/muse/muse.go`, `i18n/muse/muse_test.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4e.md`
+
+The first Spanish run (run `20261029T215819Z`) kept 179 of 204 messages. All 25 failures were `HTTP 429: Rate limit exceeded`. There were no tag errors and no empty answers. Root cause: 8 workers sent all requests in about 80 seconds, and the client gave up after 4 tries in 7 seconds, which is less than the one-minute window of the limit.
+
+- A pacer spaces the requests evenly. It takes the limit from Baseten's `x-ratelimit-limit-requests` header, or from `-rpm`.
+- After a 429 with no `Retry-After`, the client waits 1, 2, 4, 8, 16 and 32 seconds, plus a random part of a second (6 retries, more than one minute in all).
+- `-resume` translates only the ids that are missing in `<out>/<lang>.json` and merges the new answers into it, in the `en.json` order. The earlier run id is kept in `previous_runs`. The ledger gets the new tries at the end.
+- 3 new regression tests (backoff, pacer, merge). The i18n module now has 22 tests.
+- Not deployed by this change.

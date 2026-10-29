@@ -126,3 +126,31 @@ func TestReadScores(t *testing.T) {
 		}
 	}
 }
+
+// A resume run fills the missing ids; the order is the en.json order; another
+// language or model is refused.
+func TestMerge(t *testing.T) {
+	one, two := 1.0, 2.0
+	old := Result{Run: "r1", Lang: "es-419", Commit: "c0", Model: "m", K: 1,
+		Messages: []Chosen{{ID: "FRAME.brand", Text: "V3RDE"}, {ID: "RECEIVE.gone", Text: "Ya no está", Score: &one}},
+		Missing:  []string{"VOICE.rename", "CAPTURE.retake"}}
+	add := Result{Run: "r2", Lang: "es-419", Commit: "c0", Model: "m", K: 1,
+		Messages: []Chosen{{ID: "VOICE.rename", Text: "Artículo {n}: de “{from}” a “{to}”", Score: &two}},
+		Missing:  []string{"CAPTURE.retake"}}
+	got, err := Merge(old, add, msgs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, c := range got.Messages {
+		ids = append(ids, c.ID)
+	}
+	if strings.Join(ids, ",") != "VOICE.rename,FRAME.brand,RECEIVE.gone" || strings.Join(got.Missing, ",") != "CAPTURE.retake" ||
+		got.Run != "r2" || strings.Join(got.Previous, ",") != "r1" {
+		t.Fatalf("%v %v %s %v", ids, got.Missing, got.Run, got.Previous)
+	}
+	add.Model = "other"
+	if _, err := Merge(old, add, msgs); err == nil {
+		t.Fatal("another model must be refused")
+	}
+}

@@ -30,14 +30,16 @@ func main() {
 	outDir := flag.String("out", "", "output directory, outside the repo (required)")
 	image := flag.String("image", "v3rde-qe:L2", "the MetricX image (qe/Dockerfile)")
 	keyFile := flag.String("key-file", muse.KeyFile(), "file with the Baseten key (mode 0600)")
+	rpm := flag.Int("rpm", 0, "requests per minute (0: the limit that Baseten's answers give)")
+	resume := flag.Bool("resume", false, "translate only the missing ids of <out>/<lang>.json and merge")
 	flag.Parse()
-	if err := run(*lang, *k, *workers, *limit, *outDir, *image, *keyFile); err != nil {
+	if err := run(*lang, *k, *workers, *limit, *outDir, *image, *keyFile, *rpm, *resume); err != nil {
 		fmt.Fprintln(os.Stderr, "translate:", err)
 		os.Exit(1)
 	}
 }
 
-func run(code string, k, workers, limit int, outDir, image, keyFile string) error {
+func run(code string, k, workers, limit int, outDir, image, keyFile string, rpm int, resume bool) error {
 	if outDir == "" {
 		return fmt.Errorf("-out is required")
 	}
@@ -62,9 +64,32 @@ func run(code string, k, workers, limit int, outDir, image, keyFile string) erro
 	if err != nil {
 		return err
 	}
-	msgs := en.Messages
-	if limit > 0 && limit < len(msgs) {
-		msgs = msgs[:limit]
+	client.Pace.SetRPM(rpm)
+	all := en.Messages
+	if limit > 0 && limit < len(all) {
+		all = all[:limit]
+	}
+	msgs := all
+	resPath := filepath.Join(outDir, code+".json")
+	var old rung.Result
+	if resume {
+		if err := i18n.ReadJSON(resPath, &old); err != nil {
+			return fmt.Errorf("resume: %v", err)
+		}
+		miss := map[string]bool{}
+		for _, id := range old.Missing {
+			miss[id] = true
+		}
+		msgs = nil
+		for _, m := range all {
+			if miss[m.ID] {
+				msgs = append(msgs, m)
+			}
+		}
+		if len(msgs) == 0 {
+			fmt.Println("translate: nothing is missing in", resPath)
+			return nil
+		}
 	}
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
@@ -78,15 +103,20 @@ func run(code string, k, workers, limit int, outDir, image, keyFile string) erro
 	defer lf.Close()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	fmt.Printf("translate: %d messages to %s, k=%d, %d workers, run %s\n", len(msgs), code, k, workers, run)
+	fmt.Printf("translate: %d messages to %s, k=%d, %d workers, run %s (resume: %v)\n", len(msgs), code, k, workers, run, resume)
 	cfg := rung.Config{Run: run, Lang: *target, Keep: langs.Keep, K: k, Workers: workers, Settings: client.Settings, Commit: en.Source.Commit}
 	sc := rung.Docker{Script: filepath.Join("..", "qe", "score.sh"), Image: image, Log: os.Stderr}
 	res, err := rung.Run(ctx, cfg, msgs, client, sc, lf)
 	if err != nil {
 		return err
 	}
+	if resume {
+		if res, err = rung.Merge(old, res, all); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("translate: request limit in use: %d per minute\n", client.Pace.RPM())
 	b, _ := json.MarshalIndent(res, "", "  ")
-	resPath := filepath.Join(outDir, code+".json")
 	if err := os.WriteFile(resPath, append(b, '\n'), 0o644); err != nil {
 		return err
 	}
