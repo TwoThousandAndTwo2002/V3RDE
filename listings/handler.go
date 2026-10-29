@@ -187,6 +187,12 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 		}
 		in.TTL = time.Duration(sec) * time.Second
 	}
+	d, err := parseDetails(r.FormValue("details")) // X48d
+	if err != nil {
+		fail(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	in.Details = d
 	photoID := strings.TrimSpace(r.FormValue("photo_id"))
 	if f, hdr, err := r.FormFile("photo"); err == nil {
 		defer f.Close()
@@ -221,7 +227,7 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 		fail(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	log.Printf("listing %s created by %s request_id=%s", l.ID, u.ID, l.RequestID)
+	log.Printf("listing %s created by %s request_id=%s details=%t", l.ID, u.ID, l.RequestID, l.Details != nil)
 	writeJSON(w, http.StatusCreated, l)
 }
 

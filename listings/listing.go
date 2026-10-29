@@ -16,6 +16,7 @@
 //	POST /api/listings               multipart: title, number_of_serving, pickup_text, request_id,
 //	                                 and photo (a file) or photo_id (an item photo of the caller) -> 201 listing
 //	                                 X44h: ttl_seconds (30-1800), test accounts only (-test-ttl-emails), else 403
+//	                                 X48d: details (optional JSON, details.go), kept as "details"
 //	GET  /api/listings?after=<id>    active and not expired, newest first, 20 per page -> {items, next}
 //	GET  /api/listings/mine          the caller's listings, any status, newest first -> {items}
 //	POST /api/listings/{id}/grab     -> 200 listing | 409 collected or expired | 403 own listing | 404
@@ -75,6 +76,8 @@ type Listing struct {
 	CollectedBy     *string `json:"collected_by"`
 	CollectedAt     *string `json:"collected_at"`
 	RequestID       string  `json:"request_id"`
+	// Details (X48d): the scanner's fields of the item; left out when none.
+	Details *Details `json:"details,omitempty"`
 }
 
 // Input is one create request before and after Validate.
@@ -88,6 +91,8 @@ type Input struct {
 	// TTL (X44h): a test account's own timer, MinTestTTL..DefaultTTL; 0 = the
 	// store's TTL. Only the handler sets it, and only for a test account.
 	TTL time.Duration
+	// Details (X48d): the handler parsed and checked them (details.go).
+	Details *Details
 }
 
 // MinTestTTL is the shortest timer a test account can ask for (X44h, T9

@@ -849,3 +849,19 @@ The app asked for the scan job once a second, so the answer came up to 1 s late.
 - An older service has no version: the app then asks once a second, as before.
 - Tests: inference 84 -> 86, mobile 81 -> 82.
 
+## 51. A listing keeps what the scanner found
+
+**When:** Oct 29 2026.
+**Meta models:** none (no model change).
+**Files:** `listings/details.go` (new), `listings/listing.go`, `listings/store.go`, `listings/handler.go`, `listings/listings_test.go`, `mobile/src/logic.ts`, `mobile/src/api.ts`, `mobile/src/screens/Review.tsx`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48d.md`
+
+The scanner finds more than the title and the servings, but a listing kept only those two.
+
+- The app now sends the other fields of each item in one optional form field, `details`: description, vegetarian or not, serving type, meal condition, weight and cost.
+- The listings service keeps them with the listing and gives them back under `details`.
+- Only these six keys are taken. A wrong value is refused with a clear error. The app sends only correct values, so a post never fails on them.
+- A listing with no details is the same as before.
+- The app does not show the details yet. That needs a mockup first.
+- Tests: listings 28 -> 29, mobile 82 -> 83.
+

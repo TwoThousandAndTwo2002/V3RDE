@@ -968,3 +968,77 @@ func TestTestAccountTTL(t *testing.T) {
 		t.Fatalf("default timer %v", x2.Sub(c2))
 	}
 }
+
+// X48d: the scanner's details are kept with the listing (the answer, the
+// data file, the active list and mine); none: no "details" key; a bad
+// details field is a 400 and stores nothing.
+func TestCreateKeepsDetails(t *testing.T) {
+	e := newEnv(t, nil)
+	f := okFields()
+	f["details"] = `{"description":" Baked pasta with beef ","is_non_veg":1,"serving_type":"bulk",` +
+		`"meal_condition":"ready_to_eat","weight":2.5,"meal_cost":0}`
+	w, body := call(e.h, form(t, "u_donor", f, jpeg, "image/jpeg"))
+	if w.Code != 201 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	want := map[string]any{"description": "Baked pasta with beef", "is_non_veg": 1.0, "serving_type": "bulk",
+		"meal_condition": "ready_to_eat", "weight": 2.5, "meal_cost": 0.0}
+	if fmt.Sprint(body["details"]) != fmt.Sprint(want) {
+		t.Fatalf("details %v", body["details"])
+	}
+	_, list := call(e.h, get("u_other", "/api/listings"))
+	_, mine := call(e.h, get("u_donor", "/api/listings/mine"))
+	for name, m := range map[string]map[string]any{"active": list, "mine": mine} {
+		items, _ := m["items"].([]any)
+		if len(items) != 1 || fmt.Sprint(items[0].(map[string]any)["details"]) != fmt.Sprint(want) {
+			t.Fatalf("%s: %v", name, m)
+		}
+	}
+	st, err := Open(e.dir, 30*time.Minute) // the data file keeps them
+	if err != nil || len(st.Mine("u_donor")) != 1 || st.Mine("u_donor")[0].Details == nil ||
+		*st.Mine("u_donor")[0].Details.Weight != 2.5 {
+		t.Fatalf("reopen: %v %+v", err, st.Mine("u_donor"))
+	}
+	// no details, or an empty object: no key
+	for _, d := range []string{"", "{}", ` {"description":"  "} `} {
+		g := okFields()
+		if d != "" {
+			g["details"] = d
+		}
+		w, b := call(e.h, form(t, "u_donor", g, jpeg, "image/jpeg"))
+		if _, has := b["details"]; w.Code != 201 || has {
+			t.Fatalf("details %q: %d %v", d, w.Code, b)
+		}
+	}
+	n := len(e.st.Mine("u_donor"))
+	for d, msg := range map[string]string{
+		`{"name":"x"}`:             "details must be a JSON object of description, is_non_veg, serving_type, meal_condition, weight, meal_cost",
+		`[1]`:                      "details must be a JSON object of description, is_non_veg, serving_type, meal_condition, weight, meal_cost",
+		`{"weight":"2"}`:           "details must be a JSON object of description, is_non_veg, serving_type, meal_condition, weight, meal_cost",
+		`{"weight":1}]`:            "details must be a JSON object of description, is_non_veg, serving_type, meal_condition, weight, meal_cost",
+		`{} {}`:                    "details must be a JSON object of description, is_non_veg, serving_type, meal_condition, weight, meal_cost",
+		`{"is_non_veg":2}`:         "details.is_non_veg must be 0 or 1",
+		`{"serving_type":"tray"}`:  "details.serving_type must be individual or bulk",
+		`{"meal_condition":"hot"}`: "details.meal_condition must be ready_to_eat, cooking_required or sealed",
+		`{"weight":-1}`:            "details.weight must be 0-1000 kg",
+		`{"meal_cost":100001}`:     "details.meal_cost must be 0-100000",
+		`{"description":"` + strings.Repeat("a", 201) + `"}`:  "details.description must be at most 200 characters",
+		`{"description":"` + strings.Repeat("a", 1100) + `"}`: "details must be at most 1024 bytes",
+	} {
+		g := okFields()
+		g["details"] = d
+		w, b := call(e.h, form(t, "u_donor", g, jpeg, "image/jpeg"))
+		if w.Code != 400 || b["error"] != msg {
+			t.Errorf("details %.40q: %d %v", d, w.Code, b)
+		}
+	}
+	if len(e.st.Mine("u_donor")) != n {
+		t.Fatal("a refused details field stored a listing")
+	}
+	// 200 characters of 4 bytes each are taken (the app counts characters)
+	g := okFields()
+	g["details"] = `{"description":"` + strings.Repeat("🍕", 200) + `","weight":1}`
+	if w, b := call(e.h, form(t, "u_donor", g, jpeg, "image/jpeg")); w.Code != 201 {
+		t.Fatalf("200 emoji: %d %v", w.Code, b)
+	}
+}

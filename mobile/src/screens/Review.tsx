@@ -118,7 +118,8 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     for (let k = 0; k < items.length; k++) {
       const it = items[k];
       if (!one) setProgress(postingText(k + 1, items.length));
-      const base = { title: it.title.trim(), number_of_serving: Number(it.servings), pickup_text: pickup.trim(), request_id: answer.requestId };
+      const base = { title: it.title.trim(), number_of_serving: Number(it.servings), pickup_text: pickup.trim(), request_id: answer.requestId,
+        details: it.details };
       try {
         const photoId = photoToPost(it.photo_id, touch[it.item] ?? { kind: "idle" });
         await listings.create(photoId ? { ...base, photo_id: photoId } : { ...base, photo: shot });

@@ -12,7 +12,31 @@
 // same shape for one item and for many. Each item becomes one card in the
 // review list (or the one-item form); servings = the count of identical
 // items, clamped to the form's 1-99.
-export type ItemForm = { item: number; title: string; servings: string; photo_id: string; description: string; err: string };
+export type ItemForm = {
+  item: number; title: string; servings: string; photo_id: string; description: string; err: string;
+  details?: ItemDetails; // X48d: the scanner's other fields, kept with the listing
+};
+/** X48d: the scanner's fields of an item besides the title and the servings (listings/details.go). */
+export type ItemDetails = {
+  description?: string; is_non_veg?: 0 | 1; serving_type?: "individual" | "bulk";
+  meal_condition?: "ready_to_eat" | "cooking_required" | "sealed"; weight?: number; meal_cost?: number;
+};
+/** The details of one answer item: only the values the listings service takes (a wrong one is left out, so a post
+ *  never fails on them); undefined when there are none. */
+export function itemDetails(f: any): ItemDetails | undefined {
+  if (!f || typeof f !== "object") return undefined;
+  const d: ItemDetails = {};
+  // at most 200 characters (code points, as the service counts them), no control characters
+  const desc = Array.from(typeof f.description === "string" ? f.description.replace(/[\u0000-\u001f\u007f]/g, " ").trim() : "");
+  if (desc.length > 0) d.description = desc.slice(0, 200).join("").trim();
+  if (f.is_non_veg === 0 || f.is_non_veg === 1) d.is_non_veg = f.is_non_veg;
+  if (f.serving_type === "individual" || f.serving_type === "bulk") d.serving_type = f.serving_type;
+  if (["ready_to_eat", "cooking_required", "sealed"].includes(f.meal_condition)) d.meal_condition = f.meal_condition;
+  const num = (v: unknown, max: number) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= max;
+  if (num(f.weight, 1000)) d.weight = f.weight;
+  if (num(f.meal_cost, 100_000)) d.meal_cost = f.meal_cost;
+  return Object.keys(d).length > 0 ? d : undefined;
+}
 export function answerToItems(resp: any): ItemForm[] {
   const items = Array.isArray(resp?.items) ? resp.items : [];
   return items.map((it: any, i: number) => {
@@ -25,6 +49,7 @@ export function answerToItems(resp: any): ItemForm[] {
       photo_id: typeof it?.photo_id === "string" ? it.photo_id : "",
       description: String(f.description ?? ""),
       err: "",
+      details: itemDetails(f),
     };
   });
 }

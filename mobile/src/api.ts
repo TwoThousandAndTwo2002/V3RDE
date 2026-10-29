@@ -39,6 +39,7 @@ export type Listing = {
 /** A new listing: the photo is an item photo of the analyze route (photo_id) or the photo itself. */
 export type NewListing = {
   title: string; number_of_serving: number; pickup_text: string; request_id?: string; photo?: Upload; photo_id?: string;
+  details?: object; // X48d: the scanner's fields (logic.itemDetails), kept with the listing
 };
 /** One item of the review list, in the listing contract (voice posting). */
 export type VoiceItem = { item: number; title: string; number_of_serving: number };
@@ -110,6 +111,7 @@ export const listings = Object.freeze({
   create(n: NewListing) {
     const form = formOf([["title", n.title], ["number_of_serving", String(n.number_of_serving)],
       ["pickup_text", n.pickup_text]], [["request_id", n.request_id]]);
+    if (n.details && Object.keys(n.details).length > 0) form.append("details", JSON.stringify(n.details));
     if (n.photo_id) form.append("photo_id", n.photo_id);
     else if (n.photo) addFile(form, "photo", n.photo);
     return request<Listing>("POST", "/api/listings", { form, timeoutMs: 30_000 });

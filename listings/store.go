@@ -151,7 +151,7 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 		ID: id, OwnerID: ownerID, Title: in.Title, NumberOfServing: in.NumberOfServing,
 		PhotoURL: "/api/listings/" + id + "/photo", PickupText: in.PickupText, Status: "active",
 		CreatedAt: now.Format(time.RFC3339Nano), ExpiresAt: now.Add(ttl).Format(time.RFC3339Nano),
-		RequestID: in.RequestID,
+		RequestID: in.RequestID, Details: in.Details,
 	}}
 	s.mu.Lock()
 	defer s.mu.Unlock()

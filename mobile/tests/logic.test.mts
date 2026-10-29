@@ -4,7 +4,7 @@ import { strict as assert } from "node:assert";
 import {
   answerToItems, labelReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
-  scanStep, scanPoll, SCAN_HOLD_MS, SCAN_POLL_MS,
+  scanStep, scanPoll, itemDetails, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
 
 const ID = "0123456789abcdef0123456789abcdef";
@@ -18,12 +18,28 @@ test("answerToItems: one card per item, servings clamped to 1-99, title cut at 8
     ],
   });
   assert.equal(items.length, 3);
-  assert.deepEqual(items[0], { item: 1, title: "Bananas", servings: "6", photo_id: ID, description: "ripe", err: "" });
+  assert.deepEqual(items[0], { item: 1, title: "Bananas", servings: "6", photo_id: ID, description: "ripe", err: "",
+    details: { description: "ripe" } });
   assert.equal(items[1].title.length, 80);
   assert.equal(items[1].servings, "99");
   assert.equal(items[1].photo_id, "");
   assert.equal(items[2].item, 3);
   assert.equal(items[2].servings, "1");
+});
+
+test("itemDetails (X48d): the scanner's fields that the listings service takes; a wrong one is left out", () => {
+  const f = { name: "Lasagna", number_of_serving: 6, description: " Baked pasta ", is_non_veg: 1, serving_type: "bulk",
+    meal_condition: "ready_to_eat", weight: 2.5, meal_cost: 0 };
+  assert.deepEqual(itemDetails(f), { description: "Baked pasta", is_non_veg: 1, serving_type: "bulk",
+    meal_condition: "ready_to_eat", weight: 2.5, meal_cost: 0 });
+  assert.deepEqual(itemDetails({ is_non_veg: 2, serving_type: "tray", meal_condition: "hot", weight: -1, meal_cost: Infinity,
+    description: "x".repeat(250) }), { description: "x".repeat(200) });
+  assert.equal(itemDetails({ name: "Rice", description: "  " }), undefined);
+  assert.equal(itemDetails(null), undefined);
+  assert.equal(itemDetails({ weight: "2" }), undefined);
+  // code points, not UTF-16 units: 250 emoji give 200; a control character is a space
+  assert.equal(Array.from(itemDetails({ description: "🍕".repeat(250) })!.description!).length, 200);
+  assert.equal(itemDetails({ description: "a\nb" })!.description, "a b");
 });
 
 test("answerToItems: no items array gives no cards", () => {
