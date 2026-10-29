@@ -532,3 +532,18 @@ The barcode lookup (a scanned code in, the catalog's product out) existed before
 Three tests of the sharing and rescue services passed only on Oct 28 2026 (UTC): they read the events file of their fixed test day, but the events log wrote with the real clock. The tests now give the log the test clock. The services do not change.
 
 - Tests: post 51 (unchanged count; they now pass on any day).
+---
+
+## 29. The telemetry (sidecars and ledger), written new for V3RDE
+
+**When:** Oct 29 2026.
+**Meta model:** none (the time and memory record of every service, Meta calls included).
+**Files:** `telemetry/proc.go`, `telemetry/files.go`, `telemetry/sidecar.go`, `telemetry/ledger.go`, `telemetry/cmd/sidecar/main.go`, `telemetry/cmd/ledger/main.go`, `telemetry/Dockerfile`, `telemetry/go.mod`, `telemetry/telemetry_test.go` (all new)
+**Sources:** `docs/sources/X38f.md`
+
+The telemetry (a sidecar next to each service that records its CPU, memory and events, and a ledger that joins them into one log per day) existed before the Hackathon. V3RDE does not copy it: this is new code.
+
+- It keeps the files on the box (the spools, the ledger, the saved read positions), the start, stop and restart signals, and the trace route, so the sidecars go on from where they stopped.
+- Checked against the old code: its own tests pass on the new code, and an independent review fed the same files to both in 300 random runs with no difference.
+- New, from that review: a line is on the disk before its read position is saved, so a power cut does not lose it; one broken file or line no longer stops the rest.
+- Tests: telemetry 19 (new).
