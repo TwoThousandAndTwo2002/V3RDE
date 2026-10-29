@@ -748,3 +748,18 @@ The first live rescue test failed: the food directory answered, but the service 
 - Each place shows where its record comes from.
 - When the directory answer cannot be read, the events line keeps the reason.
 - Tests: post 61 -> 63.
+
+## 43. The food gate runs on LiteRT 2.3.0
+
+**When:** Oct 29 2026.
+**Meta models:** PE-Core-S16-384 gate, as in entry 7 (the same model and head, the same pins).
+**Files:** `gate/litert.go`, `gate/litert_test.go`, `gate/Dockerfile`, `gate/cmd/gatebench/main.go`
+**Sources:** `docs/sources/X45a.md`
+
+The gate ran on LiteRT 1.4.0 and took about 1.1 s for each photo on the box, before SAM and Muse could start.
+
+- The gate now uses LiteRT 2.3.0. On all 1,432 gold photos no verdict changed.
+- In the cloud bench one call took 589 ms instead of 1,646 ms (1 thread). The box bench gives the box numbers.
+- The thread count reaches the CPU engine again. The service keeps 1 thread until the box bench.
+- New tool `gatebench` (also in the image): it scores a folder of photos and compares two runs.
+

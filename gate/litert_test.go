@@ -66,3 +66,41 @@ func TestLiteRTMatchesThePythonInterpreter(t *testing.T) {
 		t.Fatalf("OpenModel %v", err)
 	}
 }
+
+// X45a (LiteRT 2.3.0): the thread count reaches XNNPACK through the opaque
+// option "xnnpack" (TOML "num_threads = N"); 2 threads give the same output,
+// and a count out of 1..8 is refused before LiteRT is called.
+func TestLiteRTThreads(t *testing.T) {
+	for _, bad := range []int{0, -1, 9} {
+		if _, err := OpenLiteRT("testdata/tiny.tflite", bad); err == nil {
+			t.Fatalf("threads %d must be an error", bad)
+		}
+	}
+	one, err := OpenLiteRT("testdata/tiny.tflite", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer one.Close()
+	two, err := OpenLiteRT("testdata/tiny.tflite", 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer two.Close()
+	x := make([]float32, 8*8*3)
+	for i := range x {
+		x[i] = float32((i*31)%255) / 255.0
+	}
+	a, err := one.Embed(x)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := two.Embed(x)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range a {
+		if math.Abs(float64(a[i]-b[i])) > 1e-6 {
+			t.Fatalf("y[%d]: 1 thread %v, 2 threads %v", i, a[i], b[i])
+		}
+	}
+}

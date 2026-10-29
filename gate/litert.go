@@ -2,21 +2,28 @@
 
 package gate
 
-// The LiteRT C API (google-ai-edge/LiteRT v1.4.0, litert/c/*.h), declared by
-// hand for only the calls the gate makes, so no header tree is vendored. The
-// library is libLiteRtRuntimeCApi.so from Google's ai-edge-litert 1.4.0
-// wheel, pinned by sha256 for each CPU type in the Dockerfile
-// (the two wheels were downloaded and hashed 2026-10-29). The struct layouts
-// are the ones of litert_layout.h and litert_model.h; element type 1 is
-// kTfLiteFloat32 and hardware accelerator 1 is the CPU.
+// The LiteRT C API (google-ai-edge/LiteRT v2.3.0, litert/c/*.h, commit
+// 4352e261), declared by hand for only the calls the gate makes, so no header
+// tree is vendored. The library is libLiteRt.so from Google's ai-edge-litert
+// 2.3.0 wheel, pinned by sha256 for each CPU type in the Dockerfile (the two
+// wheels were downloaded and hashed 2026-10-29). The struct layouts are the
+// ones of litert_layout.h (2.3.0: has_strides is an unsigned int bit-field)
+// and litert_model_types.h; element type 1 is kTfLiteFloat32 and hardware
+// accelerator 1 is the CPU. 2.3.0 changes against 1.4.0: the environment
+// comes first, because LiteRtCreateModelFromFile takes it; the CPU options
+// are an opaque option "xnnpack" whose payload is TOML text
+// ("num_threads = N", litert/c/options/litert_cpu_options.cc), made here
+// with the exported LiteRtCreateOpaqueOptions, because LrtCreateCpuOptions
+// is not exported by libLiteRt.so.
 
 /*
-#cgo LDFLAGS: -lLiteRtRuntimeCApi
+#cgo LDFLAGS: -lLiteRt
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef int LiteRtStatus;
 typedef size_t LiteRtParamIndex;
@@ -24,7 +31,6 @@ typedef struct LiteRtEnvironmentT* LiteRtEnvironment;
 typedef struct LiteRtModelT* LiteRtModel;
 typedef struct LiteRtOptionsT* LiteRtOptions;
 typedef struct LiteRtOpaqueOptionsT* LiteRtOpaqueOptions;
-typedef struct LiteRtCpuOptionsT* LiteRtCpuOptions;
 typedef struct LiteRtCompiledModelT* LiteRtCompiledModel;
 typedef struct LiteRtSubgraphT* LiteRtSubgraph;
 typedef struct LiteRtTensorT* LiteRtTensor;
@@ -32,7 +38,7 @@ typedef struct LiteRtTensorBufferT* LiteRtTensorBuffer;
 typedef struct LiteRtTensorBufferRequirementsT* LiteRtTensorBufferRequirements;
 typedef struct {
   unsigned int rank : 7;
-  bool has_strides : 1;
+  unsigned int has_strides : 1;
   int32_t dimensions[8];
   uint32_t strides[8];
 } LiteRtLayout;
@@ -40,17 +46,19 @@ typedef struct {
   int element_type;
   LiteRtLayout layout;
 } LiteRtRankedTensorType;
+// the size and offset that litert_model_types.h asserts (2.3.0, 64-bit)
+_Static_assert(sizeof(LiteRtRankedTensorType) == 72, "LiteRtRankedTensorType size");
+_Static_assert(offsetof(LiteRtRankedTensorType, layout) == 4, "LiteRtRankedTensorType layout offset");
 
-LiteRtStatus LiteRtCreateModelFromFile(const char* filename, LiteRtModel* model);
+LiteRtStatus LiteRtCreateModelFromFile(LiteRtEnvironment env, const char* filename, LiteRtModel* model);
 void LiteRtDestroyModel(LiteRtModel model);
 LiteRtStatus LiteRtCreateOptions(LiteRtOptions* options);
 void LiteRtDestroyOptions(LiteRtOptions options);
 LiteRtStatus LiteRtSetOptionsHardwareAccelerators(LiteRtOptions options, int hw);
 LiteRtStatus LiteRtAddOpaqueOptions(LiteRtOptions options, LiteRtOpaqueOptions opaque);
 void LiteRtDestroyOpaqueOptions(LiteRtOpaqueOptions options);
-LiteRtStatus LiteRtCreateCpuOptions(LiteRtOpaqueOptions* options);
-LiteRtStatus LiteRtFindCpuOptions(LiteRtOpaqueOptions opaque, LiteRtCpuOptions* cpu);
-LiteRtStatus LiteRtSetCpuOptionsNumThread(LiteRtCpuOptions options, int num_threads);
+LiteRtStatus LiteRtCreateOpaqueOptions(const char* id, void* payload,
+    void (*destructor)(void*), LiteRtOpaqueOptions* options);
 LiteRtStatus LiteRtCreateEnvironment(int num_options, const void* options, LiteRtEnvironment* env);
 void LiteRtDestroyEnvironment(LiteRtEnvironment env);
 LiteRtStatus LiteRtCreateCompiledModel(LiteRtEnvironment env, LiteRtModel model,
@@ -75,6 +83,16 @@ LiteRtStatus LiteRtUnlockTensorBuffer(LiteRtTensorBuffer buf);
 LiteRtStatus LiteRtRunCompiledModel(LiteRtCompiledModel cm, LiteRtParamIndex sig,
     size_t n_in, LiteRtTensorBuffer* in, size_t n_out, LiteRtTensorBuffer* out);
 
+// cpu_options makes the "xnnpack" opaque option with "num_threads = N". The
+// payload is malloc'ed here and freed by the option (free is its destructor).
+static LiteRtStatus cpu_options(int threads, LiteRtOpaqueOptions* out) {
+  char* toml = (char*)malloc(32);
+  if (toml == NULL) return 1;
+  snprintf(toml, 32, "num_threads = %d\n", threads);
+  LiteRtStatus s = LiteRtCreateOpaqueOptions("xnnpack", toml, free, out);
+  if (s != 0) free(toml);
+  return s;
+}
 static int rt_rank(const LiteRtRankedTensorType* t) { return (int)t->layout.rank; }
 static int rt_dim(const LiteRtRankedTensorType* t, int i) { return (int)t->layout.dimensions[i]; }
 */
@@ -136,6 +154,9 @@ func elements(shape []int) int {
 // OpenLiteRT loads a model with one float32 input and one float32 output,
 // on the CPU with threads threads. A failure closes what was made.
 func OpenLiteRT(path string, threads int) (*LiteRT, error) {
+	if threads < 1 || threads > 8 {
+		return nil, fmt.Errorf("litert: threads %d is not 1..8", threads)
+	}
 	l := &LiteRT{}
 	ok := false
 	defer func() {
@@ -152,8 +173,13 @@ func OpenLiteRT(path string, threads int) (*LiteRT, error) {
 	// to unpinned Go pointer"; https://pkg.go.dev/cmd/cgo#hdr-Passing_pointers:
 	// only an &s.f written in the call itself is checked as the field alone).
 	// The tiny-model parity test found this.
+	var env C.LiteRtEnvironment
+	if err := check(C.LiteRtCreateEnvironment(0, nil, &env), "environment"); err != nil {
+		return nil, err
+	}
+	l.env = env
 	var model C.LiteRtModel
-	if err := check(C.LiteRtCreateModelFromFile(cpath, &model), "load model"); err != nil {
+	if err := check(C.LiteRtCreateModelFromFile(env, cpath, &model), "load model"); err != nil {
 		return nil, err
 	}
 	l.model = model
@@ -163,17 +189,13 @@ func OpenLiteRT(path string, threads int) (*LiteRT, error) {
 	}
 	defer C.LiteRtDestroyOptions(opts)
 	var opaque C.LiteRtOpaqueOptions
-	var cpu C.LiteRtCpuOptions
-	var env C.LiteRtEnvironment
 	var cm C.LiteRtCompiledModel
 	for _, step := range []struct {
 		s    func() C.LiteRtStatus
 		name string
 	}{
 		{func() C.LiteRtStatus { return C.LiteRtSetOptionsHardwareAccelerators(opts, hwCPU) }, "cpu accelerator"},
-		{func() C.LiteRtStatus { return C.LiteRtCreateCpuOptions(&opaque) }, "cpu options"},
-		{func() C.LiteRtStatus { return C.LiteRtFindCpuOptions(opaque, &cpu) }, "find cpu options"},
-		{func() C.LiteRtStatus { return C.LiteRtSetCpuOptionsNumThread(cpu, C.int(threads)) }, "threads"},
+		{func() C.LiteRtStatus { return C.cpu_options(C.int(threads), &opaque) }, "cpu options"},
 		{func() C.LiteRtStatus {
 			s := C.LiteRtAddOpaqueOptions(opts, opaque)
 			if s == 0 {
@@ -181,8 +203,7 @@ func OpenLiteRT(path string, threads int) (*LiteRT, error) {
 			}
 			return s
 		}, "add cpu options"},
-		{func() C.LiteRtStatus { return C.LiteRtCreateEnvironment(0, nil, &env) }, "environment"},
-		{func() C.LiteRtStatus { l.env = env; return C.LiteRtCreateCompiledModel(env, model, opts, &cm) }, "compile"},
+		{func() C.LiteRtStatus { return C.LiteRtCreateCompiledModel(env, model, opts, &cm) }, "compile"},
 	} {
 		if err := check(step.s(), step.name); err != nil {
 			if opaque != nil {
