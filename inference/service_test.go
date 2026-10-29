@@ -345,19 +345,33 @@ func TestAnalyzeRateLimitPerUser(t *testing.T) {
 	}
 }
 
-// The gate first: NOT_FOOD = 422 not_food at $0; a gate that is down
+// museBodies counts the API bodies that are not SAM calls.
+func museBodies(f *fakeAPI) int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	n := 0
+	for _, b := range f.bodies {
+		if b["model"] != DefaultSAM {
+			n++
+		}
+	}
+	return n
+}
+
+// The gate: NOT_FOOD = 422 not_food, and no Muse call is made (X48a: SAM
+// may have started at the same time as the gate); a gate that is down
 // fails closed with 503 gate_unavailable.
 func TestAnalyzeGateNotFoodAndDown(t *testing.T) {
 	s := newSvc(t, threeBoxes(t), "NOT_FOOD", 0, nil)
 	w, a := s.do(multipartReq(t, testPhoto(t)))
 	errorIs(t, w, a, 422, CodeNotFood)
-	if len(s.api.bodies) != 0 || s.events(t)[0].GateVerdict != "NOT_FOOD" {
-		t.Fatal("API called on NOT_FOOD")
+	if museBodies(s.api) != 0 || s.events(t)[0].GateVerdict != "NOT_FOOD" {
+		t.Fatal("Muse called on NOT_FOOD")
 	}
 	d := newSvc(t, threeBoxes(t), "", 500, nil)
 	w, a = d.do(multipartReq(t, testPhoto(t)))
 	errorIs(t, w, a, 503, CodeGateUnavailable)
-	if len(d.api.bodies) != 0 || d.events(t)[0].GateVerdict != "UNAVAILABLE" {
+	if museBodies(d.api) != 0 || d.events(t)[0].GateVerdict != "UNAVAILABLE" {
 		t.Fatal("gate down")
 	}
 }
@@ -418,10 +432,10 @@ func TestAnalyzeBarcode(t *testing.T) {
 	if ev.BarcodeOutcome != "HIT" || ev.CatalogServings != 13 || ev.Barcode != "078742370026" {
 		t.Fatalf("%+v", ev)
 	}
-	// a miss goes on to the gate (the cap of 0 then refuses it)
+	// a miss goes on; the cap of 0 refuses it before the gate and SAM (X48a)
 	w, a = s.do(req(t, "/api/analyze", "u1", testPhoto(t), "000000000000"))
 	errorIs(t, w, a, 503, CodeDailyCap)
-	if s.gate != 1 || len(s.api.bodies) != 0 {
+	if s.gate != 0 || len(s.api.bodies) != 0 {
 		t.Fatal(s.gate, len(s.api.bodies))
 	}
 }
@@ -640,3 +654,59 @@ func TestAnalyzeCallerCap(t *testing.T) {
 }
 
 func nearly(a, b float64) bool { d := a - b; return d < 1e-12 && d > -1e-12 }
+
+// X48a: SAM runs while the gate checks the photo; the Muse calls wait for
+// the gate. A slow gate (300 ms): every SAM call starts before the gate
+// ends, every Muse call starts after it, with its wait logged; with
+// NOT_FOOD the slow gate stops the run and no Muse call is made.
+func TestGateRunsWithSAM(t *testing.T) {
+	slowGate := func(verdict string) func(*ServiceConfig) {
+		return func(c *ServiceConfig) {
+			g := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				time.Sleep(300 * time.Millisecond)
+				_ = json.NewEncoder(w).Encode(map[string]any{"verdict": verdict, "food": verdict == "FOOD", "p": 0.9})
+			}))
+			t.Cleanup(g.Close)
+			c.GateURL = g.URL
+		}
+	}
+	s := newSvc(t, threeBoxes(t), "FOOD", 0, slowGate("FOOD"))
+	w, _ := s.do(multipartReq(t, testPhoto(t)))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	ev := s.events(t)[0]
+	gateEnd := ev.GateAtMS + ev.GateMS
+	if ev.GateMS < 290 {
+		t.Fatalf("gate %d ms", ev.GateMS)
+	}
+	var sam, muse int
+	for _, c := range ev.Calls {
+		if c.AtMS < 0 {
+			t.Fatalf("no at_ms: %+v", c)
+		}
+		if strings.HasPrefix(c.Purpose, "sam:") {
+			sam++
+			if c.AtMS >= gateEnd {
+				t.Fatalf("SAM started after the gate: %+v (gate end %d)", c, gateEnd)
+			}
+		} else {
+			muse++
+			if c.AtMS < gateEnd-5 || (c.AtMS < 250 && c.WaitMS < 200) {
+				t.Fatalf("Muse did not wait for the gate: %+v (gate end %d)", c, gateEnd)
+			}
+		}
+	}
+	if sam == 0 || muse == 0 {
+		t.Fatalf("calls %+v", ev.Calls)
+	}
+	n := newSvc(t, threeBoxes(t), "NOT_FOOD", 0, slowGate("NOT_FOOD"))
+	w, a := n.do(multipartReq(t, testPhoto(t)))
+	errorIs(t, w, a, 422, CodeNotFood)
+	if museBodies(n.api) != 0 {
+		t.Fatal("Muse called on NOT_FOOD")
+	}
+	if ev := n.events(t)[0]; ev.CostUSD <= 0 || len(ev.Calls) == 0 {
+		t.Fatalf("the SAM spend of a NOT_FOOD photo is not logged: %+v", ev)
+	}
+}

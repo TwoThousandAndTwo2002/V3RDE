@@ -76,7 +76,7 @@ func main() {
 	budget := inference.NewBudget(*capUSD, *estimate, ev)
 	budget.PerCaller = *callerCap
 	eng := &inference.Engine{
-		API:            &inference.Client{URL: *upstream, Key: key, Effort: *effort, HTTP: &http.Client{Timeout: *timeout}},
+		API:            &inference.Client{URL: *upstream, Key: key, Effort: *effort, HTTP: &http.Client{Timeout: *timeout, Transport: inference.MetaTransport}},
 		Marks:          true, // marks + 0-1000 coordinates (X30: marks:low:split3)
 		MaxNamed:       *maxNamed,
 		PackageConcept: "package",

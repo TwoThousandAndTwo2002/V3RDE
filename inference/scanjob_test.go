@@ -111,7 +111,7 @@ func TestAnalyzeAsyncRefusals(t *testing.T) {
 	_, j := s.poll(t, "/v1/analyze/scan/"+id, "bearer")
 	var a map[string]any
 	_ = json.Unmarshal(j.Answer, &a)
-	if j.Status != ScanFailed || j.HTTPStatus != 422 || a["code"] != CodeNotFood || len(s.api.bodies) != 0 {
+	if j.Status != ScanFailed || j.HTTPStatus != 422 || a["code"] != CodeNotFood || museBodies(s.api) != 0 || len(j.Boxes) != 0 {
 		t.Fatalf("not food: %+v %s", j, j.Answer)
 	}
 	w, b := s.do(req(t, "/v1/analyze?async=1", "", testPhoto(t), ""))

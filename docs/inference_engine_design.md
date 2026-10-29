@@ -61,7 +61,7 @@ items[] (+ 0–1000 boxes for the screen) · not_listed[] · cost per call / pho
 Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/probe_20261026T195534Z.json`), v2 = 17 photos (`probe_out_v2/probe_20261026T210803Z.json`), v3 = 23 photos with a hand check of 294 boxes (`probe_out_v3/probe_20261026T220918Z.json`).
 
 ### D1. The food gate runs first and keeps its rule (option 1c)
-- **What:** PE-Core-S16-384 (Meta, Apache-2.0, fp16 weights, 48.1 MB) decides food / not food before any API call. A "not food" photo stops there ($0). Later, shelf and pantry photos go into the gate head training.
+- **What:** PE-Core-S16-384 (Meta, Apache-2.0, fp16 weights, 48.1 MB) decides food / not food before any API call. A "not food" photo stops there (X48a: SAM now runs at the same time as the gate, so a "not food" photo pays SAM, 3 × $0.0025, but never Muse). Later, shelf and pantry photos go into the gate head training.
 - **Why:** it saves API cost on non-food photos, and it is the only check that can move to the phone (feature #12). A user whose item is missed can take a close-up of that item, which uses the one-item path.
 - **Evidence:** HELDOUT: AUROC 0.981, catch 0.831, false retake 1.6% (X29). On shelf photos the gate refused 3/17 (v2) and 5/23 (v3) food photos, all just under the threshold (p 0.15–0.25 vs 0.254). This is the known weak point (§5).
 - **Rejected:** "if the gate says not food, check with SAM" (costs $0.0025 per refusal and moves the gate's job to the cloud).
@@ -176,7 +176,7 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 
 ### D21. Run independent work at the same time (T9: use parallel speed-ups)
 - **What runs in parallel:** the 3 SAM concepts; the resize for Muse (it does not need the boxes); the agent's `segment` calls in one turn; and, when 12 or more boxes are named, 3 Muse calls on boxes split in reading order (rows, then left to right), so identical neighbours stay in one call. Across calls, names are matched after normalising ("&" = "and", no filler words, singular).
-- **What cannot:** Muse needs SAM's boxes; the retry needs the first answer; the gate stays first (≈0.3 s, and it stops non-food photos at $0).
+- **What cannot:** Muse needs SAM's boxes; the retry needs the first answer; X48a: the gate runs at the same time as SAM, and the Muse calls wait for its answer.
 - **Evidence (v4, 7 photos):** split 3 cut the wait from 14.9 s to **6.1 s** (−59%) for +35% cost ($0.026 → $0.035 / photo). On shelf 22 the 3 SAM calls added up to 32 s but took 11.6 s. Split broke some groups ("Go Pure Fruit and Oat Bars" ≠ "Go Pure Fruit Oat Bar"), so names are now normalised; split is used only from 12 named boxes.
 - **Source:** dev.meta.ai/docs/pricing-rate-limits (3,000 requests per minute: parallel calls fit).
 
@@ -222,7 +222,7 @@ Each decision: **what**, **why**, **evidence**. Runs: v1 = 6 photos (`probe_out/
 - **What:** compose starts the gate with the PE files and their pins (`c0618012…`, `7ba764ea…`). The earlier gate is not deployed on the Icarus box (research-only weights). The inventory service calls the gate first; NOT_FOOD answers `not_food` at $0; a gate that is down or undecided gives 503 `unavailable` (fails closed), like `/api/scan`.
 
 ### D33. Limits: per client, at the same time, per day
-- **What:** 6 requests per minute per client address → 429. At most 3 photos at the same time → 503 `busy` (the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB, plus the prepared copy, marks and crops). A daily spend cap of **$20 per UTC day** (T9) → 503 `budget`, checked after the gate (a gate refusal costs $0). A photo reserves $0.10 and settles at its real cost, so photos that run at the same time cannot pass the cap together. After a restart, the spend is read back from today's event file.
+- **What:** 6 requests per minute per client address → 429. At most 3 photos at the same time → 503 `busy` (the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB, plus the prepared copy, marks and crops). A daily spend cap of **$20 per UTC day** (T9) → 503 `budget`, checked before the gate since X48a (SAM starts with the gate). A photo reserves $0.10 and settles at its real cost, so photos that run at the same time cannot pass the cap together. After a restart, the spend is read back from today's event file.
 
 ### D34. The real client address
 - **What:** the Icarus box is behind a load balancer and Apache, so Caddy's peer is always private. Caddy trusts private ranges (strict mode: the address is read from the right of `X-Forwarded-For`, so a client cannot spoof it), and only the X31 routes send `{client_ip}` on. The older routes keep `{remote_host}`, unchanged.

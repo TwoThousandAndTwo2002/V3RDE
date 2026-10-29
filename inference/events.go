@@ -32,6 +32,7 @@ type Event struct {
 	GateP         float64     `json:"gate_p,omitempty"`
 	GateStatus    int         `json:"gate_status,omitempty"`
 	GateMS        int64       `json:"gate_ms"`
+	GateAtMS      int64       `json:"gate_at_ms"` // X48a: the gate start, ms after the request start
 	Orientation   int         `json:"orientation,omitempty"`
 	Width         int         `json:"width,omitempty"`
 	Height        int         `json:"height,omitempty"`
@@ -135,6 +136,8 @@ type EventCall struct {
 	Model        string  `json:"model"`
 	Status       int     `json:"status"`
 	MS           int64   `json:"ms"`
+	AtMS         int64   `json:"at_ms"`             // X48a: start, ms after the request start
+	WaitMS       int64   `json:"wait_ms,omitempty"` // X48a: the wait for the food gate
 	InputTokens  int     `json:"input_tokens,omitempty"`
 	OutputTokens int     `json:"output_tokens,omitempty"`
 	CostUSD      float64 `json:"cost_usd"`
@@ -150,7 +153,7 @@ func (ev *Event) fromInventory(inv *Inventory) {
 	ev.Listings, ev.Units, ev.Counted, ev.NotListed, ev.NotFood = inv.Listings(), inv.Units(), inv.Counted(), len(inv.NotListed), inv.NotFood
 	ev.CostUSD, ev.EngineMS = inv.SpentUSD(), inv.MS
 	for _, c := range inv.Calls {
-		ev.Calls = append(ev.Calls, EventCall{Purpose: c.Purpose, Model: c.Model, Status: c.Status, MS: c.MS,
+		ev.Calls = append(ev.Calls, EventCall{Purpose: c.Purpose, Model: c.Model, Status: c.Status, MS: c.MS, AtMS: c.AtMS, WaitMS: c.WaitMS,
 			InputTokens: c.Usage.InputTokens, OutputTokens: c.Usage.OutputTokens, CostUSD: c.Cost(), Error: c.Error})
 	}
 }

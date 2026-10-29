@@ -804,3 +804,20 @@ On the live site, two voice clips failed with "Could not read what you said". Th
 - The events line shows how many keywords were sent and how many were cut.
 - Tests: post 63 -> 64. A touch-up test no longer reads the events file before the second job has written its line (it failed one time on the Mac).
 
+## 48. The food gate runs at the same time as SAM
+
+**When:** Oct 29 2026.
+**Meta models:** SAM 3.1, Muse Spark 1.3 and the PE-Core-S16-384 gate, as before (no model change).
+**Files:** `inference/overlap.go` (new), `inference/meta.go`, `inference/events.go`, `inference/service.go`, `inference/service_test.go`, `inference/cmd/inventory/main.go`, `docs/inference_engine_design.md`
+**Sources:** `docs/sources/X48a.md`
+
+The speed plan (T9: single photo 5–6 s, multi-item 10–12 s). Before this change nothing started until the gate answered.
+
+- SAM starts at the same time as the food gate. The paid Muse calls wait for the gate, and a photo that is not food never reaches Muse.
+- The busy check and the daily cap now come before the gate.
+- Each call in the events line has `at_ms` (when it started) and `wait_ms` (its wait for the gate), so the slow part of each scan can be found.
+- The Meta calls share one connection pool with more open connections, so fewer calls wait for a new connection.
+- The caller's live listings are read at the start, at the same time as the scan.
+- A scan job shows its first boxes only after the gate passed, so a photo that is not food shows no boxes.
+- Tests: inference 83 -> 84.
+

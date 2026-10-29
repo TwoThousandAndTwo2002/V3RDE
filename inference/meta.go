@@ -39,6 +39,8 @@ type Call struct {
 	Purpose   string        `json:"purpose"`
 	Status    int           `json:"status"`
 	MS        int64         `json:"ms"`
+	AtMS      int64         `json:"at_ms"`                // X48a: start, ms after the request start (-1: unknown)
+	WaitMS    int64         `json:"wait_ms,omitempty"`    // X48a: a Muse call's wait for the food gate
 	RequestID string        `json:"request_id,omitempty"` // the API's id
 	Usage     analyze.Usage `json:"usage"`
 	// CachedTokens: input_tokens_details.cached_tokens (billed at the cached rate).
@@ -103,8 +105,17 @@ func UserMessage(parts ...map[string]any) []any {
 // Do sends one body. Non-2xx is an error with the first 300 bytes of the
 // answer; the Call is returned either way for the event log.
 func (cl *Client) Do(ctx context.Context, purpose string, body map[string]any) (*Call, error) {
-	c := &Call{Purpose: purpose}
+	c := &Call{Purpose: purpose, AtMS: sinceStart(ctx)}
 	c.Model, _ = body["model"].(string)
+	tw := time.Now()
+	if err := waitGate(ctx, purpose); err != nil { // X48a: a Muse call waits for the gate
+		c.WaitMS, c.Error = time.Since(tw).Milliseconds(), err.Error()
+		return c, fmt.Errorf("%s: %w", purpose, err)
+	}
+	if w := time.Since(tw); w >= time.Millisecond {
+		c.WaitMS = w.Milliseconds()
+		c.AtMS = sinceStart(ctx)
+	}
 	if cl.Effort != "" && c.Model != DefaultSAM {
 		if _, set := body["reasoning"]; !set {
 			body["reasoning"] = map[string]any{"effort": cl.Effort}
@@ -122,7 +133,7 @@ func (cl *Client) Do(ctx context.Context, purpose string, body map[string]any) (
 	req.Header.Set("Content-Type", "application/json")
 	hc := cl.HTTP
 	if hc == nil {
-		hc = &http.Client{Timeout: 90 * time.Second}
+		hc = &http.Client{Timeout: 90 * time.Second, Transport: MetaTransport}
 	}
 	t0 := time.Now()
 	resp, err := hc.Do(req)

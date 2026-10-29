@@ -7,8 +7,9 @@ package inference
 //
 //	caller (bearer token, or the app's session cookie) -> per-user/IP rate
 //	limit -> read the image (analyze's formats, 5 MB) -> store the photo ->
-//	barcode (the phone's read) -> food gate -> busy -> daily cap ->
-//	SAM 3.1 + Muse Spark (Engine.Run auto) -> drop the model's "no food"
+//	barcode (the phone's read) -> busy -> daily cap -> the food gate AND
+//	SAM 3.1 at the same time, Muse Spark after the gate (X48a; Engine.Run
+//	auto) -> drop the model's "no food"
 //	items -> dedup against the caller's live listings -> item photos ->
 //	answer + one event line (every exit)
 //
@@ -31,6 +32,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
@@ -296,19 +298,35 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				Item: item, Kind: "full", TS: t0.UTC().Format(time.RFC3339)})
 		}
 		var listed map[string]ListedRef // nil = no dedup
+		// X48a: the caller's live listings are read at the start, at the same
+		// time as the scan; dedup() waits for them. The goroutine writes only
+		// its own variables; dedup() copies them into ev.
+		var dState, dErr string
+		var dMS int64
+		var dList map[string]ListedRef
+		dReady := make(chan struct{})
+		if kind != "session" || c.ListingsURL == "" {
+			dState = "skipped"
+			close(dReady)
+		} else {
+			go func() {
+				defer close(dReady)
+				td := time.Now()
+				live, err := liveListings(r, c.FastHTTP, c.ListingsURL, c.now().UTC())
+				dMS = time.Since(td).Milliseconds()
+				if err != nil {
+					dState, dErr = "unavailable", "dedup: "+err.Error()
+					return
+				}
+				dState, dList = "ok", listedByName(live)
+			}()
+		}
 		dedup := func() {
-			if kind != "session" || c.ListingsURL == "" {
-				ev.Dedup = "skipped"
-				return
+			<-dReady
+			ev.Dedup, ev.DedupMS, listed = dState, dMS, dList
+			if dErr != "" && ev.Error == "" {
+				ev.Error = dErr
 			}
-			td := time.Now()
-			live, err := liveListings(r, c.FastHTTP, c.ListingsURL, c.now().UTC())
-			ev.DedupMS = time.Since(td).Milliseconds()
-			if err != nil {
-				ev.Dedup, ev.Error = "unavailable", "dedup: "+err.Error()
-				return
-			}
-			ev.Dedup, listed = "ok", listedByName(live)
 		}
 
 		// 1. barcode (read on the phone): the fast path, no model, no cap
@@ -346,31 +364,37 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 
 		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
 		defer cancel()
-		if job != nil { // X44b: the engine reports what it found so far
-			ctx = WithProgress(ctx, func(p Progress) { c.scans.progress(job, p) })
-		}
-
-		// 2. the food gate: non-food never reaches the API ($0)
-		tg := time.Now()
-		verdict, p, gst, gerr := c.gate(ctx, trace, fwd, img, mime)
-		ev.GateMS, ev.GateStatus, ev.GateVerdict, ev.GateP = time.Since(tg).Milliseconds(), gst, verdict, p
-		switch {
-		case gerr != nil || verdict == "" || verdict == "UNAVAILABLE":
-			ev.GateVerdict = "UNAVAILABLE"
-			if gerr != nil {
-				ev.Error = "gate: " + gerr.Error()
-			}
-			fail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
-			return
-		case verdict != "FOOD":
-			fail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
-			return
-		}
+		// X44b: the engine reports what it found so far. X48a: SAM starts
+		// with the gate, so a report that comes before the gate passed waits
+		// for it (a photo that is not food shows no boxes).
+		var pmu sync.Mutex
+		var passed bool
+		var held []Progress
 		if job != nil {
-			c.scans.stage(job, "finding")
+			ctx = WithProgress(ctx, func(p Progress) {
+				pmu.Lock()
+				defer pmu.Unlock()
+				if !passed {
+					held = append(held, p)
+					return
+				}
+				c.scans.progress(job, p)
+			})
+		}
+		release := func(ok bool) {
+			pmu.Lock()
+			defer pmu.Unlock()
+			passed = ok
+			if ok && job != nil {
+				for _, p := range held {
+					c.scans.progress(job, p)
+				}
+			}
+			held = nil
 		}
 
-		// 3. busy: the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB
+		// 2. busy: the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB
+		// (X48a: before the gate, because SAM now starts with the gate)
 		select {
 		case c.slots <- struct{}{}:
 			defer func() { <-c.slots }()
@@ -379,7 +403,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// 4. the daily spend cap (OWASP API4:2023), and X44a this caller's share
+		// 3. the daily spend cap (OWASP API4:2023), and X44a this caller's share
 		var hold *Hold
 		if c.Budget != nil {
 			var why string
@@ -393,8 +417,53 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// 5. SAM + Muse
-		inv, err := c.Engine.Run(ctx, img, mime, ModeAuto)
+		// 4. X48a: the food gate and SAM at the same time. The engine starts
+		// now; its Muse calls wait for the gate (GateBarrier), so a photo
+		// that is not food pays SAM only, never Muse.
+		gb := NewGateBarrier()
+		ectx, ecancel := context.WithCancel(WithGate(WithStart(ctx, t0), gb))
+		defer ecancel()
+		type runResult struct {
+			inv *Inventory
+			err error
+		}
+		ran := make(chan runResult, 1)
+		go func() {
+			inv, err := c.Engine.Run(ectx, img, mime, ModeAuto)
+			ran <- runResult{inv, err}
+		}()
+		tg := time.Now()
+		ev.GateAtMS = tg.Sub(t0).Milliseconds()
+		verdict, p, gst, gerr := c.gate(ctx, trace, fwd, img, mime)
+		ev.GateMS, ev.GateStatus, ev.GateVerdict, ev.GateP = time.Since(tg).Milliseconds(), gst, verdict, p
+		gateOK := gerr == nil && verdict == "FOOD"
+		gb.Open(gateOK)
+		release(gateOK)
+		if !gateOK {
+			ecancel() // stop SAM; the Muse calls never started
+			res := <-ran
+			if hold != nil {
+				hold.Settle(res.inv.SpentUSD())
+			}
+			ev.fromInventory(res.inv)
+			if gerr != nil || verdict == "" || verdict == "UNAVAILABLE" {
+				ev.GateVerdict = "UNAVAILABLE"
+				if gerr != nil {
+					ev.Error = "gate: " + gerr.Error()
+				}
+				fail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
+				return
+			}
+			fail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
+			return
+		}
+		if job != nil {
+			c.scans.stage(job, "finding")
+		}
+
+		// 5. SAM + Muse (already running)
+		res := <-ran
+		inv, err := res.inv, res.err
 		if hold != nil {
 			hold.Settle(inv.SpentUSD())
 		}
