@@ -29,18 +29,19 @@ export const palette = {
     cameraBtn: "rgba(0,0,0,0.45)",       // buttons and the hint on the live camera
     cameraFg: "#FFFFFF",                  // their glyphs and text, and the shutter
     scrimDim: "rgba(0,0,0,0.43)",         // behind the camera dialog on a wide screen (#8C8C8C over bg, measured)
+    link: "#BC202C",                      // text buttons and links (Show, Hide, Create one)
   },
   dark: {
     bg: "#141414",
     card: "#1E1E20",
     fg: "#F3F3F3",
     muted: "#A1A1AA",
-    placeholder: "#636269",
+    placeholder: "#6D6D78",
     line: "#3A3A3F",
     accent: "#BC202C",
     onAccent: "#FFFFFF",
     accentSoft: "#4A1D22",
-    danger: "#E15761",
+    danger: "#FF727D",
     iconFill: "#2A2A2E",
     handle: "#4A4A50",
     sheetTint: "rgba(20,20,22,0.62)",
@@ -52,6 +53,7 @@ export const palette = {
     cameraBtn: "rgba(0,0,0,0.45)",
     cameraFg: "#FFFFFF",
     scrimDim: "rgba(0,0,0,0.6)",
+    link: "#FF727D",
   },
 } as const;
 export type Colors = { [K in keyof typeof palette.light]: string };
@@ -104,6 +106,8 @@ export const size = {
   dialogMax: 0.869,  // a dialog is at most this share of the window height (782 of 900 pt measured)
   blur: 40,          // expo-blur intensity of the frosted layer
   progressH: 6,      // the progress bar
+  focusBorder: 2,    // the border of a field while it has the focus (in accent)
+  fieldSlot: 76,     // field text to the right border when a text button (Show) sits in the field
 } as const;
 
 /**
@@ -152,10 +156,11 @@ export const type = { // text styles (sizes measured from the glyph heights; lin
   button: { fontFamily: font.semibold, fontSize: 14, lineHeight: 20 },
 } as const;
 
-/** Opacity of a control: pressed (a choice) and busy (measured: the Post pill while posting, X32). */
+/** Opacity of a control: pressed (a choice), busy (measured: the Post pill while posting, X32), hover (Ref-login). */
 export const opacity = {
   pressed: 0.85, // while a finger is on the control
   busy: 0.6,     // while the control waits (the spinner shows)
+  hover: 0.92,   // while the mouse is on a pill (web)
 } as const;
 
 /** Motion (a choice): a sheet rises with a spring; each row of it rises after the one before. */

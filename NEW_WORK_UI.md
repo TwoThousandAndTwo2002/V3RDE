@@ -100,3 +100,22 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **New dependencies (pre-existing, labelled):** `expo-blur`, `expo-linear-gradient`, `react-native-svg` (the versions of Expo SDK 58).
 - The app shell shows the name in the theme until the screens come.
 - Tests: mobile 33 (25 + 8 new).
+
+---
+
+## UI 6. The field parts: focus border, Show/Hide, text link, busy and hover pill
+
+**When:** Oct 29 2026.
+**Meta model:** none (parts of the sign-in form; this change has no model call).
+**Files:** `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/tests/style.test.mts`, `mobile/docs/style_guide.md`
+**Sources:** `docs/sources/U6.md`
+
+- **`Field`:** a 2 pt border in `accent` while the field has the focus, and no browser focus ring on the web; a text button can sit inside the field (`right`); the label is also the name of the input for a screen reader; a `ref` reaches the input.
+- **`FieldButton`** (new): the Show/Hide button inside a field, in the `link` colour, with a 44 pt touch area and its own name ("Show password").
+- **`TextLink`** (new): an action in a line of text ("Create one"), in the `link` colour, underlined, read as a button.
+- **`Pill`:** while busy, a tap does nothing and the pill keeps the keyboard focus (before, the focus went to the page); with the mouse on it (web), opacity 0.92.
+- **Colours (T9, Oct 29):** new token `link` (light `#BC202C`, dark `#FF727D`); dark `danger` `#FF727D` and dark `placeholder` `#6D6D78` from the earlier sign-in screen; light `danger` stays `#C43140`. Every text colour reaches 4.5:1 on `card` and `bg` (the style test checks `link` too).
+- **Reference:** the earlier sign-in screen (Icarus `457a62c`, from before the kickoff), rendered once by a harness as a reference to measure. No code of it is carried; the rewrite guard checks `ui.tsx`, `theme.ts` and the style test.
+- **Mockup:** a mock form put the parts in the layout of the sign-in form (9 states, phone and desktop, 3 dark). An independent check found no difference other than T9's decisions. T9 approved the review on Oct 29.
+- The parts are shared, so the U5 review list and the one-item form also get the focus border, the hover and the busy behaviour.
+- Tests: mobile 33.

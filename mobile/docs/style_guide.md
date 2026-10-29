@@ -9,6 +9,7 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 
 **Where the values come from** (the "Source" column).
 - **X32** — the look T9 approved on Oct 27 2026 (the X32 mockup, https://claude.ai/artifact/6AMxFSoWfFfGMySXPefUKW). **X25** — the scan mockup of Oct 25 2026 (the camera and the small sheets), the reference for the states X32 does not show. `mobile/tools/ui/measure_x32.py` reads the shots (phone 3 px = 1 pt, desktop 2 px = 1 pt) along fixed scan lines; the output is `mobile/tools/ui/x32_measure.json`. Text sizes come from glyph heights divided by the glyph heights in the Poppins font file. An independent check compared the new shots with all 25 reference shots.
+- **Ref-login** — the sign-in screen of the earlier repository (Icarus `457a62c`, from before the kickoff). Its code is not carried: a harness renders it once, as a reference to measure, the same way as X25.
 - **Brand** (pre-existing, labelled) — Hungree red `#BC202C` and the Poppins font (SIL Open Font Licence) are Hungree LLC brand assets from before the Hackathon.
 - **Platform** — touch size (Apple Human Interface Guidelines: 44 × 44 pt, https://developer.apple.com/design/human-interface-guidelines/accessibility), text contrast (WCAG 2.1: 4.5:1, https://www.w3.org/TR/WCAG21/#contrast-minimum), window size classes (Material 3, https://m3.material.io/foundations/layout/applying-layout/window-size-classes).
 - **Choice** — a value that the mockups do not show (dark mode, press feedback, motion). T9 can change it.
@@ -21,12 +22,12 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 | `card` | `#FFFFFF` | `#1E1E20` | X32 | cards, fields, the secondary pill |
 | `fg` | `#232323` | `#F3F3F3` | X32 | text and glyphs |
 | `muted` | `#6D6D78` | `#A1A1AA` | X32 | labels and secondary text |
-| `placeholder` | `#9F9DA4` | `#636269` | X32 | the example text in an empty field (see the note) |
+| `placeholder` | `#9F9DA4` | `#6D6D78` | X32; dark: Ref-login (T9, Oct 29) | the example text in an empty field (see the note) |
 | `line` | `#DDDDDD` | `#3A3A3F` | X32 | 1 pt borders of cards, fields and the secondary pill |
 | `accent` | `#BC202C` | `#BC202C` | Brand | the primary pill, the progress bar |
 | `onAccent` | `#FFFFFF` | `#FFFFFF` | X32 | text on the accent |
 | `accentSoft` | `#FFD4D7` | `#4A1D22` | X25 | an empty photo frame; the progress bar track |
-| `danger` | `#C43140` | `#E15761` | X32, X25 | error text |
+| `danger` | `#C43140` | `#FF727D` | X32, X25; dark: Ref-login (T9, Oct 29) | error text |
 | `iconFill` | `#F3F3F3` | `#2A2A2E` | X32 | the disc of an icon button |
 | `handle` | `#DCDEDD` | `#4A4A50` | X32 | the grab bar of a sheet |
 | `sheetTint` | `rgba(255,255,255,0.55)` | `rgba(20,20,22,0.62)` | X32, X25: a white tint of 0.55 fits all 23 states (light) | the frosted layer of a sheet or dialog, over the blur |
@@ -38,9 +39,11 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 | `cameraBtn` | `rgba(0,0,0,0.45)` | `rgba(0,0,0,0.45)` | X25 | the buttons and the hint on the live camera |
 | `cameraFg` | `#FFFFFF` | `#FFFFFF` | X25 | their glyphs and text, and the shutter |
 | `scrimDim` | `rgba(0,0,0,0.43)` | `rgba(0,0,0,0.6)` | X25 (light) | behind the camera dialog on a wide screen (`#8C8C8C` over `bg`) |
+| `link` | `#BC202C` | `#FF727D` | Ref-login (light); dark: 6.98:1 on `bg` (the old `#BC202C` is 2.97:1 on `bg`, 2.68:1 on `card`; T9, Oct 29) | text buttons and links (Show, Hide, Create one) |
 
-- Dark values: the dark colours of the X32 review page, or a choice. The accent stays Hungree red in dark mode (white on it is 6.21:1). `danger` in dark mode reaches 4.5:1 on `card` and on `bg`.
-- Every text pair reaches 4.5:1 in both modes (the style test computes it): `fg`, `muted` and `danger` on `card` and `bg`, `onAccent` on `accent`, `fg` on `iconFill`.
+- Dark values: the dark colours of the X32 review page, of Ref-login, or a choice. The accent stays Hungree red in dark mode (white on it is 6.21:1). Every text colour reaches 4.5:1 on `card` and on `bg`.
+- Light `danger` stays `#C43140`: the Ref-login `#DC3545` is only 4.16:1 on `bg` `#F6F5F5` (T9, Oct 29).
+- Every text pair reaches 4.5:1 in both modes (the style test computes it): `fg`, `muted`, `danger` and `link` on `card` and `bg`, `onAccent` on `accent`, `fg` on `iconFill`.
 - **Note:** `placeholder` on `card` is 2.68:1. It is the approved X32 look. WCAG 2.1 does not exempt placeholder text, so a field must always have a label (`Field label=…`) that tells what to type; the placeholder only gives an example.
 - **Limit:** text on the photo (the camera hint) and on the frosted layer has a background that changes with the photo, so the test cannot compute its contrast. Measured in the shots: muted and error text on the light frost is 2.6–3.9:1 in the approved X32/X25 shots (the same in the new shots); on the dark frost the lowest is 4.31:1 (muted) and 4.41:1 (error).
 
@@ -103,6 +106,8 @@ Values are font size / line height in pt.
 | `size.dialogMax` | 0.869 | X32: 782 of 900 pt | a dialog is at most this share of the window height |
 | `size.blur` | 40 | X32, X25 (frost check) | expo-blur intensity of the frosted layer |
 | `size.progressH` | 6 | X25: 6.0 | the progress bar height |
+| `size.focusBorder` | 2 | Ref-login: 2.00 | the border of a field while it has the focus (in `accent`) |
+| `size.fieldSlot` | 76 | Ref-login | field text to the right border when a text button (Show) sits in the field |
 
 ## Glyphs (`glyph`)
 
@@ -147,6 +152,7 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 |---|---|---|---|
 | `opacity.pressed` | 0.85 | Choice | a control while a finger is on it |
 | `opacity.busy` | 0.6 | X32: the Post pill while posting (`#C05D60` on the frost) | a control while it waits (the spinner shows) |
+| `opacity.hover` | 0.92 | Ref-login | a pill while the mouse is on it (web) |
 | `motion.rowStepMs` | 40 | Choice | each row of a sheet starts 40 ms after the row before it |
 | `motion.rowRise` | 8 | Choice | a row fades in and rises this far (pt) |
 | `motion.rowMs` | 220 | Choice | how long a row takes (ms) |
@@ -167,9 +173,11 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 - **Text:** `Title` (`type.title`, `fg`), `Body` (`type.body`, `fg`), `Muted` (`type.body`, `muted`), `ErrorText` (`type.body`, `danger`, `space.gap` above it, read out as an alert).
 - **GlyphIcon:** a glyph from `glyph` in its box, `glyph.stroke` wide, round ends.
 - **IconBtn:** a round `iconFill` disc with a glyph in `fg`: `size.iconBig`, or `size.iconSmall` inside a review card (its touch area grows to `size.iconBig`). `opacity.pressed` while pressed.
-- **Pill:** `size.control` high, fully round, `size.border`. `primary` = `accent` fill with `onAccent` text; `secondary` = `card` fill, `line` border, `fg` text. With `grow`, two pills share a row, `space.item` apart: secondary on the left, primary on the right. While busy: a spinner in place of the text, and `opacity.busy`.
+- **Pill:** `size.control` high, fully round, `size.border`. `primary` = `accent` fill with `onAccent` text; `secondary` = `card` fill, `line` border, `fg` text. With `grow`, two pills share a row, `space.item` apart: secondary on the left, primary on the right. While busy: a spinner in place of the text, and `opacity.busy`; a tap does nothing, and the pill keeps the keyboard focus. With the mouse on it (web): `opacity.hover`.
+- **FieldButton:** a text button inside a field (Show, Hide): `type.button` in `link`, `space.item` at the sides and `space.group` above and below (a 44 pt touch area, Platform), `space.gap` from the right border; it has its own name for a screen reader ("Show password").
+- **TextLink:** an action in a line of text ("Create one"): `type.button` in `link`, underlined; a screen reader reads it as a button.
 - **Row:** controls in a line, `space.item` apart; `tight` = `space.gap` apart (inside a card).
-- **Field:** `size.control` high, fully round, `card` fill, `size.border` `line` border, text `size.fieldPadX` from the sides, `placeholder` for the example text. With several lines: `size.controlTall`, `radius.card`, text `size.fieldPadTop` from the top. A label is `Muted`, `space.inset` in, `space.item` above it, `space.hair` to the field.
+- **Field:** `size.control` high, fully round, `card` fill, `size.border` `line` border, text `size.fieldPadX` from the sides, `placeholder` for the example text. With the focus: a `size.focusBorder` border in `accent` (no browser focus ring). With `right` (a FieldButton): text `size.fieldSlot` from the right border. The label is also the name of the input for a screen reader. With several lines: `size.controlTall`, `radius.card`, text `size.fieldPadTop` from the top. A label is `Muted`, `space.inset` in, `space.item` above it, `space.hair` to the field.
 - **ReviewCard:** one found item: `card` fill, `size.border` `line`, `radius.card`, `space.inset` padding, `space.item` above it. The `size.thumb` photo (`radius.photo`), `space.item` to two `tight` rows `space.gap` apart: the title field with ✕ (remove), and − servings +, with `size.iconSmall` buttons. An error line goes under the rows.
 - **Rise:** each row of a sheet fades in and rises `motion.rowRise`, `motion.rowStepMs` after the row before it, in `motion.rowMs`.
 - **Sheet:** the photo behind it with the shade over it (`shadeTop`, `shadeMid` at `shade.mid`, `shadeEnd`), then a frosted layer (the blur of the photo, `size.blur`, `blurTint`, with `sheetTint` over it). Compact width: a bottom sheet, `radius.sheet` top corners, the grab bar (`size.handleW` × `size.handleH`, `handle`, `size.handleTop` from the top, `space.gutter` to the content), `space.gutter` sides, `space.foot` under the last pill. `large` = as tall as its content, at most `size.sheetLarge` of the screen height; `small` = at least `size.sheetSmall`. Medium and expanded width: a centred dialog, `radius.sheet` corners, `space.pad` padding, at most `size.dialogMax` of the window height; `wide` = `size.dialogWide` with the photo on the left (`space.foot` to the list), else `size.dialogSmall`. It rises with a spring (`motion.sheetSpeed`, `motion.sheetBounce`, from `motion.sheetShift` of the window height).

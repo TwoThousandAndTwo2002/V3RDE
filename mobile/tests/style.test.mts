@@ -88,7 +88,8 @@ function contrast(a: string, b: string): number {
 
 test("text colours reach 4.5:1 on their backgrounds in both modes", () => {
   const pairs: Array<[string, string]> = [["fg", "card"], ["fg", "bg"], ["muted", "card"], ["muted", "bg"],
-    ["danger", "card"], ["danger", "bg"], ["onAccent", "accent"], ["fg", "iconFill"]];
+    ["danger", "card"], ["danger", "bg"], ["onAccent", "accent"], ["fg", "iconFill"],
+    ["link", "card"], ["link", "bg"]];
   for (const m of ["light", "dark"] as const) {
     const c = mode(m);
     for (const [fg, bg] of pairs) {

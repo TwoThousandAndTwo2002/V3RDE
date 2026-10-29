@@ -1,6 +1,7 @@
 // V3RDE shared UI parts, written new for V3RDE (NEW_WORK_UI.md, UI 5; mobile/docs/style_guide.md).
 // Every colour, size and font comes from theme.ts (tests/style.test.mts checks it).
 import React, { useEffect, useState } from "react";
+import * as RN from "react-native";
 import { ActivityIndicator, Animated, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from "react-native";
 import { BlurView } from "expo-blur";
@@ -81,13 +82,13 @@ export function Pill({ title, onPress, kind = "primary", busy, grow, testID }: {
   const isPrimary = kind !== "secondary";
   const fg = isPrimary ? col.onAccent : col.fg;
   return (
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ busy: !!busy }}
-      disabled={busy} onPress={onPress}
-      style={({ pressed }) => [{
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={title} aria-busy={!!busy}
+      onPress={busy ? undefined : onPress}
+      style={(state) => [{
         height: size.control, borderRadius: radius.round, alignItems: "center", justifyContent: "center",
         paddingHorizontal: size.pillPadX, backgroundColor: isPrimary ? col.accent : col.card,
         borderWidth: size.border, borderColor: isPrimary ? col.accent : col.line,
-        opacity: busy ? opacity.busy : pressed ? opacity.pressed : 1,
+        opacity: busy ? opacity.busy : state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1,
       }, grow ? { flex: 1 } : null]}>
       {busy ? <ActivityIndicator color={fg} /> : <Text numberOfLines={1} style={[type.button, { color: fg }]}>{title}</Text>}</Pressable>
   );
@@ -149,28 +150,78 @@ export function Progress({ share }: { share: number }) {
 
 // ---------------------------------------------------------------- fields
 
-/** A text field: a white pill with a line (48 pt), or a box with several lines (72 pt). */
-export function Field({ label, multiline, center, style, ...rest }: TextInputProps & { label?: string; center?: boolean }) {
+/** True while the mouse is on a control: react-native-web adds `hovered` to the Pressable state (web only). */
+function hovered(state: object): boolean {
+  return (state as { hovered?: boolean }).hovered === true;
+}
+
+/**
+ * No browser focus ring on a field (the field draws its own focus border). react-native-web passes the style to the
+ * DOM; React Native has no "none" outline style, so the web style is given here only.
+ */
+const NO_RING = RN.Platform.OS === "web" ? ({ outlineStyle: "none" } as unknown as TextStyle) : null;
+
+/**
+ * A text field: a white pill with a line (48 pt), or a box with several lines (72 pt). While it has the focus,
+ * its border is `size.focusBorder` wide in `accent`. `right` puts a text button (FieldButton) inside the field.
+ * The label is also the accessible name of the input.
+ */
+export function Field({ label, multiline, center, right, style, onFocus, onBlur, ref, ...rest }:
+  TextInputProps & { label?: string; center?: boolean; right?: React.ReactNode; ref?: React.Ref<React.ComponentRef<typeof TextInput>> }) {
   const col = useColors();
+  const [focused, setFocused] = useState(false);
   const input = (
     <TextInput
+      ref={ref}
       placeholderTextColor={col.placeholder}
       multiline={multiline}
+      onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+      onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+      aria-label={label}
       {...rest}
       style={[type.body, {
-        color: col.fg, backgroundColor: col.card, borderWidth: size.border, borderColor: col.line,
-        borderRadius: radius[multiline ? "card" : "round"], paddingHorizontal: size.fieldPadX,
+        color: col.fg, backgroundColor: col.card,
+        borderWidth: focused ? size.focusBorder : size.border, borderColor: focused ? col.accent : col.line,
+        borderRadius: radius[multiline ? "card" : "round"], paddingLeft: size.fieldPadX,
+        paddingRight: right ? size.fieldSlot : size.fieldPadX,
         height: multiline ? size.controlTall : size.control, textAlign: center ? "center" : "left",
         textAlignVertical: multiline ? "top" : "center", paddingTop: multiline ? size.fieldPadTop : 0,
-      }, style]}
+      }, NO_RING, style]}
     />
   );
-  if (!label) return input;
+  const box = right ? (
+    <View style={{ justifyContent: "center" }}>{input}
+      <View style={{ position: "absolute", right: space.gap }}>{right}</View>
+    </View>
+  ) : input;
+  if (!label) return box;
   return (
     <View>
       <Muted style={{ marginLeft: space.inset, marginTop: space.item, marginBottom: space.hair }}>{label}</Muted>
-      {input}
+      {box}
     </View>
+  );
+}
+
+/**
+ * A text button inside a field (Show, Hide): `link` text; `space.item` at the sides and `space.group` above and
+ * below (a 44 pt touch area). `label` is the name a screen reader reads ("Show password").
+ */
+export function FieldButton({ title, label, onPress }: { title: string; label?: string; onPress: () => void }) {
+  const col = useColors();
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label ?? title} onPress={onPress}
+      style={({ pressed }) => ({ paddingHorizontal: space.item, paddingVertical: space.group, opacity: pressed ? opacity.pressed : 1 })}>
+      <Text style={[type.button, { color: col.link }]}>{title}</Text></Pressable>
+  );
+}
+
+/** An action in a line of text ("Create one"): `type.button`, `link`, underlined; a screen reader reads a button. */
+export function TextLink({ children, onPress, testID }: { children: React.ReactNode; onPress: () => void; testID?: string }) {
+  const col = useColors();
+  return (
+    <Text testID={testID} accessibilityRole="button" onPress={onPress}
+      style={[type.button, { color: col.link, textDecorationLine: "underline" }]}>{children}</Text>
   );
 }
 
