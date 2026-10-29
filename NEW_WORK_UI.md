@@ -82,3 +82,21 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **EAS:** the project `@kkombuchaas-team/v3rde` is linked (`extra.eas.projectId`).
 - From this change on, `tsc` checks the app code. `voicerec.ts` and `webcam.ts` (UI 1) now type-check.
 - Tests: mobile 25 (11 + 14 new).
+
+---
+
+## UI 5. The design tokens, the shared UI parts and the style guide
+
+**When:** Oct 29 2026.
+**Meta model:** none (the parts show the results of the Muse Spark and SAM 3.1 routes; this change has no model call).
+**Files:** `mobile/src/theme.ts`, `mobile/src/ui.tsx`, `mobile/tests/style.test.mts`, `mobile/docs/style_guide.md`, `mobile/tools/ui/measure_x32.py`, `mobile/tools/ui/x32_measure.json`, `mobile/tools/ui/parity_compare.py`, `mobile/tools/ui/.gitignore`, `mobile/App.tsx`, `mobile/package.json`, `mobile/package-lock.json`
+**Sources:** `docs/sources/U5.md`
+
+- **Written again:** the theme, the shared parts and the style test are new code. The rewrite guard finds no line of the pre-kickoff `theme.ts`, `ui.tsx`, `style.test.mts` or `App.tsx` of the earlier repository.
+- **`theme.ts`:** every colour, size, radius, spacing, glyph path, opacity and motion value of the app. Each value has a source in `mobile/docs/style_guide.md`: a measurement of the mockups approved during the Hackathon (X32, Oct 27; X25 for the camera and the small sheets), a brand asset (Hungree red, Poppins; pre-existing, labelled), a platform rule, or a choice that T9 accepted.
+- **`ui.tsx`:** the parts the screens use: text, glyphs, icon buttons, pills, rows, fields, the review card, the camera controls, the progress bar, the sheet and dialog (photo, shade, frost, spring), the sheet body and its pills, the camera dialog, the photo frame.
+- **Style gate:** `tests/style.test.mts` fails a part or a screen with a colour, a font, a text size, a radius that is not a token, or a fractional number; it fails when the guide and `theme.ts` do not list the same tokens with the same values; it computes the text contrast in both modes.
+- **Mockup:** the parts rendered 25 approved states again (Expo web export, Playwright, phone 390 × 844 at 3×, desktop 1440 × 900 at 2×, the same photos). Two independent checks measured them against the approved shots. After the fixes, the layout is within 0.33 pt in 24 states and within 1.0 pt in one; frost, shade and colours are within 2 levels. T9 approved the result on Oct 29.
+- **New dependencies (pre-existing, labelled):** `expo-blur`, `expo-linear-gradient`, `react-native-svg` (the versions of Expo SDK 58).
+- The app shell shows the name in the theme until the screens come.
+- Tests: mobile 33 (25 + 8 new).

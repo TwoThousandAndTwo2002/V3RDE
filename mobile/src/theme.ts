@@ -1,0 +1,178 @@
+// V3RDE design tokens, written new for V3RDE (NEW_WORK_UI.md, UI 5; mobile/docs/style_guide.md).
+// Each value is in mobile/docs/style_guide.md with its source: a measurement of the approved mockup shots
+// (X32 and X25; mobile/tools/ui/measure_x32.py), a brand asset (Hungree red, Poppins), a platform rule (touch size,
+// contrast), or a choice (marked so in the guide). Screens and parts take every colour, size and font from here;
+// tests/style.test.mts checks that, and it checks that the guide lists every token with its value.
+import * as RN from "react-native";
+
+/** Colours for light and dark mode. tests/style.test.mts checks the text pairs (WCAG 2.1, 4.5:1 for text). */
+export const palette = {
+  light: {
+    bg: "#F6F5F5",          // page behind the screens
+    card: "#FFFFFF",        // cards, fields, the secondary pill
+    fg: "#232323",          // text and icons
+    muted: "#6D6D78",       // secondary text and labels
+    placeholder: "#9F9DA4", // the example text in an empty field
+    line: "#DDDDDD",        // borders of cards, fields and the secondary pill
+    accent: "#BC202C",      // Hungree red: the primary pill, the progress bar
+    onAccent: "#FFFFFF",    // text on the accent
+    accentSoft: "#FFD4D7",  // an empty photo frame; the track of the progress bar
+    danger: "#C43140",      // error text
+    iconFill: "#F3F3F3",    // the disc of an icon button
+    handle: "#DCDEDD",      // the grab bar of a sheet
+    sheetTint: "rgba(255,255,255,0.55)", // the frosted layer of a sheet or dialog, over the blur
+    blurTint: "light",                    // the expo-blur tint under it (a tint name, not a colour)
+    shadeTop: "rgba(0,0,0,0)",            // the shade over the photo behind a sheet or dialog: top,
+    shadeMid: "rgba(0,0,0,0.15)",         // at shade.mid of the height,
+    shadeEnd: "rgba(0,0,0,0.7)",          // and at the bottom
+    cameraBg: "#000000",                  // behind the live camera picture
+    cameraBtn: "rgba(0,0,0,0.45)",       // buttons and the hint on the live camera
+    cameraFg: "#FFFFFF",                  // their glyphs and text, and the shutter
+    scrimDim: "rgba(0,0,0,0.43)",         // behind the camera dialog on a wide screen (#8C8C8C over bg, measured)
+  },
+  dark: {
+    bg: "#141414",
+    card: "#1E1E20",
+    fg: "#F3F3F3",
+    muted: "#A1A1AA",
+    placeholder: "#636269",
+    line: "#3A3A3F",
+    accent: "#BC202C",
+    onAccent: "#FFFFFF",
+    accentSoft: "#4A1D22",
+    danger: "#E15761",
+    iconFill: "#2A2A2E",
+    handle: "#4A4A50",
+    sheetTint: "rgba(20,20,22,0.62)",
+    blurTint: "dark",
+    shadeTop: "rgba(0,0,0,0)",
+    shadeMid: "rgba(0,0,0,0.15)",
+    shadeEnd: "rgba(0,0,0,0.7)",
+    cameraBg: "#000000",
+    cameraBtn: "rgba(0,0,0,0.45)",
+    cameraFg: "#FFFFFF",
+    scrimDim: "rgba(0,0,0,0.6)",
+  },
+} as const;
+export type Colors = { [K in keyof typeof palette.light]: string };
+
+/** The colours of the device's mode (light when the mode is not known). */
+export const useColors = (): Colors => (RN.useColorScheme() === "dark" ? palette.dark : palette.light);
+
+/** Spacing in pt (measured: mobile/tools/ui/x32_measure.json). */
+export const space = {
+  hair: 4,     // a title to its muted line; a field label to its field
+  inset: 6,    // card padding; the indent of a field label and of a note; a note under its field; above the photo row of a dialog
+  gap: 8,      // between the rows and controls inside a card; above an error line; the end of a sheet's scroll body
+  item: 10,    // between cards; between two pills; a thumbnail to its fields; above a field label
+  group: 12,   // above a stand-alone label (the "Servings" label of the one-item form)
+  gutter: 16,  // screen edge to content (phone); a dialog to the window edge; the scroll body of a sheet to its pills;
+               // the line of a small sheet to its pills; camera dialog padding
+  foot: 20,    // the last pill to the bottom of a phone sheet; the photo to the list in a dialog; a small sheet title to
+               // its pills (no line)
+  pad: 24,     // padding of a dialog
+  bar: 28,     // a sheet title to the progress bar under it
+} as const;
+
+/** Corner radii in pt (measured). A pill is fully round. */
+export const radius = {
+  photo: 12,   // a photo inside a card (card 18 - inset 6: concentric)
+  card: 18,    // cards, a field with several lines, the big photo of a dialog, the photo of the camera dialog
+  sheet: 26,   // the top corners of a phone sheet; the corners of a dialog and of the camera dialog
+  round: 999,  // pills, fields, icon buttons, the grab bar, the progress bar, the shutter, the camera hint
+} as const;
+
+/** Sizes in pt (measured; touch targets: Apple 44 pt, the small button is used only inside a card). */
+export const size = {
+  border: 1,
+  control: 48,       // field and pill height
+  controlTall: 72,   // a field with several lines
+  fieldPadX: 18,     // field text to the field border (sides)
+  fieldPadTop: 12,   // field text to the top border in a field with several lines
+  pillPadX: 20,      // pill text to the pill border (sides), when the pill does not grow (a choice)
+  iconSmall: 38,     // icon button inside a review card
+  iconBig: 44,       // icon button of the one-item form
+  thumb: 94,         // the item photo of a review card (square)
+  handleW: 40,       // the grab bar of a sheet
+  handleH: 4,
+  handleTop: 10,     // sheet top to the grab bar
+  sheetLarge: 0.85,  // a large phone sheet: at most this share of the screen height (else as tall as its content)
+  sheetSmall: 210,   // a small phone sheet: at least this tall (its content starts at the top)
+  dialogWide: 860,   // a dialog with the photo on the left
+  dialogSmall: 440,  // a dialog with a title, a line and two pills
+  dialogCamera: 640, // the camera dialog on a wide screen (a 4:3 photo, 608 pt wide)
+  dialogMax: 0.869,  // a dialog is at most this share of the window height (782 of 900 pt measured)
+  blur: 40,          // expo-blur intensity of the frosted layer
+  progressH: 6,      // the progress bar
+} as const;
+
+/**
+ * The line glyphs, drawn as SVG paths with round ends (react-native-svg), in pt (measured from the X32 and X25
+ * shots). Each path ends half a stroke inside its box, so the round ends touch the box edges.
+ */
+export const glyph = {
+  box: 12,         // the square box of close, minus and plus
+  uploadBox: 15,   // the square box of upload
+  stroke: 1.67,    // the line width
+  close: "M0.835 0.835 L11.165 11.165 M11.165 0.835 L0.835 11.165",
+  minus: "M0.835 6 H11.165",
+  plus: "M0.835 6 H11.165 M6 0.835 V11.165",
+  upload: "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
+} as const;
+
+/** The shade over the photo behind a sheet or dialog: a vertical gradient (measured in all 23 X32/X25 shots). */
+export const shade = {
+  mid: 0.4, // the stop of shadeMid, as a share of the height
+} as const;
+
+/** The live camera screen (measured from the X25 scan mockup shots). */
+export const camera = {
+  edge: 14,          // the close button from the top-left corner
+  side: 32,          // the upload button from the left edge
+  uploadBottom: 48,  // the upload button bottom to the screen bottom (its centre 3 pt under the shutter centre)
+  shutter: 76,       // shutter: outer diameter
+  shutterRing: 5,    // its white ring
+  shutterGap: 4,     // the gap between the ring and the white disc
+  shutterBottom: 32, // shutter bottom to the screen bottom
+  cardShutterBottom: 16, // shutter bottom to the photo bottom in the camera dialog
+  hintBottom: 124,   // the hint pill bottom to the screen bottom
+  hintPadX: 16,      // the hint pill padding (sides)
+  hintPadY: 10,      // the hint pill padding (top, bottom)
+  ratio: 4 / 3,      // the photo in the camera dialog (width to height)
+} as const;
+
+export const font = { // Poppins (SIL Open Font Licence, @expo-google-fonts/poppins): the Hungree brand font
+  regular: "Poppins_400Regular",   // body text
+  semibold: "Poppins_600SemiBold", // titles and pill text
+} as const;
+
+export const type = { // text styles (sizes measured from the glyph heights; line height measured for body text)
+  title: { fontFamily: font.semibold, fontSize: 18, lineHeight: 24 },
+  body: { fontFamily: font.regular, fontSize: 14, lineHeight: 20 },     // fields, labels, notes, errors
+  button: { fontFamily: font.semibold, fontSize: 14, lineHeight: 20 },
+} as const;
+
+/** Opacity of a control: pressed (a choice) and busy (measured: the Post pill while posting, X32). */
+export const opacity = {
+  pressed: 0.85, // while a finger is on the control
+  busy: 0.6,     // while the control waits (the spinner shows)
+} as const;
+
+/** Motion (a choice): a sheet rises with a spring; each row of it rises after the one before. */
+export const motion = {
+  rowStepMs: 40,    // the delay from one row to the next
+  rowRise: 8,       // how far a row rises (pt)
+  rowMs: 220,       // how long a row takes
+  sheetSpeed: 14,   // the spring of a sheet (React Native Animated.spring speed)
+  sheetBounce: 0,   // and its bounciness (no overshoot)
+  sheetShift: 0.2,  // a sheet starts this share of the window height below its place
+} as const;
+
+/**
+ * The layout of a window width, after the Material 3 window size classes: compact (< 600 dp) shows bottom
+ * sheets; medium (600-839) and expanded (>= 840) show centred dialogs.
+ */
+export function layoutFor(width: number): { kind: "compact" | "medium" | "expanded"; dialogs: boolean } {
+  const kind = width >= 840 ? "expanded" : width >= 600 ? "medium" : "compact";
+  return { kind, dialogs: kind !== "compact" };
+}
