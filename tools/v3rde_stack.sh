@@ -16,7 +16,7 @@
 #   V3RDE_PHOTOS  the photo store (items/, touchups/)
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
 #   V3RDE_PORT    the host port of the edge, on 127.0.0.1 (8080)
-#   V3RDE_WEB     the folder the edge serves at / (deploy/web, the holding page)
+#   V3RDE_WEB     the folder the edge serves at / (mobile/web-dist, the app; D191)
 # No secret is printed: checks report counts, owners and modes only.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -143,7 +143,20 @@ up() {
   check "/healthz" 200 "$u/healthz"
   check "/api/auth/healthz" 200 "$u/api/auth/healthz"
   check "/api/listings/healthz" 200 "$u/api/listings/healthz"
-  check "/ (holding page or app)" 200 "$u/"
+  check "/ (the app)" 200 "$u/"
+  # D191: the page's own script bundle is served (a stale or missing web build would 404 or give index.html)
+  local js; js=$(curl -s -m 5 "$u/" 2>/dev/null | grep -o '/_expo/static/js/web/[A-Za-z0-9._-]*\.js' | head -1 || true)
+  if [ -n "$js" ]; then
+    check "app script ${js##*/}" 200 "$u$js"
+    # a missing file also gets 200 (index.html, try_files): the type and the cache rule show it is the script
+    local ct cc; ct=$(curl -s -m 5 -o /dev/null -w '%{content_type}' "$u$js" 2>/dev/null || true)
+    cc=$(curl -s -m 5 -o /dev/null -D - "$u$js" 2>/dev/null | tr -d '\r' | grep -i '^cache-control:' | cut -c16-70 || true)
+    printf '   %-30s %s / %s%s\n' "app script type / cache" "${ct:-none}" "${cc:-none}" \
+      "$(case "$ct$cc" in *javascript*immutable*) ;; *) echo '  <-- CHECK';; esac)"
+    case "$ct$cc" in *javascript*immutable*) ;; *) BAD=$((BAD+1));; esac
+  else
+    printf '   %-30s %s\n' "app script" "not in the page  <-- CHECK"; BAD=$((BAD+1))
+  fi
   check "POST /v1/analyze" 401 -X POST "$u/v1/analyze"
   check "POST /api/analyze" 401 -X POST "$u/api/analyze"
   check "GET /api/analyze/scan/<id>" 401 "$u/api/analyze/scan/00000000000000000000000000000000"   # X44b: the scan job route

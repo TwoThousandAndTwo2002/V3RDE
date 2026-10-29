@@ -127,8 +127,9 @@
 		}
 	}
 
-	# The app. Until the ui branch is merged this is the holding page in
-	# deploy/web (D152). Paths that are not files serve index.html. Expo's
+	# The app: mobile/web-dist, the committed web build of the ui branch
+	# (D191; before the merge, the holding page in deploy/web, D152). Paths
+	# that are not files serve index.html. Expo's
 	# content-hashed files are cached for a year, but only when the file is
 	# there: a missing one gets index.html with no-store, so a browser never
 	# keeps the page at a file's address for a year. The rest is no-store.

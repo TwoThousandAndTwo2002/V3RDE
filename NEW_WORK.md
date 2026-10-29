@@ -776,3 +776,17 @@ The box bench (X45b) measured the gate on LiteRT 2.3.0 on the box.
 - When two calls run at the same time, both settings take about 1.1 s each.
 - The gate now uses 2 threads. No image is built again: only the gate container starts again.
 
+## 46. The app is on the live site
+
+**When:** Oct 29 2026.
+**Meta models:** none (no model change; the app uses the services of entries 1–45).
+**Files:** the merge of branch `ui` (UI entries 1–18: `mobile/`, `NEW_WORK_UI.md`, `docs/sources/U*.md`), `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/X46b.md`
+
+Until now the edge served a holding page at `/`. The app was only on branch `ui`.
+
+- Branch `ui` (U18, c36d8a7) is merged into `services`. The merge adds files only; no services file changes.
+- The edge serves the committed web build `mobile/web-dist` at `/`, on the same address as the API.
+- The deploy check now also gets the app's script file through the edge.
+- The UI changes are listed in `NEW_WORK_UI.md`.
+

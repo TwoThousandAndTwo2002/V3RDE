@@ -1,0 +1,307 @@
+{
+ "source": [
+  "Source: artifact https://claude.ai/artifact/6AMxFSoWfFfGMySXPefUKW (X32, approved by T9 on 2026-10-27),",
+  "files shots/phone-multi.jpg, phone-single.jpg, phone-busy.jpg (1170 x 2532 px = 390 x 844 pt, 3 px per pt)",
+  "and shots/desktop-multi.jpg (2880 x 1800 px = 1440 x 900 pt, 2 px per pt)."
+ ],
+ "values": {
+  "screen.gutter": {
+   "pt": 16.0,
+   "px": 48,
+   "how": "row 880: backdrop to the card border"
+  },
+  "card.border_width": {
+   "pt": 1.0,
+   "px": 3,
+   "how": "row 880: border band"
+  },
+  "card.width": {
+   "pt": 358.0,
+   "px": 1074,
+   "how": "row 880: outer left to outer right"
+  },
+  "card.inset": {
+   "pt": 6.0,
+   "px": 18,
+   "how": "row 880: card fill to the thumbnail"
+  },
+  "thumb.width": {
+   "pt": 94.0,
+   "px": 282,
+   "how": "row 880: thumbnail left to right"
+  },
+  "card.height": {
+   "pt": 118.0,
+   "px": 354,
+   "how": "col 900: card top band start to bottom band end"
+  },
+  "field.height": {
+   "pt": 48.0,
+   "px": 144,
+   "how": "col 900: field 1 top band start to bottom band end"
+  },
+  "field.gap": {
+   "pt": 8.0,
+   "px": 24,
+   "how": "col 900: field 1 end to field 2 band start"
+  },
+  "card.inset_top": {
+   "pt": 6.0,
+   "px": 18,
+   "how": "col 900: card fill top to field 1 band"
+  },
+  "card.inset_bottom": {
+   "pt": 6.0,
+   "px": 18,
+   "how": "col 900: field 2 end to card bottom band"
+  },
+  "card.gap": {
+   "pt": 10.0,
+   "px": 30,
+   "how": "col 900: card 1 end to card 2 band"
+  },
+  "thumb.height": {
+   "pt": 94.0,
+   "px": 282,
+   "how": "col 300: thumbnail top to bottom"
+  },
+  "card.fill": {
+   "color": "#FFFFFF",
+   "how": "patch inside card 1"
+  },
+  "card.border": {
+   "color": "#DFDCDB",
+   "how": "row 880 border band"
+  },
+  "field.border": {
+   "color": "#DEDEDE",
+   "how": "col 900 field 1 top border"
+  },
+  "iconbtn.small": {
+   "pt": 38.7,
+   "px": 116,
+   "how": "disc from 2 chords: row 760 [1000,1088], col 1080 [754,842]"
+  },
+  "iconbtn.fill": {
+   "color": "#F3F3F3",
+   "how": "inside the disc, off the glyph"
+  },
+  "iconbtn.gap_to_card_edge": {
+   "pt": 5.7,
+   "px": 17,
+   "how": "disc right to card fill right (centre + r)"
+  },
+  "pill.left_x": {
+   "pt": 16.0,
+   "px": 48,
+   "how": "row 2400: screen to the white pill border"
+  },
+  "pill.width": {
+   "pt": 174.0,
+   "px": 522,
+   "how": "row 2400: white pill outer width"
+  },
+  "pill.gap": {
+   "pt": 9.7,
+   "px": 29,
+   "how": "row 2400: white pill to red pill"
+  },
+  "pill.primary.width": {
+   "pt": 174.7,
+   "px": 524,
+   "how": "row 2400: red pill outer width"
+  },
+  "pill.height": {
+   "pt": 48.0,
+   "px": 144,
+   "how": "col 690: red pill top to bottom"
+  },
+  "sheet.bottom_padding": {
+   "pt": 20.0,
+   "px": 60,
+   "how": "col 690: red pill bottom to the screen bottom"
+  },
+  "pill.primary.fill": {
+   "color": "#BC202D",
+   "how": "inside the red pill, left of the text"
+  },
+  "pill.secondary.fill": {
+   "color": "#FFFFFF",
+   "how": "inside the white pill, left of the text"
+  },
+  "sheet.handle.height": {
+   "pt": 4.3,
+   "px": 13,
+   "how": "col 585: handle top to bottom"
+  },
+  "sheet.handle.width": {
+   "pt": 41.0,
+   "px": 123,
+   "how": "row 418: handle left to right"
+  },
+  "sheet.handle.top": {
+   "pt": 10.0,
+   "px": 30,
+   "how": "sheet top to the handle"
+  },
+  "sheet.radius": {
+   "pt": 24.3,
+   "px": 73,
+   "how": "least-squares circle fit to the top-left edge, columns {1: 59, 4: 51, 10: 38, 20: 23, 40: 9, 60: -2}"
+  },
+  "card.radius": {
+   "pt": 17.7,
+   "px": 53,
+   "how": "card 1 fill corner offsets {0: 45, 3: 34, 6: 27, 9: 22, 12: 19, 15: 15, 18: 12, 21: 10, 24: 8, 27: 6, 30: 5, 33: 3, 36: 2, 39: 2, 42: 1, 45: 1, 48: 0, 51: 0, 54: 0, 57: 0}, + the border"
+  },
+  "thumb.radius": {
+   "pt": 11.3,
+   "px": 34,
+   "how": "thumbnail top-left corner, offsets {1: 25, 4: 18, 7: 14, 10: 10, 13: 8, 16: 5, 19: 4, 22: 2, 25: 1, 28: 0, 31: 0, 34: 0, 37: 0}"
+  },
+  "type.title": {
+   "pt": 17.8,
+   "glyph": "6",
+   "weight": "600SemiBold",
+   "glyph_px": 40,
+   "color": "#201D1C",
+   "how": "first glyph in box (40, 470, 120, 540); size = 40 px / 3 / 0.7480 em"
+  },
+  "type.body.muted": {
+   "pt": 14.0,
+   "glyph": "C",
+   "weight": "400Regular",
+   "glyph_px": 30,
+   "color": "#6C6768",
+   "how": "first glyph in box (40, 560, 110, 610); size = 30 px / 3 / 0.7120 em"
+  },
+  "type.field": {
+   "pt": 13.9,
+   "glyph": "R",
+   "weight": "400Regular",
+   "glyph_px": 29,
+   "color": "#1E1E1E",
+   "how": "first glyph in box (430, 770, 470, 830); size = 29 px / 3 / 0.6970 em"
+  },
+  "type.button": {
+   "pt": 14.0,
+   "glyph": "S",
+   "weight": "600SemiBold",
+   "glyph_px": 30,
+   "color": "#1E1E1E",
+   "how": "first glyph in box (200, 2370, 260, 2440); size = 30 px / 3 / 0.7150 em"
+  },
+  "type.button.on_primary": {
+   "pt": 13.8,
+   "glyph": "P",
+   "weight": "600SemiBold",
+   "glyph_px": 29,
+   "color": "#FFDDE4",
+   "how": "first glyph in box (700, 2370, 760, 2440); size = 29 px / 3 / 0.6980 em"
+  },
+  "type.body.line_height": {
+   "pt": 20.3,
+   "px": 61,
+   "how": "muted text: glyph tops of line 1 and line 2 (rows [568, 629])"
+  },
+  "sheet.top_to_title": {
+   "pt": 34.7,
+   "px": 104,
+   "how": "sheet top to the top of the title glyph"
+  },
+  "field.multiline.height": {
+   "pt": 71.0,
+   "px": 213,
+   "how": "col 700: pickup field outer height"
+  },
+  "iconbtn.big": {
+   "pt": 44.0,
+   "px": 132,
+   "how": "chord at x=150 [1811,1921] and left edge x=48 on row 1865: r = (dx^2 + h^2) / 2dx"
+  },
+  "type.label": {
+   "pt": 13.9,
+   "glyph": "T",
+   "weight": "400Regular",
+   "glyph_px": 29,
+   "color": "#6E6970",
+   "how": "first glyph in box (60, 1400, 110, 1450); size = 29 px / 3 / 0.6970 em"
+  },
+  "type.sheet_title_form": {
+   "pt": 18.1,
+   "glyph": "Y",
+   "weight": "600SemiBold",
+   "glyph_px": 38,
+   "color": "#211E1B",
+   "how": "first glyph in box (45, 1290, 90, 1350); size = 38 px / 3 / 0.6980 em"
+  },
+  "type.error": {
+   "pt": 13.9,
+   "glyph": "T",
+   "weight": "400Regular",
+   "glyph_px": 29,
+   "color": "#D2394A",
+   "how": "first glyph in box (80, 2300, 140, 2360); size = 29 px / 3 / 0.6970 em"
+  },
+  "dialog.left": {
+   "pt": 290.0,
+   "px": 580,
+   "how": "row 1400: screen to the dialog"
+  },
+  "dialog.width": {
+   "pt": 860.0,
+   "px": 1720,
+   "how": "symmetric: 1440 pt - 2 x left"
+  },
+  "dialog.top": {
+   "pt": 59.0,
+   "px": 118,
+   "how": "col 1400: screen to the dialog"
+  },
+  "dialog.height": {
+   "pt": 781.0,
+   "px": 1562,
+   "how": "col 1100: dialog top to bottom"
+  },
+  "dialog.padding": {
+   "pt": 24.0,
+   "px": 48,
+   "how": "row 700: dialog edge to the photo"
+  },
+  "dialog.photo.width": {
+   "pt": 396.0,
+   "px": 792,
+   "how": "row 700: photo left to right"
+  },
+  "dialog.column_gap": {
+   "pt": 20.0,
+   "px": 40,
+   "how": "row 700/450: photo right to the card border"
+  },
+  "dialog.card.width": {
+   "pt": 396.0,
+   "px": 792,
+   "how": "row 450: card outer width (border bands included)"
+  },
+  "dialog.pill.width": {
+   "pt": 401.5,
+   "px": 803,
+   "how": "row 1585: white pill outer width"
+  },
+  "dialog.pill.gap": {
+   "pt": 10.0,
+   "px": 20,
+   "how": "row 1585: white pill to red pill"
+  },
+  "dialog.pill.height": {
+   "pt": 47.5,
+   "px": 95,
+   "how": "col 1600: red pill top to bottom"
+  },
+  "dialog.padding_bottom": {
+   "pt": 24.5,
+   "px": 49,
+   "how": "col 1600/1100: red pill bottom to the end of the dialog edge band"
+  }
+ }
+}
