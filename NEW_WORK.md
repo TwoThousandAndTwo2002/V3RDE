@@ -700,3 +700,20 @@ V3RDE runs some parts on the box and some in Meta's cloud. A new command shows h
 - The median, the 90th percentile and the max, with the number of values and the ledger field of each row.
 - It runs on the box: `docker run --rm --entrypoint /edgecloud -v <ledger>:/ledger-data:ro v3rde-telemetry`.
 - Tests: telemetry 19 -> 22.
+
+---
+
+## 40. The donors' corrections tune the scanner
+
+**When:** Oct 29 2026.
+**Meta models:** SAM 3.1 and Muse Spark 1.3 (the boxes and names that the donors correct; no new model).
+**Files:** `inference/calibrate.go`, `inference/calibrate_test.go`, `inference/cmd/calibrate/main.go` (new), `inference/prepare.go`, `inference/Dockerfile`
+**Sources:** `docs/sources/X44g.md`
+
+The app already reports what the donor changed before posting: the names, the servings and the items removed (entry 15). A new command reads these reports with the scans they belong to.
+
+- For each item: the size of its box as Muse read it, and whether the donor kept the model's name and servings.
+- Counts by box size and by day (the series for the accuracy chart of the pilot).
+- When there are enough labels, it suggests a new value for the size limit that marks an item "check this" (now 96 px). A person makes the change.
+- It runs on the box: `docker run --rm --entrypoint /calibrate -v <analyze events>:/events:ro v3rde-analyze`.
+- Tests: inference 79 -> 83.

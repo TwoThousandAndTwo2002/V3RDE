@@ -49,8 +49,20 @@ type Prepared struct {
 func Prepare(src image.Image) *Prepared {
 	b := src.Bounds()
 	w, h := b.Dx(), b.Dy()
-	if ImageTokens(w, h) <= MaxImageTokens {
+	nw, nh := PreparedSize(w, h)
+	if nw == w && nh == h {
 		return &Prepared{Img: src, W: w, H: h, Scale: 1}
+	}
+	dst := image.NewRGBA(image.Rect(0, 0, nw, nh))
+	xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, b, xdraw.Src, nil)
+	return &Prepared{Img: dst, W: nw, H: nh, Scale: float64(nw) / float64(w), Resized: true}
+}
+
+// PreparedSize is the size Prepare gives a w x h photo (X44g: the
+// calibration report needs it from the events line, where there is no image).
+func PreparedSize(w, h int) (int, int) {
+	if ImageTokens(w, h) <= MaxImageTokens {
+		return w, h
 	}
 	s := math.Sqrt(float64(MaxImageTokens*TokenPx*TokenPx) / float64(w*h))
 	nw, nh := int(float64(w)*s), int(float64(h)*s)
@@ -58,9 +70,7 @@ func Prepare(src image.Image) *Prepared {
 		s *= 0.995
 		nw, nh = int(float64(w)*s), int(float64(h)*s)
 	}
-	dst := image.NewRGBA(image.Rect(0, 0, nw, nh))
-	xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, b, xdraw.Src, nil)
-	return &Prepared{Img: dst, W: nw, H: nh, Scale: float64(nw) / float64(w), Resized: true}
+	return nw, nh
 }
 
 // JPEG encodes an image for the API.
