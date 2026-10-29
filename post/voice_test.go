@@ -542,3 +542,36 @@ func TestASRPriceRoundsUp(t *testing.T) {
 		}
 	}
 }
+
+// X47a: the live transcription refused a title of more than 30 characters
+// as a keyword (HTTP 400 "ASR keyword 3 exceeds the maximum length of 30
+// characters") and the whole clip failed. Keywords are cut to 30 at a word
+// end, a title with no such end is left out, equal keywords go once.
+func TestASRKeywordsFitTheLimit(t *testing.T) {
+	long := "Roasted Vegetable and Chickpea Grain Bowls" // 42 characters
+	kw, cut := ASRKeywords([]VoiceItem{{Title: "Pasta tray"}, {Title: long}, {Title: "  pasta   TRAY "},
+		{Title: "Supercalifragilisticexpialidocious-cake"}, {Title: "Crème brûlée à la façon de grand-mère, 12"},
+		{Title: "Exactly thirty characters ok!!"}, {Title: "Twenty-nine characters, then space"}})
+	want := []string{"Pasta tray", "Roasted Vegetable and Chickpea", "Crème brûlée à la façon de", "Exactly thirty characters ok!!", "Twenty-nine characters, then"}
+	if strings.Join(kw, "|") != strings.Join(want, "|") || cut != 4 {
+		t.Fatalf("keywords %q cut %d", kw, cut)
+	}
+	for _, k := range kw {
+		if n := len([]rune(k)); n > ASRKeywordMax {
+			t.Fatalf("%q has %d characters", k, n)
+		}
+	}
+	// through the handler: a long title no longer reaches the transcription
+	f := &voiceFake{transcript: "six trays", mapText: `{"changes":[{"item":1,"number_of_serving":6}],"new_items":[]}`}
+	_, h, stop := newVoice(t, f)
+	defer stop()
+	items := `[{"item":1,"title":"` + long + `","number_of_serving":2},{"item":2,"title":"Salad","number_of_serving":3}]`
+	w := do(h, voiceReq(t, "/api/voice", makeWAV(t, 16000, 1, 16, 1500, 1), map[string]string{"items": items}, "u1"))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	got, _ := f.asrReq["keywords"].([]any)
+	if len(got) != 2 || got[0] != "Roasted Vegetable and Chickpea" || got[1] != "Salad" {
+		t.Fatalf("asr keywords %v", f.asrReq["keywords"])
+	}
+}

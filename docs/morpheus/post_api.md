@@ -178,6 +178,7 @@ Proposal:
 - `unclear`: a short question to show when the model could not map something.
 - `dropped`: what the rules refused (for the app and the ledger).
 - The events line keeps the transcript and the proposal, never the audio.
+- The item titles go to the transcription as keywords. The transcription refuses a keyword of more than 30 characters (and then the whole clip), so a longer title is cut at the last word end before 30 characters, a title with no such end is left out, and equal keywords go once (X47a). The events line has `keywords` and `keywords_cut`.
 - Refusals: 400 (not multipart, no audio, bad items), 401, 413 `audio_too_large`, 415 `unsupported_media` / `audio_too_long`, 422 `no_speech`, 429, 502, 503 `busy` (more than `-max-in-flight` at the same time, before the body is read) / `daily_cap_reached`, 504.
 - Cost: speech is billed in whole seconds, so the ledger rounds each clip up to the next second.
 

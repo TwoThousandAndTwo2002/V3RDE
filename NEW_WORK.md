@@ -790,3 +790,17 @@ Until now the edge served a holding page at `/`. The app was only on branch `ui`
 - The deploy check now also gets the app's script file through the edge.
 - The UI changes are listed in `NEW_WORK_UI.md`.
 
+## 47. Voice works with long item names
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Voice Transcribe 1.0 and Muse Spark 1.3, as in entry 17 (no model change).
+**Files:** `post/voice.go`, `post/voice_test.go`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X47a.md`
+
+On the live site, two voice clips failed with "Could not read what you said". The transcription refused one item name as a keyword because it was longer than 30 characters, so the whole clip failed.
+
+- Each item name goes to the transcription as a keyword of at most 30 characters, cut at the end of a word.
+- A name that has no word end before 30 characters is left out. The same keyword goes only one time.
+- The events line shows how many keywords were sent and how many were cut.
+- Tests: post 63 -> 64. A touch-up test no longer reads the events file before the second job has written its line (it failed one time on the Mac).
+

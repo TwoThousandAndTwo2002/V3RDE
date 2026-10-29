@@ -83,6 +83,38 @@ type Transcript struct {
 	AudioDurationMS int    `json:"audioDurationMs"`
 }
 
+// ASRKeywordMax is the longest keyword the transcription accepts (X47a: the
+// live answer "ASR keyword 3 exceeds the maximum length of 30 characters",
+// HTTP 400, and the whole clip failed).
+const ASRKeywordMax = 30
+
+// ASRKeywords makes the keywords of the transcription from the item titles:
+// one per title, at most ASRKeywordMax characters. A longer title is cut at
+// the last space before the limit (its first words still help the
+// recognition); a title whose first word is longer is left out. Equal
+// keywords (any case) are sent once. cut counts the titles cut or left out.
+func ASRKeywords(items []VoiceItem) (kw []string, cut int) {
+	seen := map[string]bool{}
+	for _, it := range items {
+		t := strings.Join(strings.Fields(it.Title), " ")
+		if r := []rune(t); len(r) > ASRKeywordMax {
+			cut++
+			s := string(r[:ASRKeywordMax+1]) // +1: a space right after the limit keeps the whole last word
+			if i := strings.LastIndex(s, " "); i > 0 {
+				t = strings.TrimSpace(s[:i])
+			} else {
+				t = ""
+			}
+		}
+		if t == "" || seen[strings.ToLower(t)] {
+			continue
+		}
+		seen[strings.ToLower(t)] = true
+		kw = append(kw, t)
+	}
+	return kw, cut
+}
+
 // Transcribe sends one WAV utterance. keywords bias recognition (the item
 // titles); languages are language names from the 25 supported.
 func (t *Transcriber) Transcribe(ctx context.Context, wavBytes []byte, keywords, languages []string) (Transcript, Call, error) {
@@ -523,10 +555,7 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	defer func() { hold.Settle(Sum(calls)) }() // also on a panic (Settle runs once)
 	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
 	defer cancel()
-	var keywords []string
-	for _, it := range items {
-		keywords = append(keywords, it.Title)
-	}
+	keywords, cut := ASRKeywords(items)
 	tr, call, err := c.ASR.Transcribe(ctx, wavBytes, keywords, LanguageBias(r.FormValue("lang")))
 	if err == nil && call.AudioMS == 0 { // the answer had no audioDurationMs: bill our own measure
 		call.AudioMS = info.MS
@@ -583,7 +612,8 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	// the ledger keeps the transcript and the proposal (labels for tuning, as
 	// #15); never the audio
 	ev.Detail = map[string]any{"transcript": text, "items": len(items), "changes": changes, "new_items": newItems,
-		"pickup_changed": newPickup != nil, "dropped": dropped, "audio": info, "lang": cleanText(r.FormValue("lang"), 35)}
+		"pickup_changed": newPickup != nil, "dropped": dropped, "audio": info, "lang": cleanText(r.FormValue("lang"), 35),
+		"keywords": len(keywords), "keywords_cut": cut}
 	WriteJSON(w, http.StatusOK, p)
 	c.Events.Record(ev)
 }

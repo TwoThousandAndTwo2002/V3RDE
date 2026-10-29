@@ -533,7 +533,16 @@ func TestTouchupCallerCap(t *testing.T) {
 	id2 := start(t, e, tuReq(t, e, "u2", ""))
 	wait(t, e, "/api/touchup/"+id, "u1")
 	wait(t, e, "/api/touchup/"+id2, "u2")
-	spent, by := e.cfg.Events.SpentByKey(time.Now())
+	// X47a: a job is "done" before its events line is written (the Mac run of
+	// X47a read the file between the two and saw only u1), so wait for both lines
+	var spent float64
+	var by map[string]float64
+	for end := time.Now().Add(3 * time.Second); ; time.Sleep(20 * time.Millisecond) {
+		spent, by = e.cfg.Events.SpentByKey(time.Now())
+		if (by["u:u1"] > 0 && by["u:u2"] > 0) || time.Now().After(end) {
+			break
+		}
+	}
 	if spent <= 0 || by["u:u1"] <= 0 || by["u:u2"] <= 0 || !near(by["u:u1"]+by["u:u2"], spent) {
 		t.Fatalf("events by key: %v of %v", by, spent)
 	}
