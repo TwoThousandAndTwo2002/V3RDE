@@ -64,3 +64,21 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - T9: the app name is upper case in the package ID. The Android package and the iOS bundle ID are now `com.kkombuchaas.V3RDE`.
 - The URL scheme stays `v3rde` (Android matches schemes case-sensitively and asks for lower case). The slug stays `v3rde`.
 - No APK or iOS build was made with the earlier ID, so no installed app changes.
+
+---
+
+## UI 4. The API client and the app logic, and the EAS project
+
+**When:** Oct 29 2026.
+**Meta model:** none (the client calls the routes that use Muse Spark, SAM 3.1 and Muse Voice Transcribe on the services side).
+**Files:** `mobile/src/api.ts`, `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/package.json`, `mobile/app.json`
+**Sources:** `docs/sources/U4.md`
+
+- **`api.ts` is new code.** It calls the routes of branch `services`: auth, listings, the one analyze route (photo, barcode, capture data), the label report and voice posting. A phone fetches photos with the session cookie and shows them as data URIs.
+- **`logic.ts`** holds two kinds of code:
+  - **Carried:** the answer and label-report functions and the words of the review list (entries 10 and 15), and the upload size, the web-camera size and the turn of a still photo (entry 12). Each block is checked against the blame of the earlier repository: no line from before the kickoff.
+  - **New:** `itemPhotoPath`, `targetSize`, `joinUrl` and `errorMessage`, written in place of the earlier helpers. A script compared them with the earlier helpers on 899 inputs; none differed.
+- **Rewrite guard:** `api.ts`, `logic.ts` and the test have no line of the earlier files they replace (the script checks it).
+- **EAS:** the project `@kkombuchaas-team/v3rde` is linked (`extra.eas.projectId`).
+- From this change on, `tsc` checks the app code. `voicerec.ts` and `webcam.ts` (UI 1) now type-check.
+- Tests: mobile 25 (11 + 14 new).
