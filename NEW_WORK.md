@@ -544,3 +544,22 @@ A translator can change or lose a placeholder such as `{n}`, or translate a name
 - After the translation, each tag must be there exactly once. A lost, doubled or unknown tag, or a bare `{name}`, is an error, and that translation is not used. The translator can move a tag to where the grammar of the language needs it.
 - Regression tests (`i18n/mask/mask_test.go`, 4 tests): masking, restore in Spanish, Chinese, Hindi and Arabic text and with the tags in a new order, the error cases, and a round trip of every message in `en.json`. The i18n module now has 11 tests.
 - Not deployed by this change.
+
+---
+
+## 50. Lost in translation: a Go client for Muse Spark Open on Baseten
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open (`meta-models/muse-spark-open-1026`), through Baseten. The tests use a fake server only; this change makes no calls to Baseten.
+**Files:** `i18n/muse/muse.go`, `i18n/muse/prompt.go`, `i18n/muse/muse_test.go`
+**Sources:** `docs/sources/L4b.md`
+
+- One request is one answer (Baseten supports only `n = 1`). More candidates are more requests.
+- The settings are fixed: the exact model name, temperature 1.0, top_p 1.0, `top_k: -1` (Baseten's default is 50), `reasoning_effort: low`, `max_tokens` 4096. Nothing is sent that Baseten rejects or ignores for this model (`n`, `logprobs`, `seed`).
+- The key comes from `BASETEN_API_KEY` and is never in an error message.
+- 429, 5xx and network errors are tried again (`Retry-After`, else 1 s, 2 s, 4 s). 400 and 401 are not.
+- An answer with no text (the reasoning used all the tokens) is an error, not an empty translation.
+- The prompt gives the target language, the tag rule (#49) and the message id as the only context of a short text.
+- Regression tests (`i18n/muse/muse_test.go`, 5 tests, fake server). The i18n module now has 16 tests.
+- Not deployed by this change.

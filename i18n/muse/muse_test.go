@@ -1,0 +1,140 @@
+package muse
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+)
+
+const key = "test-key-not-real-123"
+
+func fake(t *testing.T, h func(w http.ResponseWriter, body map[string]any)) (*Client, *int32) {
+	t.Helper()
+	var calls int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		if r.URL.Path != "/v1/chat/completions" || r.Header.Get("Authorization") != "Bearer "+key {
+			w.WriteHeader(401)
+			return
+		}
+		b, _ := io.ReadAll(r.Body)
+		var body map[string]any
+		if err := json.Unmarshal(b, &body); err != nil {
+			t.Error(err)
+		}
+		h(w, body)
+	}))
+	t.Cleanup(srv.Close)
+	c := New(srv.URL+"/v1", key)
+	c.Sleep = func(context.Context, time.Duration) error { return nil }
+	return c, &calls
+}
+
+func answer(w http.ResponseWriter, content any, finish string) {
+	json.NewEncoder(w).Encode(map[string]any{
+		"choices": []any{map[string]any{"message": map[string]any{"role": "assistant", "content": content, "reasoning_content": "thinking"}, "finish_reason": finish}},
+		"usage":   map[string]any{"prompt_tokens": 150, "completion_tokens": 200, "completion_tokens_details": map[string]any{"reasoning_tokens": 190}},
+	})
+}
+
+// The request has the exact model, Meta's sampling, top_k -1, effort low,
+// and nothing that Baseten rejects or ignores (n, logprobs, seed).
+func TestRequestSettings(t *testing.T) {
+	c, _ := fake(t, func(w http.ResponseWriter, b map[string]any) {
+		want := map[string]any{"model": Model, "temperature": 1.0, "top_p": 1.0, "top_k": -1.0, "reasoning_effort": "low", "max_tokens": 4096.0}
+		for k, v := range want {
+			if b[k] != v {
+				t.Errorf("%s = %v, want %v", k, b[k], v)
+			}
+		}
+		for _, k := range []string{"n", "logprobs", "top_logprobs", "prompt_logprobs", "seed", "response_format"} {
+			if _, ok := b[k]; ok {
+				t.Errorf("%s must not be sent", k)
+			}
+		}
+		msgs := b["messages"].([]any)
+		if len(msgs) != 2 || msgs[0].(map[string]any)["role"] != "system" {
+			t.Errorf("messages %v", msgs)
+		}
+		answer(w, " ¿Vienes? ", "stop")
+	})
+	r, err := c.Chat(context.Background(), "sys", "user")
+	if err != nil || r.Text != "¿Vienes?" || r.ReasoningTokens != 190 {
+		t.Fatalf("%+v %v", r, err)
+	}
+}
+
+// 429 and 500 are tried again; 400 is not.
+func TestRetries(t *testing.T) {
+	var n int32
+	c, calls := fake(t, func(w http.ResponseWriter, b map[string]any) {
+		switch atomic.AddInt32(&n, 1) {
+		case 1:
+			w.Header().Set("Retry-After", "2")
+			w.WriteHeader(429)
+		case 2:
+			w.WriteHeader(500)
+		default:
+			answer(w, "Hola", "stop")
+		}
+	})
+	if r, err := c.Chat(context.Background(), "s", "u"); err != nil || r.Text != "Hola" || *calls != 3 {
+		t.Fatalf("%+v %v calls %d", r, err, *calls)
+	}
+	c2, calls2 := fake(t, func(w http.ResponseWriter, b map[string]any) { w.WriteHeader(400) })
+	var h *HTTPError
+	if _, err := c2.Chat(context.Background(), "s", "u"); !errors.As(err, &h) || h.Status != 400 || *calls2 != 1 {
+		t.Fatalf("400: %v, %d calls", err, *calls2)
+	}
+}
+
+// No answer text (null content, or the reasoning used all the tokens) is
+// ErrNoAnswer, not an empty translation, and it is not tried again here.
+func TestNoAnswer(t *testing.T) {
+	for _, c := range []struct {
+		content any
+		finish  string
+	}{{nil, "length"}, {"", "stop"}, {"partial", "length"}} {
+		cl, calls := fake(t, func(w http.ResponseWriter, b map[string]any) { answer(w, c.content, c.finish) })
+		if _, err := cl.Chat(context.Background(), "s", "u"); !errors.Is(err, ErrNoAnswer) || *calls != 1 {
+			t.Errorf("%v/%s: %v, %d calls", c.content, c.finish, err, *calls)
+		}
+	}
+}
+
+// The key is never in an error message.
+func TestKeyNotInErrors(t *testing.T) {
+	c, _ := fake(t, func(w http.ResponseWriter, b map[string]any) {
+		w.WriteHeader(500)
+		io.WriteString(w, `{"error":"bad key `+key+`"}`)
+	})
+	c.Retries = 0
+	_, err := c.Chat(context.Background(), "s", "u")
+	if err == nil || strings.Contains(err.Error(), key) || !strings.Contains(err.Error(), "***") {
+		t.Fatalf("error %v", err)
+	}
+	t.Setenv("BASETEN_API_KEY", "")
+	if _, err := FromEnv(); err == nil {
+		t.Fatal("no key must fail")
+	}
+}
+
+// The prompt names the language and the tag rule, and gives the id as context.
+func TestPrompt(t *testing.T) {
+	s, u := Prompt("Spanish (Latin America)", "es-419", "CAPTURE.retake", "Retake")
+	for _, w := range []string{"Spanish (Latin America) (es-419)", "<x1/>", "translation only"} {
+		if !strings.Contains(s, w) {
+			t.Errorf("system has no %q", w)
+		}
+	}
+	if u != "Message id: CAPTURE.retake\nText:\nRetake" {
+		t.Errorf("user %q", u)
+	}
+}
