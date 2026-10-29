@@ -114,7 +114,7 @@ func newFO(t *testing.T, museText string) *foEnv {
 		StatusAuth:    analyze.NewBearer("tok"),
 		StatusLimiter: NewLimiter(100, time.Minute),
 		Budget:        NewBudget(1, 0.02, nil),
-		Events:        NewEvents(t.TempDir()),
+		Events:        eventsAt(t.TempDir(), now),
 		Store:         st,
 		LinkBase:      "https://icarus.example.org/l/",
 		now:           func() time.Time { return now },

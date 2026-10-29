@@ -251,3 +251,12 @@ func TestLimiterPrunesAndForwardedIsTrustedOnlyWhenSet(t *testing.T) {
 		t.Fatal("forwarded header not used when trusted")
 	}
 }
+
+// eventsAt is an events log on the test clock: the tests read the file of
+// the test day, so the log must write that day too (with the real clock,
+// the tests failed after 00:00 UTC of the day after the fixed test date).
+func eventsAt(dir string, now time.Time) *Events {
+	ev := NewEvents(dir)
+	ev.now = func() time.Time { return now }
+	return ev
+}

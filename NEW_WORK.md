@@ -519,3 +519,16 @@ The barcode lookup (a scanned code in, the catalog's product out) existed before
 - Checked against the old service: its own tests pass on the new code, and an independent review sent 39,002 codes to both with no difference.
 - New: a too-short catalog pin is an error, not a crash.
 - Tests: barcode 20 (new), and 2 SQLite tests that run in the image build.
+
+---
+
+## 28. Three post tests no longer depend on the date
+
+**When:** Oct 29 2026.
+**Meta model:** none (tests only).
+**Files:** `post/post_test.go`, `post/fanout_test.go`, `post/rescue_test.go`
+**Sources:** `docs/sources/X38e.md`
+
+Three tests of the sharing and rescue services passed only on Oct 28 2026 (UTC): they read the events file of their fixed test day, but the events log wrote with the real clock. The tests now give the log the test clock. The services do not change.
+
+- Tests: post 51 (unchanged count; they now pass on any day).

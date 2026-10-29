@@ -84,7 +84,7 @@ func newRS(t *testing.T, museText string, museStatus int, relay bool) *rsEnv {
 		Session:   fakeAuth{},
 		Limiter:   NewLimiter(100, time.Minute),
 		Budget:    NewBudget(1, 0.02, nil),
-		Events:    NewEvents(t.TempDir()),
+		Events:    eventsAt(t.TempDir(), now),
 		Store:     st,
 		now:       func() time.Time { return now },
 	}
