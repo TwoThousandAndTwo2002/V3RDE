@@ -511,3 +511,19 @@ The English text of the app was in many files (`words.ts`, `signin.ts`, `logic.t
 - Regression tests (`i18n/i18n_test.go`, 7 tests): the lexer (comments, regex, escapes, nested templates), JSX text fails, the message rules, stale rules fail, `en.json` and `skipped.json` are what the extractor makes from the pinned commit, the language list (each native name in its own script), and the format of `en.json`.
 - When the app text changes on `ui`: put the new commit in `i18n/source.json` and run `go run ./cmd/extract` in `i18n/`.
 - Not deployed by this change.
+
+---
+
+## 48. Lost in translation: Arabic is `ar`, so every Arabic phone finds it
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/languages.json`, `i18n/i18n_test.go`
+**Sources:** `docs/sources/L3b.md`
+
+In #47 Arabic was `ar-001`. A phone set to Arabic has a tag such as `ar-EG` or `ar-SA`. Lookup removes subtags from the end (`ar-EG`, then `ar`), so it finds `ar` but never `ar-001`.
+
+- Arabic is now `ar`, so the Arabic text serves all Arabic regions. The text stays Modern Standard Arabic (the name in `languages.json` says so).
+- The language test expects `ar`.
+- Not deployed by this change.
