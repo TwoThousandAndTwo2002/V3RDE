@@ -25,3 +25,10 @@ test("error words", () => {
   assert.equal(touchError(503, "busy", w), "B");
   assert.equal(touchError(404, "not_found", w), "F");
 });
+
+test("U18: a queued job is still working; the limit of one user pauses the touch-up", () => {
+  assert.deepEqual(afterPoll({ status: "queued" }, "t", 0, 5000), { kind: "working", id: "t", since: 0 });
+  const w = { busy: "B", paused: "P", failed: "F" };
+  assert.equal(touchError(429, "caller_daily_cap_reached", w), "P");
+  assert.equal(touchError(429, "rate_limited", w), "B");
+});

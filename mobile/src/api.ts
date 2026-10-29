@@ -8,7 +8,7 @@
 // Photo uploads from a phone are React Native FormData parts ({uri, name, type});
 // mobile/.env keeps React Native's fetch as the global fetch for them (U2 D5).
 import { Platform as RN } from "react-native";
-import { errorMessage, joinUrl } from "./logic";
+import { SCAN_POLL_MS, SCAN_WAIT_MS, errorMessage, joinUrl, scanStep } from "./logic";
 
 export const API_BASE: string = RN.OS === "web" ? "" : (process.env.EXPO_PUBLIC_API_BASE ?? "");
 
@@ -117,12 +117,36 @@ export const listings = Object.freeze({
 });
 
 /** The one analysis route (session cookie): the photo, the barcode read on the phone (optional), and how the
- *  photo was taken (the server logs at most 512 bytes of it). The service stops at 55 s; the app waits 75 s. */
-export function analyze(photo: Upload, barcode = "", capture?: Record<string, unknown>) {
+ *  photo was taken (the server logs at most 512 bytes of it). The scan runs as a job (?async=1): the POST answers
+ *  202 with a scan_id, then the app asks for the job each second until it is finished (logic.scanStep). A long scan
+ *  thus never meets the time limit of one request. The service stops a photo at 25 s; the app waits 75 s in all.
+ *  `stop` is true when the user went back: the app stops asking. */
+export async function analyze(photo: Upload, barcode = "", capture?: Record<string, unknown>, stop: () => boolean = () => false) {
   const form = formOf([], [["barcode", barcode]]);
   addFile(form, "image", photo);
   if (capture && Object.keys(capture).length > 0) form.append("capture", JSON.stringify(capture).slice(0, 512));
-  return request<any>("POST", "/api/analyze", { form, timeoutMs: 75_000 });
+  const until = Date.now() + SCAN_WAIT_MS;
+  // the upload is inside the 75 s; a service with no job route answers here, with the whole scan
+  const started = await request<any>("POST", "/api/analyze?async=1", { form, timeoutMs: SCAN_WAIT_MS });
+  if (typeof started?.scan_id !== "string") return started; // a service without the job route answers at once
+  const path = "/api/analyze/scan/" + encodeURIComponent(started.scan_id);
+  for (;;) {
+    await new Promise((go) => setTimeout(go, SCAN_POLL_MS));
+    if (stop()) throw new ApiError(0, "Stopped");
+    if (Date.now() > until) throw new ApiError(0, "Timed out, try again");
+    let job: unknown;
+    try {
+      job = await request<unknown>("GET", path, { timeoutMs: 10_000 });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 0) continue; // one lost answer: ask again
+      // 404: the job is gone (the service started again); the user tries again with the photo that is kept
+      if (err instanceof ApiError && err.status === 404) throw new ApiError(0, "Try again");
+      throw err; // 401: signed out
+    }
+    const step = scanStep(job);
+    if (step.kind === "answer") return step.body;
+    if (step.kind === "error") throw new ApiError(step.status, errorMessage(step.status, step.body, "/api/analyze"), step.body);
+  }
 }
 
 /** A touch-up job (branch services, post/touchup.go): running, then done (photo_id = the edit), kept_original

@@ -16,7 +16,7 @@ export type TouchState =
 export function afterPoll(job: { status: string; photo_id?: string }, id: string, since: number, now: number): TouchState {
   if (job.status === "done" && job.photo_id) return { kind: "offer", id, photoId: job.photo_id, chosen: "original" };
   if (job.status === "kept_original") return { kind: "kept" };
-  if (job.status === "running" && now - since < GIVE_UP_MS) return { kind: "working", id, since };
+  if ((job.status === "running" || job.status === "queued") && now - since < GIVE_UP_MS) return { kind: "working", id, since };
   return { kind: "failed" };
 }
 
@@ -27,7 +27,7 @@ export function photoToPost(original: string, s: TouchState): string {
 
 /** The words of an error answer of the touch-up service. */
 export function touchError(status: number, code: string, words: { busy: string; paused: string; failed: string }): string {
-  if (code === "daily_cap_reached") return words.paused;
+  if (code === "daily_cap_reached" || code === "caller_daily_cap_reached") return words.paused;
   if (status === 429 || code === "busy" || code === "rate_limited") return words.busy;
   return words.failed;
 }

@@ -7,7 +7,7 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import * as RN from "react-native";
 import { ApiError, voice } from "../api";
 import { deviceLocale, type ItemForm } from "../logic";
-import { applyProposal, changesSomething, proposalLines, proposalOf, voiceItems, type Proposal } from "../voice";
+import { applyProposal, changesSomething, proposalLines, proposalOf, voiceError, voiceItems, type Proposal } from "../voice";
 import { VoiceError, useVoiceRecorder, type VoiceClip } from "../voicerec";
 import { ClipBusy } from "../clipsession";
 import { radius, size, space, useColors } from "../theme";
@@ -44,7 +44,8 @@ export function VoiceBar({ items, pickup, onApply, onOpen }: {
     } catch (err) {
       if (!live.current) return;
       if (err instanceof ApiError && err.status === 401) return ended();
-      show({ kind: "error", text: VOICE.failed });
+      const code = err instanceof ApiError && typeof err.body?.code === "string" ? err.body.code : "";
+      show({ kind: "error", text: voiceError(err instanceof ApiError ? err.status : 0, code, VOICE) });
     }
   };
   const rec = useVoiceRecorder({ onAutoStop: send });

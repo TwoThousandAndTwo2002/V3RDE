@@ -63,9 +63,23 @@ export function analyzeKind(body: any): AnalyzeKind {
     case "model_no_food_multi": return "nofood_multi";
     case "already_listed": return "already_listed";
     case "daily_cap_reached": return "daily_cap";
+    case "caller_daily_cap_reached": return "daily_cap"; // this user's share of the day (X44a): the same sheet
     case "gate_unavailable": return "unavailable";
   }
   return "retry";
+}
+
+// U18: the scan job (branch services, inference/scanjob.go). GET /api/analyze/scan/{id} answers
+// {status: "running" | "done" | "failed", http_status?, answer?}; the answer of a finished job is the body the
+// one-request route gives (200, or an error body with its code).
+export const SCAN_POLL_MS = 1000; // the service asks for about one poll a second
+export const SCAN_WAIT_MS = 75_000;
+export type ScanStep = { kind: "wait" } | { kind: "answer"; body: any } | { kind: "error"; status: number; body: any };
+export function scanStep(job: any): ScanStep {
+  if (!job || typeof job !== "object" || job.status === "running" || job.http_status === undefined) return { kind: "wait" };
+  const status = Number(job.http_status);
+  if (status === 200 && job.status === "done") return { kind: "answer", body: job.answer };
+  return { kind: "error", status: status >= 400 ? status : 502, body: job.answer ?? null };
 }
 
 // The ErrorText under "Try again?" for the retry answers; the photo is kept.

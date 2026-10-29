@@ -4,6 +4,7 @@ import { strict as assert } from "node:assert";
 import {
   answerToItems, labelReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
+  scanStep,
 } from "../src/logic.ts"; // run with Node type stripping
 
 const ID = "0123456789abcdef0123456789abcdef";
@@ -122,4 +123,19 @@ test("errorMessage: the service's text first, then a plain line", () => {
   assert.equal(errorMessage(503, null, "/api/analyze"), "The food scanner is busy, try again");
   assert.equal(errorMessage(502, null, "/api/listings"), "The service is busy, try again");
   assert.equal(errorMessage(418, "teapot"), "Request failed (418)");
+});
+
+test("scanStep (U18): wait while the scan job runs, then its answer or its error", () => {
+  assert.deepEqual(scanStep({ status: "running", stage: "naming" }), { kind: "wait" });
+  assert.deepEqual(scanStep(null), { kind: "wait" });
+  const answer = { request_id: ID, items: [] };
+  assert.deepEqual(scanStep({ status: "done", http_status: 200, answer }), { kind: "answer", body: answer });
+  const no = { request_id: ID, error: "no food detected in the image", code: "not_food" };
+  assert.deepEqual(scanStep({ status: "failed", http_status: 422, answer: no }), { kind: "error", status: 422, body: no });
+  assert.deepEqual(scanStep({ status: "failed", http_status: 0 }), { kind: "error", status: 502, body: null });
+});
+
+test("analyzeKind (U18): the limit of one user for the day gives the daily-limit sheet", () => {
+  assert.equal(analyzeKind({ code: "caller_daily_cap_reached" }), "daily_cap");
+  assert.equal(analyzeKind({ code: "daily_cap_reached" }), "daily_cap");
 });

@@ -1,7 +1,7 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, changesSomething, proposalLines, proposalOf, voiceItems } from "../src/voice.ts";
+import { applyProposal, changesSomething, proposalLines, proposalOf, voiceError, voiceItems } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -47,4 +47,15 @@ test("the lines of a proposal", () => {
   assert.deepEqual(proposalLines(ITEMS.slice(0, 1), "Lobby", proposalOf({ changes: [{ item: 3, remove: true }], dropped: ["a price"] }), W), ["gone", "dropped a price"]);
   assert.equal(changesSomething(ITEMS, "Lobby", p), true);
   assert.equal(changesSomething(ITEMS, "Lobby", proposalOf({ changes: [{ item: 1, number_of_serving: 6 }] })), false);
+});
+
+test("voiceError (U18): the code of the answer picks the line", () => {
+  const w = { failed: "F", noSpeech: "N", busy: "B", paused: "P" };
+  assert.equal(voiceError(422, "no_speech", w), "N");
+  assert.equal(voiceError(429, "caller_daily_cap_reached", w), "P");
+  assert.equal(voiceError(503, "daily_cap_reached", w), "P");
+  assert.equal(voiceError(503, "busy", w), "B");
+  assert.equal(voiceError(429, "rate_limited", w), "B");
+  assert.equal(voiceError(502, "upstream_error", w), "F");
+  assert.equal(voiceError(0, "", w), "F");
 });

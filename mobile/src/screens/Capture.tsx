@@ -86,6 +86,7 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
   }, [perm, askPerm]);
   // each new photo or Retake makes the answers of the trips before it stale
   const trip = useRef(0);
+  useEffect(() => () => { ++trip.current; }, []); // closed (or signed out): a scan still out stops asking
   // the object URLs of the photos of this flow; they are given back at Retake and at the end
   const urls = useRef<string[]>([]);
   const keep = (u: string) => { if (u.startsWith("blob:")) urls.current.push(u); return u; };
@@ -169,7 +170,7 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
         how.current = { ...how.current, prep_ms: Date.now() - t0 };
         setShot({ ...up, uri: keep(up.uri) });
       }
-      const body = await analyze(up, code, how.current);
+      const body = await analyze(up, code, how.current, stale);
       if (stale()) return;
       const items = answerToItems(body);
       if (items.length === 0) { setStep({ kind: "ask" }); setProblem(retryText(502, null)); return; }

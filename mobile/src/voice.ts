@@ -83,3 +83,11 @@ export function changesSomething(items: ItemForm[], pickup: string, p: Proposal)
   return after.pickup !== pickup || after.items.length !== items.length ||
     after.items.some((it, k) => it.title !== items[k].title || it.servings !== items[k].servings);
 }
+
+/** U18: the words of an error answer of the voice service (post/voice.go): its code picks the line. */
+export function voiceError(status: number, code: string, words: { failed: string; noSpeech: string; busy: string; paused: string }): string {
+  if (code === "no_speech") return words.noSpeech;
+  if (code === "daily_cap_reached" || code === "caller_daily_cap_reached") return words.paused;
+  if (code === "busy" || code === "rate_limited" || status === 429) return words.busy;
+  return words.failed;
+}

@@ -291,3 +291,20 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Proposal:** one line for each change (servings, title, remove, pickup, a question when the service was not sure); "Apply changes" or "Keep as is". A new item that was only said is not added (a listing needs a photo).
 - Nothing changes until "Apply changes", and nothing posts until Post.
 - **Native:** the recorder is a native module (expo-audio): the APK needs a new EAS build; the web needs only the web build.
+
+---
+
+## UI 18. The web build, the web server and the service wiring
+
+**When:** Oct 29 2026.
+**Meta model:** none new. The scan job route of the analyze service (Muse Spark 1.3 and SAM 3.1, branch `services`) is now the route that the app calls.
+**Files:** `mobile/web-dist/` (new, made by the SUP script), `mobile/tools/web/serve.mjs`, `mobile/tools/web/routes.mjs`, `mobile/tests/web.test.mts`, `mobile/docs/web.md`, `mobile/src/api.ts`, `mobile/src/logic.ts`, `mobile/src/touchup.ts`, `mobile/src/voice.ts`, `mobile/src/words.ts`, `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/screens/Voice.tsx`, `mobile/tests/logic.test.mts`, `mobile/tests/touchup.test.mts`, `mobile/tests/voice.test.mts`, `mobile/package.json`
+**Sources:** `docs/sources/U18.md`
+
+- **Written new:** the web server (Node standard library). The earlier app's preview server (Python) was the reference for its job: one origin, `/api` and `/v1` sent to the services, `Secure` removed from the cookie, `index.html` for an unknown path.
+- **Same rules as the edge:** the routes, body limits, wait times, the 404 and 410 answers and the cache rules come from `deploy/Caddyfile` (branch `services`, 17b4260).
+- **Web build:** `npm run web:build` makes `mobile/web-dist`; it is committed. When branch `ui` is merged, the edge serves it (`V3RDE_WEB=./mobile/web-dist`).
+- **Scan as a job:** `POST /api/analyze?async=1`, then `GET /api/analyze/scan/{id}` each second, 75 s at most. The answer is the same as before.
+- **Words:** the limit of one user for the day; voice "no speech", "busy" and "paused"; "This food is gone" for a grab that came too late.
+- **Checked:** the real services built from branch `services` ran behind the web server with stand-ins for the Meta API and the food gate: sign up, scan, touch-up, voice, post, receive and grab.
+- **Native:** no new native module. The phone build does not change.

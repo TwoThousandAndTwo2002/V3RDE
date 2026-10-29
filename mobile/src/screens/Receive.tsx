@@ -71,9 +71,10 @@ export default function ReceiveScreen() {
       setTaken({ ...l, ...got });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return ended();
-      if (err instanceof ApiError && err.status === 409) {
+      if (err instanceof ApiError && (err.status === 409 || err.status === 404)) { // collected, expired or removed
         feed.current.items = withChange(feed.current.items, { id: l.id, status: "collected" });
         setShown(feed.current.items);
+        return say(RECEIVE.gone);
       }
       say(err instanceof Error ? err.message : String(err));
     } finally {
