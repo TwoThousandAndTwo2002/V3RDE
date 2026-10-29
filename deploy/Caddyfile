@@ -10,13 +10,21 @@
 # X-Forwarded-For, read from the right: the first address that is not a
 # private one (the load balancer and Apache are private), so a caller
 # cannot choose it.
+#
+# D201 (X48b): API Gateway hid each caller's address (every request came
+# from the VPC link, so all callers shared one rate limit). The SME set
+# `overwrite:header.X-Client-Ip = $context.identity.sourceIp` on the
+# integration of the Icarus route: API Gateway writes the real address and
+# replaces any X-Client-Ip the caller sent. Caddy reads X-Client-Ip first
+# (from a trusted, private hop only), then X-Forwarded-For as before, and
+# does not pass X-Client-Ip on.
 {
 	admin off
 	auto_https off
 	servers {
 		trusted_proxies static private_ranges
 		trusted_proxies_strict
-		client_ip_headers X-Forwarded-For
+		client_ip_headers X-Client-Ip X-Forwarded-For
 	}
 }
 
@@ -24,6 +32,7 @@
 (caller) {
 	header_up X-Forwarded-For {client_ip}
 	header_up CF-Connecting-IP {client_ip}
+	header_up -X-Client-Ip
 }
 
 :80 {

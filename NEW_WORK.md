@@ -821,3 +821,15 @@ The speed plan (T9: single photo 5–6 s, multi-item 10–12 s). Before this cha
 - A scan job shows its first boxes only after the gate passed, so a photo that is not food shows no boxes.
 - Tests: inference 83 -> 84.
 
+## 49. Each caller gets its own rate limit
+
+**When:** Oct 29 2026.
+**Meta models:** none (no model change).
+**Files:** `deploy/Caddyfile`
+**Sources:** `docs/sources/X48b.md`
+
+Through API Gateway every request seemed to come from the same address, so all callers shared one rate limit.
+
+- The SME set API Gateway to send the caller's real address in the header `X-Client-Ip`. API Gateway replaces any value the caller sends.
+- The edge reads that address first, then the old header, and gives it to every service.
+- The edge does not pass `X-Client-Ip` on to the services.
