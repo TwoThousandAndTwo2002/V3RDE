@@ -272,6 +272,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 - "Your listings" with the same layout as Receive; the listing card has the photo `size.minePhoto` tall and only the title, the servings and the time pill. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
 
+## Capture (`mobile/src/screens/Capture.tsx`, words in `mobile/src/words.ts`, rules in `mobile/src/capture.ts`)
+
+- Give: "+ New listing" (a primary pill) at the bottom of a phone screen (`space.item` above and below) or next to the title on a wide screen. The flow opens by itself when the giver has nothing up.
+- The camera (the approved X25 shots): phone: full screen on `cameraBg`, ✕ at `camera.edge`, the hint pill (`Hint`), upload at `camera.side` × `camera.uploadBottom`, the shutter. Wide screen: `CardDialog` with the live picture (`camera.ratio`, `radius.card`, the shutter `camera.cardShutterBottom` from its bottom), the pills "Upload a photo" and "Cancel" `space.gutter` under it, and the hint in `muted` `space.gap` under them. On the web an image can be dropped on the window; while it is over the window the picture has a `size.focusBorder` `accent` border and the hint says "Drop to use this image".
+- After the shutter, each step is a small `Sheet` over the photo: "Use this photo?" (with "Barcode …" after a barcode read; "Try again?" with the error line after a retry answer), "Analyzing… n.n s" with the progress bar `space.bar` under it (it fills in the 75 s the app waits), and one sheet for each answer code (not food, no name for one or for several items, already listed, the daily limit). A sheet with a line has the pills `space.gutter` under it; without a line, `space.foot`.
+- Esc (web) and Back go one step back; the photo stays until Retake.
+
 ## Mockups
 
 A new or changed screen is shown to T9 before its code change: rendered from the real parts in a copy of the app, exported for the web and captured with Playwright (phone 390 × 844 at 3×, desktop 1440 × 900 at 2×), with real photos. The review page shows phone shots at true size. Nothing is drawn by hand, and nothing is stretched. An independent check compares the shots with the approved shots.

@@ -71,3 +71,37 @@ export const GIVE = {
 export function postedText(n: number): string {
   return n > 1 ? n + " listings are posted. They stay up for 30 minutes." : "Listed. It stays up for 30 minutes.";
 }
+
+/** The camera and the sheets after the shutter (the approved X25 and X32 words, made simpler). */
+export const CAPTURE = {
+  hint: "Point at a barcode, or take a photo of the food",
+  dropHint: "or drop an image here",
+  dropNow: "Drop to use this image",
+  close: "Close the camera",
+  upload: "Upload a photo",
+  shoot: "Take photo",
+  cancel: "Cancel",
+  allow: "Allow camera access to take a photo.",
+  allowLink: "Allow camera",
+  blocked: "Camera access is off. Upload a photo.",
+  shotFailed: "The photo failed. Try again.",
+  use: "Use this photo?",
+  again: "Try again?",
+  retake: "Retake",
+  usePhoto: "Use photo",
+  tryAgain: "Try again",
+  barcode: (code: string) => "Barcode " + code,
+  analyzing: "Analyzing…",
+  notFood: "Try a food item",
+  notFoodLine: "This does not look like food. Take a photo of the food item.",
+  noNameOne: "The scanner cannot name this item",
+  noNameOneLine: "Take a closer photo of the food item.",
+  noNameMany: "The scanner cannot name these items",
+  noNameManyLine: "Take a closer photo of fewer items.",
+  listed: "Already listed",
+  listedLine: "This item is already up in Your listings.",
+  seeMine: "See my listings",
+  paused: "Scanning is paused",
+  pausedLine: "The scanner reached the limit for today. A barcode still works.",
+  closeFlow: "Close",
+} as const;

@@ -135,11 +135,12 @@ export function Shutter({ onPress, label = "Take photo", bottom = camera.shutter
 }
 
 /** A line of help on the live camera, in a dark pill above the shutter. */
-export function Hint({ children }: { children: React.ReactNode }) {
+export function Hint({ children, alert }: { children: React.ReactNode; alert?: boolean }) {
   const col = useColors();
   return (
     <View pointerEvents="none" style={{ position: "absolute", left: space.gutter, right: space.gutter, bottom: camera.hintBottom, alignItems: "center" }}>
-      <Text style={[type.body, { color: col.cameraFg, backgroundColor: col.cameraBtn, borderRadius: radius.round, overflow: "hidden",
+      <Text accessibilityRole={alert ? "alert" : undefined} accessibilityLiveRegion={alert ? "assertive" : "none"}
+        style={[type.body, { color: col.cameraFg, backgroundColor: col.cameraBtn, borderRadius: radius.round, overflow: "hidden",
         paddingHorizontal: camera.hintPadX, paddingVertical: camera.hintPadY, textAlign: "center" }]}>{children}</Text>
     </View>
   );
@@ -150,7 +151,8 @@ export function Progress({ share }: { share: number }) {
   const col = useColors();
   const k = Math.max(0, Math.min(1, share));
   return (
-    <View accessibilityRole="progressbar" style={{ height: size.progressH, borderRadius: radius.round, backgroundColor: col.accentSoft, overflow: "hidden" }}>
+    <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(k * 100) }}
+      aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(k * 100)} style={{ height: size.progressH, borderRadius: radius.round, backgroundColor: col.accentSoft, overflow: "hidden" }}>
       <View style={{ width: `${k * 100}%`, height: "100%", borderRadius: radius.round, backgroundColor: col.accent }} />
     </View>
   );

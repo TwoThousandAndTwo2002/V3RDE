@@ -229,3 +229,19 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Written again:** Give is new code on the U12 card and grid; the rewrite guard finds no line of the earlier app's mobile code.
 - **Your listings:** the giver's listings (`GET /api/listings/mine`), photo first in 1, 2 or 3 columns, with the live time pill; a listing that is gone is faint. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
 - The new-listing flow (camera, scan, review, post) comes in UI 14 and UI 15.
+
+---
+
+## UI 14. The new-listing flow: the camera and the scan
+
+**When:** Oct 29 2026.
+**Meta model:** Muse Spark through the analyze route of branch `services` (`POST /api/analyze`; the app sends the photo, the barcode and how the photo was taken).
+**Files:** `mobile/src/screens/Capture.tsx`, `mobile/src/capture.ts`, `mobile/tests/capture.test.mts`, `mobile/src/photo.ts`, `mobile/src/screens/Give.tsx`, `mobile/src/words.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U14.md`
+
+- **Written again:** the camera and the scan sheets are new code on the U5 parts, in the layout of the approved X25 and X32 mockups; the rewrite guard finds no line of the earlier app's mobile code.
+- **Camera:** full screen on a phone; a card dialog with "Upload a photo" and drag-and-drop on a wide screen; retail barcodes (EAN, UPC) take the photo. The web takes a full-size still (webcam.ts, UI 1).
+- **Sheets:** "Use this photo?", "Analyzing… n.n s" with the progress bar, and one sheet for each answer code (not food, no name, already listed, the daily limit, retry). The photo stays until Retake.
+- **Give:** "+ New listing"; the flow opens by itself when nothing of the giver is up.
+- **Rules:** `capture.ts` (the timer, the bar, barcodes, the form checks, the servings stepper), with tests; `photo.ts` (the photo at the upload size).
+- The review of the found items comes in UI 15; until then a sheet shows the count.
