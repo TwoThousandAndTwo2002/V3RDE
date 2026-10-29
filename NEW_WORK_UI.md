@@ -119,3 +119,19 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Mockup:** a mock form put the parts in the layout of the sign-in form (9 states, phone and desktop, 3 dark). An independent check found no difference other than T9's decisions. T9 approved the review on Oct 29.
 - The parts are shared, so the U5 review list and the one-item form also get the focus border, the hover and the busy behaviour.
 - Tests: mobile 33.
+
+---
+
+## UI 7. The food-doodle wallpaper, placed and animated by rule 30
+
+**When:** Oct 29 2026.
+**Meta model:** none (a decorative wallpaper; this change has no model call).
+**Files:** `mobile/src/automata.ts`, `mobile/src/doodles.tsx`, `mobile/tests/automata.test.mts`, `mobile/src/theme.ts`, `mobile/docs/style_guide.md`, `mobile/tests/style.test.mts`, `mobile/package.json`
+**Sources:** `docs/sources/U7.md`
+
+- **New art:** 20 new line drawings of food. The earlier doodle art (from before the kickoff) is not carried; two independent checks found no copy or near copy of it, and the rewrite guard finds no line of the earlier doodle file.
+- **Rule 30:** a drawing sits in every cell of a grid. The cellular automaton rule 30 (from a random first row, a fixed seed) makes each cell live or dead; a drawing in a dead cell has 55 % of the strength. Every 1000 ms a new generation comes in at the bottom and the pattern moves up one row; the drawings stay in their cells. With "reduce motion" on, the pattern stands still.
+- **T9's values (Oct 29), chosen from an animated sample:** step 1000 ms, faint 55 %, wallpaper 9 % (dark 10 %), rows move up.
+- **Look:** stroke 2.2 pt and opacity as on the earlier wallpaper; the ink per area is near it. A hash picks the drawing, its turn and its shift; no drawing is the same as the one to its left or above it.
+- **Not used yet:** the sign-in screen (UI 8) is the first screen with the wallpaper.
+- Tests: mobile 42 (33 + 9 new: fixed hash and rule-30 values, the step, fairness, neighbours, edge cases).

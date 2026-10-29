@@ -39,6 +39,7 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 | `cameraBtn` | `rgba(0,0,0,0.45)` | `rgba(0,0,0,0.45)` | X25 | the buttons and the hint on the live camera |
 | `cameraFg` | `#FFFFFF` | `#FFFFFF` | X25 | their glyphs and text, and the shutter |
 | `scrimDim` | `rgba(0,0,0,0.43)` | `rgba(0,0,0,0.6)` | X25 (light) | behind the camera dialog on a wide screen (`#8C8C8C` over `bg`) |
+| `doodle` | `#BC202C` | `#FF727D` | Ref-login | the food doodles (at `doodle.opacity`) |
 | `link` | `#BC202C` | `#FF727D` | Ref-login (light); dark: 6.98:1 on `bg` (the old `#BC202C` is 2.97:1 on `bg`, 2.68:1 on `card`; T9, Oct 29) | text buttons and links (Show, Hide, Create one) |
 
 - Dark values: the dark colours of the X32 review page, of Ref-login, or a choice. The accent stays Hungree red in dark mode (white on it is 6.21:1). Every text colour reaches 4.5:1 on `card` and on `bg`.
@@ -160,6 +161,26 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `motion.sheetBounce` | 0 | Choice | its bounciness (no overshoot) |
 | `motion.sheetShift` | 0.2 | Choice | a sheet starts this share of the window height below its place |
 
+## Doodles (`doodle`)
+
+New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, for the sign-in screen and later screens. There is a drawing in every cell of a grid. The cellular automaton rule 30 (`mobile/src/automata.ts`, from a random first row) makes each cell live or dead: a drawing in a dead cell has `doodle.faint` of the strength. Every `doodle.stepMs` a new generation comes in at the bottom and the pattern moves up one row; the drawings stay in their cells (T9, Oct 29, from an animated sample: 1000 ms, faint 55 %, wallpaper 9 %, rows move up). With "reduce motion" on, the pattern stands still. A hash picks the drawing, its turn and its shift; no drawing is the same as the one to its left or above it. The start is the same each time (a fixed seed); a change of the column count (a new width) gives a new pattern.
+
+| Token | Value | Source | Use |
+|---|---|---|---|
+| `doodle.opacity` | 0.09 | Ref-login | light mode |
+| `doodle.opacityDark` | 0.1 | Ref-login | dark mode |
+| `doodle.units` | 24 | Choice | the box of the drawing paths (path units) |
+| `doodle.glyph` | 32 | Ref-login: the earlier drawings measure 22–32 pt (the new ones 14–28 pt in this box) | the box of one drawing (pt) |
+| `doodle.stroke` | 2.2 | Ref-login | the line width of a drawing (pt) |
+| `doodle.cell` | 38 | Ref-login: the ink per area | the grid cell (pt), one drawing in each |
+| `doodle.jitter` | 3 | Choice | the largest shift of a drawing from the centre of its cell (pt) |
+| `doodle.turn` | 20 | Choice | the largest turn of a drawing (degrees) |
+| `doodle.turnSteps` | 2 | Choice | turn steps on each side of 0 (-20, -10, 0, 10, 20) |
+| `doodle.seed` | 1026 | Choice | the start of the automaton |
+| `doodle.rowDensity` | 0.5 | Choice | the share of live cells in the random first row of rule 30 |
+| `doodle.faint` | 0.55 | T9, Oct 29 (animated sample) | the strength of a drawing in a dead cell (a live cell has 1) |
+| `doodle.stepMs` | 1000 | T9, Oct 29 (animated sample) | the time of one generation: the pattern moves up one row |
+
 ## Layout (`layoutFor(width)`)
 
 | Function | Width (pt) | Kind | Popups | Source |
@@ -176,6 +197,7 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 - **Pill:** `size.control` high, fully round, `size.border`. `primary` = `accent` fill with `onAccent` text; `secondary` = `card` fill, `line` border, `fg` text. With `grow`, two pills share a row, `space.item` apart: secondary on the left, primary on the right. While busy: a spinner in place of the text, and `opacity.busy`; a tap does nothing, and the pill keeps the keyboard focus. With the mouse on it (web): `opacity.hover`.
 - **FieldButton:** a text button inside a field (Show, Hide): `type.button` in `link`, `space.item` at the sides and `space.group` above and below (a 44 pt touch area, Platform), `space.gap` from the right border; it has its own name for a screen reader ("Show password").
 - **TextLink:** an action in a line of text ("Create one"): `type.button` in `link`, underlined; a screen reader reads it as a button.
+- **Doodles:** the doodle wallpaper; it fills its parent under the content and draws for the size of its parent; the rule-30 pattern moves up one row every `doodle.stepMs` (still with 'reduce motion'); no touches; hidden from screen readers.
 - **Row:** controls in a line, `space.item` apart; `tight` = `space.gap` apart (inside a card).
 - **Field:** `size.control` high, fully round, `card` fill, `size.border` `line` border, text `size.fieldPadX` from the sides, `placeholder` for the example text. With the focus: a `size.focusBorder` border in `accent` (no browser focus ring). With `right` (a FieldButton): text `size.fieldSlot` from the right border. The label is also the name of the input for a screen reader. With several lines: `size.controlTall`, `radius.card`, text `size.fieldPadTop` from the top. A label is `Muted`, `space.inset` in, `space.item` above it, `space.hair` to the field.
 - **ReviewCard:** one found item: `card` fill, `size.border` `line`, `radius.card`, `space.inset` padding, `space.item` above it. The `size.thumb` photo (`radius.photo`), `space.item` to two `tight` rows `space.gap` apart: the title field with ✕ (remove), and − servings +, with `size.iconSmall` buttons. An error line goes under the rows.

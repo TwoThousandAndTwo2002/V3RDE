@@ -29,7 +29,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "node --no-warnings --experimental-strip-types --test --test-reporter=tap tests/wav.test.mts tests/clipsession.test.mts tests/logic.test.mts tests/style.test.mts",
+    "test": "node --no-warnings --experimental-strip-types --test --test-reporter=tap tests/wav.test.mts tests/clipsession.test.mts tests/logic.test.mts tests/style.test.mts tests/automata.test.mts",
     "typecheck": "tsc --noEmit",
     "export:web": "expo export -p web"
   },

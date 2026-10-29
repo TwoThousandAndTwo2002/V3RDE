@@ -139,7 +139,7 @@ test("the style guide lists no token that theme.ts does not have", () => {
   const t = tokens(), colours = mode("light");
   for (const l of rows) {
     const k = cells(l)[1];
-    if (/^[a-z]+\.[A-Za-z]+$/.test(k) && /^(space|radius|size|glyph|shade|camera|opacity|motion|font|type)\./.test(k)) {
+    if (/^[a-z]+\.[A-Za-z]+$/.test(k) && /^(space|radius|size|glyph|shade|camera|opacity|motion|font|type|doodle)\./.test(k)) {
       assert.ok(k in t, `style_guide.md lists ${k}, which theme.ts does not have`);
     }
     if (/^[a-z][A-Za-z]+$/.test(k) && l.includes("#") ) assert.ok(k in colours, `style_guide.md lists colour ${k}, which theme.ts does not have`);

@@ -30,6 +30,7 @@ export const palette = {
     cameraFg: "#FFFFFF",                  // their glyphs and text, and the shutter
     scrimDim: "rgba(0,0,0,0.43)",         // behind the camera dialog on a wide screen (#8C8C8C over bg, measured)
     link: "#BC202C",                      // text buttons and links (Show, Hide, Create one)
+    doodle: "#BC202C",                    // the food doodles (at doodle.opacity)
   },
   dark: {
     bg: "#141414",
@@ -54,6 +55,7 @@ export const palette = {
     cameraFg: "#FFFFFF",
     scrimDim: "rgba(0,0,0,0.6)",
     link: "#FF727D",
+    doodle: "#FF727D", // the earlier dark doodle colour
   },
 } as const;
 export type Colors = { [K in keyof typeof palette.light]: string };
@@ -171,6 +173,27 @@ export const motion = {
   sheetSpeed: 14,   // the spring of a sheet (React Native Animated.spring speed)
   sheetBounce: 0,   // and its bounciness (no overshoot)
   sheetShift: 0.2,  // a sheet starts this share of the window height below its place
+} as const;
+
+/**
+ * The food doodles (a wallpaper): a line drawing in every cell of a grid; the cellular automaton rule 30 makes
+ * each cell live or dead, and a drawing in a dead cell is fainter. Each step a new generation comes in at the
+ * bottom and the pattern moves up one row (mobile/src/automata.ts, mobile/src/doodles.tsx).
+ */
+export const doodle = {
+  opacity: 0.09,     // light mode
+  opacityDark: 0.1,  // dark mode
+  units: 24,         // the box of the drawing paths (path units)
+  glyph: 32,         // the box of one drawing (pt)
+  stroke: 2.2,       // the line width of a drawing (pt)
+  cell: 38,          // the grid cell (pt): one drawing in each
+  jitter: 3,         // the largest shift of a drawing from the centre of its cell (pt)
+  turn: 20,          // the largest turn of a drawing (degrees)
+  turnSteps: 2,      // turn steps on each side of 0 (so -20, -10, 0, 10, 20)
+  seed: 1026,        // the start of the automaton (the same picture on every start)
+  rowDensity: 0.5,   // the share of live cells in the random first row of rule 30
+  faint: 0.55,       // the strength of a drawing in a dead cell (a drawing in a live cell has 1)
+  stepMs: 1000,      // the time of one generation: the pattern moves up one row
 } as const;
 
 /**
