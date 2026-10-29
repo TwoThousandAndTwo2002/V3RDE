@@ -582,3 +582,20 @@ A translator can change or lose a placeholder such as `{n}`, or translate a name
 - The scores rank the answers of one message. They are not an accuracy measure.
 - Regression tests (`i18n/rung/rung_test.go`, 2 tests, fake model and fake scorer). The i18n module now has 18 tests.
 - Not deployed by this change.
+
+---
+
+## 52. Lost in translation: the Baseten key is kept in a file, like the Meta key
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `tools/lif_baseten_key.sh`, `i18n/muse/muse.go`, `i18n/muse/muse_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4d.md`
+
+In #51, `cmd/translate` read the key only from `BASETEN_API_KEY`, so each new shell needed the key again.
+
+- `tools/lif_baseten_key.sh` asks for the key once (the typing is hidden) and writes `~/.config/v3rde/baseten_api_key` (or `$V3RDE_CFG/baseten_api_key`) with mode 0600, in a folder with mode 0700. It never prints the key. The Meta key of the stack is kept the same way (`meta_model_api_key`, 0600).
+- `cmd/translate` reads the key from that file (`-key-file`). A file with another mode, or with more than the key, stops the run. With no file, it uses `BASETEN_API_KEY`. With neither, the error names the setup script. The key is never in an error message.
+- A new regression test (`i18n/muse/muse_test.go`, 6 tests). The i18n module now has 19 tests.
+- Not deployed by this change.

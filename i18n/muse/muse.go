@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -47,6 +48,66 @@ type Client struct {
 	HTTP     *http.Client
 	Retries  int                                        // extra tries for 429, 5xx and network errors
 	Sleep    func(context.Context, time.Duration) error // for tests
+}
+
+// KeyFile is where the Baseten key is kept: $V3RDE_CFG/baseten_api_key, else
+// ~/.config/v3rde/baseten_api_key, next to the Meta key of the stack (a file
+// with mode 0600, made by tools/lif_baseten_key.sh). "" when there is no home.
+func KeyFile() string {
+	if d := os.Getenv("V3RDE_CFG"); d != "" {
+		return filepath.Join(d, "baseten_api_key")
+	}
+	h, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(h, ".config", "v3rde", "baseten_api_key")
+}
+
+// Load makes a client with the key from keyFile (mode 0600, not empty), or, when
+// there is no such file, from BASETEN_API_KEY. BASETEN_BASE_URL, if set, is the endpoint.
+func Load(keyFile string) (*Client, error) {
+	key, err := readKey(keyFile)
+	if err != nil {
+		return nil, err
+	}
+	if key == "" {
+		key = os.Getenv("BASETEN_API_KEY")
+	}
+	if key == "" {
+		return nil, fmt.Errorf("no Baseten key: run tools/lif_baseten_key.sh once (it asks for the key and writes %s, mode 0600)", keyFile)
+	}
+	base := os.Getenv("BASETEN_BASE_URL")
+	if base == "" {
+		base = BaseURL
+	}
+	return New(base, key), nil
+}
+
+// readKey returns the key in path, or "" when there is no file.
+func readKey(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+	fi, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if fi.Mode().Perm() != 0o600 {
+		return "", fmt.Errorf("%s must be mode 0600 (it is %04o): chmod 600 %s", path, fi.Mode().Perm(), path)
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	key := strings.TrimSpace(string(b))
+	if key == "" || strings.ContainsAny(key, " \t\r\n") {
+		return "", fmt.Errorf("%s must hold the key only, on one line", path)
+	}
+	return key, nil
 }
 
 // FromEnv makes a client from BASETEN_API_KEY (and BASETEN_BASE_URL, if set).

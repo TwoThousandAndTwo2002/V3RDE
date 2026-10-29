@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -136,5 +138,37 @@ func TestPrompt(t *testing.T) {
 	}
 	if u != "Message id: CAPTURE.retake\nText:\nRetake" {
 		t.Errorf("user %q", u)
+	}
+}
+
+// The key comes from the key file (mode 0600 only), else from BASETEN_API_KEY;
+// with neither, the error names the setup script and not a key.
+func TestKeyFile(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "baseten_api_key")
+	t.Setenv("BASETEN_API_KEY", "")
+	if _, err := Load(p); err == nil || !strings.Contains(err.Error(), "tools/lif_baseten_key.sh") {
+		t.Fatalf("no file, no env: %v", err)
+	}
+	t.Setenv("BASETEN_API_KEY", "env-key")
+	if c, err := Load(p); err != nil || c.Key != "env-key" {
+		t.Fatalf("env: %v", err)
+	}
+	os.WriteFile(p, []byte(key+"\n"), 0o600)
+	if c, err := Load(p); err != nil || c.Key != key {
+		t.Fatalf("file: %v", err)
+	}
+	os.Chmod(p, 0o644)
+	if _, err := Load(p); err == nil || !strings.Contains(err.Error(), "0600") || strings.Contains(err.Error(), key) {
+		t.Fatalf("0644 must fail without the key in the error: %v", err)
+	}
+	os.WriteFile(p, []byte("two words"), 0o600)
+	os.Chmod(p, 0o600)
+	if _, err := Load(p); err == nil {
+		t.Fatal("a file with a space must fail")
+	}
+	t.Setenv("V3RDE_CFG", dir)
+	if KeyFile() != p {
+		t.Fatalf("KeyFile %s", KeyFile())
 	}
 }

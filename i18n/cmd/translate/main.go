@@ -1,7 +1,8 @@
 // Command translate runs rung 1 for one language (L4c): Muse Spark Open on
 // Baseten translates every message of en.json k times, MetricX-24 scores them
 // in one container run, and it writes <lang>.json and <lang>.ledger.jsonl to
-// -out (outside the repo). Run it in i18n/ with BASETEN_API_KEY set:
+// -out (outside the repo). Run it in i18n/. The Baseten key is in -key-file
+// (mode 0600, made once by tools/lif_baseten_key.sh), else in BASETEN_API_KEY:
 //
 //	go run ./cmd/translate -lang es-419 -out ~/Documents/Morpheus_transfer/lif/runs/es-419
 package main
@@ -28,14 +29,15 @@ func main() {
 	limit := flag.Int("limit", 0, "only the first N messages (0: all)")
 	outDir := flag.String("out", "", "output directory, outside the repo (required)")
 	image := flag.String("image", "v3rde-qe:L2", "the MetricX image (qe/Dockerfile)")
+	keyFile := flag.String("key-file", muse.KeyFile(), "file with the Baseten key (mode 0600)")
 	flag.Parse()
-	if err := run(*lang, *k, *workers, *limit, *outDir, *image); err != nil {
+	if err := run(*lang, *k, *workers, *limit, *outDir, *image, *keyFile); err != nil {
 		fmt.Fprintln(os.Stderr, "translate:", err)
 		os.Exit(1)
 	}
 }
 
-func run(code string, k, workers, limit int, outDir, image string) error {
+func run(code string, k, workers, limit int, outDir, image, keyFile string) error {
 	if outDir == "" {
 		return fmt.Errorf("-out is required")
 	}
@@ -56,7 +58,7 @@ func run(code string, k, workers, limit int, outDir, image string) error {
 	if target == nil {
 		return fmt.Errorf("%s is not a target in languages.json", code)
 	}
-	client, err := muse.FromEnv()
+	client, err := muse.Load(keyFile)
 	if err != nil {
 		return err
 	}
