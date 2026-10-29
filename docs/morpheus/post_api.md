@@ -56,12 +56,20 @@ Job:
   "reason": "same items, better light", "cost_usd": 0.0139, "latency_ms": 9000,
   "image_model": "muse-image-1.0", "check_model": "muse-spark-1.3" }
 ```
-- `status`: `running` → `done` (the edit passed the check; `photo_id` is the edit), `kept_original` (the check said the food changed, or it could not check), or `failed` (the edit failed).
+- `status`: (`queued`, batch only →) `running` → `done` (the edit passed the check; `photo_id` is the edit), `kept_original` (the check said the food changed, or it could not check), or `failed` (the edit failed).
 - Poll every 1–2 s. A finished job stays readable for 24 h (in memory: a restart forgets it; the edited file stays).
 - The edit is stored in the item-photo format (`<photo_id>.jpg` + `.json` with `photo_id`, `user_id`). To post a listing with it, the listings service must read this folder too (`-item-photos`); that is an integration step.
 - Refusals: 400 `bad_request` (mode, no `photo_id`, or a body), 401, 404 (`photo_id` not found or not yours), 429, 503 `busy` (2 jobs at the same time) or `daily_cap_reached`.
 
-Flags (`touchup -h`): `-auth` and `-item-photos` (the analyze photo folder, read-only) are required; `-cap-usd 2`, `-reserve-usd 0.03`, `-max-in-flight 2`, `-rate-burst 4`/min, `-job-timeout 90s`, `-image-reasoning ""` (API default), `-no-check` (then every edit is `kept_original`), `-dir /data` (it stops at start when the folder cannot be written), `-events`.
+**Batch with a queue (X44c, F1 "no visible waits").** `POST /api/touchup/batch?mode=light|background&photo_ids=<id>,<id>,…` (or `/v1/touchup/batch` with the token), no body, 1 to 6 item photos of the caller. The app calls it once when the scan ends, while the donor reads the review list. Every photo is checked before any job: one unknown or not-owned id refuses the whole call (`404`). The rate limit counts the call once; the daily caps count every job. A job that finds no free slot waits in a queue (`status: "queued"`, then `running`) instead of `503 busy`; the queue holds 12 jobs of all callers, and a job that waits more than 3 minutes ends `failed` with nothing paid.
+```json
+202 { "request_id": "…", "mode": "light",
+      "jobs":    [{"photo_id": "…", "touchup_id": "…", "status": "queued"}],
+      "skipped": [{"photo_id": "…", "code": "caller_daily_cap_reached", "error": "…"}] }
+```
+A skipped photo has the code it would get alone (`busy` when the queue is full, `daily_cap_reached`, `caller_daily_cap_reached`). When no job starts, the answer is the first refusal (`503` or `429`) with the same `skipped` list. Poll each `touchup_id` as above.
+
+Flags (`touchup -h`): `-auth` and `-item-photos` (the analyze photo folder, read-only) are required; `-cap-usd 2`, `-reserve-usd 0.03`, `-max-in-flight 2`, `-max-queued 12`, `-queue-wait 3m`, `-rate-burst 4`/min, `-job-timeout 90s`, `-image-reasoning ""` (API default), `-no-check` (then every edit is `kept_original`), `-dir /data` (it stops at start when the folder cannot be written), `-events`.
 
 ## 2. Rescue (X35b) — `cmd/rescue`, port 8089
 

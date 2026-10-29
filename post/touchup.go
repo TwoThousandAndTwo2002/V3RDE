@@ -8,6 +8,11 @@ package post
 //	POST /api/touchup?mode=light|background&photo_id=<id>   (session cookie)
 //	      no body; photo_id = an item photo of the analyze service that
 //	      belongs to the caller -> 202 {request_id, touchup_id, status:"running"}
+//	POST /api/touchup/batch?mode=light|background&photo_ids=<id>,<id>,...
+//	      X44c: up to 6 photos of one scan in one call (no body); each is a
+//	      job; a job waits in a queue for a free slot ("queued") instead of
+//	      503 busy -> 202 {request_id, mode, jobs: [{photo_id, touchup_id,
+//	      status}], skipped: [{photo_id, code, error}]}
 //	GET  /api/touchup/{id}        -> 200 Job
 //	GET  /api/touchup/{id}/photo  -> the edited JPEG (status "done" only)
 //	GET  /healthz
@@ -88,6 +93,7 @@ Light, white balance, sharpness and the background may differ.`
 
 // Job states.
 const (
+	JobQueued       = "queued" // X44c: a batch job waits for a free slot
 	JobRunning      = "running"
 	JobDone         = "done"          // the edit passed the check: photo_id is the edit
 	JobKeptOriginal = "kept_original" // the check said the food changed, or it could not check
@@ -336,12 +342,21 @@ type TouchupConfig struct {
 	MaxInFlight int
 	JobTimeout  time.Duration // one touch-up, both calls included
 	Build       string
+	// X44c: batch jobs that wait for a slot (at most MaxQueued at a time,
+	// each at most QueueWait; then it fails with nothing paid)
+	MaxQueued int
+	QueueWait time.Duration
 
-	mu    sync.Mutex
-	jobs  map[string]*Job
-	slots chan struct{}
-	now   func() time.Time
+	mu     sync.Mutex
+	jobs   map[string]*Job
+	slots  chan struct{}
+	queued int
+	now    func() time.Time
 }
+
+// MaxBatch is the most photos in one batch call (X44c): a scan's review list
+// rarely has more items, and the queue is shared by every caller.
+const MaxBatch = 6
 
 // NewTouchup builds the mux.
 func NewTouchup(c *TouchupConfig) http.Handler {
@@ -354,6 +369,12 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 	if c.JobTimeout == 0 {
 		c.JobTimeout = 90 * time.Second
 	}
+	if c.MaxQueued <= 0 {
+		c.MaxQueued = 12
+	}
+	if c.QueueWait == 0 {
+		c.QueueWait = 3 * time.Minute
+	}
 	if c.now == nil {
 		c.now = time.Now
 	}
@@ -363,15 +384,22 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "touchup", "build": c.Build,
 			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller,
-			"image_model": c.Editor.Model})
+			"image_model": c.Editor.Model, "in_flight": len(c.slots), "queued": c.queuedNow()})
 	})
 	for _, p := range []string{"/api/touchup", "/v1/touchup"} { // X42e: /v1 = the bearer token
 		mux.HandleFunc("POST "+p, c.start)
+		mux.HandleFunc("POST "+p+"/batch", c.batch) // X44c: every photo of a scan, queued
 		mux.HandleFunc("GET "+p+"/{id}", c.get)
 		mux.HandleFunc("GET "+p+"/{id}/photo", c.photo)
 		mux.HandleFunc("GET "+p+"/{id}/rejected", c.rejected) // X42d: a refused edit, for review
 	}
 	return mux
+}
+
+func (c *TouchupConfig) queuedNow() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.queued
 }
 
 func (c *TouchupConfig) record(ev Event) {
@@ -458,6 +486,166 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 	go c.run(job, img, mime, prompt, hold, t0)
 	WriteJSON(w, http.StatusAccepted, map[string]any{"request_id": id, "touchup_id": snapshot.TouchupID,
 		"status": snapshot.Status, "mode": mode})
+}
+
+// batch is POST .../batch (X44c, F1 "no visible waits": the app starts the
+// touch-up of every item when the scan ends, while the donor reads the
+// list). The checks are the ones of start, for every photo, before any job:
+// one unknown or not-owned photo_id refuses the whole call (one 404, so an id
+// cannot be probed). The rate limit counts the call once; the daily caps
+// count every job. A job that finds no free slot waits in the queue.
+func (c *TouchupConfig) batch(w http.ResponseWriter, r *http.Request) {
+	t0 := c.now()
+	id := analyze.NewRequestID()
+	w.Header().Set("X-Request-Id", id)
+	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: r.URL.Path}
+	ev.From(r)
+	fail := func(status int, code, msg string) {
+		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
+		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
+		c.record(ev)
+	}
+	who, ok := c.identify(r)
+	if !ok {
+		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
+		return
+	}
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
+	if c.Limiter != nil && !c.Limiter.Allow(who.RateKey) {
+		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
+		return
+	}
+	mode := r.URL.Query().Get("mode")
+	if mode == "" {
+		mode = ModeLight
+	}
+	prompt, ok := EditPrompts[mode]
+	if !ok {
+		fail(http.StatusBadRequest, CodeBadRequest, "mode must be light or background")
+		return
+	}
+	var ids []string
+	seen := map[string]bool{}
+	for _, p := range strings.Split(r.URL.Query().Get("photo_ids"), ",") {
+		if p = strings.TrimSpace(p); p == "" {
+			continue
+		}
+		if seen[p] {
+			fail(http.StatusBadRequest, CodeBadRequest, "a photo_id is twice in photo_ids")
+			return
+		}
+		seen[p] = true
+		ids = append(ids, p)
+	}
+	if len(ids) == 0 || len(ids) > MaxBatch {
+		fail(http.StatusBadRequest, CodeBadRequest, fmt.Sprintf("photo_ids must have 1 to %d item photos from the scan", MaxBatch))
+		return
+	}
+	if hasBody(r) {
+		fail(http.StatusBadRequest, CodeBadRequest, "no body: the photos come from photo_ids")
+		return
+	}
+	imgs := make([][]byte, len(ids))
+	for i, src := range ids {
+		var err error
+		if who.Bearer {
+			imgs[i], err = ReadBearerItemPhoto(c.ItemPhotos, src)
+		} else {
+			imgs[i], err = ReadItemPhoto(c.ItemPhotos, src, who.User.ID)
+		}
+		if err != nil {
+			fail(http.StatusNotFound, CodeNotFound, err.Error())
+			return
+		}
+	}
+	type started struct {
+		PhotoID   string `json:"photo_id"`
+		TouchupID string `json:"touchup_id"`
+		Status    string `json:"status"`
+	}
+	type skip struct {
+		PhotoID string `json:"photo_id"`
+		Code    string `json:"code"`
+		Error   string `json:"error"`
+	}
+	jobs, skipped := []started{}, []skip{}
+	firstSkip := 0
+	for i, src := range ids {
+		c.mu.Lock()
+		full := c.queued >= c.MaxQueued
+		if !full {
+			c.queued++
+		}
+		c.mu.Unlock()
+		if full {
+			skipped = append(skipped, skip{src, "busy", "the touch-up queue is full; try again soon"})
+			if firstSkip == 0 {
+				firstSkip = http.StatusServiceUnavailable
+			}
+			continue
+		}
+		hold, why := c.Budget.ReserveFor(who.RateKey)
+		if hold == nil {
+			c.mu.Lock()
+			c.queued--
+			c.mu.Unlock()
+			st, code, msg := CapRefusal(why)
+			skipped = append(skipped, skip{src, code, msg})
+			if firstSkip == 0 {
+				firstSkip = st
+			}
+			continue
+		}
+		job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobQueued, Mode: mode, SourcePhotoID: src,
+			ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP,
+			forwardedIP: ev.ForwardedIP, capKey: who.RateKey}
+		if c.Checker != nil {
+			job.CheckModel = c.Checker.Model
+		}
+		c.mu.Lock()
+		c.pruneLocked()
+		c.jobs[job.TouchupID] = job
+		c.mu.Unlock()
+		jobs = append(jobs, started{src, job.TouchupID, JobQueued})
+		go c.queue(job, imgs[i], "image/jpeg", prompt, hold, t0)
+	}
+	ev.Detail = map[string]any{"batch": len(ids), "touchup_ids": jobs, "skipped": skipped, "mode": mode}
+	if len(jobs) == 0 { // nothing started: the answer of the first refusal
+		code, msg := skipped[0].Code, skipped[0].Error
+		ev.Status, ev.Code, ev.Error, ev.LatencyMS = firstSkip, code, msg, time.Since(t0).Milliseconds()
+		WriteJSON(w, firstSkip, map[string]any{"request_id": id, "error": msg, "code": code, "skipped": skipped})
+		c.record(ev)
+		return
+	}
+	ev.Status, ev.LatencyMS = http.StatusAccepted, time.Since(t0).Milliseconds()
+	WriteJSON(w, http.StatusAccepted, map[string]any{"request_id": id, "mode": mode, "jobs": jobs, "skipped": skipped})
+	c.record(ev)
+}
+
+// queue waits for a free slot (at most QueueWait), then runs the job.
+func (c *TouchupConfig) queue(job *Job, img []byte, mime, prompt string, hold *Hold, t0 time.Time) {
+	timer := time.NewTimer(c.QueueWait)
+	defer timer.Stop()
+	select {
+	case c.slots <- struct{}{}:
+		c.mu.Lock()
+		c.queued--
+		job.Status = JobRunning
+		c.mu.Unlock()
+		c.run(job, img, mime, prompt, hold, t0)
+	case <-timer.C:
+		hold.Settle(0)
+		ms := time.Since(t0).Milliseconds()
+		c.mu.Lock()
+		c.queued--
+		job.Status, job.Reason, job.LatencyMS, job.ended = JobFailed, "waited too long for a free slot", ms, c.now()
+		snap := *job
+		c.mu.Unlock()
+		c.record(Event{RequestID: job.RequestID, TS: t0.UTC().Format(time.RFC3339Nano), Route: "touchup.job",
+			UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, CapKey: job.capKey,
+			Status: 200, LatencyMS: ms, Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status,
+				"mode": snap.Mode, "reason": snap.Reason, "source_photo_id": snap.SourcePhotoID}})
+	}
 }
 
 // run does the edit and the check, then stores the result. It owns one slot.

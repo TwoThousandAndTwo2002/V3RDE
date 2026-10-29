@@ -41,6 +41,8 @@ func main() {
 	estimate := flag.Float64("reserve-usd", 0.03, "spend reserved per touch-up while it runs")
 	inFlight := flag.Int("max-in-flight", 2, "touch-ups at the same time; more get 503 busy")
 	burst := flag.Int("rate-burst", 4, "requests per window per user")
+	maxQueued := flag.Int("max-queued", 12, "X44c: batch jobs that may wait for a free slot (all callers)")
+	queueWait := flag.Duration("queue-wait", 3*time.Minute, "X44c: the longest a batch job waits for a slot (then it fails, unpaid)")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	jobTimeout := flag.Duration("job-timeout", 90*time.Second, "one touch-up, both calls included")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
@@ -86,6 +88,8 @@ func main() {
 		Dir:         *dir,
 		ItemPhotos:  *itemPhotos,
 		MaxInFlight: *inFlight,
+		MaxQueued:   *maxQueued,
+		QueueWait:   *queueWait,
 		JobTimeout:  *jobTimeout,
 		Build:       build,
 	}

@@ -667,3 +667,19 @@ A scan takes about 14 s, and the donor saw only a wait. Now the app can start th
 - Polling, because API Gateway HTTP APIs cannot stream an answer.
 - Only the caller that started a scan can see it, for 10 minutes.
 - Tests: inference 73 -> 79.
+
+---
+
+## 38. Touch-up of every photo when the scan ends
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Image 1.0 and Muse Spark 1.3, as in entry 16 (no new model).
+**Files:** `post/touchup.go`, `post/touchup_batch_test.go` (new), `post/cmd/touchup/main.go`, `docs/morpheus/post_api.md`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/X44c.md`
+
+A touch-up takes 21 s to 27 s. The app can now start it for every photo of the scan at once, while the donor reads the list, so the better photos are ready when the donor wants to post.
+
+- `POST /api/touchup/batch?photo_ids=…` takes up to 6 photos of the scan in one call.
+- A photo that finds no free slot waits in a short queue instead of getting "busy".
+- Each photo is checked before any job starts. The daily limits count every photo.
+- Tests: post 56 -> 61.
