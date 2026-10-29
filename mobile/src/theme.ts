@@ -113,6 +113,10 @@ export const size = {
   focusBorder: 2,    // the border of a field while it has the focus (in accent)
   fieldSlot: 76,     // field text to the right border when a text button (Show) sits in the field
   loginTop: 0.14,    // the sign-in title from the top of a phone screen, as a share of the screen width
+  header: 56,        // the ☰ header of a phone or tablet screen
+  topBar: 64,        // the top bar of a wide screen (the brand, the role tabs, Log out)
+  tabPadX: 16,       // a role tab and the Log out button of the top bar: text to the edge (sides)
+  toastBottom: 28,   // a toast: its bottom to the screen bottom
 } as const;
 
 /**
@@ -208,9 +212,14 @@ export const doodle = {
 
 /**
  * The layout of a window width, after the Material 3 window size classes: compact (< 600 dp) shows bottom
- * sheets; medium (600-839) and expanded (>= 840) show centred dialogs.
+ * sheets, one column of cards and the ☰ header; medium (600-839) shows centred dialogs, two columns and the ☰
+ * header; expanded (>= 840) shows centred dialogs, three columns and the top bar with the role tabs. `maxWidth`
+ * is the widest the content of a screen gets (it is centred in a wider window).
  */
-export function layoutFor(width: number): { kind: "compact" | "medium" | "expanded"; dialogs: boolean } {
-  const kind = width >= 840 ? "expanded" : width >= 600 ? "medium" : "compact";
-  return { kind, dialogs: kind !== "compact" };
+export function layoutFor(width: number): {
+  kind: "compact" | "medium" | "expanded"; dialogs: boolean; columns: number; topBar: boolean; maxWidth: number;
+} {
+  if (width >= 840) return { kind: "expanded", dialogs: true, columns: 3, topBar: true, maxWidth: 1120 };
+  if (width >= 600) return { kind: "medium", dialogs: true, columns: 2, topBar: false, maxWidth: 900 };
+  return { kind: "compact", dialogs: false, columns: 1, topBar: false, maxWidth: 560 };
 }

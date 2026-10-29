@@ -1,23 +1,27 @@
-// V3RDE app (NEW_WORK_UI.md, UI 10): it loads the brand font, reads a reset link (web /reset#token=…, app
+// V3RDE app (NEW_WORK_UI.md, UI 10 and 11): it loads the brand font, reads a reset link (web /reset#token=…, app
 // v3rde://reset#token=…), asks the services if a session is open, and shows sign-in, reset, the role sheet and
-// the chosen screen. Phone: the role sheet rises over the sign-in screen right after sign-in. Wide screen: the
-// sign-in card fades out first, then the role dialog rises over the doodles.
-import React, { useCallback, useEffect, useState } from "react";
+// the chosen screen in its frame (☰ header or top bar). Phone: the role sheet rises over the sign-in screen right
+// after sign-in. Wide screen: the sign-in card fades out first, then the role dialog rises over the doodles. The
+// screens keep clear of the phone's status bar and home bar (safe-area insets).
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"; // hooks only, no class
 import { StatusBar as SystemBar } from "expo-status-bar";
 import { Linking, View, useWindowDimensions } from "react-native";
+import { SafeAreaProvider as Insets, useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
 import * as RN from "react-native";
 import { useFonts as useFontFiles } from "expo-font";
 import { Poppins_400Regular as regularFile } from "@expo-google-fonts/poppins/400Regular";
 import { Poppins_600SemiBold as semiboldFile } from "@expo-google-fonts/poppins/600SemiBold";
 import { auth, type User as Account } from "./src/api";
 import { font, layoutFor, motion, space, useColors } from "./src/theme";
-import { Muted, Pill, Title } from "./src/ui";
+import { Muted, Title, Toast } from "./src/ui";
 import { Doodles as Wallpaper } from "./src/doodles";
 import { resetToken } from "./src/signin";
-import { ROLE, roleCard, type RoleName } from "./src/words";
+import { FRAME, roleCard, type RoleName } from "./src/words";
+import { SessionContext, type Session } from "./src/session";
 import SignIn from "./src/screens/Login";
 import { ForgotPassword, NewPassword } from "./src/screens/Reset";
 import { RoleSheet } from "./src/screens/Role";
+import { Frame } from "./src/screens/Frame";
 
 /** Where the role sheet is: over the auth screen it came from (phone), over the doodles, or over the doodles
  *  after the wide-screen handoff (no dim). */
@@ -39,13 +43,12 @@ async function openingToken(): Promise<string> {
   return resetToken(await Linking.getInitialURL());
 }
 
-/** The screen of a role. The Give and Receive screens come in the next changes; until then a title and a pill. */
-function RoleScreen({ who, role, onMenu }: { who: Account; role: RoleName; onMenu: () => void }) {
+/** The screen of a role. The Give and Receive screens come in the next changes; until then a title. */
+function RoleScreen({ who, role }: { who: Account; role: RoleName }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: space.gutter, gap: space.gap }}>
       <Title center>{roleCard(role).title}</Title>
       <Muted center>{who.email}</Muted>
-      <Pill testID="menu" kind="secondary" title={ROLE.change} onPress={onMenu} />
     </View>
   );
 }
@@ -53,8 +56,19 @@ function RoleScreen({ who, role, onMenu }: { who: Account; role: RoleName; onMen
 const Shell = () => {
   const [ready] = useFontFiles({ [font.regular]: regularFile, [font.semibold]: semiboldFile });
   const col = useColors();
+  const inset = useInsets();
   const wide = layoutFor(useWindowDimensions().width).dialogs;
   const [stage, setStage] = useState<Stage>({ kind: "start" });
+  const stageNow = useRef(stage);
+  stageNow.current = stage;
+  const [note, setNote] = useState("");
+  const noteTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const say = useCallback((text: string, ms = 2600) => {
+    setNote(text);
+    clearTimeout(noteTimer.current);
+    noteTimer.current = setTimeout(() => setNote(""), ms);
+  }, []);
+  useEffect(() => () => clearTimeout(noteTimer.current), []);
   useEffect(function openStart() {
     // a link that comes while the app starts wins: the start answers change only the "start" stage
     const fromStart = (next: Stage) => setStage((now) => (now.kind === "start" ? next : now));
@@ -82,12 +96,24 @@ const Shell = () => {
     auth.logout().catch(() => undefined); // the services end the session; the app leaves at once
     setStage({ kind: "signin" });
   }, []);
+  const who = stage.kind === "in" ? stage.who : null;
+  const session = useMemo<Session | null>(() => who && {
+    who,
+    goTo: (role) => setStage((now) => (now.kind === "in" ? { ...now, role, menu: false } : now)),
+    say,
+    ended: () => {
+      if (stageNow.current.kind !== "in") return; // a late 401 after Log out changes nothing
+      setStage({ kind: "signin" });
+      say(FRAME.expired);
+    },
+  }, [who, say]);
   const authFrom = stage.kind === "leaving" || (stage.kind === "role" && stage.under === "auth") ? stage.from : undefined;
   const under = stage.kind === "leaving" || stage.kind === "role"; // the auth screen stays, frozen
   const tokenOf = stage.kind === "newpass" ? stage.token : stage.kind === "leaving" || stage.kind === "role" ? stage.token ?? "" : "";
   const showDoodles = (stage.kind === "role" && stage.under !== "auth");
   return (
-    <View style={{ flex: 1, backgroundColor: col.bg }}>
+    <View style={{ flex: 1, backgroundColor: col.bg, paddingTop: inset.top, paddingBottom: inset.bottom,
+      paddingLeft: inset.left, paddingRight: inset.right }}>
       {ready && (stage.kind === "signin" || authFrom === "signin") ? (
         <SignIn leaving={under} onSignedIn={signedIn("signin")} onForgot={() => setStage({ kind: "forgot" })} />
       ) : null}
@@ -96,8 +122,11 @@ const Shell = () => {
         <NewPassword token={tokenOf} leaving={under} onSignedIn={signedIn("newpass", tokenOf)} onAgain={() => setStage({ kind: "forgot" })} />
       ) : null}
       {ready && showDoodles ? <Wallpaper /> : null}
-      {ready && stage.kind === "in" ? (
-        <RoleScreen who={stage.who} role={stage.role} onMenu={() => setStage({ ...stage, menu: true })} />
+      {ready && stage.kind === "in" && session ? (
+        <SessionContext.Provider value={session}>
+          <Frame role={stage.role} onRole={session.goTo} onMenu={() => setStage({ ...stage, menu: true })} onLogout={logout}>
+            <RoleScreen who={stage.who} role={stage.role} /></Frame>
+        </SessionContext.Provider>
       ) : null}
       {ready && stage.kind === "role" ? (
         <RoleSheet dim={stage.under !== "handoff"} onLogout={logout}
@@ -107,8 +136,11 @@ const Shell = () => {
         <RoleSheet dim chosen={stage.role} onLogout={logout} onDismiss={() => setStage({ ...stage, menu: false })}
           onPick={(role) => setStage({ kind: "in", who: stage.who, role, menu: false })} />
       ) : null}
+      <Toast text={note} />
       <SystemBar style={"auto"} />
     </View>
   );
 };
-export default Shell;
+
+const App = () => <Insets><Shell /></Insets>;
+export default App;

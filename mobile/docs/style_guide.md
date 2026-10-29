@@ -111,6 +111,10 @@ Values are font size / line height in pt.
 | `size.focusBorder` | 2 | Ref-login: 2.00 | the border of a field while it has the focus (in `accent`) |
 | `size.fieldSlot` | 76 | Ref-login | field text to the right border when a text button (Show) sits in the field |
 | `size.loginTop` | 0.14 | Ref-login | the sign-in title from the top of a phone screen, as a share of the screen width (rounded to a whole pt) |
+| `size.header` | 56 | the earlier app | the ☰ header of a phone or tablet screen |
+| `size.topBar` | 64 | the earlier app | the top bar of a wide screen (the brand, the role tabs, Log out) |
+| `size.tabPadX` | 16 | the earlier app | a role tab and the Log out button of the top bar: text to the edge (sides) |
+| `size.toastBottom` | 28 | the earlier app | a toast: its bottom to the screen bottom |
 
 ## Glyphs (`glyph`)
 
@@ -192,11 +196,11 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 ## Layout (`layoutFor(width)`)
 
-| Function | Width (pt) | Kind | Popups | Source |
-|---|---|---|---|---|
-| `layoutFor` | below 600 | compact | bottom sheets | Platform (Material 3 window size classes) |
-| `layoutFor` | 600 to 839 | medium | centred dialogs | Platform |
-| `layoutFor` | 840 and more | expanded | centred dialogs | Platform |
+| Function | Width (pt) | Kind | Popups | Columns | Header | Max width | Source |
+|---|---|---|---|---|---|---|---|
+| `layoutFor` | below 600 | compact | bottom sheets | 1 | ☰ header | 560 | Platform (Material 3 window size classes); columns and widths: the earlier app |
+| `layoutFor` | 600 to 839 | medium | centred dialogs | 2 | ☰ header | 900 | Platform; the earlier app |
+| `layoutFor` | 840 and more | expanded | centred dialogs | 3 | top bar with role tabs | 1120 | Platform; the earlier app |
 
 ## Parts (`mobile/src/ui.tsx`)
 
@@ -241,6 +245,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - "What do you want to do?" (`type.title`), then two role cards `space.gutter` under it and `space.item` apart, then the secondary pill "Log out" `space.gutter` under them. The rows rise one after the other (`Rise`).
 - A role card: `card`, `size.border` `line` (`accent` when it is the role on view or under the mouse), `radius.card`, `space.group` padding and gap; a `size.iconBig` disc in `accentSoft` with the glyph in `accent`; the name (`type.button`) over a `muted` line. Give: a camera, "Share your food". Receive: a bowl, "Find food near you".
 - When it shows: right after sign-in on a phone (over the sign-in screen, which stays under the dim); right after sign-in on a wide screen (the sign-in card fades out, then the role dialog rises over the doodles with no dim); when the app opens with a session (over the doodles, with the dim); from ☰ on a screen (then a tap on the dim, Esc or Back closes it).
+
+## Frame (`mobile/src/screens/Frame.tsx`)
+
+- Phone and tablet (`layoutFor` compact and medium): a header `size.header` tall, `space.gutter` at the sides: the ☰ icon button (`size.iconBig`, glyph menu, name "Menu") at the left opens the role sheet; "V3RDE" in `muted` in the centre.
+- Wide screen (expanded): a top bar `size.topBar` tall with a `size.border` `line` under it, `space.pad` at the sides, its content at most `maxWidth` wide (each screen also centres its own content in `maxWidth`): "V3RDE" (`type.title`, `link`) at the left; the role tabs Give and Receive in the centre (`size.control` tall, `size.tabPadX` at the sides, `space.inset` apart; the chosen tab `link` text on `accentSoft`, the others `muted`, `iconFill` under the mouse); "Log out" at the right (`size.border` `line`, `muted` text). The role sheet is not used there after the first pick. Only the chosen tab is a Tab-key stop; Left and Right choose the other tab.
+- The screens keep clear of the status bar, the home bar and a notch at the side (react-native-safe-area-context insets); the toast and the role sheet also add the bottom inset.
+- A toast (`Toast`): `bg` text on `fg`, fully round, `camera.hintPadX` × `camera.hintPadY` padding, `size.toastBottom` above the home bar; a screen reader reads each new text (a polite live region; an announcement on iOS). "Your session has ended. Sign in again." shows when the services answer 401.
 
 ## Mockups
 

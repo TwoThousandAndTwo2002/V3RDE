@@ -22,3 +22,11 @@ export function roleCard(role: RoleName, chosen = false): { title: string; line:
   const line = role === "give" ? ROLE.giveLine : ROLE.receiveLine;
   return { title, line, spoken: title + ". " + line + (chosen ? ". " + ROLE.selected : "") };
 }
+
+/** The frame of the signed-in screens: the ☰ header (phone, tablet) and the top bar (wide screen). */
+export const FRAME = {
+  brand: "V3RDE",
+  menu: "Menu",
+  tabs: "Roles",
+  expired: "Your session has ended. Sign in again.",
+} as const;

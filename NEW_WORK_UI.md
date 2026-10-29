@@ -184,3 +184,20 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Parts:** `Popup`, a sheet over the screen on view (a dim layer that fades in, a tap on it or Esc closes it when the sheet can close); the glyphs give (a camera), receive (a bowl) and menu (☰), drawn new.
 - **When it shows:** right after sign-in on a phone (over the sign-in screen); right after sign-in on a wide screen (the sign-in card fades out, then the role dialog rises over the doodles, no dim); at start with a session (over the doodles). Until the Give and Receive screens come (UI 12, UI 13), a role shows its name and a pill that opens the sheet again.
 - **react-native 0.88.0 → 0.88.1:** Expo SDK 58 (expo 58.0.21, Oct 28) now expects react-native 0.88.1, and `expo install --check` fails on 0.88.0 (the first U10 run on Oct 29 stopped there). The lock file changes only the react-native packages.
+
+---
+
+## UI 11. The app frame: the ☰ header, the top bar, the safe area
+
+**When:** Oct 29 2026.
+**Meta model:** none.
+**Files:** `mobile/src/screens/Frame.tsx`, `mobile/src/session.ts`, `mobile/App.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/tests/style.test.mts`, `mobile/docs/style_guide.md`, `mobile/package.json`, `mobile/package-lock.json`
+**Sources:** `docs/sources/U11.md`
+
+- **Written again:** the frame is new code on the U5 parts; the rewrite guard finds no line of the earlier app's mobile code.
+- **Phone and tablet:** a header with ☰ (it opens the role sheet; the role on view is marked) and "V3RDE".
+- **Wide screen:** a top bar with "V3RDE", the role tabs Give and Receive, and "Log out".
+- **Layout:** `layoutFor` also gives the columns (1, 2, 3), the top bar (expanded only) and the content width (560, 900, 1120 pt).
+- **Safe area:** new package `react-native-safe-area-context` ~5.10.1, the version Expo SDK 58 pins; the screens keep clear of the status bar and the home bar.
+- **Parts:** `Toast` (a short message at the bottom); a session context for the screens. When the services answer 401, the app goes back to sign-in with "Your session has ended. Sign in again."
+- Contrast tests for the new colour pairs (the chosen tab, the toast).

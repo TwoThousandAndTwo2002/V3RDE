@@ -7,6 +7,7 @@ import type { StyleProp, TextInputProps, TextStyle, ViewStyle } from "react-nati
 import { BlurView } from "expo-blur";
 import { LinearGradient as ShadeGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
+import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 
 // ---------------------------------------------------------------- text
@@ -68,11 +69,11 @@ export function GlyphIcon({ name, color }: { name: Glyph; color: string }) {
 }
 
 /** A round icon button: 38 pt inside a review card, 44 pt (the touch size) elsewhere. */
-export function IconBtn({ glyph, label, onPress, big }: { glyph: Glyph; label: string; onPress: () => void; big?: boolean }) {
+export function IconBtn({ glyph, label, onPress, big, testID }: { glyph: Glyph; label: string; onPress: () => void; big?: boolean; testID?: string }) {
   const col = useColors();
   const d = big ? size.iconBig : size.iconSmall;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={big ? 0 : (size.iconBig - d) / 2}
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={big ? 0 : (size.iconBig - d) / 2}
       style={({ pressed }) => ({ width: d, height: d, borderRadius: radius.round, alignItems: "center", justifyContent: "center",
         backgroundColor: col.iconFill, opacity: pressed ? opacity.pressed : 1 })}>
       <GlyphIcon name={glyph} color={col.fg} /></Pressable>
@@ -348,6 +349,7 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID }: 
   const { width, height } = useWindowDimensions();
   const dialogs = layoutFor(width).dialogs;
   const col = useColors();
+  const inset = useInsets();
   const [rise] = useState(() => new Animated.Value(0));
   const [fade] = useState(() => new Animated.Value(0));
   useEffect(function riseIn() {
@@ -392,7 +394,7 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID }: 
       <Animated.View ref={box} {...MODAL} style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(height * size.sheetMedium),
         maxHeight: Math.round(height * size.sheetLarge), transform: [{ translateY: shift }] }}>
         <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
-          style={{ flex: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot }}>
+          style={{ flex: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot + inset.bottom }}>
           <View style={{ alignSelf: "center", width: size.handleW, height: size.handleH, borderRadius: radius.round,
             backgroundColor: col.handle, marginTop: size.handleTop, marginBottom: space.gutter }} />
           {children}
@@ -432,6 +434,27 @@ export function Photo({ uri, side, round, style }: { uri?: string; side?: number
   return (
     <View style={[box, { borderRadius: radius[round], overflow: "hidden", backgroundColor: col.accentSoft }, style]}>
       {uri ? <Image source={{ uri }} resizeMode="cover" style={StyleSheet.absoluteFill} /> : null}
+    </View>
+  );
+}
+
+/**
+ * A short message at the bottom of the screen (`fg` and `bg` reversed), above the home bar. The live region is
+ * always there, so a screen reader reads each new text; iOS gets an announcement.
+ */
+export function Toast({ text }: { text: string }): React.ReactElement {
+  const col = useColors();
+  const inset = useInsets();
+  useEffect(function announce() {
+    if (text && RN.Platform.OS === "ios") RN.AccessibilityInfo.announceForAccessibility(text);
+  }, [text]);
+  return (
+    <View pointerEvents="none" accessibilityLiveRegion="polite" aria-live="polite"
+      style={{ position: "absolute", left: space.gutter, right: space.gutter, bottom: size.toastBottom + inset.bottom, alignItems: "center" }}>
+      {text ? (
+        <Text testID="toast" style={[type.body, { color: col.bg, backgroundColor: col.fg, borderRadius: radius.round, overflow: "hidden",
+          paddingHorizontal: camera.hintPadX, paddingVertical: camera.hintPadY, textAlign: "center" }]}>{text}</Text>
+      ) : null}
     </View>
   );
 }
