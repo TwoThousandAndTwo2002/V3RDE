@@ -649,3 +649,21 @@ Each paid feature had one daily limit for all callers. One caller could use it a
 - Each events line has the caller's key, so a restart keeps each caller's spend.
 - The ids of photos and touch-ups are 128 random bits each (checked in the code; no change needed).
 - Tests: inference 72 -> 73, post 54 -> 56.
+
+---
+
+## 37. The scan shows what it finds while it works
+
+**When:** Oct 29 2026.
+**Meta models:** SAM 3.1 and Muse Spark 1.3, as in entry 9 (no new model).
+**Files:** `inference/scanjob.go`, `inference/progress.go`, `inference/scanjob_test.go` (new), `inference/service.go`, `inference/engine.go`, `inference/events.go`, `docs/analyze_scan_job_api.md` (new), `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/X44b.md`
+
+A scan takes about 14 s, and the donor saw only a wait. Now the app can start the scan as a job and show its progress.
+
+- `POST /api/analyze?async=1` answers at once with a `scan_id`. The app asks `GET /api/analyze/scan/{id}` about once a second.
+- The answer shows the boxes as soon as SAM 3.1 has found the items (about 3 s), then the names as each Muse Spark call ends, then the full answer.
+- The full answer and every refusal are the same as on the normal route. The normal route does not change.
+- Polling, because API Gateway HTTP APIs cannot stream an answer.
+- Only the caller that started a scan can see it, for 10 minutes.
+- Tests: inference 73 -> 79.

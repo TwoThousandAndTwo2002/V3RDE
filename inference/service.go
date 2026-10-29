@@ -14,7 +14,8 @@ package inference
 //
 // GET /v1/analyze/photo/{id} and /api/analyze/photo/{id} serve an item
 // photo to its owner (the app's review list). X41a: POST .../photos gives
-// every item photo of one answer in one call (bundle.go).
+// every item photo of one answer in one call (bundle.go). X44b: ?async=1
+// runs the scan as a job, GET .../scan/{id} (scanjob.go).
 
 import (
 	"bytes"
@@ -26,6 +27,7 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -86,6 +88,7 @@ type ServiceConfig struct {
 	Build       string
 	now         func() time.Time
 	slots       chan struct{}
+	scans       *scanJobs // X44b: the scans that run as jobs
 }
 
 // AnswerItem is one item: the 8 contract fields unchanged, nested.
@@ -134,6 +137,7 @@ func NewService(c ServiceConfig) http.Handler {
 		c.now = time.Now
 	}
 	c.slots = make(chan struct{}, c.MaxInFlight)
+	c.scans = &scanJobs{now: c.now}
 	c.Engine.defaults() // once, before any request: Run then only reads the fields
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -147,6 +151,7 @@ func NewService(c ServiceConfig) http.Handler {
 	for _, p := range []string{"/v1/analyze", "/api/analyze"} {
 		mux.HandleFunc(p, c.analyze)
 		mux.HandleFunc("GET "+p+"/photo/{id}", c.photo)
+		mux.HandleFunc("GET "+p+"/scan/{id}", c.scanJob)                                      // X44b: a scan that runs as a job
 		mux.HandleFunc("POST "+p+"/labels", c.labels)                                         // X32g
 		mux.HandleFunc("POST "+p+"/photos", c.photos)                                         // X41a: every item photo of one answer
 		mux.HandleFunc("OPTIONS "+p+"/photos", func(w http.ResponseWriter, _ *http.Request) { // its CORS preflight
@@ -259,224 +264,260 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		fail(st, codeFor(st), msg)
 		return
 	}
-	sum := sha256.Sum256(img)
-	ev.ImageSHA256 = hex.EncodeToString(sum[:])
-	stored, err := c.Photos.SaveOriginal(ev.ImageSHA256, img)
-	ev.PhotoStored = stored
-	if err != nil {
-		fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
-		return
-	}
-	code := strings.TrimSpace(r.FormValue("barcode"))
-	if len(code) > 64 {
-		code = code[:64]
-	}
-	ev.Barcode = code
-	ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
-	ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
-	done := func() {
-		ans.Count = len(ans.Items)
-		ans.LatencyMS = time.Since(t0).Milliseconds()
-		ev.Source, ev.Items = ans.Source, ans.Count
-		for _, it := range ans.Items {
-			ev.PhotoIDs = append(ev.PhotoIDs, it.PhotoID)
-		}
-		finish(http.StatusOK, ans.Source)
-		writeJSONResp(w, http.StatusOK, ans)
-	}
-	full := func(item int) (string, error) { // the uploaded photo as an item photo
-		return c.Photos.SaveItem(img, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
-			Item: item, Kind: "full", TS: t0.UTC().Format(time.RFC3339)})
-	}
-	var listed map[string]ListedRef // nil = no dedup
-	dedup := func() {
-		if kind != "session" || c.ListingsURL == "" {
-			ev.Dedup = "skipped"
-			return
-		}
-		td := time.Now()
-		live, err := liveListings(r, c.FastHTTP, c.ListingsURL, c.now().UTC())
-		ev.DedupMS = time.Since(td).Milliseconds()
-		if err != nil {
-			ev.Dedup, ev.Error = "unavailable", "dedup: "+err.Error()
-			return
-		}
-		ev.Dedup, listed = "ok", listedByName(live)
-	}
-
-	// 1. barcode (read on the phone): the fast path, no model, no cap
-	if code != "" && c.BarcodeURL != "" {
-		tb := time.Now()
-		bc, bst, berr := lookupBarcode(r, c.FastHTTP, c.BarcodeURL, trace, code)
-		ev.BarcodeMS, ev.BarcodeStatus, ev.BarcodeOutcome = time.Since(tb).Milliseconds(), bst, bc.Outcome
-		if berr != nil {
-			ev.Error = "barcode: " + berr.Error() // answers like a miss
-		}
-		if berr == nil && bc.Outcome == "HIT" && bc.Admissible && bc.Product != nil {
-			p := bc.Product
-			ev.CatalogServings = p.NumberOfServing // a label serving: logged, not shown
-			res := analyze.Result{Name: p.Title, Description: p.Description, IsNonVeg: p.IsNonVeg,
-				NumberOfServing: analyze.DefaultServings, ServingType: p.ServingType, MealCondition: p.MealCondition,
-				Weight: p.Weight, MealCost: p.MealCost}
-			if dedup(); listed != nil {
-				if _, hit := listed[normName(res.Name)]; hit {
-					ev.DroppedListed = 1
-					fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
-					return
-				}
-			}
-			pid, err := full(1)
-			if err != nil {
-				fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
-				return
-			}
-			ans.Source, ans.Model = SourceBarcode, "catalog"
-			ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid})
-			done()
-			return
-		}
-	}
-
-	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
-	defer cancel()
-
-	// 2. the food gate: non-food never reaches the API ($0)
-	tg := time.Now()
-	verdict, p, gst, gerr := c.gate(ctx, trace, fwd, img, mime)
-	ev.GateMS, ev.GateStatus, ev.GateVerdict, ev.GateP = time.Since(tg).Milliseconds(), gst, verdict, p
-	switch {
-	case gerr != nil || verdict == "" || verdict == "UNAVAILABLE":
-		ev.GateVerdict = "UNAVAILABLE"
-		if gerr != nil {
-			ev.Error = "gate: " + gerr.Error()
-		}
-		fail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
-		return
-	case verdict != "FOOD":
-		fail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
-		return
-	}
-
-	// 3. busy: the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB
-	select {
-	case c.slots <- struct{}{}:
-		defer func() { <-c.slots }()
-	default:
-		fail(http.StatusServiceUnavailable, CodeBusy, "the scanner is busy; try again in a few seconds")
-		return
-	}
-
-	// 4. the daily spend cap (OWASP API4:2023), and X44a this caller's share
-	var hold *Hold
-	if c.Budget != nil {
-		var why string
-		if hold, why = c.Budget.ReserveFor(key); hold == nil {
-			if why == CodeCallerCap { // RFC 6585 4: too many requests from this caller
-				fail(http.StatusTooManyRequests, CodeCallerCap, "your daily scan limit is reached; try again after 00:00 UTC")
-				return
-			}
-			fail(http.StatusServiceUnavailable, CodeDailyCap, "the daily limit is reached; try again after 00:00 UTC")
-			return
-		}
-	}
-
-	// 5. SAM + Muse
-	inv, err := c.Engine.Run(ctx, img, mime, ModeAuto)
-	if hold != nil {
-		hold.Settle(inv.SpentUSD())
-	}
-	ev.fromInventory(inv)
-	ev.FrameW, ev.FrameH = inv.FrameW, inv.FrameH
-	ev.NotNamed = inv.Unnamed + inv.Small
-	multi := inv.Kept >= 2
-	if err != nil {
-		ledgerBoxes(&ev, inv, nil, nil, nil)
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			fail(http.StatusGatewayTimeout, CodeTimeout,
-				fmt.Sprintf("this photo took longer than %s; try a closer photo of fewer items", c.Timeout))
-			return
-		}
-		fail(http.StatusBadGateway, CodeUpstream, "the scanner could not read this photo: "+err.Error())
-		return
-	}
-
-	// 6. the model's own "no food" answers are dropped (T9)
-	noFood := map[int]bool{} // index into inv.Items
-	var items []int
-	for i, it := range inv.Items {
-		if ModelSaysNoFood(it.Result) {
-			noFood[i] = true
-			continue
-		}
-		items = append(items, i)
-	}
-	ev.DroppedNoFood = len(noFood)
-	if len(items) == 0 {
-		ledgerBoxes(&ev, inv, nil, noFood, nil)
-		if multi || inv.NotFood {
-			fail(http.StatusUnprocessableEntity, CodeNoFoodMulti, "the scanner found no food it can name in these items")
-		} else {
-			fail(http.StatusUnprocessableEntity, CodeNoFoodSingle, "the scanner found no food it can name in this photo")
-		}
-		return
-	}
-
-	// 7. dedup against the caller's live listings (T9: one item = 409;
-	// several = the listed ones are dropped and logged)
-	listedIdx := map[int]bool{}
-	if dedup(); listed != nil {
-		for _, i := range items {
-			if _, hit := listed[normName(inv.Items[i].Name)]; hit {
-				listedIdx[i] = true
-			}
-		}
-	}
-	ev.DroppedListed = len(listedIdx)
-	var keep []int
-	for _, i := range items {
-		if !listedIdx[i] {
-			keep = append(keep, i)
-		}
-	}
-	if len(keep) == 0 {
-		ledgerBoxes(&ev, inv, nil, noFood, listedIdx)
-		fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
-		return
-	}
-
-	// 8. item photos: a crop of the largest box when the photo had 2+
-	// boxes, else the uploaded photo
-	var src image.Image
-	if multi {
-		if s, _, err := image.Decode(bytes.NewReader(img)); err == nil {
-			src = Upright(s, Orientation(img))
-		}
-	}
-	answerOf := map[int]int{}
-	for _, i := range keep {
-		it := inv.Items[i]
-		n := len(ans.Items) + 1
-		var pid string
-		var err error
-		if b, ok := inv.LargestBox(it); ok && src != nil {
-			if jb, cerr := CropJPEG(src, b, CropMargin); cerr == nil {
-				pid, err = c.Photos.SaveItem(jb, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
-					Item: n, Kind: "crop", Box: boxSlice(b), FrameW: b.W, FrameH: b.H, TS: t0.UTC().Format(time.RFC3339)})
-			}
-		}
-		if pid == "" && err == nil {
-			pid, err = full(n)
-		}
+	var job *ScanJob // X44b: set when the scan runs as a job
+	rest := func() { // X44b: the scan after the photo is read (the 200 route, or a job)
+		sum := sha256.Sum256(img)
+		ev.ImageSHA256 = hex.EncodeToString(sum[:])
+		stored, err := c.Photos.SaveOriginal(ev.ImageSHA256, img)
+		ev.PhotoStored = stored
 		if err != nil {
 			fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
 			return
 		}
-		answerOf[i] = n
-		ans.Items = append(ans.Items, AnswerItem{Item: n, Fields: it.Result, PhotoID: pid})
+		code := strings.TrimSpace(r.FormValue("barcode"))
+		if len(code) > 64 {
+			code = code[:64]
+		}
+		ev.Barcode = code
+		ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
+		ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
+		done := func() {
+			ans.Count = len(ans.Items)
+			ans.LatencyMS = time.Since(t0).Milliseconds()
+			ev.Source, ev.Items = ans.Source, ans.Count
+			for _, it := range ans.Items {
+				ev.PhotoIDs = append(ev.PhotoIDs, it.PhotoID)
+			}
+			finish(http.StatusOK, ans.Source)
+			writeJSONResp(w, http.StatusOK, ans)
+		}
+		full := func(item int) (string, error) { // the uploaded photo as an item photo
+			return c.Photos.SaveItem(img, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
+				Item: item, Kind: "full", TS: t0.UTC().Format(time.RFC3339)})
+		}
+		var listed map[string]ListedRef // nil = no dedup
+		dedup := func() {
+			if kind != "session" || c.ListingsURL == "" {
+				ev.Dedup = "skipped"
+				return
+			}
+			td := time.Now()
+			live, err := liveListings(r, c.FastHTTP, c.ListingsURL, c.now().UTC())
+			ev.DedupMS = time.Since(td).Milliseconds()
+			if err != nil {
+				ev.Dedup, ev.Error = "unavailable", "dedup: "+err.Error()
+				return
+			}
+			ev.Dedup, listed = "ok", listedByName(live)
+		}
+
+		// 1. barcode (read on the phone): the fast path, no model, no cap
+		if code != "" && c.BarcodeURL != "" {
+			tb := time.Now()
+			bc, bst, berr := lookupBarcode(r, c.FastHTTP, c.BarcodeURL, trace, code)
+			ev.BarcodeMS, ev.BarcodeStatus, ev.BarcodeOutcome = time.Since(tb).Milliseconds(), bst, bc.Outcome
+			if berr != nil {
+				ev.Error = "barcode: " + berr.Error() // answers like a miss
+			}
+			if berr == nil && bc.Outcome == "HIT" && bc.Admissible && bc.Product != nil {
+				p := bc.Product
+				ev.CatalogServings = p.NumberOfServing // a label serving: logged, not shown
+				res := analyze.Result{Name: p.Title, Description: p.Description, IsNonVeg: p.IsNonVeg,
+					NumberOfServing: analyze.DefaultServings, ServingType: p.ServingType, MealCondition: p.MealCondition,
+					Weight: p.Weight, MealCost: p.MealCost}
+				if dedup(); listed != nil {
+					if _, hit := listed[normName(res.Name)]; hit {
+						ev.DroppedListed = 1
+						fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
+						return
+					}
+				}
+				pid, err := full(1)
+				if err != nil {
+					fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
+					return
+				}
+				ans.Source, ans.Model = SourceBarcode, "catalog"
+				ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid})
+				done()
+				return
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
+		defer cancel()
+		if job != nil { // X44b: the engine reports what it found so far
+			ctx = WithProgress(ctx, func(p Progress) { c.scans.progress(job, p) })
+		}
+
+		// 2. the food gate: non-food never reaches the API ($0)
+		tg := time.Now()
+		verdict, p, gst, gerr := c.gate(ctx, trace, fwd, img, mime)
+		ev.GateMS, ev.GateStatus, ev.GateVerdict, ev.GateP = time.Since(tg).Milliseconds(), gst, verdict, p
+		switch {
+		case gerr != nil || verdict == "" || verdict == "UNAVAILABLE":
+			ev.GateVerdict = "UNAVAILABLE"
+			if gerr != nil {
+				ev.Error = "gate: " + gerr.Error()
+			}
+			fail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
+			return
+		case verdict != "FOOD":
+			fail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
+			return
+		}
+		if job != nil {
+			c.scans.stage(job, "finding")
+		}
+
+		// 3. busy: the box has 1.9 GiB; a decoded 12 MP photo is about 32 MB
+		select {
+		case c.slots <- struct{}{}:
+			defer func() { <-c.slots }()
+		default:
+			fail(http.StatusServiceUnavailable, CodeBusy, "the scanner is busy; try again in a few seconds")
+			return
+		}
+
+		// 4. the daily spend cap (OWASP API4:2023), and X44a this caller's share
+		var hold *Hold
+		if c.Budget != nil {
+			var why string
+			if hold, why = c.Budget.ReserveFor(key); hold == nil {
+				if why == CodeCallerCap { // RFC 6585 4: too many requests from this caller
+					fail(http.StatusTooManyRequests, CodeCallerCap, "your daily scan limit is reached; try again after 00:00 UTC")
+					return
+				}
+				fail(http.StatusServiceUnavailable, CodeDailyCap, "the daily limit is reached; try again after 00:00 UTC")
+				return
+			}
+		}
+
+		// 5. SAM + Muse
+		inv, err := c.Engine.Run(ctx, img, mime, ModeAuto)
+		if hold != nil {
+			hold.Settle(inv.SpentUSD())
+		}
+		ev.fromInventory(inv)
+		ev.FrameW, ev.FrameH = inv.FrameW, inv.FrameH
+		ev.NotNamed = inv.Unnamed + inv.Small
+		multi := inv.Kept >= 2
+		if err != nil {
+			ledgerBoxes(&ev, inv, nil, nil, nil)
+			if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				fail(http.StatusGatewayTimeout, CodeTimeout,
+					fmt.Sprintf("this photo took longer than %s; try a closer photo of fewer items", c.Timeout))
+				return
+			}
+			fail(http.StatusBadGateway, CodeUpstream, "the scanner could not read this photo: "+err.Error())
+			return
+		}
+
+		// 6. the model's own "no food" answers are dropped (T9)
+		noFood := map[int]bool{} // index into inv.Items
+		var items []int
+		for i, it := range inv.Items {
+			if ModelSaysNoFood(it.Result) {
+				noFood[i] = true
+				continue
+			}
+			items = append(items, i)
+		}
+		ev.DroppedNoFood = len(noFood)
+		if len(items) == 0 {
+			ledgerBoxes(&ev, inv, nil, noFood, nil)
+			if multi || inv.NotFood {
+				fail(http.StatusUnprocessableEntity, CodeNoFoodMulti, "the scanner found no food it can name in these items")
+			} else {
+				fail(http.StatusUnprocessableEntity, CodeNoFoodSingle, "the scanner found no food it can name in this photo")
+			}
+			return
+		}
+
+		// 7. dedup against the caller's live listings (T9: one item = 409;
+		// several = the listed ones are dropped and logged)
+		listedIdx := map[int]bool{}
+		if dedup(); listed != nil {
+			for _, i := range items {
+				if _, hit := listed[normName(inv.Items[i].Name)]; hit {
+					listedIdx[i] = true
+				}
+			}
+		}
+		ev.DroppedListed = len(listedIdx)
+		var keep []int
+		for _, i := range items {
+			if !listedIdx[i] {
+				keep = append(keep, i)
+			}
+		}
+		if len(keep) == 0 {
+			ledgerBoxes(&ev, inv, nil, noFood, listedIdx)
+			fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
+			return
+		}
+
+		// 8. item photos: a crop of the largest box when the photo had 2+
+		// boxes, else the uploaded photo
+		var src image.Image
+		if multi {
+			if s, _, err := image.Decode(bytes.NewReader(img)); err == nil {
+				src = Upright(s, Orientation(img))
+			}
+		}
+		answerOf := map[int]int{}
+		for _, i := range keep {
+			it := inv.Items[i]
+			n := len(ans.Items) + 1
+			var pid string
+			var err error
+			if b, ok := inv.LargestBox(it); ok && src != nil {
+				if jb, cerr := CropJPEG(src, b, CropMargin); cerr == nil {
+					pid, err = c.Photos.SaveItem(jb, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
+						Item: n, Kind: "crop", Box: boxSlice(b), FrameW: b.W, FrameH: b.H, TS: t0.UTC().Format(time.RFC3339)})
+				}
+			}
+			if pid == "" && err == nil {
+				pid, err = full(n)
+			}
+			if err != nil {
+				fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
+				return
+			}
+			answerOf[i] = n
+			ans.Items = append(ans.Items, AnswerItem{Item: n, Fields: it.Result, PhotoID: pid})
+		}
+		ledgerBoxes(&ev, inv, answerOf, noFood, listedIdx)
+		ans.Source = SourceVision
+		done()
 	}
-	ledgerBoxes(&ev, inv, answerOf, noFood, listedIdx)
-	ans.Source = SourceVision
-	done()
+	// X44b: ?async=1 answers 202 now and runs the rest as a job (scanjob.go)
+	if r.URL.Query().Get("async") == "1" {
+		job = c.scans.start(newPhotoID(), id, kind, user.ID)
+		if job == nil {
+			fail(http.StatusServiceUnavailable, CodeBusy, "too many scans are running; try again in a few seconds")
+			return
+		}
+		ev.Async = true
+		writeJSONResp(w, http.StatusAccepted, map[string]any{"request_id": id, "scan_id": job.ScanID, "status": ScanRunning})
+		cw := newCapture()
+		// the rest writes into cw; the request keeps its values but not the
+		// client's cancel (the 202 ends the client's request)
+		w, r = cw, r.Clone(context.WithoutCancel(r.Context()))
+		go func() {
+			defer func() {
+				if p := recover(); p != nil {
+					log.Printf("scan job %s: panic: %v", job.ScanID, p)
+					c.scans.finish(job, http.StatusInternalServerError,
+						[]byte(`{"request_id":"`+id+`","error":"internal error","code":"`+CodeInternal+`"}`))
+				}
+			}()
+			rest()
+			c.scans.finish(job, cw.status, cw.body.Bytes())
+		}()
+		return
+	}
+	rest()
 }
 
 func boxSlice(b Instance) []int { x := b.Box(); return x[:] }
@@ -518,6 +559,25 @@ func ledgerBoxes(ev *Event, inv *Inventory, answerOf map[int]int, noFood, listed
 		}
 		ev.Boxes = append(ev.Boxes, EventBox{N: n + 1, Box: b, Outcome: f.outcome, Item: f.item, Name: f.name})
 	}
+}
+
+// scanJob is GET .../scan/{id}: the job, to the caller that started it (the
+// same kind of caller and the same user); 404 for anything else, so an id
+// cannot be probed (OWASP API1:2023).
+func (c *ServiceConfig) scanJob(w http.ResponseWriter, r *http.Request) {
+	c.cors(w)
+	w.Header().Set("Cache-Control", "no-store")
+	kind, u, ok := c.caller(r)
+	if !ok {
+		writeJSONResp(w, http.StatusUnauthorized, ErrorAnswer{Error: "sign in, or send the bearer token", Code: CodeUnauthorized})
+		return
+	}
+	j, found := c.scans.get(r.PathValue("id"), kind, u.ID)
+	if !found {
+		writeJSONResp(w, http.StatusNotFound, ErrorAnswer{Error: "no such scan", Code: CodeNotFound})
+		return
+	}
+	writeJSONResp(w, http.StatusOK, j)
 }
 
 // photo serves an item photo to its owner (OWASP API1:2023); 404 for

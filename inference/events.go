@@ -84,6 +84,8 @@ type Event struct {
 	Labels *LabelSet `json:"labels,omitempty"`
 	// X41a: the item photo bundle (step "photos_bundle"; no image bytes)
 	Bundle *BundleStat `json:"bundle,omitempty"`
+	// X44b: the scan ran as a job (?async=1); the line is written when it ends
+	Async bool `json:"async,omitempty"`
 }
 
 // LabelSet is the app's report on one answer (X32g, T9 2026-10-27: "we are

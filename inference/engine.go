@@ -281,6 +281,9 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 	boxes, err := e.find(ctx, inv, ph)
 	inv.Kept = len(boxes)
 	inv.keepBoxes(boxes)
+	if err == nil && len(boxes) <= 1 { // X44b: 0 or 1 box, one whole-photo answer comes next
+		report(ctx, Progress{Stage: "naming", Boxes: norms(boxes)})
+	}
 	if mode == ModeAuto {
 		switch {
 		case early != nil && (err != nil || len(boxes) <= 1):
@@ -308,6 +311,7 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 		return inv, e.whole(ctx, inv, ph, nil)
 	}
 	inv.members = named
+	report(ctx, Progress{Stage: "naming", Boxes: norms(named)}) // X44b: the boxes Muse names (box n = named[n-1])
 	if e.TwoPass {
 		return inv, e.twoPass(ctx, inv, ph, named, mode)
 	}
@@ -937,6 +941,13 @@ func (e *Engine) single(ctx context.Context, inv *Inventory, ph *photo, named []
 		}
 		got[n] = Item{Result: en.res, Source: purpose, Members: []int{n}, sameAs: sa, Tray: en.tray, Pan: en.panRef(),
 			Check: SeenSize(sub[i], p.W, p.H).ShortPx < float64(e.ConfidentPx)}
+	}
+	if len(got) > 0 { // X44b: this chunk's names, before the other chunks end
+		names := map[int]string{}
+		for n, it := range got {
+			names[n] = it.Name
+		}
+		report(ctx, Progress{Stage: "naming", Named: names})
 	}
 	return got, failed
 }
