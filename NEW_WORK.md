@@ -683,3 +683,20 @@ A touch-up takes 21 s to 27 s. The app can now start it for every photo of the s
 - A photo that finds no free slot waits in a short queue instead of getting "busy".
 - Each photo is checked before any job starts. The daily limits count every photo.
 - Tests: post 56 -> 61.
+
+---
+
+## 39. Edge and cloud, side by side, from the ledger
+
+**When:** Oct 29 2026.
+**Meta models:** PE-Core-S16-384 on the box; SAM 3.1, Muse Spark 1.3, Muse Image 1.0 and Muse Voice Transcribe 1.0 in the cloud (no new model).
+**Files:** `telemetry/edgecloud.go`, `telemetry/edgecloud_test.go`, `telemetry/cmd/edgecloud/main.go` (new), `telemetry/Dockerfile`
+**Sources:** `docs/sources/X44d.md`
+
+V3RDE runs some parts on the box and some in Meta's cloud. A new command shows how long each part takes, from the ledger only.
+
+- Edge: the PE-Core food gate and the barcode lookup (time and memory on the 2 GiB ARM box).
+- Cloud: SAM 3.1, Muse Spark 1.3, Muse Image 1.0 and Muse Voice Transcribe 1.0, each call.
+- The median, the 90th percentile and the max, with the number of values and the ledger field of each row.
+- It runs on the box: `docker run --rm --entrypoint /edgecloud -v <ledger>:/ledger-data:ro v3rde-telemetry`.
+- Tests: telemetry 19 -> 22.

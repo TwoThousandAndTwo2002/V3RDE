@@ -1,6 +1,7 @@
 # V3RDE telemetry: the sidecar and the ledger, static Go on scratch, user
-# 65534. One image, two binaries: compose picks /sidecar or /ledger as the
-# entrypoint.
+# 65534. One image, three binaries: compose picks /sidecar or /ledger as the
+# entrypoint; /edgecloud (X44d) prints the edge vs cloud report of the ledger
+# (docker run --rm --entrypoint /edgecloud -v <ledger>:/ledger-data:ro ...).
 FROM golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod ./
@@ -15,11 +16,13 @@ ARG BUILD=dev
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /sidecar ./cmd/sidecar \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /ledger ./cmd/ledger \
+ && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /edgecloud ./cmd/edgecloud \
  && mkdir -p /spool /ledgerdir && chown 65534:65534 /spool /ledgerdir
 
 FROM scratch
 COPY --from=build /sidecar /sidecar
 COPY --from=build /ledger /ledger
+COPY --from=build /edgecloud /edgecloud
 COPY --from=build --chown=65534:65534 /spool /spool
 COPY --from=build --chown=65534:65534 /ledgerdir /ledger-data
 USER 65534:65534
