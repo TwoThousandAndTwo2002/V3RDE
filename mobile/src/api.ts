@@ -93,6 +93,10 @@ export const auth = Object.freeze({
   signup: (email: string, password: string) => request<User>("POST", "/api/auth/signup", { json: { email, password } }),
   login: (email: string, password: string) => request<User>("POST", "/api/auth/login", { json: { email, password } }),
   logout: () => request<unknown>("POST", "/api/auth/logout"),
+  /** Asks for a reset link by email (202 also for an unknown email). */
+  resetRequest: (email: string) => request<unknown>("POST", "/api/auth/reset", { json: { email } }),
+  /** Sets a new password with the token of the link; signs in (200 user + session). */
+  resetConfirm: (token: string, password: string) => request<User>("POST", "/api/auth/reset/confirm", { json: { token, password } }),
 });
 
 export const listings = Object.freeze({

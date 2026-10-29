@@ -221,6 +221,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - One request at a time; Enter in the email field goes to the password field; Enter in the password field signs in and keeps the focus there.
 - The email has no spaces at the ends and must have the form name@domain.end (the same check as the auth service), else "Enter an email like you@email.com". The password field has no auto-capital, auto-correct or spell check; after "No account found" it asks the browser for a new password.
 - While it waits, a screen reader reads the pill as "Signing in…".
+- "Forgot password?" (a TextLink, `space.gap` under the rule line and the error lines, `space.inset` in) opens the reset screen.
+- The phone and wide-screen frame is `AuthFrame` (`mobile/src/screens/AuthFrame.tsx`), shared with the reset screens.
+
+## Reset password (`mobile/src/screens/Reset.tsx`, words in `mobile/src/signin.ts`)
+
+- Ask: "Reset your password", "We send a link to your email", the email field, the pill "Send link" (busy: "Sending…"), and the TextLink "Back to sign in" `space.gutter` under the field. Then "Check your email" with "If an account uses <email>, a link to set a new password is on its way. It works for 30 minutes." and the pill "Back to sign in". The same answer for every email.
+- The link (web `/reset#token=…`, app `v3rde://reset#token=…`: after - The layout is `AuthFrame`, the same as sign-in.
 
 ## Mockups
 

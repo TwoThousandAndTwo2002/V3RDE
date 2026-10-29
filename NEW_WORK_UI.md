@@ -152,3 +152,20 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **App:** at start the app asks the services for a session; without one it shows the sign-in screen. After sign-in a short line (the email) stands in for the next screens.
 - **Check:** one independent check (T9: at most one, at most 15 minutes) found no layout difference over 1.0 pt and 6 faults; all 6 are fixed and checked in the real app.
 - Tests: mobile 46 (42 + 4 new).
+
+---
+
+## UI 9. Reset password by email link
+
+**When:** Oct 29 2026.
+**Meta model:** none (reset password; the auth service of branch `services` makes the link and sends the email).
+**Files:** `mobile/src/screens/Reset.tsx`, `mobile/src/screens/AuthFrame.tsx`, `mobile/tests/reset.test.mts`, `mobile/src/screens/Login.tsx`, `mobile/src/signin.ts`, `mobile/src/api.ts`, `mobile/App.tsx`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U9.md`
+
+- **New:** "Forgot password?" on the sign-in screen opens "Reset your password" (email, "Send link"), then "Check your email". The same words for every email, so the screen tells nothing about which accounts exist.
+- **The link:** web `/reset#token=…`, app `v3rde://reset#token=…`. The token is after "#", so the browser does not send it to the web server or in a Referer header; on the web it leaves the address bar at once. The link opens "Set a new password"; on success the user is signed in, with the same handoff as sign-in. A link that is unknown, used or too old shows "This link has expired or was used." with "Send a new link".
+- **Routes (contract for branch services):** `POST /api/auth/reset {email}` → 202; `POST /api/auth/reset/confirm {token, password}` → 200 user and session, or 400 "reset link expired". The token is 32 random bytes, unpadded base64url (43 characters).
+- **Frame:** the phone and wide-screen frame of sign-in moved to `AuthFrame.tsx`, shared by the reset screens; sign-in looks the same as in UI 8.
+- **Behaviour:** one request at a time; the links do nothing while a request waits; the cursor starts in the new-password field; "Check your email" is read out by a screen reader; a start error does not leave a blank screen, and a link that comes during start wins.
+- **Check:** one independent check (T9: at most one, at most 15 minutes) found 5 issues; all are fixed and checked in the real app.
+- Tests: mobile 49 (46 + 3 new).
