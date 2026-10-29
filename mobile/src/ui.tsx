@@ -75,14 +75,14 @@ export function IconBtn({ glyph, label, onPress, big }: { glyph: Glyph; label: s
 }
 
 /** A pill button: primary (red) or secondary (white with a line). `grow` shares a row with another pill. */
-export function Pill({ title, onPress, kind = "primary", busy, grow, testID }: {
-  title: string; onPress?: () => void; kind?: "primary" | "secondary"; busy?: boolean; grow?: boolean; testID?: string;
+export function Pill({ title, onPress, kind = "primary", busy, busyName, grow, testID }: {
+  title: string; onPress?: () => void; kind?: "primary" | "secondary"; busy?: boolean; busyName?: string; grow?: boolean; testID?: string;
 }) {
   const col = useColors();
   const isPrimary = kind !== "secondary";
   const fg = isPrimary ? col.onAccent : col.fg;
   return (
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={title} aria-busy={!!busy}
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={busy && busyName ? busyName : title} aria-busy={!!busy}
       onPress={busy ? undefined : onPress}
       style={(state) => [{
         height: size.control, borderRadius: radius.round, alignItems: "center", justifyContent: "center",

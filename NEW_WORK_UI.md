@@ -135,3 +135,20 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Look:** stroke 2.2 pt and opacity as on the earlier wallpaper; the ink per area is near it. A hash picks the drawing, its turn and its shift; no drawing is the same as the one to its left or above it.
 - **Not used yet:** the sign-in screen (UI 8) is the first screen with the wallpaper.
 - Tests: mobile 42 (33 + 9 new: fixed hash and rule-30 values, the step, fairness, neighbours, edge cases).
+
+---
+
+## UI 8. The sign-in screen
+
+**When:** Oct 29 2026.
+**Meta model:** none (sign-in; the auth service of branch `services` checks the email and the password).
+**Files:** `mobile/src/screens/Login.tsx`, `mobile/src/signin.ts`, `mobile/tests/signin.test.mts`, `mobile/App.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U8.md`
+
+- **Written again:** the sign-in screen is new code on the U6 field parts and the U7 doodle wallpaper. The rewrite guard finds no line of the earlier `Login.tsx`, `App.tsx`, `ui.tsx` or `theme.ts`.
+- **Words (T9, Oct 29: the earlier words, made simpler):** "Share or find a meal", "Sign in or sign up", "8 characters or more", "Continue"; a 401 shows "No account found." with "Create one". The words and the rules are in `signin.ts`, with tests.
+- **Behaviour:** one request at a time; Enter in the email field goes to the password field, Enter there signs in and keeps the focus; the email has no spaces at the ends and must have the form name@domain.end (the same check as the auth service); the password field has no auto-capital, auto-correct or spell check, and asks for a new password after "No account found"; a screen reader reads the busy pill as "Signing in…".
+- **Wide screen:** a centred card on the doodles; after sign-in it fades and rises (300 ms, 40 pt), then the next screen comes.
+- **App:** at start the app asks the services for a session; without one it shows the sign-in screen. After sign-in a short line (the email) stands in for the next screens.
+- **Check:** one independent check (T9: at most one, at most 15 minutes) found no layout difference over 1.0 pt and 6 faults; all 6 are fixed and checked in the real app.
+- Tests: mobile 46 (42 + 4 new).

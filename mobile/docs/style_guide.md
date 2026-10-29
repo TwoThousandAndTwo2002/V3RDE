@@ -65,7 +65,7 @@ Values are font size / line height in pt.
 | Token | Value | Source | Use |
 |---|---|---|---|
 | `space.hair` | 4 | X32 | a title to its muted line; a field label to its field |
-| `space.inset` | 6 | X32: 6.0 | card padding; the indent of a field label and of a note; a note under its field; above the photo row of a dialog |
+| `space.inset` | 6 | X32: 6.0; Ref-login | card padding; the indent of a field label and of a note; a note under its field; above the photo row of a dialog; the sign-in title to its line |
 | `space.gap` | 8 | X32: 8.0 | between the rows and controls inside a card; above an error line; the end of the scroll body of a sheet |
 | `space.item` | 10 | X32: 10.0 | between cards; between two pills (9.7 phone, 10.0 desktop); a thumbnail to its fields; above a field label |
 | `space.group` | 12 | X32 | above a stand-alone label ("Servings" in the one-item form) |
@@ -109,6 +109,7 @@ Values are font size / line height in pt.
 | `size.progressH` | 6 | X25: 6.0 | the progress bar height |
 | `size.focusBorder` | 2 | Ref-login: 2.00 | the border of a field while it has the focus (in `accent`) |
 | `size.fieldSlot` | 76 | Ref-login | field text to the right border when a text button (Show) sits in the field |
+| `size.loginTop` | 0.14 | Ref-login | the sign-in title from the top of a phone screen, as a share of the screen width (rounded to a whole pt) |
 
 ## Glyphs (`glyph`)
 
@@ -160,6 +161,8 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `motion.sheetSpeed` | 14 | Choice | the spring of a sheet (React Native `Animated.spring` speed) |
 | `motion.sheetBounce` | 0 | Choice | its bounciness (no overshoot) |
 | `motion.sheetShift` | 0.2 | Choice | a sheet starts this share of the window height below its place |
+| `motion.handoffMs` | 300 | Ref-login | wide screens: the sign-in card fades out in this time after sign-in |
+| `motion.handoffLift` | 40 | Ref-login | and rises this far (pt) |
 
 ## Doodles (`doodle`)
 
@@ -209,6 +212,15 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - **Photo:** a square photo (or `side` × `side`) with a `radius` token; an empty frame shows `accentSoft`.
 - **Camera:** the live picture on `cameraBg`; `CameraBtn` (a `size.iconSmall` disc in `cameraBtn` with a `cameraFg` glyph: close at `camera.edge`, upload at `camera.side` × `camera.uploadBottom`), `Hint` (a `cameraBtn` pill, `camera.hintPadX` × `camera.hintPadY`, `camera.hintBottom` from the bottom), `Shutter` (`camera.shutter`, `camera.shutterRing`, `camera.shutterGap`, `camera.shutterBottom`).
 - **CardDialog:** the camera on a wide screen: a `card` dialog, `size.dialogCamera` wide, `space.gutter` padding, `radius.sheet`, on `scrimDim`. The photo is `camera.ratio` with `radius.card` and the shutter `camera.cardShutterBottom` from its bottom; the pills are `space.gutter` under the photo, and the hint `space.gap` under the pills.
+
+## Sign-in (`mobile/src/screens/Login.tsx`, words in `mobile/src/signin.ts`)
+
+- Phone: `Doodles` on `bg`; the title `size.loginTop` × the screen width from the top, `space.gutter` sides; the line `space.inset` under the title; the fields `space.pad` under the line; the rule line `space.inset` under the password field (`space.inset` in); the Continue pill `space.gutter` from the sides and the bottom.
+- Wide screen: the same content in a `card` card, `size.dialogSmall` wide, `space.pad` padding, `radius.sheet`, `size.border` `line`, centred on the doodles; the pill `space.pad` under the content. After sign-in the card fades out in `motion.handoffMs` and rises `motion.handoffLift`; then the next screen comes.
+- Words (T9, Oct 29: the earlier words, made simpler): "Share or find a meal", "Sign in or sign up", "8 characters or more", "Continue". A 401 on sign-in shows "No account found." with the link "Create one" (it signs up with the same email and password); other failures show the text of the services.
+- One request at a time; Enter in the email field goes to the password field; Enter in the password field signs in and keeps the focus there.
+- The email has no spaces at the ends and must have the form name@domain.end (the same check as the auth service), else "Enter an email like you@email.com". The password field has no auto-capital, auto-correct or spell check; after "No account found" it asks the browser for a new password.
+- While it waits, a screen reader reads the pill as "Signing in…".
 
 ## Mockups
 

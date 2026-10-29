@@ -66,7 +66,8 @@ export const useColors = (): Colors => (RN.useColorScheme() === "dark" ? palette
 /** Spacing in pt (measured: mobile/tools/ui/x32_measure.json). */
 export const space = {
   hair: 4,     // a title to its muted line; a field label to its field
-  inset: 6,    // card padding; the indent of a field label and of a note; a note under its field; above the photo row of a dialog
+  inset: 6,    // card padding; the indent of a field label and of a note; a note under its field; above the photo row of a dialog;
+               // the sign-in title to its line
   gap: 8,      // between the rows and controls inside a card; above an error line; the end of a sheet's scroll body
   item: 10,    // between cards; between two pills; a thumbnail to its fields; above a field label
   group: 12,   // above a stand-alone label (the "Servings" label of the one-item form)
@@ -110,6 +111,7 @@ export const size = {
   progressH: 6,      // the progress bar
   focusBorder: 2,    // the border of a field while it has the focus (in accent)
   fieldSlot: 76,     // field text to the right border when a text button (Show) sits in the field
+  loginTop: 0.14,    // the sign-in title from the top of a phone screen, as a share of the screen width
 } as const;
 
 /**
@@ -173,6 +175,8 @@ export const motion = {
   sheetSpeed: 14,   // the spring of a sheet (React Native Animated.spring speed)
   sheetBounce: 0,   // and its bounciness (no overshoot)
   sheetShift: 0.2,  // a sheet starts this share of the window height below its place
+  handoffMs: 300,   // wide screens: the sign-in card fades out in this time after sign-in
+  handoffLift: 40,  // and rises this far (pt)
 } as const;
 
 /**
