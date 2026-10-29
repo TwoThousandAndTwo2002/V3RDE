@@ -453,3 +453,22 @@ Each image carries the commit it was built from. Because of that, every deploy c
 - The stack script can now start the stack with the images that are already built (`STACK_NO_BUILD=1`).
 - The deploy builds only the services whose code changed, one at a time, and keeps the images and their build stamp for the others.
 - Without the setting, the stack script works as before.
+
+---
+
+## 44. Lost in translation: the translation quality estimator runs
+
+**When:** Oct 29 2026.
+**Branch:** `LIF` (lost in translation), made from `main`. It does not change `services` or `ui`.
+**Meta models:** none in this change. The estimator is for the translations that Muse Spark Open will make.
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `qe/Dockerfile`, `qe/smoke.sh`, `qe/smoke_input.jsonl`, `qe/run_predict.py`, `qe/test_qe.py`
+**Sources:** `docs/sources/L1.md`
+
+Muse Spark Open returns no log probabilities on our endpoint, so a translation cannot be scored from the translator itself. A separate quality estimator scores each translation from the source and the translation only (no reference).
+
+- One container image holds MetricX-24 with all package versions pinned. The model (Large, full precision) downloads into its own Docker volume on the first run. The bf16 model does not run on the laptop's ARM CPU, and the full-precision model is loaded with low memory use so that it fits the limit (root causes in the sources file).
+- The container has a hard 10 GB memory limit and no swap. The fp32 model did not fit in 6 GB (measured), so the Colima VM was raised to 12 GiB and the other containers are stopped while it runs.
+- A smoke test scores six English to Spanish pairs, three of them bad on purpose. It checks that the pipeline runs; it is not an accuracy measure.
+- Regression tests (`qe/test_qe.py`, 6 tests) keep the fixes in place: the package pins, the full-precision model, the low-memory load, the memory limit, and the smoke input format.
+- Not deployed by this change.
