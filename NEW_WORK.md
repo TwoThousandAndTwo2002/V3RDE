@@ -527,3 +527,20 @@ In #47 Arabic was `ar-001`. A phone set to Arabic has a tag such as `ar-EG` or `
 - Arabic is now `ar`, so the Arabic text serves all Arabic regions. The text stays Modern Standard Arabic (the name in `languages.json` says so).
 - The language test expects `ar`.
 - Not deployed by this change.
+
+---
+
+## 49. Lost in translation: names and values are locked before translation
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change. The tags are for the prompts to Muse Spark Open (#50).
+**Files:** `i18n/mask/mask.go`, `i18n/mask/mask_test.go`
+**Sources:** `docs/sources/L4a.md`
+
+A translator can change or lose a placeholder such as `{n}`, or translate a name such as `V3RDE`.
+
+- Before a message goes to the translator, each `{name}` and each name in `languages.json` "keep" becomes a numbered tag (`<x1/>`, `<x2/>`, ...).
+- After the translation, each tag must be there exactly once. A lost, doubled or unknown tag, or a bare `{name}`, is an error, and that translation is not used. The translator can move a tag to where the grammar of the language needs it.
+- Regression tests (`i18n/mask/mask_test.go`, 4 tests): masking, restore in Spanish, Chinese, Hindi and Arabic text and with the tags in a new order, the error cases, and a round trip of every message in `en.json`. The i18n module now has 11 tests.
+- Not deployed by this change.
