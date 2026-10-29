@@ -240,8 +240,51 @@ func TestTouchupKeepsOriginalWhenFoodChanged(t *testing.T) {
 	if w := do(e.h, asUser(httptest.NewRequest("GET", "/api/touchup/"+id+"/photo", nil), "u1")); w.Code != 409 {
 		t.Fatalf("photo of a kept original: %d", w.Code)
 	}
-	if fs, _ := os.ReadDir(e.cfg.Dir); len(fs) != 0 {
-		t.Fatal("a rejected edit was stored")
+	// X42d: the refused edit is kept for review, NOT as an item photo
+	if fs, _ := os.ReadDir(e.cfg.Dir); len(fs) != 1 || fs[0].Name() != "rejected" || !fs[0].IsDir() {
+		t.Fatalf("only the rejected/ folder may be in the photo folder: %v", fs)
+	}
+	if !j.RejectedEdit {
+		t.Fatal("the job must say that the refused edit is kept")
+	}
+	w := do(e.h, asUser(httptest.NewRequest("GET", "/api/touchup/"+id+"/rejected", nil), "u1"))
+	if w.Code != 200 || w.Header().Get("Content-Type") != "image/jpeg" || w.Body.Len() == 0 {
+		t.Fatalf("rejected edit: %d %q", w.Code, w.Header().Get("Content-Type"))
+	}
+	if !bytes.Equal(w.Body.Bytes(), mustRead(t, filepath.Join(e.cfg.Dir, "rejected", id+".jpg"))) {
+		t.Fatal("the rejected route must serve the kept edit")
+	}
+	var meta map[string]any
+	if json.Unmarshal(mustRead(t, filepath.Join(e.cfg.Dir, "rejected", id+".json")), &meta) != nil || meta["user_id"] != "u1" || meta["reason"] != "one apple is missing" {
+		t.Fatalf("rejected meta %v", meta)
+	}
+	if w := do(e.h, asUser(httptest.NewRequest("GET", "/api/touchup/"+id+"/rejected", nil), "u2")); w.Code != 404 {
+		t.Fatalf("another user: %d", w.Code)
+	}
+	if w := do(e.h, httptest.NewRequest("GET", "/api/touchup/"+id+"/rejected", nil)); w.Code != 401 {
+		t.Fatalf("no session: %d", w.Code)
+	}
+}
+
+func mustRead(t *testing.T, p string) []byte {
+	t.Helper()
+	b, err := os.ReadFile(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+// X42d: a passed edit has no refused edit to show.
+func TestTouchupRejectedRouteOnDoneJob(t *testing.T) {
+	e := newTU(t, &metaFake{checkText: `{"same_food": true, "reason": "same pear"}`}, true)
+	defer e.stop()
+	id := start(t, e, tuReq(t, e, "u1", ""))
+	if j := wait(t, e, "/api/touchup/"+id, "u1"); j.Status != JobDone || j.RejectedEdit {
+		t.Fatalf("job %+v", j)
+	}
+	if w := do(e.h, asUser(httptest.NewRequest("GET", "/api/touchup/"+id+"/rejected", nil), "u1")); w.Code != 409 {
+		t.Fatalf("rejected of a done job: %d", w.Code)
 	}
 }
 
@@ -392,9 +435,15 @@ func TestTouchupEmptyBodyWithContentType(t *testing.T) {
 		}
 		r.ContentLength = tc.length
 		w := do(e.h, r)
-		e.stop()
 		if w.Code != http.StatusAccepted || !strings.Contains(w.Body.String(), `"touchup_id"`) {
+			e.stop()
 			t.Fatalf("%q, length %d: %d %s", tc.ct, tc.length, w.Code, w.Body)
 		}
+		// X42d: wait for the job, so it does not write files while the test's
+		// folders are removed (that failed about 1 run in 7)
+		var a map[string]any
+		_ = json.Unmarshal(w.Body.Bytes(), &a)
+		wait(t, e, "/api/touchup/"+a["touchup_id"].(string), "u1")
+		e.stop()
 	}
 }

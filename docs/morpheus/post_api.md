@@ -25,6 +25,8 @@ POST /api/touchup?mode=light|background&photo_id=<32 hex>    session cookie, no 
 
 GET /api/touchup/{touchup_id}         -> 200 job
 GET /api/touchup/{touchup_id}/photo   -> image/jpeg (status "done" only, else 409)
+GET /api/touchup/{touchup_id}/rejected -> image/jpeg: an edit the check refused, kept for
+                                          review (rejected_edit true only, else 409; X42d)
 GET /healthz
 ```
 

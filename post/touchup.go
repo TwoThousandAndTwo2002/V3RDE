@@ -107,10 +107,13 @@ type Job struct {
 	LatencyMS     int64   `json:"latency_ms"`
 	ImageModel    string  `json:"image_model"`
 	CheckModel    string  `json:"check_model,omitempty"`
-	userID        string
-	remoteIP      string
-	forwardedIP   string
-	ended         time.Time
+	// X42d (T9, 2026-10-29): an edit that the check refused is kept for
+	// review (GET .../rejected). The app never shows it as a listing photo.
+	RejectedEdit bool `json:"rejected_edit,omitempty"`
+	userID       string
+	remoteIP     string
+	forwardedIP  string
+	ended        time.Time
 }
 
 // ImageEditor calls POST <Base>/images/edits (multipart, the OpenAI Images
@@ -350,6 +353,7 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 	mux.HandleFunc("POST /api/touchup", c.start)
 	mux.HandleFunc("GET /api/touchup/{id}", c.get)
 	mux.HandleFunc("GET /api/touchup/{id}/photo", c.photo)
+	mux.HandleFunc("GET /api/touchup/{id}/rejected", c.rejected) // X42d: a refused edit, for review
 	return mux
 }
 
@@ -471,6 +475,11 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 			if reason == "" {
 				reason = "the food changed"
 			}
+			if c.storeRejected(job, img, edited, reason) == nil {
+				c.mu.Lock()
+				job.RejectedEdit = true
+				c.mu.Unlock()
+			}
 		default:
 			photoID = newHex(16)
 			if err := c.store(job, photoID, img, edited); err != nil {
@@ -521,6 +530,39 @@ func (c *TouchupConfig) store(job *Job, photoID string, src, edited []byte) erro
 		CreatedAt: c.now().UTC().Format(time.RFC3339Nano)}
 	b, _ := json.Marshal(m)
 	return WriteFileSync(filepath.Join(c.Dir, photoID+".json"), b, 0o644)
+}
+
+// storeRejected keeps an edit that the check refused, for review only:
+// <Dir>/rejected/<touchup_id>.jpg + .json. It is not an item photo (not in
+// <Dir> itself), so a listing can never use it.
+func (c *TouchupConfig) storeRejected(job *Job, src, edited []byte, reason string) error {
+	dir := filepath.Join(c.Dir, "rejected")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	if err := WriteFileSync(filepath.Join(dir, job.TouchupID+".jpg"), edited, 0o644); err != nil {
+		return err
+	}
+	m := map[string]any{"touchup_id": job.TouchupID, "user_id": job.userID, "source_photo_id": job.SourcePhotoID,
+		"source_sha256": sha256hex(src), "edited_sha256": sha256hex(edited), "mode": job.Mode,
+		"image_model": job.ImageModel, "reason": reason, "created_at": c.now().UTC().Format(time.RFC3339Nano)}
+	b, _ := json.Marshal(m)
+	return WriteFileSync(filepath.Join(dir, job.TouchupID+".json"), b, 0o644)
+}
+
+// rejected serves a refused edit to the owner of the job, for review.
+func (c *TouchupConfig) rejected(w http.ResponseWriter, r *http.Request) {
+	j, ok := c.owned(w, r)
+	if !ok {
+		return
+	}
+	if !j.RejectedEdit {
+		WriteJSON(w, http.StatusConflict, ErrorAnswer{RequestID: analyze.NewRequestID(), Error: "no refused edit (status " + j.Status + ")", Code: CodeConflict})
+		return
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "private, no-store")
+	http.ServeFile(w, r, filepath.Join(c.Dir, "rejected", j.TouchupID+".jpg"))
 }
 
 // owned finds job id for the caller (one 404 for unknown and not-owned).

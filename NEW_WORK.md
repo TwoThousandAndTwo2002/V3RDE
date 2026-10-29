@@ -606,3 +606,16 @@ The first live test of photo touch-up on the new box found that every touch-up t
 - Now only a real body is refused (the rule that no photo is uploaded stays).
 - Also: a food gate test that failed at random (about 1 run in 15) is fixed.
 - Tests: post 52 (1 new); gate 26.
+
+## 34. A refused touch-up edit is kept for review
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Image 1.0 and Muse Spark 1.3, as in entry 16.
+**Files:** `post/touchup.go`, `post/touchup_test.go`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X42d.md`
+
+When the check says that an edit changed the food, the app still keeps the original photo. Now the refused edit is also kept, in a separate folder, so the team can look at what the image model did.
+
+- Only the owner can see it (`GET /api/touchup/{id}/rejected`); it can never become a listing photo.
+- Also: a touch-up test from entry 33 that failed at random (about 1 run in 7) now waits for its jobs.
+- Tests: post 53 (1 new).
