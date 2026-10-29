@@ -102,6 +102,7 @@ Rescue:
 ```
 - `kind`: `food_bank` (shelf-stable: pantries and food banks first) or `meal_program` (perishable: soup kitchens, meal programs, shelters first). Nearest first in each group; 3 places.
 - The app must show `attribution` (CC BY 4.0).
+- X44l: each place also has `source`, the record's `data_source` in the directory (the directory says each record comes from the source it names). The live answer's list is `resources`; the service also reads `results`, `items` and `data`. When the directory answer cannot be read, the donor gets 502 and the events line has `detail.directory_error`.
 - The app opens `mailto` (the donor's own mail app) or `tel`. `email` is filled only if the directory gives one; else the donor types the address in their own mail app (`/send` is only for a directory address).
 - One rescue per listing: a second POST answers 200 with the first rescue (no new Muse call); while the first one runs, 409 `conflict`.
 - `/send` sends the stored draft (or the donor's edited `subject`/`body`), Reply-To = the donor's email; once per place; 3 per donor per day; rate-limited. It sends **only to the place's directory `email`** (X36a): a place with no directory email gets `409 conflict` (use `mailto` or `tel`), and a `to_email` other than the directory address (any case) gets 400. The SMTP exchange stops after `-smtp-timeout` (20 s).

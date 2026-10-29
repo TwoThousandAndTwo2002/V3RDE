@@ -732,3 +732,19 @@ The rescue test needs a listing that nobody claimed before its timer ran out, an
 - A test account can now post a listing with its own timer (`ttl_seconds`, 30 s to 30 minutes), so the rescue test runs in one minute.
 - Only the test accounts named in the settings can do this. Every other user gets 403, and the timer stays 30 minutes.
 - Tests: listings 27 -> 28.
+
+---
+
+## 42. Rescue reads the live food directory
+
+**When:** Oct 29 2026.
+**Meta models:** Muse Spark 1.3, as in entry 17 (no new model).
+**Files:** `post/rescue.go`, `post/rescue_test.go`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X44l.md`
+
+The first live rescue test failed: the food directory answered, but the service looked for its list under the wrong name.
+
+- The service now reads the list where the live directory has it, with the full address and the type of each place.
+- Each place shows where its record comes from.
+- When the directory answer cannot be read, the events line keeps the reason.
+- Tests: post 61 -> 63.

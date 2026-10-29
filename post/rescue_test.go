@@ -405,3 +405,62 @@ func TestMailerTimesOutOnASilentRelay(t *testing.T) {
 		t.Fatalf("took %s", d)
 	}
 }
+
+// X44l: the live Feed America answer (2026-10-29, read from the box and a
+// Mac) has its list in "resources", the street in "address" with city, state
+// and zip as their own fields, the type in "resource_type" (food_pantry,
+// mobile_pantry, food_bank), "distance" and a "data_source" per record. The
+// values here are made up; the shape is the live one.
+const liveShape = `{"_data_provider":{"name":"Feed America","attribution":"Directory published by Feed America (feedam.org)."},
+ "success":true,"count":3,"total_available":40,"searchMode":"free","search_radius_mi":50,"expanded":false,
+ "location":{"lat":39.7,"lng":-105.0,"state":"CO"},
+ "resources":[
+  {"id":101,"name":"Westside Pantry","organization":null,"address":"10 Main St","city":"Denver","state":"CO","zip":"80219",
+   "phone":"3035550101","website":"https://example.org/w","resource_type":"food_pantry","distance":0.5,"data_source":"source_a"},
+  {"id":102,"name":"Rocky Mountain Hub","address":"20 Oak Ave","city":"Denver","state":"CO","zip":"80219",
+   "phone":"(303) 555-0102","resource_type":"food_bank","distance":1.4,"data_source":"source_b"},
+  {"id":103,"name":"Market on Wheels","address":"30 Elm Rd","city":"Denver","state":"CO","zip":"80223",
+   "resource_type":"mobile_pantry","distance":0.8,"data_source":"source_a"}
+ ]}`
+
+func TestParsePlacesLiveShape(t *testing.T) {
+	ps, err := ParsePlaces([]byte(liveShape))
+	if err != nil || len(ps) != 3 {
+		t.Fatalf("%v %v", ps, err)
+	}
+	p := ps[0]
+	if p.ID != "101" || p.Name != "Westside Pantry" || p.Type != "food_pantry" || p.Address != "10 Main St, Denver, CO, 80219" ||
+		p.DistanceMiles != 0.5 || p.Source != "source_a" || p.Website != "https://example.org/w" {
+		t.Fatalf("place %+v", p)
+	}
+	// a food bank found by its type alone (no "food bank" in the name)
+	got := PickPlaces(ps, KindFoodBank, 3)
+	if len(got) != 3 || got[0].ID != "101" || got[1].ID != "103" || got[2].ID != "102" {
+		t.Fatalf("order %+v", got)
+	}
+	if !bankRe.MatchString("food_bank Rocky Mountain Hub") {
+		t.Fatal("food_bank type not matched")
+	}
+}
+
+// A directory answer the service cannot read is a 502 for the donor, and
+// the reason is in the events line (X44l: the first live rescue gave only
+// "the directory is unavailable").
+func TestRescueDirectoryErrorIsLogged(t *testing.T) {
+	e := newRS(t, stableDraft, 200, false)
+	defer e.stop()
+	ds := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"success":true,"count":0}`))
+	}))
+	defer ds.Close()
+	e.cfg.Directory = &Directory{Base: ds.URL}
+	w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", `{"zip":"10001"}`, "u1"))
+	if w.Code != 502 || !strings.Contains(w.Body.String(), "the directory is unavailable") {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	b, _ := os.ReadFile(e.cfg.Events.Path(e.now))
+	if !strings.Contains(string(b), `"directory_error":"directory: no results array"`) {
+		t.Fatalf("events: %s", b)
+	}
+}

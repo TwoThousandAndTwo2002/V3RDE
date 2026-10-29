@@ -77,8 +77,9 @@ type Place struct {
 	Phone         string  `json:"phone,omitempty"`
 	DistanceMiles float64 `json:"distance_miles,omitempty"`
 	Website       string  `json:"website,omitempty"`
-	Email         string  `json:"email,omitempty"` // only when the directory gives one
-	Tel           string  `json:"tel,omitempty"`   // tel: link
+	Email         string  `json:"email,omitempty"`  // only when the directory gives one
+	Source        string  `json:"source,omitempty"` // X44l: the record's data_source (the directory names it per record)
+	Tel           string  `json:"tel,omitempty"`    // tel: link
 	Mailto        string  `json:"mailto,omitempty"`
 }
 
@@ -178,7 +179,7 @@ func ParsePlaces(raw []byte) ([]Place, error) {
 		return nil, fmt.Errorf("directory: bad JSON: %w", err)
 	}
 	var list []any
-	for _, k := range []string{"results", "items", "data"} {
+	for _, k := range []string{"resources", "results", "items", "data"} { // X44l: the live answer has "resources"
 		if l, ok := top[k].([]any); ok {
 			list = l
 			break
@@ -201,6 +202,7 @@ func ParsePlaces(raw []byte) ([]Place, error) {
 			Phone:   firstStr(m, "phone", "phone_number", "telephone"),
 			Website: firstStr(m, "website", "url", "web"),
 			Email:   firstStr(m, "email", "contact_email"),
+			Source:  firstStr(m, "data_source", "source"),
 		}
 		for _, k := range []string{"distance_miles", "distance_mi", "distance"} {
 			if v, ok := m[k].(float64); ok {
@@ -244,8 +246,15 @@ func addressOf(m map[string]any) string {
 	for _, k := range []string{"address", "full_address", "location"} {
 		switch v := m[k].(type) {
 		case string:
-			if strings.TrimSpace(v) != "" {
-				return strings.TrimSpace(v)
+			if a := strings.TrimSpace(v); a != "" {
+				// X44l: the live answer has the street in "address" and the
+				// city, state and zip as their own fields
+				for _, f := range []string{"city", "state", "zip"} {
+					if s, ok := m[f].(string); ok && strings.TrimSpace(s) != "" && !strings.Contains(a, strings.TrimSpace(s)) {
+						a += ", " + strings.TrimSpace(s)
+					}
+				}
+				return a
 			}
 		case map[string]any:
 			var parts []string
@@ -269,7 +278,7 @@ func addressOf(m map[string]any) string {
 }
 
 var (
-	bankRe = regexp.MustCompile(`(?i)pantry|food bank|foodbank|mobile`)
+	bankRe = regexp.MustCompile(`(?i)pantry|food[ _-]?bank|mobile`) // X44l: types are like food_bank
 	mealRe = regexp.MustCompile(`(?i)soup|kitchen|meal|shelter|congregate|hot food`)
 )
 
@@ -697,6 +706,8 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
 		return
 	case d.err != nil:
+		// X44l: the reason goes into the events line (the answer stays short)
+		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms}
 		fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
 		return
 	}
