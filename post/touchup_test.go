@@ -516,3 +516,25 @@ func TestTouchupBearerRoute(t *testing.T) {
 	}
 	wait(t, e, "/api/touchup/"+sid, "u1")
 }
+
+// X44a: a caller over its own daily share gets 429 caller_daily_cap_reached
+// before any paid call; another caller still gets its touch-up; the job's
+// cost line has the caller's cap_key, so a restart restores the share.
+func TestTouchupCallerCap(t *testing.T) {
+	e := newTU(t, &metaFake{checkText: `{"same_food": true, "reason": "same"}`}, true)
+	defer e.stop()
+	// one 0.03 hold fits; a second one does not, whether the first job is still
+	// running (0.03 held + 0.03) or done (its cost, about 0.014, + 0.03)
+	e.cfg.Budget.PerCaller = 0.04
+	id := start(t, e, tuReq(t, e, "u1", ""))
+	if w := do(e.h, tuReq(t, e, "u1", "")); w.Code != 429 || !strings.Contains(w.Body.String(), CodeCallerCap) {
+		t.Fatalf("u1 over its share: %d %s", w.Code, w.Body)
+	}
+	id2 := start(t, e, tuReq(t, e, "u2", ""))
+	wait(t, e, "/api/touchup/"+id, "u1")
+	wait(t, e, "/api/touchup/"+id2, "u2")
+	spent, by := e.cfg.Events.SpentByKey(time.Now())
+	if spent <= 0 || by["u:u1"] <= 0 || by["u:u2"] <= 0 || !near(by["u:u1"]+by["u:u2"], spent) {
+		t.Fatalf("events by key: %v of %v", by, spent)
+	}
+}

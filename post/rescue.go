@@ -571,7 +571,7 @@ func NewRescue(c *RescueConfig) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "rescue", "build": c.Build,
-			"spent_today_usd": c.Budget.Spent(), "mail_relay": c.Mailer != nil, "min_servings": c.MinServings})
+			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller, "mail_relay": c.Mailer != nil, "min_servings": c.MinServings})
 	})
 	mux.HandleFunc("POST /api/rescue/{id}", c.create)
 	mux.HandleFunc("GET /api/rescue/{id}", c.get)
@@ -610,7 +610,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID = who.User.ID
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
 	if c.Limiter != nil && !c.Limiter.Allow(who.RateKey) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
 		return
@@ -661,9 +661,9 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Store.End(lid)
-	hold, ok := c.Budget.Reserve()
-	if !ok {
-		fail(http.StatusServiceUnavailable, CodeDailyCap, "daily spend cap reached")
+	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
+	if hold == nil {
+		fail(CapRefusal(why))
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
@@ -785,7 +785,7 @@ func (c *RescueConfig) send(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID = who.User.ID
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
 	if c.Mailer == nil {
 		fail(http.StatusServiceUnavailable, CodeDisabled, "no mail relay: use the mailto link")
 		return

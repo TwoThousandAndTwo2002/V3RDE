@@ -30,6 +30,7 @@ func main() {
 	model := flag.String("model", post.DefaultModel, "Muse Spark model id")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	capUSD := flag.Float64("cap-usd", 1, "daily spend cap in USD, UTC day (this service only)")
+	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.01, "spend reserved per request while it runs")
 	maxAudio := flag.Duration("max-audio", 60*time.Second, "the longest utterance")
 	maxBytes := flag.Int64("max-bytes", 12<<20, "the largest upload")
@@ -51,6 +52,7 @@ func main() {
 	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
+	budget.PerCaller = *callerCap
 	hc := &http.Client{Timeout: *timeout}
 	cfg := &post.VoiceConfig{
 		ASR:      &post.Transcriber{URL: *asrURL, Key: key, Model: *asrModel, HTTP: hc},

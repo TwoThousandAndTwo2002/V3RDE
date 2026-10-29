@@ -49,10 +49,11 @@ const (
 	CodeUnsupported  = "unsupported_media"
 	CodeNotFound     = "not_found"
 	CodeConflict     = "conflict"
-	CodeRateLimited  = "rate_limited"      // 429
-	CodeUpstream     = "upstream_error"    // 502
-	CodeDailyCap     = "daily_cap_reached" // 503
-	CodeTimeout      = "timeout"           // 504
+	CodeRateLimited  = "rate_limited"             // 429
+	CodeUpstream     = "upstream_error"           // 502
+	CodeDailyCap     = "daily_cap_reached"        // 503
+	CodeCallerCap    = "caller_daily_cap_reached" // 429: X44a, this caller's share of the day is used
+	CodeTimeout      = "timeout"                  // 504
 	CodeInternal     = "internal_error"
 	CodeDisabled     = "disabled" // 503: a needed setting is not configured
 )
@@ -524,6 +525,7 @@ type Event struct {
 	LatencyMS     int64          `json:"latency_ms"`
 	CostUSD       float64        `json:"cost_usd"`
 	SpentTodayUSD float64        `json:"spent_today_usd"`
+	CapKey        string         `json:"cap_key,omitempty"` // X44a: the caller's daily-cap key (Caller.RateKey)
 	Calls         []Call         `json:"calls,omitempty"`
 	Detail        map[string]any `json:"detail,omitempty"`
 }
@@ -581,9 +583,18 @@ func (e *Events) write(ev Event) error {
 
 // SpentOn sums cost_usd over the lines of day t.
 func (e *Events) SpentOn(t time.Time) float64 {
+	s, _ := e.SpentByKey(t)
+	return s
+}
+
+// SpentByKey sums cost_usd over the lines of day t: the total, and the part
+// of each cap_key (X44a). A line written before X44a has no cap_key: it
+// counts in the total only.
+func (e *Events) SpentByKey(t time.Time) (float64, map[string]float64) {
+	by := map[string]float64{}
 	f, err := os.Open(e.Path(t))
 	if err != nil {
-		return 0
+		return 0, by
 	}
 	defer f.Close()
 	s := 0.0
@@ -592,32 +603,43 @@ func (e *Events) SpentOn(t time.Time) float64 {
 	for sc.Scan() {
 		var l struct {
 			CostUSD float64 `json:"cost_usd"`
+			CapKey  string  `json:"cap_key"`
 		}
 		if json.Unmarshal(sc.Bytes(), &l) == nil {
 			s += l.CostUSD
+			if l.CapKey != "" && l.CostUSD != 0 {
+				by[l.CapKey] += l.CostUSD
+			}
 		}
 	}
-	return s
+	return s, by
 }
 
 // Budget is a daily spend cap per UTC day (inference/events.go Budget: a
 // request reserves Estimate before it runs and settles at its real cost).
+//
+// X44a (security audit S1 item 2): PerCaller is a second cap for each caller
+// key (Caller.RateKey: one signed-in user, or one bearer address), so one
+// caller cannot use the whole day of a feature for every caller. 0 = off.
 type Budget struct {
-	Cap      float64
-	Estimate float64
-	mu       sync.Mutex
-	day      string
-	spent    float64
-	held     float64
-	now      func() time.Time
+	Cap       float64
+	Estimate  float64
+	PerCaller float64
+	mu        sync.Mutex
+	day       string
+	spent     float64
+	held      float64
+	byKey     map[string]float64 // settled today, per caller key
+	heldKey   map[string]float64
+	now       func() time.Time
 }
 
 // NewBudget starts at what events already records for today.
 func NewBudget(capUSD, estimate float64, ev *Events) *Budget {
-	b := &Budget{Cap: capUSD, Estimate: estimate, now: time.Now}
+	b := &Budget{Cap: capUSD, Estimate: estimate, now: time.Now, byKey: map[string]float64{}, heldKey: map[string]float64{}}
 	b.day = b.now().UTC().Format("20060102")
 	if ev != nil {
-		b.spent = ev.SpentOn(b.now())
+		b.spent, b.byKey = ev.SpentByKey(b.now())
 	}
 	return b
 }
@@ -625,7 +647,25 @@ func NewBudget(capUSD, estimate float64, ev *Events) *Budget {
 func (b *Budget) rollLocked() {
 	if d := b.now().UTC().Format("20060102"); d != b.day {
 		b.day, b.spent = d, 0
+		b.byKey = map[string]float64{}
 	}
+	if b.byKey == nil {
+		b.byKey = map[string]float64{}
+	}
+	if b.heldKey == nil {
+		b.heldKey = map[string]float64{}
+	}
+}
+
+// SpentBy is today's settled spend of one caller key.
+func (b *Budget) SpentBy(key string) float64 {
+	if b == nil {
+		return 0
+	}
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.rollLocked()
+	return b.byKey[key]
 }
 
 // Spent is today's settled spend.
@@ -644,19 +684,45 @@ type Hold struct {
 	b    *Budget
 	amt  float64
 	day  string
+	key  string
 	done bool
 }
 
-// Reserve holds Estimate; false when spent + held + Estimate > Cap.
+// Reserve holds Estimate with no caller key (the service cap only); false
+// when spent + held + Estimate > Cap.
 func (b *Budget) Reserve() (*Hold, bool) {
+	h, why := b.ReserveFor("")
+	return h, why == ""
+}
+
+// ReserveFor holds Estimate for caller key. The answer is the hold, or nil
+// and why: CodeDailyCap (the service's day is used) or CodeCallerCap (this
+// key's share is used: key's spent + held + Estimate > PerCaller).
+func (b *Budget) ReserveFor(key string) (*Hold, string) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.rollLocked()
 	if b.spent+b.held+b.Estimate > b.Cap {
-		return nil, false
+		return nil, CodeDailyCap
+	}
+	if key != "" && b.PerCaller > 0 && b.byKey[key]+b.heldKey[key]+b.Estimate > b.PerCaller {
+		return nil, CodeCallerCap
 	}
 	b.held += b.Estimate
-	return &Hold{b: b, amt: b.Estimate, day: b.day}, true
+	if key != "" {
+		b.heldKey[key] += b.Estimate
+	}
+	return &Hold{b: b, amt: b.Estimate, day: b.day, key: key}, ""
+}
+
+// CapRefusal is the answer to a refused reservation: 503 for the service's
+// cap (the feature is off for everyone until 00:00 UTC), 429 for a caller's
+// own cap (RFC 6585 4: too many requests from this caller).
+func CapRefusal(why string) (status int, code, msg string) {
+	if why == CodeCallerCap {
+		return http.StatusTooManyRequests, CodeCallerCap, "your daily limit for this feature is reached; try again after 00:00 UTC"
+	}
+	return http.StatusServiceUnavailable, CodeDailyCap, "daily spend cap reached"
 }
 
 // Settle frees the hold and adds the real cost (once).
@@ -676,8 +742,16 @@ func (h *Hold) Settle(cost float64) {
 		b.held = 0
 	}
 	b.rollLocked()
+	if h.key != "" {
+		if b.heldKey[h.key] -= h.amt; b.heldKey[h.key] <= 1e-12 {
+			delete(b.heldKey, h.key)
+		}
+	}
 	if h.day == b.day {
 		b.spent += cost
+		if h.key != "" && cost != 0 {
+			b.byKey[h.key] += cost
+		}
 	}
 }
 

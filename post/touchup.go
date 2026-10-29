@@ -114,6 +114,7 @@ type Job struct {
 	bearer       bool // made by a bearer caller (/v1): only bearer callers see it
 	remoteIP     string
 	forwardedIP  string
+	capKey       string // X44a: the caller's daily-cap key
 	ended        time.Time
 }
 
@@ -361,7 +362,8 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "touchup", "build": c.Build,
-			"spent_today_usd": c.Budget.Spent(), "image_model": c.Editor.Model})
+			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller,
+			"image_model": c.Editor.Model})
 	})
 	for _, p := range []string{"/api/touchup", "/v1/touchup"} { // X42e: /v1 = the bearer token
 		mux.HandleFunc("POST "+p, c.start)
@@ -394,7 +396,7 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID = who.User.ID
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
 	if c.Limiter != nil && !c.Limiter.Allow(who.RateKey) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
 		return
@@ -436,14 +438,15 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusServiceUnavailable, "busy", "too many touch-ups at the same time")
 		return
 	}
-	hold, ok := c.Budget.Reserve()
-	if !ok {
+	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
+	if hold == nil {
 		<-c.slots
-		fail(http.StatusServiceUnavailable, CodeDailyCap, "daily spend cap reached")
+		fail(CapRefusal(why))
 		return
 	}
 	job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobRunning, Mode: mode, SourcePhotoID: src,
-		ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP}
+		ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP,
+		capKey: who.RateKey}
 	if c.Checker != nil {
 		job.CheckModel = c.Checker.Model
 	}
@@ -517,7 +520,7 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 	snap := *job
 	c.mu.Unlock()
 	c.record(Event{RequestID: job.RequestID, TS: t0.UTC().Format(time.RFC3339Nano), Route: "touchup.job",
-		UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, Status: 200, LatencyMS: ms, CostUSD: cost, Calls: calls,
+		UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, CapKey: job.capKey, Status: 200, LatencyMS: ms, CostUSD: cost, Calls: calls,
 		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img)}})

@@ -260,3 +260,54 @@ func eventsAt(dir string, now time.Time) *Events {
 	ev.now = func() time.Time { return now }
 	return ev
 }
+
+// X44a (audit S1 item 2): each caller key has its own share of the day, the
+// service cap still holds for all, and both survive a restart (cap_key).
+func TestBudgetPerCaller(t *testing.T) {
+	dir := t.TempDir()
+	ev := NewEvents(dir)
+	ev.Record(Event{RequestID: "old", CostUSD: 0.1})               // before X44a: no cap_key
+	ev.Record(Event{RequestID: "a1", CostUSD: 0.2, CapKey: "u:a"}) // u:a spent 0.2
+	ev.Record(Event{RequestID: "z", CostUSD: 0, CapKey: "u:zero"}) // a free line adds no spend
+	b := NewBudget(1.0, 0.3, ev)
+	b.PerCaller = 0.5
+	if !near(b.Spent(), 0.3) || !near(b.SpentBy("u:a"), 0.2) || b.SpentBy("u:zero") != 0 {
+		t.Fatalf("restored total %v, u:a %v", b.Spent(), b.SpentBy("u:a"))
+	}
+	h, why := b.ReserveFor("u:a") // 0.2 + 0.3 = 0.5: not over the caller cap
+	if h == nil {
+		t.Fatalf("u:a first reserve: %q", why)
+	}
+	if _, why := b.ReserveFor("u:a"); why != CodeCallerCap { // 0.2 + 0.3 held + 0.3 > 0.5
+		t.Fatalf("u:a second reserve: %q", why)
+	}
+	hb, why := b.ReserveFor("u:b") // another caller still has its share
+	if hb == nil {
+		t.Fatalf("u:b: %q", why)
+	}
+	if _, why := b.ReserveFor("u:c"); why != CodeDailyCap { // 0.3 + 0.6 held + 0.3 > 1.0
+		t.Fatalf("service cap: %q", why)
+	}
+	h.Settle(0.25)
+	hb.Settle(0)
+	if !near(b.SpentBy("u:a"), 0.45) || b.SpentBy("u:b") != 0 || !near(b.Spent(), 0.55) {
+		t.Fatalf("settled u:a %v u:b %v total %v", b.SpentBy("u:a"), b.SpentBy("u:b"), b.Spent())
+	}
+	if _, why := b.ReserveFor("u:a"); why != CodeCallerCap { // 0.45 + 0.3 > 0.5
+		t.Fatalf("u:a after settle: %q", why)
+	}
+	if h, ok := b.Reserve(); !ok || h == nil { // no key: the service cap only
+		t.Fatal("Reserve() with room refused")
+	}
+	if st, code, _ := CapRefusal(CodeCallerCap); st != 429 || code != CodeCallerCap {
+		t.Fatal(st, code)
+	}
+	if st, code, _ := CapRefusal(CodeDailyCap); st != 503 || code != CodeDailyCap {
+		t.Fatal(st, code)
+	}
+	day := time.Now().Add(48 * time.Hour)
+	b.now = func() time.Time { return day }
+	if b.SpentBy("u:a") != 0 {
+		t.Fatal("a new UTC day starts every caller at 0")
+	}
+}

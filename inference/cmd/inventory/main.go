@@ -50,6 +50,7 @@ func main() {
 	split := flag.Int("split", 3, "Muse calls at the same time for 12+ named boxes (D21)")
 	maxNamed := flag.Int("max-named", 24, "boxes named per photo (D14)")
 	capUSD := flag.Float64("cap-usd", 20, "daily spend cap in USD, UTC day (T9, 2026-10-26)")
+	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.10, "spend reserved per photo while it runs")
 	inFlight := flag.Int("max-in-flight", 3, "photos at the same time; more get 503 busy")
 	burst := flag.Int("rate-burst", 6, "requests per window per user (bearer: per client IP)")
@@ -73,6 +74,7 @@ func main() {
 	}
 	ev := inference.NewEvents(*events)
 	budget := inference.NewBudget(*capUSD, *estimate, ev)
+	budget.PerCaller = *callerCap
 	eng := &inference.Engine{
 		API:            &inference.Client{URL: *upstream, Key: key, Effort: *effort, HTTP: &http.Client{Timeout: *timeout}},
 		Marks:          true, // marks + 0-1000 coordinates (X30: marks:low:split3)

@@ -46,8 +46,9 @@ type Event struct {
 	NotListed     int         `json:"not_listed,omitempty"`
 	NotFood       bool        `json:"not_food,omitempty"`
 	Calls         []EventCall `json:"calls,omitempty"`
-	CostUSD       float64     `json:"cost_usd"`        // what this request paid
-	SpentTodayUSD float64     `json:"spent_today_usd"` // the budget after it (UTC day)
+	CostUSD       float64     `json:"cost_usd"`          // what this request paid
+	CapKey        string      `json:"cap_key,omitempty"` // X44a: the caller's daily-cap key (the rate-limit key)
+	SpentTodayUSD float64     `json:"spent_today_usd"`   // the budget after it (UTC day)
 	EngineMS      int64       `json:"engine_ms,omitempty"`
 	TotalMS       int64       `json:"total_ms"`
 	Model         string      `json:"model"`
@@ -197,9 +198,18 @@ func (e *Events) write(ev Event) error {
 
 // SpentOn sums cost_usd over the lines of day t: the budget's start value.
 func (e *Events) SpentOn(t time.Time) float64 {
+	s, _ := e.SpentByKey(t)
+	return s
+}
+
+// SpentByKey sums cost_usd over the lines of day t: the total, and the part
+// of each cap_key (X44a). A line from before X44a has no cap_key: it counts
+// in the total only.
+func (e *Events) SpentByKey(t time.Time) (float64, map[string]float64) {
+	by := map[string]float64{}
 	f, err := os.Open(e.Path(t))
 	if err != nil {
-		return 0
+		return 0, by
 	}
 	defer f.Close()
 	s := 0.0
@@ -208,33 +218,44 @@ func (e *Events) SpentOn(t time.Time) float64 {
 	for sc.Scan() {
 		var l struct {
 			CostUSD float64 `json:"cost_usd"`
+			CapKey  string  `json:"cap_key"`
 		}
 		if json.Unmarshal(sc.Bytes(), &l) == nil {
 			s += l.CostUSD
+			if l.CapKey != "" && l.CostUSD != 0 {
+				by[l.CapKey] += l.CostUSD
+			}
 		}
 	}
-	return s
+	return s, by
 }
 
 // Budget is the daily spend cap (T9, 2026-10-26: $20 per UTC day). A photo
 // reserves Estimate before it runs and settles at its real cost, so
 // photos running at the same time cannot pass the cap together.
+//
+// X44a (security audit S1 item 2): PerCaller is a second cap for each caller
+// key (the rate-limit key: one signed-in user, or one bearer address), so one
+// caller cannot use the whole day for every caller. 0 = off.
 type Budget struct {
-	Cap      float64
-	Estimate float64 // reserved per photo (0.10: about 2x the X30b mean)
-	mu       sync.Mutex
-	day      string
-	spent    float64
-	held     float64
-	now      func() time.Time
+	Cap       float64
+	Estimate  float64 // reserved per photo (0.10: about 2x the X30b mean)
+	PerCaller float64
+	mu        sync.Mutex
+	day       string
+	spent     float64
+	held      float64
+	byKey     map[string]float64 // settled today, per caller key
+	heldKey   map[string]float64
+	now       func() time.Time
 }
 
 // NewBudget starts at what events already records for today.
 func NewBudget(capUSD, estimate float64, ev *Events) *Budget {
-	b := &Budget{Cap: capUSD, Estimate: estimate, now: time.Now}
+	b := &Budget{Cap: capUSD, Estimate: estimate, now: time.Now, byKey: map[string]float64{}, heldKey: map[string]float64{}}
 	b.day = b.now().UTC().Format("20060102")
 	if ev != nil {
-		b.spent = ev.SpentOn(b.now())
+		b.spent, b.byKey = ev.SpentByKey(b.now())
 	}
 	return b
 }
@@ -242,7 +263,22 @@ func NewBudget(capUSD, estimate float64, ev *Events) *Budget {
 func (b *Budget) rollLocked() {
 	if d := b.now().UTC().Format("20060102"); d != b.day {
 		b.day, b.spent = d, 0
+		b.byKey = map[string]float64{}
 	}
+	if b.byKey == nil {
+		b.byKey = map[string]float64{}
+	}
+	if b.heldKey == nil {
+		b.heldKey = map[string]float64{}
+	}
+}
+
+// SpentBy is today's settled spend of one caller key.
+func (b *Budget) SpentBy(key string) float64 {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.rollLocked()
+	return b.byKey[key]
 }
 
 // Spent is today's settled spend.
@@ -258,19 +294,35 @@ type Hold struct {
 	b    *Budget
 	amt  float64
 	day  string
+	key  string
 	done bool
 }
 
-// Reserve holds Estimate; false when spent + held + Estimate > Cap.
+// Reserve holds Estimate with no caller key (the service cap only); false
+// when spent + held + Estimate > Cap.
 func (b *Budget) Reserve() (*Hold, bool) {
+	h, why := b.ReserveFor("")
+	return h, why == ""
+}
+
+// ReserveFor holds Estimate for caller key. The answer is the hold, or nil
+// and why: CodeDailyCap (the day is used for everyone) or CodeCallerCap
+// (this key's spent + held + Estimate > PerCaller).
+func (b *Budget) ReserveFor(key string) (*Hold, string) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.rollLocked()
 	if b.spent+b.held+b.Estimate > b.Cap {
-		return nil, false
+		return nil, CodeDailyCap
+	}
+	if key != "" && b.PerCaller > 0 && b.byKey[key]+b.heldKey[key]+b.Estimate > b.PerCaller {
+		return nil, CodeCallerCap
 	}
 	b.held += b.Estimate
-	return &Hold{b: b, amt: b.Estimate, day: b.day}, true
+	if key != "" {
+		b.heldKey[key] += b.Estimate
+	}
+	return &Hold{b: b, amt: b.Estimate, day: b.day, key: key}, ""
 }
 
 // Settle frees the hold and adds the real cost (once).
@@ -287,7 +339,15 @@ func (h *Hold) Settle(cost float64) {
 		b.held = 0
 	}
 	b.rollLocked()
+	if h.key != "" {
+		if b.heldKey[h.key] -= h.amt; b.heldKey[h.key] <= 1e-12 {
+			delete(b.heldKey, h.key)
+		}
+	}
 	if h.day == b.day {
 		b.spent += cost
+		if h.key != "" && cost != 0 {
+			b.byKey[h.key] += cost
+		}
 	}
 }

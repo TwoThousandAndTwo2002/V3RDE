@@ -419,7 +419,7 @@ func NewVoice(c *VoiceConfig) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "voice", "build": c.Build,
-			"spent_today_usd": c.Budget.Spent(), "asr_model": c.ASR.Model,
+			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller, "asr_model": c.ASR.Model,
 			"in_flight": len(c.slots), "max_in_flight": c.MaxInFlight})
 	})
 	mux.HandleFunc("POST /api/voice", c.propose)
@@ -452,7 +452,7 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID, ev.Bearer = who.User.ID, who.Bearer
+	ev.UserID, ev.Bearer, ev.CapKey = who.User.ID, who.Bearer, who.RateKey
 	if !c.Limiter.Allow(who.RateKey) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
 		return
@@ -515,9 +515,9 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnsupportedMediaType, code, err.Error())
 		return
 	}
-	hold, ok := c.Budget.Reserve()
-	if !ok {
-		fail(http.StatusServiceUnavailable, CodeDailyCap, "daily spend cap reached")
+	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
+	if hold == nil {
+		fail(CapRefusal(why))
 		return
 	}
 	defer func() { hold.Settle(Sum(calls)) }() // also on a panic (Settle runs once)

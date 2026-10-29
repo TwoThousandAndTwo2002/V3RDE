@@ -41,6 +41,7 @@ func main() {
 	data := flag.String("data", "/data", "directory for posts.json (a volume)")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	capUSD := flag.Float64("cap-usd", 1, "daily spend cap in USD, UTC day (this service only)")
+	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.02, "spend reserved per post while it runs")
 	burst := flag.Int("rate-burst", 6, "requests per window per user")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
@@ -64,6 +65,7 @@ func main() {
 	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
+	budget.PerCaller = *callerCap
 	cfg := &post.FanoutConfig{
 		Muse:          &post.Muse{Base: *base, Key: key, Model: *model, Effort: "low", HTTP: &http.Client{Timeout: *timeout}},
 		Listings:      &post.ListingsClient{URL: *listingsURL, HTTP: &http.Client{Timeout: 10 * time.Second}},

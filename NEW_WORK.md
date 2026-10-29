@@ -632,3 +632,20 @@ Outside callers with the bearer token (for example Postman or a partner) can now
 - A token caller can touch up only photos from its own token scans, and the app's users and token callers never see each other's photos or jobs.
 - The daily spend caps still apply to every caller.
 - Tests: post 54 (1 new).
+
+---
+
+## 36. A daily limit for each caller
+
+**When:** Oct 29 2026.
+**Meta models:** no new model (the caps cover SAM 3.1, Muse Spark 1.3, Muse Image 1.0 and Muse Voice Transcribe 1.0 calls).
+**Files:** `post/post.go`, `post/touchup.go`, `post/voice.go`, `post/rescue.go`, `post/fanout.go`, `post/cmd/*/main.go`, `inference/events.go`, `inference/service.go`, `inference/cmd/inventory/main.go`, the tests, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/X44a.md`
+
+Each paid feature had one daily limit for all callers. One caller could use it all and stop the feature for everyone until the next day.
+
+- Each caller (one signed-in user, or one bearer address) now also has its own daily limit: scan $5, touch-up $0.50, voice, rescue and Facebook sharing $0.25 each. The limit of each service stays.
+- A caller over its own limit gets `429 caller_daily_cap_reached`. The other callers still work.
+- Each events line has the caller's key, so a restart keeps each caller's spend.
+- The ids of photos and touch-ups are 128 random bits each (checked in the code; no change needed).
+- Tests: inference 72 -> 73, post 54 -> 56.

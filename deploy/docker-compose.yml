@@ -84,7 +84,8 @@ services:
       - ${V3RDE_RUNS:-~/V3RDE_runs}/gate:/events
 
   # The one analysis route: POST /v1/analyze (bearer token) and /api/analyze
-  # (session cookie). $20/day cap; 6/min per user (bearer: per address).
+  # (session cookie). $20/day cap, $5/day per caller (X44a); 6/min per user
+  # (bearer: per address).
   analyze:
     build: {context: ., dockerfile: inference/Dockerfile, args: {BUILD: "${V3RDE_BUILD_ANALYZE:-dev}"}}
     image: v3rde-analyze
@@ -93,7 +94,8 @@ services:
               "-token-file", "/run/secrets/analyze_token", "-gate", "http://gate:8084", "-events", "/events",
               "-auth", "http://auth:8081", "-barcode", "http://barcode:8083", "-listings", "http://listings:8082",
               "-photos", "/photos", "-max-image-bytes", "5242880",
-              "-cap-usd", "${ANALYZE_CAP_USD:-20}", "-max-in-flight", "${ANALYZE_IN_FLIGHT:-3}",
+              "-cap-usd", "${ANALYZE_CAP_USD:-20}", "-caller-cap-usd", "${ANALYZE_CALLER_CAP_USD:-5}",
+              "-max-in-flight", "${ANALYZE_IN_FLIGHT:-3}",
               "-rate-burst", "${ANALYZE_RATE_BURST:-6}"]
     mem_limit: 700m
     volumes:
@@ -112,7 +114,7 @@ services:
     command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
               "-token-file", "/run/secrets/analyze_token",   # X42e: /v1/touchup for the bearer token
               "-item-photos", "/item-photos", "-dir", "/data", "-events", "/events",
-              "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-trust-forwarded"]
+              "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-caller-cap-usd", "${TOUCHUP_CALLER_CAP_USD:-0.5}", "-trust-forwarded"]
     mem_limit: 256m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
@@ -127,7 +129,7 @@ services:
     entrypoint: ["/rescue"]
     command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
               "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
-              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-min-servings", "${RESCUE_MIN_SERVINGS:-1}", "-trust-forwarded"]
+              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-1}", "-trust-forwarded"]
     mem_limit: 224m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
@@ -142,7 +144,7 @@ services:
               "-status-token-file", "/run/secrets/fanout_status_token",
               "-page-id", "${FANOUT_PAGE_ID:-}", "-link-base", "${FANOUT_LINK_BASE:-}",
               "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
-              "-cap-usd", "${FANOUT_CAP_USD:-1}", "-sweep", "1m", "-trust-forwarded"]
+              "-cap-usd", "${FANOUT_CAP_USD:-1}", "-caller-cap-usd", "${FANOUT_CALLER_CAP_USD:-0.25}", "-sweep", "1m", "-trust-forwarded"]
     mem_limit: 224m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
@@ -156,7 +158,7 @@ services:
     entrypoint: ["/voice"]
     command: ["-listen", "0.0.0.0:8091", "-key-file", "/run/secrets/meta_key",
               "-token-file", "/run/secrets/analyze_token", "-auth", "http://auth:8081", "-events", "/events",
-              "-cap-usd", "${VOICE_CAP_USD:-1}", "-max-in-flight", "2", "-trust-forwarded"]
+              "-cap-usd", "${VOICE_CAP_USD:-1}", "-caller-cap-usd", "${VOICE_CALLER_CAP_USD:-0.25}", "-max-in-flight", "2", "-trust-forwarded"]
     mem_limit: 320m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro

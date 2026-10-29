@@ -41,16 +41,17 @@ const (
 	CodeMethod          = "method_not_allowed"
 	CodeTooLarge        = "image_too_large"
 	CodeUnsupported     = "unsupported_media"
-	CodeNotFood         = "not_food"             // 422: the gate said NOT_FOOD
-	CodeNoFoodSingle    = "model_no_food_single" // 422: gate FOOD, 1 item, the model found no food
-	CodeNoFoodMulti     = "model_no_food_multi"  // 422: gate FOOD, 2+ items, the model dropped all
-	CodeAlreadyListed   = "already_listed"       // 409: the one item is a live listing of the caller
-	CodeRateLimited     = "rate_limited"         // 429
-	CodeUpstream        = "upstream_error"       // 502
-	CodeGateUnavailable = "gate_unavailable"     // 503: the gate could not check (fails closed)
-	CodeBusy            = "busy"                 // 503
-	CodeDailyCap        = "daily_cap_reached"    // 503: production-halting (T9)
-	CodeTimeout         = "timeout"              // 504
+	CodeNotFood         = "not_food"                 // 422: the gate said NOT_FOOD
+	CodeNoFoodSingle    = "model_no_food_single"     // 422: gate FOOD, 1 item, the model found no food
+	CodeNoFoodMulti     = "model_no_food_multi"      // 422: gate FOOD, 2+ items, the model dropped all
+	CodeAlreadyListed   = "already_listed"           // 409: the one item is a live listing of the caller
+	CodeRateLimited     = "rate_limited"             // 429
+	CodeUpstream        = "upstream_error"           // 502
+	CodeGateUnavailable = "gate_unavailable"         // 503: the gate could not check (fails closed)
+	CodeBusy            = "busy"                     // 503
+	CodeDailyCap        = "daily_cap_reached"        // 503: production-halting (T9)
+	CodeCallerCap       = "caller_daily_cap_reached" // 429: X44a, this caller's share of the day is used
+	CodeTimeout         = "timeout"                  // 504
 	CodeNotFound        = "not_found"
 	CodeInternal        = "internal_error"
 )
@@ -139,7 +140,7 @@ func NewService(c ServiceConfig) http.Handler {
 		body := map[string]any{"ok": true, "service": "analyze", "build": c.Build,
 			"in_flight": len(c.slots), "max_in_flight": c.MaxInFlight}
 		if c.Budget != nil {
-			body["spent_today_usd"], body["cap_usd"] = c.Budget.Spent(), c.Budget.Cap
+			body["spent_today_usd"], body["cap_usd"], body["caller_cap_usd"] = c.Budget.Spent(), c.Budget.Cap, c.Budget.PerCaller
 		}
 		writeJSONResp(w, http.StatusOK, body)
 	})
@@ -247,6 +248,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			key = fwd
 		}
 	}
+	ev.CapKey = key // X44a: the daily share uses the rate-limit key
 	if c.Limiter != nil && !c.Limiter.Allow(key) {
 		fail(http.StatusTooManyRequests, CodeRateLimited, "too many photos this minute; wait a minute")
 		return
@@ -364,11 +366,15 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. the daily spend cap (OWASP API4:2023)
+	// 4. the daily spend cap (OWASP API4:2023), and X44a this caller's share
 	var hold *Hold
 	if c.Budget != nil {
-		var ok bool
-		if hold, ok = c.Budget.Reserve(); !ok {
+		var why string
+		if hold, why = c.Budget.ReserveFor(key); hold == nil {
+			if why == CodeCallerCap { // RFC 6585 4: too many requests from this caller
+				fail(http.StatusTooManyRequests, CodeCallerCap, "your daily scan limit is reached; try again after 00:00 UTC")
+				return
+			}
 			fail(http.StatusServiceUnavailable, CodeDailyCap, "the daily limit is reached; try again after 00:00 UTC")
 			return
 		}

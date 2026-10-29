@@ -344,7 +344,7 @@ func NewFanout(c *FanoutConfig) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "fanout", "build": c.Build,
-			"spent_today_usd": c.Budget.Spent(), "page": c.Page != nil})
+			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller, "page": c.Page != nil})
 	})
 	mux.HandleFunc("POST /api/fanout/{id}", c.publish)
 	mux.HandleFunc("GET /api/fanout/{id}", c.get)
@@ -387,7 +387,7 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	ev.UserID = who.User.ID
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
 	if c.Page == nil {
 		fail(http.StatusServiceUnavailable, CodeDisabled, "no Facebook Page is configured")
 		return
@@ -426,9 +426,9 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadGateway, CodeUpstream, "the listing photo is unavailable")
 		return
 	}
-	hold, ok := c.Budget.Reserve()
-	if !ok {
-		fail(http.StatusServiceUnavailable, CodeDailyCap, "daily spend cap reached")
+	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
+	if hold == nil {
+		fail(CapRefusal(why))
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)

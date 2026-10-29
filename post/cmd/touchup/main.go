@@ -37,6 +37,7 @@ func main() {
 	dir := flag.String("dir", "/data", "edited photos (a volume), item-photo format")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	capUSD := flag.Float64("cap-usd", 2, "daily spend cap in USD, UTC day (this service only)")
+	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.03, "spend reserved per touch-up while it runs")
 	inFlight := flag.Int("max-in-flight", 2, "touch-ups at the same time; more get 503 busy")
 	burst := flag.Int("rate-burst", 4, "requests per window per user")
@@ -73,6 +74,7 @@ func main() {
 	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
+	budget.PerCaller = *callerCap
 	hc := &http.Client{Timeout: *jobTimeout}
 	cfg := &post.TouchupConfig{
 		Editor:      &post.ImageEditor{Base: *base, Key: key, Model: *imageModel, Reasoning: *imageReasoning, HTTP: hc},

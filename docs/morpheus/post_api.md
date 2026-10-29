@@ -8,7 +8,7 @@ the volumes, the secrets and the Caddy routes.
 Shared rules (the same as the analyze service):
 - `/api/...` routes take the app's session cookie (`morpheus_session`); `/v1/...` routes take the analyze bearer token. Touch-up has no `/v1` route (X36a).
 - Every non-2xx body is `{"request_id", "error", "code"}`.
-- Every POST (and every touch-up job) writes one line to `events-YYYYMMDD.jsonl` with its cost, `remote_ip` and `forwarded_ip` (as inference); a daily cap per service (UTC day) gives `503 daily_cap_reached`.
+- Every POST (and every touch-up job) writes one line to `events-YYYYMMDD.jsonl` with its cost, `remote_ip` and `forwarded_ip` (as inference); a daily cap per service (UTC day) gives `503 daily_cap_reached`. **X44a:** each caller (one signed-in user, or one bearer address) also has its own daily cap (`-caller-cap-usd`, 0 = off; compose: touch-up $0.50, voice, rescue and fan-out $0.25 each); over it, that caller gets `429 caller_daily_cap_reached` and the others still work. The events line has `cap_key` (the caller's key), so a restart restores each caller's spend. The analyze service does the same (`-caller-cap-usd`, compose $5).
 - Rate limits use the socket peer. Set `-trust-forwarded` only behind Caddy (Caddy sets `X-Forwarded-For` itself).
 - **Compose:** when a service sets `entrypoint`, the image CMD does not apply: give every flag in the compose `command` (at least `-listen 0.0.0.0:<port>`, `-auth`, `-listings`, `-dir`/`-data`, `-events`).
 - Secrets are read-only files: `/run/secrets/meta_key`, `/run/secrets/analyze_token` (and the service's own, below). They are never printed.

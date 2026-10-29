@@ -611,3 +611,32 @@ func TestCaptureFieldIsLogged(t *testing.T) {
 		}
 	}
 }
+
+// X44a (audit S1 item 2): a caller over its own share of the day gets 429
+// caller_daily_cap_reached before any API call; another user still scans;
+// every line has the caller's cap_key, so a restart restores the shares.
+func TestAnalyzeCallerCap(t *testing.T) {
+	s := newSvc(t, threeBoxes(t), "FOOD", 0, func(c *ServiceConfig) { c.Budget.PerCaller = 0.05 }) // under one 0.10 hold
+	w, a := s.do(req(t, "/api/analyze", "u1", testPhoto(t), ""))
+	errorIs(t, w, a, 429, CodeCallerCap)
+	if len(s.api.bodies) != 0 {
+		t.Fatal("API called over the caller cap")
+	}
+	s.budget.PerCaller = 0.15
+	if w, _ := s.do(req(t, "/api/analyze", "u2", testPhoto(t), "")); w.Code != 200 {
+		t.Fatalf("u2: %d %s", w.Code, w.Body)
+	}
+	evs := s.events(t)
+	if len(evs) != 2 || evs[0].CapKey != "user:u1" || evs[1].CapKey != "user:u2" || evs[1].CostUSD <= 0 {
+		t.Fatalf("cap keys: %+v", evs)
+	}
+	if !nearly(s.budget.SpentBy("user:u2"), evs[1].CostUSD) || s.budget.SpentBy("user:u1") != 0 {
+		t.Fatal(s.budget.SpentBy("user:u2"), evs[1].CostUSD)
+	}
+	_, by := NewEvents(s.dir).SpentByKey(time.Now())
+	if !nearly(by["user:u2"], evs[1].CostUSD) {
+		t.Fatalf("restart: %v", by)
+	}
+}
+
+func nearly(a, b float64) bool { d := a - b; return d < 1e-12 && d > -1e-12 }

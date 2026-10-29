@@ -33,6 +33,7 @@ func main() {
 	data := flag.String("data", "/data", "directory for rescues.json (a volume)")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	capUSD := flag.Float64("cap-usd", 1, "daily spend cap in USD, UTC day (this service only)")
+	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.02, "spend reserved per rescue while it runs")
 	minServings := flag.Int("min-servings", 1, "the bulk rule: a listing needs this many servings (T9 decides; 1 = every listing)")
 	places := flag.Int("places", 3, "places in the answer")
@@ -59,6 +60,7 @@ func main() {
 	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
+	budget.PerCaller = *callerCap
 	cfg := &post.RescueConfig{
 		Muse:        &post.Muse{Base: *base, Key: key, Model: *model, Effort: "low", HTTP: &http.Client{Timeout: *timeout}},
 		Directory:   &post.Directory{Base: *directory, HTTP: &http.Client{Timeout: 10 * time.Second}},
