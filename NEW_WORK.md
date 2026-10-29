@@ -763,3 +763,16 @@ The gate ran on LiteRT 1.4.0 and took about 1.1 s for each photo on the box, bef
 - The thread count reaches the CPU engine again. The service keeps 1 thread until the box bench.
 - New tool `gatebench` (also in the image): it scores a folder of photos and compares two runs.
 
+## 45. The food gate uses 2 CPU threads
+
+**When:** Oct 29 2026.
+**Meta models:** PE-Core-S16-384 gate, as in entry 43 (no model change).
+**Files:** `deploy/docker-compose.yml`
+**Sources:** `docs/sources/X46a.md`
+
+The box bench (X45b) measured the gate on LiteRT 2.3.0 on the box.
+
+- With 2 threads one call takes 595 ms; with 1 thread it takes 1,071 ms (median, 50 photos).
+- When two calls run at the same time, both settings take about 1.1 s each.
+- The gate now uses 2 threads. No image is built again: only the gate container starts again.
+

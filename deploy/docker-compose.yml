@@ -79,7 +79,7 @@ services:
               "-head", "/assets/gate_head_pe_s16_384_deploy.json",
               "-model-sha256", "c0618012abe6a22664285b85ae0d7820e3013342965cb74aa6767404a5ff649e",
               "-head-sha256", "7ba764ea8b562bef0948678dba5a1d103b0772ce2df46f3959d181d093c507a4",
-              "-events", "/events", "-threads", "1"]
+              "-events", "/events", "-threads", "2"]   # X46a: box bench, 595 ms against 1,071 ms
     volumes:
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_pe_s16_f16w_384.tflite:/assets/gate_pe_s16_f16w_384.tflite:ro
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_head_pe_s16_384_deploy.json:/assets/gate_head_pe_s16_384_deploy.json:ro
