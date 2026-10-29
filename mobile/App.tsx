@@ -22,6 +22,7 @@ import SignIn from "./src/screens/Login";
 import { ForgotPassword, NewPassword } from "./src/screens/Reset";
 import { RoleSheet } from "./src/screens/Role";
 import { Frame } from "./src/screens/Frame";
+import ReceiveScreen from "./src/screens/Receive";
 
 /** Where the role sheet is: over the auth screen it came from (phone), over the doodles, or over the doodles
  *  after the wide-screen handoff (no dim). */
@@ -43,8 +44,9 @@ async function openingToken(): Promise<string> {
   return resetToken(await Linking.getInitialURL());
 }
 
-/** The screen of a role. The Give and Receive screens come in the next changes; until then a title. */
+/** The screen of a role. The Give screen comes in the next change; until then a title. */
 function RoleScreen({ who, role }: { who: Account; role: RoleName }) {
+  if (role === "receive") return <ReceiveScreen />;
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: space.gutter, gap: space.gap }}>
       <Title center>{roleCard(role).title}</Title>

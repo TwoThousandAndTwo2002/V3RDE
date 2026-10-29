@@ -40,6 +40,7 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 | `cameraFg` | `#FFFFFF` | `#FFFFFF` | X25 | their glyphs and text, and the shutter |
 | `scrimDim` | `rgba(0,0,0,0.43)` | `rgba(0,0,0,0.6)` | X25 (light) | behind the camera dialog on a wide screen (`#8C8C8C` over `bg`) |
 | `doodle` | `#BC202C` | `#FF727D` | Ref-login | the food doodles (at `doodle.opacity`) |
+| `panel` | `rgba(255,255,255,0.97)` | `rgba(30,30,32,0.97)` | the earlier app (0.94), made almost solid (U12 check: busy photos showed through) | the text panel on the photo of a listing card |
 | `link` | `#BC202C` | `#FF727D` | Ref-login (light); dark: 6.98:1 on `bg` (the old `#BC202C` is 2.97:1 on `bg`, 2.68:1 on `card`; T9, Oct 29) | text buttons and links (Show, Hide, Create one) |
 
 - Dark values: the dark colours of the X32 review page, of Ref-login, or a choice. The accent stays Hungree red in dark mode (white on it is 6.21:1). Every text colour reaches 4.5:1 on `card` and on `bg`.
@@ -73,6 +74,7 @@ Values are font size / line height in pt.
 | `space.foot` | 20 | X32: 20.0 | the last pill to the bottom of a phone sheet; the photo to the list in a dialog; a small sheet title to its pills (when there is no line) |
 | `space.pad` | 24 | X32: 24.0 | dialog padding |
 | `space.bar` | 28 | X25: the bar at 716, the title box ends at 688 | a sheet title to the progress bar under it |
+| `space.grid` | 14 | the earlier app | between the listing cards of a screen (both ways) |
 
 ## Radius (`radius`, pt)
 
@@ -115,6 +117,11 @@ Values are font size / line height in pt.
 | `size.topBar` | 64 | the earlier app | the top bar of a wide screen (the brand, the role tabs, Log out) |
 | `size.tabPadX` | 16 | the earlier app | a role tab and the Log out button of the top bar: text to the edge (sides) |
 | `size.toastBottom` | 28 | the earlier app | a toast: its bottom to the screen bottom |
+| `size.feedPhoto` | 290 | the earlier app | the photo of a listing card on Receive |
+| `size.minePhoto` | 220 | the earlier app | the photo of a listing card on Give (Your listings) |
+| `size.timeW` | 88 | the earlier app | the time pill of a listing card (one width for every time) |
+| `size.timePadY` | 2 | the earlier app | its padding (top, bottom) |
+| `size.loadAhead` | 320 | the earlier app | a list loads its next page when it is this near its end (pt) |
 
 ## Glyphs (`glyph`)
 
@@ -164,6 +171,7 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `opacity.pressed` | 0.85 | Choice | a control while a finger is on it |
 | `opacity.busy` | 0.6 | X32: the Post pill while posting (`#C05D60` on the frost) | a control while it waits (the spinner shows) |
 | `opacity.hover` | 0.92 | Ref-login | a pill while the mouse is on it (web) |
+| `opacity.gone` | 0.6 | the earlier app | a listing card that is collected or out of time |
 | `motion.rowStepMs` | 40 | Choice | each row of a sheet starts 40 ms after the row before it |
 | `motion.rowRise` | 8 | Choice | a row fades in and rises this far (pt) |
 | `motion.rowMs` | 220 | Choice | how long a row takes (ms) |
@@ -252,6 +260,13 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - Wide screen (expanded): a top bar `size.topBar` tall with a `size.border` `line` under it, `space.pad` at the sides, its content at most `maxWidth` wide (each screen also centres its own content in `maxWidth`): "V3RDE" (`type.title`, `link`) at the left; the role tabs Give and Receive in the centre (`size.control` tall, `size.tabPadX` at the sides, `space.inset` apart; the chosen tab `link` text on `accentSoft`, the others `muted`, `iconFill` under the mouse); "Log out" at the right (`size.border` `line`, `muted` text). The role sheet is not used there after the first pick. Only the chosen tab is a Tab-key stop; Left and Right choose the other tab.
 - The screens keep clear of the status bar, the home bar and a notch at the side (react-native-safe-area-context insets); the toast and the role sheet also add the bottom inset.
 - A toast (`Toast`): `bg` text on `fg`, fully round, `camera.hintPadX` × `camera.hintPadY` padding, `size.toastBottom` above the home bar; a screen reader reads each new text (a polite live region; an announcement on iOS). "Your session has ended. Sign in again." shows when the services answer 401.
+
+## Receive (`mobile/src/screens/Receive.tsx`, words in `mobile/src/words.ts`, rules in `mobile/src/listing.ts`)
+
+- "Available now" (`type.title`) `space.gutter` over the cards; the content is at most `maxWidth` wide and centred, `space.gutter` at the sides (`space.pad` with the top bar, and `space.pad` above). The doodles are behind it.
+- The cards in `columns` columns, `space.grid` apart. A listing card: the photo `size.feedPhoto` tall in `radius.card` (`accentSoft` while it loads); on it a `panel` panel, `space.inset` from the card edges, `radius.photo`, `space.group` padding, `space.hair` between lines: the title (`type.button`, at most 2 lines), the servings with the time pill at the right (`size.timeW`, m:ss in `onAccent` on `accent`; "Collected" or "Expired" in `muted` on `iconFill`), the pickup text (1 line), and the Grab pill `space.gap` under it. A listing of the user shows "Your listing" and no Grab. A card that is gone has `opacity.gone`.
+- More listings load when the list is `size.loadAhead` from its end, and at once while the cards do not fill the screen; on a phone, pull down to load again. Empty: "Nothing is offered now. Look again in a few minutes."
+- After Grab: a small `Sheet` over the listing photo: "You grabbed it", the title and the pickup text, and the pills "Maps" (a map search) and "WhatsApp" (a message to the giver). The ✕, a tap on the photo, Esc or Back closes it. A listing that someone took first (409) shows as collected, with a toast.
 
 ## Mockups
 

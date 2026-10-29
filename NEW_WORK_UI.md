@@ -201,3 +201,18 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Safe area:** new package `react-native-safe-area-context` ~5.10.1, the version Expo SDK 58 pins; the screens keep clear of the status bar and the home bar.
 - **Parts:** `Toast` (a short message at the bottom); a session context for the screens. When the services answer 401, the app goes back to sign-in with "Your session has ended. Sign in again."
 - Contrast tests for the new colour pairs (the chosen tab, the toast).
+
+---
+
+## UI 12. The Receive screen
+
+**When:** Oct 29 2026.
+**Meta model:** none.
+**Files:** `mobile/src/screens/Receive.tsx`, `mobile/src/listing.ts`, `mobile/tests/listing.test.mts`, `mobile/App.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/tests/words.test.mts`, `mobile/docs/style_guide.md`, `mobile/package.json`
+**Sources:** `docs/sources/U12.md`
+
+- **Written again:** Receive is new code on the U5 parts; the rewrite guard finds no line of the earlier app's mobile code.
+- **Feed:** "Available now", photo-first cards in 1, 2 or 3 columns with a live time pill (m:ss, "Collected", "Expired"); the next page loads near the end of the list; on a phone, pull down to load again.
+- **Grab:** one request at a time; then a small sheet over the listing photo, "You grabbed it", with "Maps" (a map search) and "WhatsApp" (a message to the giver). A listing that someone took first (409) shows as collected, with a toast. The user's own listings show "Your listing" and no Grab.
+- **Parts:** `ListingCard`, `TimePill`, `Grid`, `usePhoto`, `useNow`; the `Sheet` part gets a ✕ (`onClose`) and keeps clear of the home bar.
+- **Rules:** `listing.ts` (time left, gone, pages without doubles, links, camera first), with tests.

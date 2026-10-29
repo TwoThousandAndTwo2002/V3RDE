@@ -31,6 +31,7 @@ export const palette = {
     scrimDim: "rgba(0,0,0,0.43)",         // behind the camera dialog on a wide screen (#8C8C8C over bg, measured)
     link: "#BC202C",                      // text buttons and links (Show, Hide, Create one)
     doodle: "#BC202C",                    // the food doodles (at doodle.opacity)
+    panel: "rgba(255,255,255,0.97)",      // the text panel on the photo of a listing card (almost solid: text stays clear)
   },
   dark: {
     bg: "#141414",
@@ -56,6 +57,7 @@ export const palette = {
     scrimDim: "rgba(0,0,0,0.6)",
     link: "#FF727D",
     doodle: "#FF727D", // the earlier dark doodle colour
+    panel: "rgba(30,30,32,0.97)",
   },
 } as const;
 export type Colors = { [K in keyof typeof palette.light]: string };
@@ -77,6 +79,7 @@ export const space = {
                // its pills (no line)
   pad: 24,     // padding of a dialog
   bar: 28,     // a sheet title to the progress bar under it
+  grid: 14,    // between the listing cards of a screen (both ways)
 } as const;
 
 /** Corner radii in pt (measured). A pill is fully round. */
@@ -117,6 +120,11 @@ export const size = {
   topBar: 64,        // the top bar of a wide screen (the brand, the role tabs, Log out)
   tabPadX: 16,       // a role tab and the Log out button of the top bar: text to the edge (sides)
   toastBottom: 28,   // a toast: its bottom to the screen bottom
+  feedPhoto: 290,    // the photo of a listing card on Receive
+  minePhoto: 220,    // the photo of a listing card on Give (Your listings)
+  timeW: 88,         // the time pill of a listing card (one width for every time)
+  timePadY: 2,       // its padding (top, bottom)
+  loadAhead: 320,    // a list loads its next page when it is this near its end (pt)
 } as const;
 
 /**
@@ -174,6 +182,7 @@ export const opacity = {
   pressed: 0.85, // while a finger is on the control
   busy: 0.6,     // while the control waits (the spinner shows)
   hover: 0.92,   // while the mouse is on a pill (web)
+  gone: 0.6,     // a listing card that is collected or out of time
 } as const;
 
 /** Motion (a choice): a sheet rises with a spring; each row of it rises after the one before. */

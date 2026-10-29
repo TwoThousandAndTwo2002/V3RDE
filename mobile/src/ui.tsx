@@ -8,6 +8,7 @@ import { BlurView } from "expo-blur";
 import { LinearGradient as ShadeGradient } from "expo-linear-gradient";
 import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
+import { photoUrl as photoUri } from "./api";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 
 // ---------------------------------------------------------------- text
@@ -81,14 +82,15 @@ export function IconBtn({ glyph, label, onPress, big, testID }: { glyph: Glyph; 
 }
 
 /** A pill button: primary (red) or secondary (white with a line). `grow` shares a row with another pill. */
-export function Pill({ title, onPress, kind = "primary", busy, busyName, grow, testID }: {
-  title: string; onPress?: () => void; kind?: "primary" | "secondary"; busy?: boolean; busyName?: string; grow?: boolean; testID?: string;
+export function Pill({ title, name, onPress, kind = "primary", busy, busyName, grow, testID }: {
+  title: string; name?: string; onPress?: () => void; kind?: "primary" | "secondary"; busy?: boolean; busyName?: string; grow?: boolean;
+  testID?: string;
 }) {
   const col = useColors();
   const isPrimary = kind !== "secondary";
   const fg = isPrimary ? col.onAccent : col.fg;
   return (
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={busy && busyName ? busyName : title} aria-busy={!!busy}
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={busy && busyName ? busyName : name ?? title} aria-busy={!!busy}
       onPress={busy ? undefined : onPress}
       style={(state) => [{
         height: size.control, borderRadius: radius.round, alignItems: "center", justifyContent: "center",
@@ -272,8 +274,9 @@ function Backdrop({ photo }: { photo: string }) {
  * 85 % of the screen height; "small" = at least 210 pt). Medium and expanded width: a centred dialog ("wide" =
  * 860 pt with the photo on the left, else 440 pt).
  */
-export function Sheet({ kind, wide, photo, children, testID }: {
+export function Sheet({ kind, wide, photo, children, testID, onClose, closeName }: {
   kind: "large" | "small"; wide?: boolean; photo?: string; children: React.ReactNode; testID?: string;
+  onClose?: () => void; closeName?: string;
 }) {
   const { width, height } = useWindowDimensions();
   const dialogs = layoutFor(width).dialogs;
@@ -281,16 +284,23 @@ export function Sheet({ kind, wide, photo, children, testID }: {
   const [rise] = useState(() => new Animated.Value(0));
   useEffect(() => Animated.spring(rise, { toValue: 1, useNativeDriver: true, bounciness: motion.sheetBounce, speed: motion.sheetSpeed }).start(), [rise]);
   const shift = rise.interpolate({ inputRange: [0, 1], outputRange: [height * motion.sheetShift, 0] });
+  const inset = useInsets();
   const back = photo ? <Backdrop photo={photo} /> : null;
+  // onClose: a ✕ in the top corner, and a tap on the photo closes the sheet (people did not know the tap)
+  const tapOut = onClose ? <Pressable accessible={false} onPress={onClose} style={StyleSheet.absoluteFill} /> : null;
+  const cross = onClose ? (
+    <View style={{ position: "absolute", top: space.item, right: space.item }}>
+      <IconBtn testID="sheet-close" glyph="close" label={closeName ?? ""} onPress={onClose} /></View>
+  ) : null;
   if (dialogs) {
     const w = wide ? size.dialogWide : size.dialogSmall;
     return (
       <View testID={testID} style={{ flex: 1, backgroundColor: col.bg }}>
-        {back}
-        <View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }]}>
+        {back}{tapOut}
+        <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }]}>
           <Animated.View style={{ width: Math.min(w, width - 2 * space.gutter), maxHeight: Math.round(height * size.dialogMax),
             transform: [{ translateY: shift }] }}>
-            <Frost round={{ borderRadius: radius.sheet }} style={{ padding: space.pad, flexShrink: 1 }}>{children}</Frost></Animated.View>
+            <Frost round={{ borderRadius: radius.sheet }} style={{ padding: space.pad, flexShrink: 1 }}>{children}{cross}</Frost></Animated.View>
         </View>
       </View>
     );
@@ -298,14 +308,14 @@ export function Sheet({ kind, wide, photo, children, testID }: {
   const large = kind === "large";
   return (
     <View testID={testID} style={{ flex: 1, backgroundColor: col.bg }}>
-      {back}
+      {back}{tapOut}
       <Animated.View style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxHeight: Math.round(height * size.sheetLarge), // whole pt: the parts stay on whole pixels
         minHeight: large ? undefined : size.sheetSmall, transform: [{ translateY: shift }] }}>
         <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
-          style={{ flexShrink: 1, flexGrow: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot }}>
+          style={{ flexShrink: 1, flexGrow: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot + inset.bottom }}>
           <View style={{ alignSelf: "center", width: size.handleW, height: size.handleH, borderRadius: radius.round,
             backgroundColor: col.handle, marginTop: size.handleTop, marginBottom: space.gutter }} />
-          {children}
+          {children}{cross}
         </Frost></Animated.View>
     </View>
   );
@@ -455,6 +465,77 @@ export function Toast({ text }: { text: string }): React.ReactElement {
         <Text testID="toast" style={[type.body, { color: col.bg, backgroundColor: col.fg, borderRadius: radius.round, overflow: "hidden",
           paddingHorizontal: camera.hintPadX, paddingVertical: camera.hintPadY, textAlign: "center" }]}>{text}</Text>
       ) : null}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------- listings
+
+/** The photo of a listing: the route path, as a URI the <Image> can load (api.photoUrl); "" until it is known. */
+export function usePhoto(path?: string): string {
+  const [uri, setUri] = useState("");
+  useEffect(function loadPhoto() {
+    let live = true; // false after unmount or a new path
+    setUri("");
+    if (path) photoUri(path).then((u) => live && setUri(u)).catch(() => undefined);
+    return () => void (live = false);
+  }, [path]);
+  return uri;
+}
+
+/** The time now, again every `ms` (for the time pills). */
+export function useNow(ms = 1000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(function tick() {
+    const timer = setInterval(() => setNow(Date.now()), ms);
+    return () => clearInterval(timer);
+  }, [ms]);
+  return now;
+}
+
+/** The time pill of a card: m:ss on `accent`, or "Collected" / "Expired" on `iconFill`. `spoken` goes before m:ss. */
+export function TimePill({ text, gone, spoken }: { text: string; gone: boolean; spoken?: string }) {
+  const col = useColors();
+  return (
+    <View accessible aria-label={gone || !spoken ? text : spoken + " " + text} style={{ width: size.timeW, paddingVertical: size.timePadY, borderRadius: radius.round, alignItems: "center",
+      backgroundColor: gone ? col.iconFill : col.accent }}>
+      <Text style={[type.button, { color: gone ? col.muted : col.onAccent, fontVariant: ["tabular-nums"] }]}>{text}</Text></View>
+  );
+}
+
+/**
+ * A photo-first listing card: the photo (`size.feedPhoto` on Receive, `size.minePhoto` on Give), with a panel on
+ * it: the title, the servings and the time pill, and below them `extra` (the pickup text, "Your listing", Grab).
+ */
+export function ListingCard({ photoPath, title, line, time, timeName, gone, tall, extra, testID }: {
+  photoPath: string; title: string; line: string; time: string; timeName?: string; gone: boolean; tall: boolean; extra?: React.ReactNode;
+  testID?: string;
+}) {
+  const col = useColors();
+  const uri = usePhoto(photoPath);
+  return (
+    <View testID={testID} style={{ borderRadius: radius.card, overflow: "hidden", backgroundColor: col.accentSoft, opacity: gone ? opacity.gone : 1 }}>
+      <View style={{ height: tall ? size.feedPhoto : size.minePhoto }}>
+        {uri ? <Image source={{ uri }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={title} alt={title}
+          style={StyleSheet.absoluteFill} /> : null}</View>
+      <View style={{ position: "absolute", left: space.inset, right: space.inset, bottom: space.inset, padding: space.group,
+        gap: space.hair, borderRadius: radius.photo, backgroundColor: col.panel }}>
+        <Text numberOfLines={2} style={[type.button, { color: col.fg }]}>{title}</Text>
+        <Row tight style={{ justifyContent: "space-between" }}><Muted>{line}</Muted><TimePill text={time} gone={gone} spoken={timeName} /></Row>
+        {extra}
+      </View>
+    </View>
+  );
+}
+
+/** Cards in `columns` equal columns, `space.grid` apart. */
+export function Grid({ columns, children: cards }: { columns: number; children: React.ReactNode[] }) {
+  const half = space.grid / 2;
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: -half }}>
+      {cards.map((card, k) => (
+        <View key={(card as { key?: string | null }).key ?? k} style={{ width: `${100 / columns}%`, paddingHorizontal: half, marginBottom: space.grid }}>{card}</View>
+      ))}
     </View>
   );
 }

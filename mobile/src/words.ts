@@ -30,3 +30,31 @@ export const FRAME = {
   tabs: "Roles",
   expired: "Your session has ended. Sign in again.",
 } as const;
+
+/** The Receive screen: the feed of listings that are up now, and the grab sheet. */
+export const RECEIVE = {
+  title: "Available now",
+  loading: "Loading…",
+  empty: "Nothing is offered now. Look again in a few minutes.",
+  grab: "Grab",
+  grabbing: "Grabbing…",
+  gone: "This food is gone",
+  grabbed: "You grabbed it",
+  maps: "Maps",
+  chat: "WhatsApp",
+  close: "Close",
+  yours: "Your listing",
+  collected: "Collected",
+  expired: "Expired",
+  timeLeft: "Time left",
+} as const;
+
+/** "1 serving", "6 servings". */
+export function servings(n: number): string {
+  return n === 1 ? "1 serving" : n + " servings";
+}
+
+/** The WhatsApp message to the giver after a grab. */
+export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string }, email: string): string {
+  return `Hi! I grabbed "${l.title}" on V3RDE (${servings(l.number_of_serving)}). Pickup: ${l.pickup_text}. I am ${email}. When can I come?`;
+}
