@@ -125,8 +125,7 @@ export const REVIEW = {
 
 /** The photo touch-up on the review (the original stays the default). */
 export const TOUCH = {
-  light: "Better light",
-  background: "Plain background",
+  start: "Touch up photo", // X48r: one touch-up (the auto one)
   working: "Touching up the photo…",
   original: "Original",
   edit: "Touched up",

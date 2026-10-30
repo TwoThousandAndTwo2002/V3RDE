@@ -162,8 +162,9 @@ export type TouchupJob = { touchup_id: string; status: string; mode?: string; ph
 
 /** Touch-up of an item photo of the scan (session cookie). The edit runs as a job; the original stays. */
 export const touchup = Object.freeze({
-  start: (photoId: string, mode: "light" | "background") =>
-    request<TouchupJob>("POST", "/api/touchup?mode=" + mode + "&photo_id=" + encodeURIComponent(photoId)),
+  // X48r: one touch-up; the service gives every mode the auto touch-up (X48q), "background" names it
+  start: (photoId: string) =>
+    request<TouchupJob>("POST", "/api/touchup?mode=background&photo_id=" + encodeURIComponent(photoId)),
   get: (id: string) => request<TouchupJob>("GET", "/api/touchup/" + encodeURIComponent(id)),
   /** The path of the edited photo (status done only). */
   photoPath: (id: string) => "/api/touchup/" + encodeURIComponent(id) + "/photo",

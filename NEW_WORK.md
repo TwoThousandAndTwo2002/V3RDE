@@ -1037,3 +1037,16 @@ T9: the app has one touch-up, the auto one.
 - The "Light" path (the Muse edit only) is removed.
 - Tests: post 66 (one test changed).
 
+## 64. Touch-up: one link in the app
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change).
+**Files:** `mobile/src/screens/TouchUp.tsx`, `mobile/src/screens/Review.tsx`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/tests/touchup.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48r.md`
+
+T9: one touch-up button, not two.
+
+- Each item now has one link, "Touch up photo", in place of "Better light" and "Plain background".
+- The link starts the auto touch-up (the Muse edit, the scene rule's mask, the blurred background).
+- Tests: mobile 89 -> 90.
+

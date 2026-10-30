@@ -293,9 +293,9 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 ## Touch-up (`mobile/src/screens/TouchUp.tsx`, rules in `mobile/src/touchup.ts`)
 
-- In each review card with an item photo of the server (and under the source line of the one-item form): the text links "Better light" and "Plain background", `space.gutter` apart. A tap starts a touch-up job; "Touching up the photo…" with a spinner shows while it runs (the app asks every 2 s, at most 2 minutes).
+- In each review card with an item photo of the server (and under the source line of the one-item form): one text link, "Touch up photo" (X48r: one touch-up, the auto one). A tap starts a touch-up job; "Touching up the photo…" with a spinner shows while it runs (the app asks every 2 s, at most 2 minutes).
 - When the edit passed the food check: "Choose the photo to post:" and two photos side by side (`size.choiceThumb`, `radius.photo`), "Original" and "Touched up"; the chosen one has a `size.focusBorder` `accent` border. The original is chosen until the user taps the edit (a radio group).
-- When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the links stay, so the user can try again.
+- When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the link stays, so the user can try again.
 - Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
 
 ## Voice (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`)

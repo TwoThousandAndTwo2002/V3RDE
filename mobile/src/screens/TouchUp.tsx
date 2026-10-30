@@ -1,5 +1,5 @@
 // The photo touch-up of one item on the review, written new for V3RDE (NEW_WORK_UI.md, UI 16;
-// mobile/docs/style_guide.md "Touch-up"). Two choices start a job: "Better light" or "Plain background". While it
+// mobile/docs/style_guide.md "Touch-up"). One link starts a job: "Touch up photo" (X48r: one touch-up, the auto one). While it
 // runs a line says so. When the edit passed the check, the original and the edit show side by side; the
 // original is chosen until the user taps the edit. The state lives in the review (it decides the photo to post).
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
@@ -25,7 +25,7 @@ function Choice({ uri, label, name, on, onPress, testID }: {
 
 export function TouchUp({ n, photoId, state, locked, onStart, onChoose }: {
   n: number; photoId: string; state: TouchState; locked: boolean;
-  onStart: (mode: "light" | "background") => void; onChoose: (c: "original" | "edit") => void;
+  onStart: () => void; onChoose: (c: "original" | "edit") => void;
 }) {
   const of = " " + TOUCH.ofItem(n); // the item number in every name: a list has several of these
   const original = usePhoto(itemPhotoPath(photoId) || undefined);
@@ -59,8 +59,7 @@ export function TouchUp({ n, photoId, state, locked, onStart, onChoose }: {
       <View accessibilityLiveRegion="polite" aria-live="polite">{line}</View>
       {locked ? null : (
         <Row style={{ flexWrap: "wrap", columnGap: space.gutter, rowGap: space.hair }}>
-          <TextLink testID={"light-" + n} name={TOUCH.light + of} onPress={() => onStart("light")}>{TOUCH.light}</TextLink>
-          <TextLink testID={"background-" + n} name={TOUCH.background + of} onPress={() => onStart("background")}>{TOUCH.background}</TextLink>
+          <TextLink testID={"touchup-" + n} name={TOUCH.start + of} onPress={onStart}>{TOUCH.start}</TextLink>
         </Row>
       )}
     </View>

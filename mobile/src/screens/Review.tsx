@@ -57,11 +57,11 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const removed = useRef(new Set<number>()); // items the user removed: their jobs stop
   const talking = useRef(false); // a voice clip is out or its proposal waits
   const setOne = (item: number, t: TouchState) => live.current && setTouch((all) => ({ ...all, [item]: t }));
-  const startTouch = async (item: number, photoId: string, mode: "light" | "background") => {
+  const startTouch = async (item: number, photoId: string) => {
     const since = Date.now();
     setOne(item, { kind: "working", id: "", since });
     try {
-      const job = await touchup.start(photoId, mode);
+      const job = await touchup.start(photoId);
       let now: TouchState = { kind: "working", id: job.touchup_id, since };
       while (live.current && now.kind === "working") {
         await new Promise((go) => setTimeout(go, POLL_MS));
@@ -77,7 +77,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   };
   const touchFor = (it: ItemForm, n: number) => (it.photo_id ? (
     <TouchUp n={n} photoId={it.photo_id} state={touch[it.item] ?? { kind: "idle" }} locked={sending}
-      onStart={(mode) => startTouch(it.item, it.photo_id, mode)}
+      onStart={() => startTouch(it.item, it.photo_id)}
       onChoose={(c) => { const t = touch[it.item]; if (t?.kind === "offer") setOne(it.item, { ...t, chosen: c }); }} />
   ) : null);
   const working = items.some((it) => touch[it.item]?.kind === "working"); // only items still in the list
