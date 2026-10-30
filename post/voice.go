@@ -14,6 +14,8 @@ package post
 //	     multipart: "audio" (WAV, at most -max-audio s), optional "items"
 //	     (JSON: [{"item":1,"title":"…","number_of_serving":6}] — the listing contract only),
 //	     optional "pickup_text", optional "lang" (a BCP 47 tag of the device)
+//	     X48s: or "text" (what the donor typed, at most VoiceMaxText bytes) in
+//	     place of "audio": no transcription, the same Muse Spark mapping
 //	  -> 200 Proposal
 //	GET  /healthz
 //
@@ -60,6 +62,7 @@ const CodeAudioTooLarge = "audio_too_large"
 // listings.Input.Validate.
 const (
 	VoiceMaxTitle    = listings.MaxTitle    // bytes (listings checks len())
+	VoiceMaxText     = 2000                 // X48s: bytes of typed text (the app allows 500 characters; 4 bytes each at most)
 	VoiceMaxPickup   = listings.MaxPickup   // bytes
 	VoiceMaxServings = listings.MaxServings // number_of_serving is 1..MaxServings
 	VoiceMaxItems    = 24                   // the review list (inference MaxNamed)
@@ -244,6 +247,7 @@ type Proposal struct {
 	Unclear    string    `json:"unclear,omitempty"`
 	Dropped    []string  `json:"dropped,omitempty"` // model output the rules refused, for the ledger and the app
 	Audio      AudioInfo `json:"audio"`
+	Source     string    `json:"source"` // X48s: "voice" or "text"
 	CostUSD    float64   `json:"cost_usd"`
 	LatencyMS  int64     `json:"latency_ms"`
 	Models     []string  `json:"models"`
@@ -506,15 +510,25 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, CodeBadRequest, "send multipart/form-data with the field 'audio'")
 		return
 	}
-	f, _, err := r.FormFile("audio")
-	if err != nil {
-		fail(http.StatusBadRequest, CodeBadRequest, "multipart field 'audio' missing")
+	typed := strings.TrimSpace(r.FormValue("text")) // X48s: a typed chat line in place of the audio
+	var raw []byte
+	if typed == "" {
+		f, _, err := r.FormFile("audio")
+		if err != nil {
+			fail(http.StatusBadRequest, CodeBadRequest, "multipart field 'audio' or 'text' missing")
+			return
+		}
+		raw, err = io.ReadAll(io.LimitReader(f, c.MaxBytes+1))
+		f.Close()
+		if err != nil || int64(len(raw)) > c.MaxBytes {
+			fail(http.StatusRequestEntityTooLarge, CodeAudioTooLarge, "audio too large")
+			return
+		}
+	} else if len(typed) > VoiceMaxText {
+		fail(http.StatusBadRequest, CodeBadRequest, fmt.Sprintf("text is at most %d bytes", VoiceMaxText))
 		return
-	}
-	raw, err := io.ReadAll(io.LimitReader(f, c.MaxBytes+1))
-	f.Close()
-	if err != nil || int64(len(raw)) > c.MaxBytes {
-		fail(http.StatusRequestEntityTooLarge, CodeAudioTooLarge, "audio too large")
+	} else if cleanText(typed, VoiceMaxText) == "" {
+		fail(http.StatusBadRequest, CodeBadRequest, "text has no words") // only control characters
 		return
 	}
 	var items []VoiceItem
@@ -538,7 +552,12 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	pickup := cleanText(r.FormValue("pickup_text"), VoiceMaxPickup)
-	wavBytes, info, err := NormalizeWAV(raw, c.MaxAudio)
+	var wavBytes []byte
+	var info AudioInfo
+	var err error
+	if typed == "" {
+		wavBytes, info, err = NormalizeWAV(raw, c.MaxAudio)
+	}
 	if err != nil {
 		code := CodeUnsupported
 		if errors.Is(err, ErrTooLong) {
@@ -556,13 +575,19 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
 	defer cancel()
 	keywords, cut := ASRKeywords(items)
-	tr, call, err := c.ASR.Transcribe(ctx, wavBytes, keywords, LanguageBias(r.FormValue("lang")))
-	if err == nil && call.AudioMS == 0 { // the answer had no audioDurationMs: bill our own measure
-		call.AudioMS = info.MS
-		call.Price()
+	source, text := "text", cleanText(typed, VoiceMaxText)
+	var models []string
+	if typed == "" {
+		source = "voice"
+		tr, call, terr := c.ASR.Transcribe(ctx, wavBytes, keywords, LanguageBias(r.FormValue("lang")))
+		if terr == nil && call.AudioMS == 0 { // the answer had no audioDurationMs: bill our own measure
+			call.AudioMS = info.MS
+			call.Price()
+		}
+		calls = append(calls, call)
+		models = append(models, call.Model)
+		text, err = cleanText(tr.Transcript, 2000), terr
 	}
-	calls = append(calls, call)
-	text := cleanText(tr.Transcript, 2000)
 	if err != nil {
 		hold.Settle(Sum(calls))
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
@@ -574,7 +599,7 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 	}
 	if text == "" {
 		hold.Settle(Sum(calls))
-		fail(http.StatusUnprocessableEntity, "no_speech", "no speech was heard")
+		fail(http.StatusUnprocessableEntity, "no_speech", "no speech was heard") // typed text is never empty here (checked above)
 		return
 	}
 	ij, _ := json.Marshal(items)
@@ -606,14 +631,14 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		newItems = []NewItem{}
 	}
 	p := Proposal{RequestID: id, Transcript: text, Changes: changes, NewItems: newItems, PickupText: newPickup,
-		Unclear: unclear, Dropped: dropped, Audio: info, CostUSD: Sum(calls), LatencyMS: time.Since(t0).Milliseconds(),
-		Models: []string{call.Model, mcall.Model}}
+		Unclear: unclear, Dropped: dropped, Audio: info, Source: source, CostUSD: Sum(calls), LatencyMS: time.Since(t0).Milliseconds(),
+		Models: append(models, mcall.Model)}
 	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD, ev.SpentTodayUSD = 200, p.LatencyMS, calls, p.CostUSD, c.Budget.Spent()
 	// the ledger keeps the transcript and the proposal (labels for tuning, as
 	// #15); never the audio
 	ev.Detail = map[string]any{"transcript": text, "items": len(items), "changes": changes, "new_items": newItems,
 		"pickup_changed": newPickup != nil, "dropped": dropped, "audio": info, "lang": cleanText(r.FormValue("lang"), 35),
-		"keywords": len(keywords), "keywords_cut": cut}
+		"keywords": len(keywords), "keywords_cut": cut, "source": source}
 	WriteJSON(w, http.StatusOK, p)
 	c.Events.Record(ev)
 }

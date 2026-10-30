@@ -1050,3 +1050,21 @@ T9: one touch-up button, not two.
 - The link starts the auto touch-up (the Muse edit, the scene rule's mask, the blurred background).
 - Tests: mobile 89 -> 90.
 
+## 65. Review: the chat bar (talk or type)
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Voice Transcribe 1.0 (voice lines), Muse Spark 1.3 (voice and typed lines).
+**Files:** `post/voice.go`, `post/voice_test.go`, `mobile/src/screens/Voice.tsx`, `mobile/src/screens/Review.tsx`, `mobile/src/voice.ts`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/tests/voice.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48s.md`
+
+T9 approved the chat bar mockup. The review list now works like a chat with the app.
+
+- Under the list: the microphone and a text box. Talk, or type and tap Send.
+- The voice service takes typed text too. It skips the transcription and uses the same Muse Spark step.
+- The changes go into the list at once. The chat shows what was said or typed and what changed. Undo is on the last change only.
+- A changed card and the pickup say "Changed in the chat".
+- On a wide screen the scan photo stays in place; only the list scrolls.
+- The chat is cleared after a post. Post waits while the microphone is on.
+- A line cannot remove every item; it says so (Start over does that).
+- Tests: post 66 -> 67, mobile 90 -> 92.
+

@@ -575,3 +575,50 @@ func TestASRKeywordsFitTheLimit(t *testing.T) {
 		t.Fatalf("asr keywords %v", f.asrReq["keywords"])
 	}
 }
+
+// X48s: a typed chat line takes the place of the audio: no transcription,
+// the same mapping, source "text"; a line over VoiceMaxText is refused, and a
+// request with neither audio nor text is refused.
+func TestVoiceTypedText(t *testing.T) {
+	f := &voiceFake{mapText: `{"changes":[{"item":2,"number_of_serving":8}]}`}
+	cfg, h, stop := newVoice(t, f)
+	defer stop()
+	w := do(h, voiceReq(t, "/api/voice", nil, map[string]string{"items": reviewItems, "text": "  make the salad 8 servings  "}, "u1"))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	var p Proposal
+	json.Unmarshal(w.Body.Bytes(), &p)
+	if p.Source != "text" || p.Transcript != "make the salad 8 servings" || len(p.Changes) != 1 || *p.Changes[0].NumberOfServing != 8 ||
+		len(p.Models) != 1 || f.asrReq != nil {
+		t.Fatalf("proposal %+v asr %v", p, f.asrReq)
+	}
+	if want := (800*1.25 + 120*4.25) / 1e6; !near(p.CostUSD, want) { // the mapping only
+		t.Fatalf("cost %v want %v", p.CostUSD, want)
+	}
+	if !strings.Contains(f.museBody, `TRANSCRIPT: \"make the salad`) {
+		t.Fatalf("muse prompt %.300s", f.museBody)
+	}
+	b, _ := os.ReadFile(cfg.Events.Path(time.Now()))
+	if !strings.Contains(string(b), `"source":"text"`) {
+		t.Fatalf("events %s", b)
+	}
+	if w := do(h, voiceReq(t, "/api/voice", nil, map[string]string{"text": strings.Repeat("a", VoiceMaxText+1)}, "u1")); w.Code != 400 {
+		t.Fatalf("long text: %d", w.Code)
+	}
+	if w := do(h, voiceReq(t, "/api/voice", nil, map[string]string{"text": "\x01\x02"}, "u1")); w.Code != 400 {
+		t.Fatalf("control characters only: %d", w.Code)
+	}
+	if w := do(h, voiceReq(t, "/api/voice", nil, map[string]string{"text": "   "}, "u1")); w.Code != 400 {
+		t.Fatalf("no audio, no text: %d", w.Code)
+	}
+	// a voice answer says so
+	f2 := &voiceFake{transcript: "six", mapText: `{"changes":[]}`}
+	_, h2, stop2 := newVoice(t, f2)
+	defer stop2()
+	w = do(h2, voiceReq(t, "/api/voice", makeWAV(t, 24000, 1, 16, 1000, 1), map[string]string{"items": reviewItems}, "u1"))
+	json.Unmarshal(w.Body.Bytes(), &p)
+	if w.Code != 200 || p.Source != "voice" || len(p.Models) != 2 {
+		t.Fatalf("voice: %d %+v", w.Code, p)
+	}
+}

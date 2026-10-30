@@ -175,11 +175,12 @@ export function analyzeLabels(report: object): Promise<void> {
   return request<void>("POST", "/api/analyze/labels", { json: report, timeoutMs: 10_000 }).catch(() => undefined);
 }
 
-/** Voice posting: one WAV clip and the review list (item, title, servings). The answer is a proposal; the app
- *  posts nothing until the donor taps Post. The service stops at 25 s; the app waits 35 s. */
-export function voice(clip: Upload, items: VoiceItem[], pickupText = "", lang = "") {
+/** Voice posting: one WAV clip, or (X48s) a typed chat line, and the review list (item, title, servings). The
+ *  answer is a proposal; the app posts nothing until the donor taps Post. The service stops at 25 s; the app waits 35 s. */
+export function voice(said: Upload | { text: string }, items: VoiceItem[], pickupText = "", lang = "") {
   const form = formOf([], [["pickup_text", pickupText], ["lang", lang]]);
-  addFile(form, "audio", clip);
+  if ("text" in said) form.append("text", said.text);
+  else addFile(form, "audio", said);
   if (items.length > 0) {
     const list = items.map((it) => ({ item: it.item, title: it.title, number_of_serving: it.number_of_serving }));
     form.append("items", JSON.stringify(list));

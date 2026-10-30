@@ -1,7 +1,7 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, changesSomething, proposalLines, proposalOf, voiceError, voiceItems } from "../src/voice.ts";
+import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, proposalLines, proposalOf, undoTo, voiceError, voiceItems } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -58,4 +58,47 @@ test("voiceError (U18): the code of the answer picks the line", () => {
   assert.equal(voiceError(429, "rate_limited", w), "B");
   assert.equal(voiceError(502, "upstream_error", w), "F");
   assert.equal(voiceError(0, "", w), "F");
+});
+
+// X48s: the chat bar. A turn applies at once, marks the changed cards, and Undo (the last turn only) gives the list back.
+const M = { title: "title", servings: (a: string, b: string) => `${a} to ${b} servings`, mark: (p: string[]) => "chat: " + p.join(", ") };
+test("a chat turn: count, marks, undo on the last turn only", () => {
+  const p = proposalOf({ changes: [{ item: 1, title: "Ripe pasta", number_of_serving: 8 }, { item: 3, remove: true }], pickup_text: "Back door" });
+  assert.equal(changeCount(ITEMS, "Front", p), 4); // title, servings, a removed item, the pickup
+  const t = chatTurn(ITEMS, "Front", p, "said", "eight servings of ripe pasta", W, M);
+  assert.equal(t.count, 4);
+  assert.deepEqual(t.marks, { 1: "chat: title, 6 to 8 servings" });
+  assert.equal(t.pickupMarked, true);
+  assert.equal(t.after.items.length, 2);
+  const turns = [t];
+  assert.equal(canUndo(turns, t.after.items, t.after.pickup), true);
+  assert.deepEqual(liveMarks(turns, t.after.items, t.after.pickup), { marks: t.marks, pickup: true });
+  assert.deepEqual(undoTo(turns), { items: ITEMS, pickup: "Front" });
+  // a hand edit after the turn ends Undo and the marks
+  const edited = t.after.items.map((x) => (x.item === 2 ? { ...x, servings: "5" } : x));
+  assert.equal(canUndo(turns, edited, t.after.pickup), false);
+  assert.deepEqual(liveMarks(turns, edited, t.after.pickup), { marks: {}, pickup: false });
+  // a second turn: only it can be undone
+  const p2 = proposalOf({ changes: [{ item: 2, number_of_serving: 4 }] });
+  const t2 = chatTurn(t.after.items, t.after.pickup, p2, "typed", "salad 4", W, M);
+  assert.equal(canUndo([t, t2], t2.after.items, t2.after.pickup), true);
+  assert.deepEqual(undoTo([t, t2])?.items, t.after.items);
+  assert.equal(canUndo([t, { ...t2, undone: true }], t.after.items, t.after.pickup), false);
+  // no change: no lines but "none", nothing to undo
+  const t3 = chatTurn(ITEMS, "Front", proposalOf({ changes: [] }), "typed", "hello", W, M);
+  assert.equal(t3.count, 0);
+  assert.deepEqual(t3.lines, []);
+  assert.equal(canUndo([t3], ITEMS, "Front"), false);
+});
+
+test("a line may not remove every item", () => {
+  const all = proposalOf({ changes: [{ item: 1, remove: true }, { item: 2, remove: true }, { item: 3, remove: true }, { item: 1, number_of_serving: 2 }] });
+  const kept = keepOne(ITEMS, all, "not all");
+  assert.equal(kept.changes.some((c) => c.remove), false);
+  assert.deepEqual(kept.dropped, ["not all"]);
+  assert.equal(applyProposal(ITEMS, "", kept).items.length, 3);
+  const one = [ITEMS[0]];
+  assert.equal(keepOne(one, proposalOf({ changes: [{ item: 1, remove: true }] }), "x").changes.length, 0); // the one-item form
+  const some = proposalOf({ changes: [{ item: 2, remove: true }] });
+  assert.equal(keepOne(ITEMS, some, "x"), some); // removing some items is fine
 });

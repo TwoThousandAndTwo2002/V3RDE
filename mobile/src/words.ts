@@ -138,20 +138,13 @@ export const TOUCH = {
   ofItem: (n: number) => "of item " + n,
 } as const;
 
-/** Voice changes on the review (tap to talk, tap to stop). */
+/** The chat bar on the review (X48s: talk or type; tap to talk, tap to stop). */
 export const VOICE = {
-  say: "Say what to change",
   start: "Start talking",
   stop: "Stop talking",
-  listening: "Listening… Tap to stop.",
-  working: "Reading what you said…",
-  heard: (t: string) => "You said: \u201c" + t + "\u201d",
-  apply: "Apply changes",
-  keep: "Keep as is",
-  ok: "OK",
   micOff: "Allow the microphone to talk.",
   failed: "Could not read what you said. Try again.",
-  noSpeech: "No speech was heard. Try again.",
+  noSpeech: "No speech was heard. Tap the microphone and try again, or type the change.",
   busy: "Voice is busy. Try again in a minute.",
   paused: "Voice is paused for today.",
   rename: (n: number, from: string, to: string) => "Item " + n + ": \u201c" + from + "\u201d to \u201c" + to + "\u201d",
@@ -163,6 +156,24 @@ export const VOICE = {
   removedBefore: "Not used: a change for an item that you removed.",
   dropped: (text: string) => "Not used: " + text,
   unnamed: (n: number) => "Item " + n,
-  first: "Apply or keep the voice changes first.",
+  first: "Stop the microphone or wait for the change, then post.",
+  notAll: "remove every item (a listing needs at least one item; use Start over)",
+  // X48s: the chat bar
+  hint: "Talk or type a change",
+  typeName: "Type a change to the list",
+  send: "Send",
+  examples: "Try: \u201c6 servings\u201d, \u201cremove item 2\u201d.",
+  said: "You said",
+  typed: "You typed",
+  made: (n: number) => (n === 1 ? "1 change made" : n + " changes made"),
+  undo: "Undo",
+  undone: "Undone. The list is back as it was.",
+  listeningFor: (s: number) => "Listening\u2026 " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"),
+  tapStop: "Tap to stop. It stops by itself after 1 minute.",
+  reading: "Reading the change\u2026",
+  markTitle: "title",
+  markServings: (from: string, to: string) => from + " to " + to + " servings",
+  mark: (parts: string[]) => "Changed in the chat: " + parts.join(", "),
+  markPickup: "Changed in the chat",
   none: "No change found in what you said.",
 } as const;

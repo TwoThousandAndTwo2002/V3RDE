@@ -298,10 +298,12 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the link stays, so the user can try again.
 - Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
 
-## Voice (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`)
+## Chat bar (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`; X48s, the approved "V3RDE Chat Bar Mockup")
 
-- On the review, over the pills (`space.gap` above): the microphone (`IconBtn`, `size.iconBig`, glyph mic; glyph stop while it listens) and a `muted` line: "Say what to change", "Listening… Tap to stop.", "Reading what you said…" (with a spinner). Tap to talk, tap again to stop; the clip stops by itself before the service limit.
-- The proposal: a `card` box with a `size.border` `accent` border, `radius.card`, `space.group` padding: "You said: “…”" (2 lines at most), then one line for each change ("Item 1: 2 to 6 servings", "Remove item 3: …", "Pickup: …", "Question: …"; a new item is "Not added (a listing needs a photo): …"), the lines scroll above `size.proposalMax`; then "Keep as is" and "Apply changes" (only "OK" when nothing changes). Changes for an item removed since, and what the service did not use, show as "Not used: …". Post waits until the proposal is applied or kept. Nothing changes until "Apply changes", and nothing posts until Post.
+- Under the list, above the pills (`space.gap` above): the microphone (`IconBtn`, `size.iconBig`, glyph mic) and a field "Talk or type a change"; with text in it, a "Send" field button. While a clip runs: a `card` box with a `size.border` `accent` border, the stop glyph, "Listening… 0:04", "Tap to stop. It stops by itself after 1 minute." and a `Progress` bar to the limit. While the service reads: a spinner and "Reading the change…".
+- On a wide screen the scan photo stays in place; only the list column scrolls, and the chat bar is under it.
+- The changes go into the list at once. The chat is in the scroll body under the list: the user's line on `iconFill` ("You said" / "You typed"), the app's answer on a `card` with a `line` border ("3 changes made", one line for each change), `radius.card`, `space.item` padding. Undo (a text link) is on the last change only, while the list is as that change left it. A changed card and the pickup show "Changed in the chat: …" in `link`.
+- Before the first line: "Try: “6 servings”, “remove item 2”." The chat is cleared after a post. Post waits while a line is being read.
 
 ## Mockups
 

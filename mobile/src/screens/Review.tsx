@@ -3,8 +3,8 @@
 // the item photo the server cut, and one pickup for all. Post sends one listing for each item, one after the
 // other; a posted item leaves the list, a failed one stays with its error. What the user did with the answer goes
 // to /api/analyze/labels one time (posted, retake or closed). An item with a server photo can be touched up
-// (UI 16, TouchUp.tsx); the photo the user chose is the one that posts. The microphone gives voice changes
-// (UI 17, Voice.tsx).
+// (UI 16, TouchUp.tsx); the photo the user chose is the one that posts. The chat bar (microphone or text) changes
+// the list at once (UI 17, X48s, Voice.tsx).
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, TextInput, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
@@ -14,23 +14,25 @@ import {
   type ItemForm, type LabelOutcome,
 } from "../logic";
 import { LIMITS, listingProblem, servingsInput, sourceNote, stepServings } from "../capture";
-import { layoutFor, space } from "../theme";
+import { layoutFor, space, useColors } from "../theme";
 import { ErrorText, Field, IconBtn, Muted, Photo, Pill, ReviewCard, Rise, Row, Sheet, SheetBody, SheetPills, Title, usePhoto } from "../ui";
 import { useSession } from "../session";
 import { REVIEW } from "../words";
 import type { Answer } from "./Capture";
 import { TouchUp } from "./TouchUp";
-import { VoiceBar } from "./Voice";
+import { useChat } from "./Voice";
 import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
 import { TOUCH, VOICE } from "../words";
 
 /** One card of the review list, with the item photo of the server (or the touched-up photo the user chose). */
-function ItemCard({ it, n, touch, editId, onChange, onRemove }: {
-  it: ItemForm; n: number; touch?: React.ReactNode; editId?: string; onChange: (f: ItemForm) => void; onRemove: () => void;
+function ItemCard({ it, n, touch, mark, editId, onChange, onRemove }: {
+  it: ItemForm; n: number; touch?: React.ReactNode; mark?: string; editId?: string; onChange: (f: ItemForm) => void; onRemove: () => void;
 }) {
   const uri = usePhoto(editId ? touchup.photoPath(editId) : itemPhotoPath(it.photo_id) || undefined);
+  const col = useColors();
+  const extra = mark ? <>{touch}<Muted style={{ color: col.link }}>{mark}</Muted></> : touch; // X48s: changed in the chat
   return (
-    <ReviewCard uri={uri || undefined} n={n} title={it.title} servings={it.servings} error={it.err} extra={touch}
+    <ReviewCard uri={uri || undefined} n={n} title={it.title} servings={it.servings} error={it.err} extra={extra}
       onTitle={(t) => onChange({ ...it, title: t })} onServings={(t) => onChange({ ...it, servings: servingsInput(t) })}
       onRemove={onRemove} onLess={() => onChange({ ...it, servings: stepServings(it.servings, -1) })}
       onMore={() => onChange({ ...it, servings: stepServings(it.servings, 1) })} />
@@ -43,6 +45,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   onBusy: (busy: boolean) => void;
 }) {
   const { ended } = useSession();
+  const col = useColors();
   const wide = layoutFor(useWindowDimensions().width).dialogs;
   const [items, setItems] = useState<ItemForm[]>(answer.items);
   const [pickup, setPickup] = useState("");
@@ -55,7 +58,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const live = useRef(true);
   useEffect(() => () => { live.current = false; }, []);
   const removed = useRef(new Set<number>()); // items the user removed: their jobs stop
-  const talking = useRef(false); // a voice clip is out or its proposal waits
+  const talking = useRef(false); // a chat line is out (X48s: a change goes in at once, so nothing else waits)
   const setOne = (item: number, t: TouchState) => live.current && setTouch((all) => ({ ...all, [item]: t }));
   const startTouch = async (item: number, photoId: string) => {
     const since = Date.now();
@@ -96,12 +99,14 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     onStartOver();
   };
   const pickupBox = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const chat = useChat({ items, pickup, onOpen: (o) => { talking.current = o; },
+    onApply: (next, place) => { setItems(next); setPickup(place); setProblem(""); } });
   const one = answer.items.length === 1;
 
   const post = async () => {
     if (busy.current || items.length === 0) return;
     if (working) return setProblem(TOUCH.wait); // a touch-up that still runs decides the photo
-    if (talking.current) return setProblem(VOICE.first); // a voice proposal is not applied or kept yet
+    if (talking.current) return setProblem(VOICE.first); // a chat line is still being read
     const pickupWrong = listingProblem("-", 1, pickup); // the pickup is for all items: no item name with it
     if (pickupWrong) return setProblem(pickupWrong);
     for (const it of items) {
@@ -136,6 +141,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     setProgress("");
     if (done > 0) tell(sent, "posted"); // the report goes after a listing is up, not before
     postedSoFar.current += done;
+    if (done > 0) chat.clear(); // X48s: the chat is cleared after a post
     if (left.length === 0) return onPosted(postedSoFar.current);
     if (!one) {
       setItems(left);
@@ -149,6 +155,9 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       placeholder={REVIEW.pickupHint} returnKeyType="done" submitBehavior="blurAndSubmit"
       onChangeText={(t) => setPickup(t.replace(/\n/g, " "))} />
   );
+  const pickupMark = chat.pickupMarked ? (
+    <Muted style={{ color: col.link, marginTop: space.hair, marginLeft: space.inset }}>{VOICE.markPickup}</Muted>
+  ) : null;
   let fields: React.ReactNode;
   if (one) {
     const it = items[0];
@@ -171,7 +180,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
             <IconBtn big glyph="plus" label={REVIEW.more} onPress={() => set({ servings: stepServings(it.servings, 1) })} />
           </Row>
         </Rise>
-        <Rise i={5}>{pickupField}</Rise>
+        <Rise i={5}>{pickupField}{pickupMark}</Rise>
         {problem ? <ErrorText>{problem}</ErrorText> : null}
       </View>
     );
@@ -180,11 +189,11 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       <View style={{ flex: 1, minWidth: 0 }}>
         {items.map((it, k) => (
           <Rise key={it.item} i={2 + k}>
-            <ItemCard it={it} n={k + 1} touch={touchFor(it, k + 1)} editId={editOf(it)}
+            <ItemCard it={it} n={k + 1} touch={touchFor(it, k + 1)} mark={chat.marks[it.item]} editId={editOf(it)}
               onChange={(f) => setItems(items.map((x) => (x.item === it.item ? f : x)))}
               onRemove={() => { removed.current.add(it.item); setItems(items.filter((x) => x.item !== it.item)); }} /></Rise>
         ))}
-        <Rise i={2 + items.length}>{pickupField}</Rise>
+        <Rise i={2 + items.length}>{pickupField}{pickupMark}</Rise>
         {problem ? <ErrorText>{problem}</ErrorText> : null}
       </View>
     );
@@ -197,18 +206,21 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         <View style={{ flexShrink: 1, flexGrow: 1 }}>
           <Rise i={0}><Title style={{ marginBottom: space.hair }}>{title}</Title></Rise>
           {one ? null : <Rise i={1}><Muted>{REVIEW.check}</Muted></Rise>}
-          <SheetBody>
-            {wide ? (
-              <View style={{ flexDirection: "row", gap: space.foot, alignItems: "flex-start", marginTop: space.inset }}>
-                <View style={{ flex: 1, minWidth: 0 }}><Rise i={1}><Photo uri={shot.uri} round="card" /></Rise></View>
-                {fields}
+          {wide ? (
+            // X48s: the photo stays in place; only the list column scrolls, with the chat bar under it
+            <View style={{ flexDirection: "row", gap: space.foot, alignItems: "flex-start", marginTop: space.inset, flexShrink: 1, minHeight: 0 }}>
+              <View style={{ flex: 1, minWidth: 0 }}><Rise i={1}><Photo uri={shot.uri} round="card" /></Rise></View>
+              <View style={{ flex: 1, minWidth: 0, alignSelf: "stretch" }}>
+                <SheetBody>{fields}{items.length > 0 ? chat.thread : null}</SheetBody>
+                {items.length > 0 && !sending ? chat.bar : null}
               </View>
-            ) : fields}
-          </SheetBody>
-          {items.length > 0 && !sending ? (
-            <VoiceBar items={items} pickup={pickup} onOpen={(o) => { talking.current = o; }}
-              onApply={(next, place) => { setItems(next); setPickup(place); setProblem(""); }} />
-          ) : null}
+            </View>
+          ) : (
+            <>
+              <SheetBody>{fields}{items.length > 0 ? chat.thread : null}</SheetBody>
+              {items.length > 0 && !sending ? chat.bar : null}
+            </>
+          )}
           <View accessibilityLiveRegion="polite" aria-live="polite">
             {progress ? <Muted center style={{ marginTop: space.gap }}>{progress}</Muted> : null}</View>
           <Rise i={last}>

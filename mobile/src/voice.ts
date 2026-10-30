@@ -91,3 +91,76 @@ export function voiceError(status: number, code: string, words: { failed: string
   if (code === "busy" || code === "rate_limited" || status === 429) return words.busy;
   return words.failed;
 }
+
+// ---- X48s: the chat bar (T9 2026-10-30, the approved "V3RDE Chat Bar Mockup"). Talk or type; the changes go
+// into the list at once; the chat keeps what was said or typed and what changed; Undo only on the last change.
+
+/** How the user gave a chat line. */
+export type How = "said" | "typed";
+/** One exchange of the chat: the user's line, the app's answer, the list before and after (for Undo). */
+export type Turn = {
+  how: How; text: string; lines: string[]; count: number;
+  before: { items: ItemForm[]; pickup: string }; after: { items: ItemForm[]; pickup: string };
+  marks: Record<number, string>; pickupMarked: boolean; undone: boolean;
+};
+
+/** The words of the chat marks on the cards. */
+export type MarkWords = { title: string; servings: (from: string, to: string) => string; mark: (parts: string[]) => string };
+
+/** The number of real changes in a proposal (renames, servings, removed items, the pickup). */
+export function changeCount(items: ItemForm[], pickup: string, p: Proposal): number {
+  const after = applyProposal(items, pickup, p);
+  let n = items.length - after.items.length + (after.pickup !== pickup ? 1 : 0);
+  for (const a of after.items) {
+    const b = items.find((x) => x.item === a.item);
+    if (b && a.title !== b.title) n++;
+    if (b && a.servings !== b.servings) n++;
+  }
+  return n;
+}
+
+/** X48s review: a line may not remove every item (the review needs one): those removes are not used, and say so. */
+export function keepOne(items: ItemForm[], p: Proposal, notAll: string): Proposal {
+  const removes = p.changes.filter((c) => c.remove && items.some((it) => it.item === c.item));
+  if (items.length === 0 || removes.length < items.length) return p;
+  return { ...p, changes: p.changes.filter((c) => !c.remove), dropped: [...p.dropped, notAll] };
+}
+
+/** The exchange for a proposal: the list after it, and a mark for each changed card ("title, 2 to 6 servings"). */
+export function chatTurn(items: ItemForm[], pickup: string, p: Proposal, how: How, text: string, w: ProposalWords, m: MarkWords): Turn {
+  const after = applyProposal(items, pickup, p);
+  const marks: Record<number, string> = {};
+  for (const a of after.items) {
+    const b = items.find((x) => x.item === a.item);
+    if (!b) continue;
+    const parts: string[] = [];
+    if (a.title !== b.title) parts.push(m.title);
+    if (a.servings !== b.servings) parts.push(m.servings(b.servings, a.servings));
+    if (parts.length) marks[a.item] = m.mark(parts);
+  }
+  const count = changeCount(items, pickup, p);
+  return { how, text, lines: count || p.unclear || p.dropped.length || p.new_items.length ? proposalLines(items, pickup, p, w) : [], count,
+    before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false };
+}
+
+const sameList = (a: { items: ItemForm[]; pickup: string }, items: ItemForm[], pickup: string) =>
+  a.pickup === pickup && a.items.length === items.length &&
+  a.items.every((x, k) => x.item === items[k].item && x.title === items[k].title && x.servings === items[k].servings);
+
+/** Undo is on the last turn only, and only while the list is as that turn left it (a later hand edit ends it). */
+export function canUndo(turns: Turn[], items: ItemForm[], pickup: string): boolean {
+  const last = turns[turns.length - 1];
+  return !!last && !last.undone && last.count > 0 && sameList(last.after, items, pickup);
+}
+
+/** The card and pickup marks to show: those of the last turn, while the list is as it left it. */
+export function liveMarks(turns: Turn[], items: ItemForm[], pickup: string): { marks: Record<number, string>; pickup: boolean } {
+  return canUndo(turns, items, pickup) ? { marks: turns[turns.length - 1].marks, pickup: turns[turns.length - 1].pickupMarked }
+    : { marks: {}, pickup: false };
+}
+
+/** The list after Undo: the list just before the last turn (Undo shows only while the list is as that turn left it). */
+export function undoTo(turns: Turn[]): { items: ItemForm[]; pickup: string } | null {
+  const last = turns[turns.length - 1];
+  return last && !last.undone ? last.before : null;
+}
