@@ -731,3 +731,24 @@ MetricX scores one text at a time. It does not see that two texts on one screen 
 - Test fix: `TestRung` (from #51) failed about 1 time in 200. Root cause: its fake chose the lost-tag answer from a call count that all workers share, and the order of the workers changes from run to run. The fake now counts the tries of each message. 1000 runs with `-race` pass.
 - 2 new regression tests. The i18n module now has 39 tests.
 - Not deployed by this change.
+
+---
+
+## 61. Lost in translation: two judges read whole concepts and whole screens
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open (Baseten) and Muse Spark 1.3 (Meta Model API), only when `cmd/judge` runs; the tests use fakes.
+**Files:** `i18n/meta/meta.go`, `i18n/meta/meta_test.go`, `i18n/judge/judge.go`, `i18n/judge/judge_test.go`, `i18n/cmd/judge/main.go`
+**Sources:** `docs/sources/L4j-b.md`
+
+A judge reads a group of texts of one language together: all texts of one concept of the graph, or all texts of one screen. For each text it gets the English text, what the text does, and the translation.
+
+- A concept judge checks that one idea has one word, that buttons use the action form, and that the grammar is correct.
+- A screen judge checks that pairs and opposites read as different actions, that the form of address is the same on the screen, and that each text fits what it does.
+- Two judges: Muse Spark Open on Baseten and Muse Spark 1.3 on the Meta Model API. A text is flagged when one judge or one check reports it. The two judges are not yet compared with labels, so this report gives no accuracy numbers.
+- The answer is JSON with a verdict and issues. A text id that is not in the group is dropped. A fail with no known text is a judge error.
+- `meta/` is a small client for `https://api.meta.ai/v1/responses`. The key is in `~/.config/v3rde/meta_model_api_key` (mode 0600). Errors do not show the key.
+- `go run ./cmd/judge runs-ctx/*/*.json` writes `<lang>.judge.json`: the checks, each verdict, and the flagged texts with the reasons.
+- 5 new regression tests. The i18n module now has 44 tests.
+- Not deployed by this change.
