@@ -978,3 +978,19 @@ On the last page, every box column said "no mask". A debug run showed why: SAM d
 - Box and point prompts now ask for the format that the decoder reads (`mask_encoding: one_bit`). In the debug run this was also faster: under 1 s instead of 3 to 5 s.
 - Tests: inference 93 (no new test; the fake SAM now refuses a box prompt without the setting).
 
+## 60. Touch-up v2: the mask is chosen by the scene
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1, Muse Image 1.0 (no change). Only in the comparison tool.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`
+**Sources:** `docs/sources/X48m.md`
+
+T9 chose the words mask for a meal and for packages, and the box mask for piles of produce. One rule now makes that choice, with no list of foods:
+
+- No item box (a meal photographed as a whole): the words mask, which keeps the tray.
+- The words mask stays inside the item's box (a package, a plate): the words mask.
+- The words mask spills past the item's box, or there is no words mask (a pile next to another pile): the box mask.
+- The "not this" points (step 2) are not used: they cut holes in the items.
+- The page shows each photo's choice and the reason.
+- Tests: inference 93 -> 94.
+

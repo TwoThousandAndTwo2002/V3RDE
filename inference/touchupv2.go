@@ -266,9 +266,17 @@ func (v *V2) postEdit(ctx context.Context, body map[string]any) ([]byte, ImageCa
 // item's mask pixels. It returns the w x h raster, a label ("food + plate"),
 // the number of masks and the cost of every SAM call.
 func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, containers []string, target image.Rectangle) ([]byte, string, int, float64, error) {
+	m, label, n, cost, _, err := v.subjectMask(ctx, img, concepts, containers, target)
+	return m, label, n, cost, err
+}
+
+// subjectMask is SubjectMask and the spill: the share of the item's mask
+// pixels that were outside the item's box + 5% and were cut away (X48m: a
+// mask that spills is a pile next to another pile; 0 with no target).
+func (v *V2) subjectMask(ctx context.Context, img image.Image, concepts, containers []string, target image.Rectangle) ([]byte, string, int, float64, float64, error) {
 	jb, err := small(img, 1536)
 	if err != nil {
-		return nil, "", 0, 0, err
+		return nil, "", 0, 0, 0, err
 	}
 	b := img.Bounds()
 	w, h := b.Dx(), b.Dy()
@@ -355,7 +363,7 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 		keep := pick(got[i].inst)
 		m, n := MaskRaster(keep, w, h)
 		log = append(log, fmt.Sprintf("%s %d/%d", concepts[i], n, len(got[i].inst)))
-		set := 0
+		set, cut := 0, 0
 		if grow.Empty() {
 			for _, x := range m {
 				set += int(x)
@@ -372,6 +380,7 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 					}
 					if !(image.Point{x, y}).In(grow) {
 						m[y*w+x] = 0
+						cut++
 						continue
 					}
 					set++
@@ -411,9 +420,13 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 				label += " + " + c
 			}
 		}
-		return m, label + " (SAM kept/found: " + strings.Join(log, ", ") + ")", n, cost, nil
+		spill := 0.0
+		if set+cut > 0 {
+			spill = float64(cut) / float64(set+cut)
+		}
+		return m, label + " (SAM kept/found: " + strings.Join(log, ", ") + ")", n, cost, spill, nil
 	}
-	return nil, "", 0, cost, errors.New("sam: no mask of the item (SAM kept/found: " + strings.Join(log, ", ") + ")")
+	return nil, "", 0, cost, 0, errors.New("sam: no mask of the item (SAM kept/found: " + strings.Join(log, ", ") + ")")
 }
 
 // ItemSource cuts the item again from the uploaded photo (orig) with a
@@ -780,11 +793,14 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target 
 		done(r, img, t0)
 	}
 	vs := [3]Variant{mk("words"), mk("box"), mk("box_refine")}
+	var wordsSpill float64
+	var wordsErr, boxErr error
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() { // words: the X48j mask (containers included)
 		defer wg.Done()
-		m, label, n, cost, err := v.SubjectMask(ctx, base, concepts, ContainerConcepts, t)
+		m, label, n, cost, spill, err := v.subjectMask(ctx, base, concepts, ContainerConcepts, t)
+		wordsSpill, wordsErr = spill, err
 		vs[0].CostUSD += cost
 		vs[0].Concept, vs[0].Masks = label, n
 		finish(&vs[0], m, err)
@@ -796,9 +812,11 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target 
 				vs[k].Error = strings.TrimSpace(vs[k].Error + " no item box from the scan (a whole-photo item)")
 				finish(&vs[k], nil, errors.New("no box"))
 			}
+			boxErr = errors.New("no box")
 			return
 		}
 		m, n, cost, err := v.BoxMask(ctx, base, t)
+		boxErr = err
 		vs[1].CostUSD += cost
 		vs[2].CostUSD += cost
 		var rm []byte
@@ -840,7 +858,8 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target 
 		}
 	}()
 	wg.Wait()
-	return append(append(out, vs[:]...), mb), nil
+	auto := Auto(vs[0], vs[1], wordsErr, boxErr, wordsSpill, !t.Empty())
+	return append(append(append(out, auto), vs[:]...), mb), nil
 }
 
 // blurStudio is the look on src, cut to the mask (plus 12%) with the photo
@@ -868,4 +887,40 @@ func Thumb(jb []byte, long, q int) ([]byte, error) {
 		im = analyze.Enhance(im, analyze.Look{LongEdge: long, Saturation: 1})
 	}
 	return analyze.JPEG(im, q)
+}
+
+// SpillMax: a words mask with more than this share of its pixels outside the
+// item's box + 5% spilled into a neighbour (X48m).
+const SpillMax = 0.03
+
+// Auto is the mask T9 chose for each kind of scene (X48m, T9 2026-10-30: "for
+// row 1 food in a plate of serving tray choose Mask from words, for rows 2-3
+// choose Mask from the box (step 1), for times like in rows 4-6 use Mask from
+// words. so it should be based on scene"), as one rule with no list of foods:
+//
+//	no item box from the scan (a whole-photo item: a meal in its tray)  words
+//	the words mask stays inside the item's box (a package, a plate)     words
+//	the words mask spills past the box, or words found nothing (a pile
+//	next to another pile)                                               box
+//
+// When the chosen mask failed and the other did not, the other is used.
+func Auto(words, box Variant, wordsErr, boxErr error, spill float64, hasBox bool) Variant {
+	pick, why := words, "words: "
+	switch {
+	case !hasBox:
+		why += "no item box from the scan (a whole-photo item)"
+	case wordsErr != nil && boxErr == nil:
+		pick, why = box, "box: the words found no mask of the item"
+	case wordsErr == nil && spill > SpillMax && boxErr == nil:
+		pick, why = box, fmt.Sprintf("box: the words mask spilled %.0f%% past the item's box (a pile next to another)", 100*spill)
+	case wordsErr == nil && spill > SpillMax:
+		why += fmt.Sprintf("the words mask spilled %.0f%%, and the box gave no mask", 100*spill)
+	case wordsErr == nil:
+		why += fmt.Sprintf("the words mask stays in the item's box (spill %.1f%%)", 100*spill)
+	default:
+		why += "no mask from the words or the box"
+	}
+	a := pick
+	a.Name, a.Concept = "auto", why+"; "+pick.Concept
+	return a
 }

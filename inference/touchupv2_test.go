@@ -208,7 +208,7 @@ func TestCompareX48k(t *testing.T) {
 		names = append(names, x.Name)
 		by[x.Name] = x
 	}
-	if strings.Join(names, ",") != "original,words,box,box_refine,muse_bigger" || edits.Load() != 1 || input.Load() != MuseInputEdge {
+	if strings.Join(names, ",") != "original,auto,words,box,box_refine,muse_bigger" || edits.Load() != 1 || input.Load() != MuseInputEdge {
 		t.Fatalf("variants %v, edits %d, Muse input %d px", names, edits.Load(), input.Load())
 	}
 	m := by["muse_bigger"]
@@ -386,5 +386,51 @@ func TestSubjectMaskPileAndCut(t *testing.T) {
 	m, label, _, _, err = v.SubjectMask(context.Background(), img, []string{"food"}, nil, target)
 	if err != nil || !strings.HasPrefix(label, "food") || m[150*400+60] != 0 || m[150*400+150] != 1 || m[150*400+300] != 1 {
 		t.Fatalf("cut: err %v label %q far left %d edge (in the 5%%) %d inside %d", err, label, m[150*400+60], m[150*400+150], m[150*400+300])
+	}
+}
+
+// X48m: subjectMask measures the spill (the share of the mask cut away at the
+// item's box + 5%); Auto picks the mask per scene with one rule.
+func TestSpillAndAuto(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		line := "<0f>\n"
+		if firstText(body) == "food" { // one mask over the whole photo
+			line = fmt.Sprintf("<0f>0<|box;x1=0;y1=0;x2=399;y2=299;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", fullMask(t, 40, 40))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(textResp("sam", line))
+	}))
+	defer srv.Close()
+	v := &V2{API: &Client{URL: srv.URL, Key: "k"}, SAM: DefaultSAM}
+	img, _, _ := image.Decode(bytes.NewReader(itemJPEG(t, 400, 300, 0)))
+	_, _, _, _, spill, err := v.subjectMask(context.Background(), img, []string{"food"}, nil, image.Rect(160, 0, 400, 300))
+	if err != nil || spill < 0.33 || spill > 0.41 { // grow starts at x 148: 148 of 400 columns are cut
+		t.Fatalf("spill %.3f err %v", spill, err)
+	}
+	if _, _, _, _, spill, _ := v.subjectMask(context.Background(), img, []string{"food"}, nil, image.Rect(0, 0, 400, 300)); spill != 0 {
+		t.Fatalf("a mask inside its box spilled %.3f", spill)
+	}
+	words, box := Variant{Name: "words", Concept: "food"}, Variant{Name: "box", Concept: "box"}
+	bad := fmt.Errorf("no mask")
+	for _, c := range []struct {
+		name            string
+		wErr, bErr      error
+		spill           float64
+		hasBox          bool
+		want, whyPrefix string
+	}{
+		{"a meal in its tray (no box)", nil, bad, 0, false, "food", "words: no item box"},
+		{"a cereal box", nil, nil, 0.01, true, "food", "words: the words mask stays"},
+		{"a pile next to a pile", nil, nil, 0.06, true, "box", "box: the words mask spilled 6%"},
+		{"no words mask", bad, nil, 0, true, "box", "box: the words found no mask"},
+		{"a spill but no box mask", nil, bad, 0.2, true, "food", "words: the words mask spilled 20%, and the box gave no mask"},
+		{"nothing", bad, bad, 0, true, "food", "words: no mask"},
+	} {
+		a := Auto(words, box, c.wErr, c.bErr, c.spill, c.hasBox)
+		if a.Name != "auto" || !strings.HasPrefix(a.Concept, c.whyPrefix) || !strings.HasSuffix(a.Concept, "; "+c.want) {
+			t.Errorf("%s: %q", c.name, a.Concept)
+		}
 	}
 }
