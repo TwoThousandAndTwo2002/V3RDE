@@ -189,3 +189,6 @@ func (k *Knowledge) Block(id string, tags map[string]string, prev map[string]str
 	}
 	return strings.TrimRight(b.String(), "\n")
 }
+
+// StripParams removes the {name} placeholders of a text.
+func StripParams(s string) string { return reParam.ReplaceAllString(s, "") }

@@ -64,7 +64,16 @@ func cfg(k int) Config {
 // k tries per message; a lost tag and no answer are recorded and not kept;
 // a message of only keep names is copied with no call; the lowest score wins.
 func TestRung(t *testing.T) {
-	tr := &fakeTr{reply: func(user string, n int32) (string, error) {
+	// n counts the tries of each message: the shared call count depends on the
+	// order of the workers (the test failed about 1 time in 200 with it)
+	var mu sync.Mutex
+	per := map[string]int32{}
+	tr := &fakeTr{reply: func(user string, _ int32) (string, error) {
+		id := strings.SplitN(strings.TrimPrefix(user, "Message id: "), "\n", 2)[0]
+		mu.Lock()
+		per[id]++
+		n := per[id]
+		mu.Unlock()
 		switch {
 		case strings.Contains(user, "VOICE.rename"):
 			if n%2 == 0 {

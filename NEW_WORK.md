@@ -709,3 +709,25 @@ The sweep of #57 was 25 runs (5 languages × 5 settings), and each run started t
 - The scores are the same MetricX-24 QE scores (0 to 25, lower is better). They rank the tries of one text and are not an accuracy measure.
 - 1 new regression test: two results, one scorer call, score lines in each ledger, and the lowest-scored try kept. The i18n module now has 37 tests.
 - Not deployed by this change.
+
+---
+
+## 60. Lost in translation: checks with no model
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/judge/checks.go`, `i18n/judge/checks_test.go`, `i18n/judge/load.go`, `i18n/cmd/check/main.go`, `i18n/results.go`, `i18n/results_test.go`, `i18n/knowledge.go`, `i18n/cmd/score/main.go`, `i18n/rung/rung_test.go`
+**Sources:** `docs/sources/L4j-a.md`
+
+MetricX scores one text at a time. It does not see that two texts on one screen use the same word, or that one idea gets two words. These checks use the text graph of #56 and need no model.
+
+- `pair_same`: the two texts of a pair (for example Show and Hide) have the same translation.
+- `target_inconsistent`: two texts with the same text and context have different translations.
+- `source_same`: different English texts on one screen have one translation. Plural parts and brand names are not reported.
+- `untranslated`: a text in a language with a non-Latin script still has Latin words (emails are not counted).
+- `go run ./cmd/check runs-ctx/*/*.json` writes `<lang>.check.json` next to each result. On the earlier plain runs it finds real errors: pt "Grabbing…" as "Carregando…" (Loading), and zh "Post listing" and "listings" both as 发布列表.
+- `i18n.IsResult` keeps only `<lang>.json` names, so `cmd/score`, `cmd/check` and the judges do not read the report files next to the results.
+- Test fix: `TestRung` (from #51) failed about 1 time in 200. Root cause: its fake chose the lost-tag answer from a call count that all workers share, and the order of the workers changes from run to run. The fake now counts the tries of each message. 1000 runs with `-race` pass.
+- 2 new regression tests. The i18n module now has 39 tests.
+- Not deployed by this change.

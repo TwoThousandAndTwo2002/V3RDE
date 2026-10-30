@@ -15,7 +15,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"v3rde/i18n"
@@ -27,7 +26,7 @@ func main() {
 	flag.Parse()
 	var files []string
 	for _, a := range flag.Args() {
-		if strings.HasSuffix(a, ".json") && !strings.HasSuffix(a, ".before-dedupe.json") {
+		if i18n.IsResult(a) { // not <lang>.check.json, <lang>.judge*.json or <lang>.before-dedupe.json
 			files = append(files, a)
 		}
 	}
