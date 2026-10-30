@@ -51,6 +51,13 @@ type Config struct {
 	About  func(id string, mk mask.Masked) string
 	Key    func(m i18n.Message) string
 	Prompt string
+	// L4j: the problems that the checks and judges found in the earlier
+	// translation of a text ("" for none). A try with a fix is kept before
+	// any try without one.
+	Fix func(id string) string
+	// L4j: for a spread try, the id of the corrected text that reached this
+	// one through the graph ("" for none).
+	From func(id string) string
 }
 
 // Tags maps each protected part of a masked text to its tag: "{plural}" -> "<x1/>".
@@ -85,6 +92,8 @@ type Entry struct {
 	Settings        muse.Settings `json:"settings"`
 	Commit          string        `json:"en_commit"`
 	Prompt          string        `json:"prompt,omitempty"`
+	Fix             string        `json:"fix,omitempty"`         // L4j: the problems given to this try
+	SpreadFrom      string        `json:"spread_from,omitempty"` // L4j: a spread try: the corrected text that reached this one
 }
 
 // ScoreLine is one ledger line (kind "score"), written after the scoring.
@@ -104,7 +113,9 @@ type Chosen struct {
 	Text       string   `json:"text"`
 	Score      *float64 `json:"score,omitempty"` // nil when copied
 	Candidates int      `json:"candidates"`
-	SameAs     string   `json:"same_as,omitempty"` // the id whose translation this one reuses (same English text)
+	SameAs     string   `json:"same_as,omitempty"`     // the id whose translation this one reuses (same English text)
+	Revised    bool     `json:"revised,omitempty"`     // L4j: translated again with the problems that a check or a judge found
+	SpreadFrom string   `json:"spread_from,omitempty"` // L4j: translated again because this corrected text reached it through the graph
 }
 
 // Result is <lang>.json.
@@ -316,6 +327,12 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 				}
 				sys, user := muse.PromptWith(cfg.Lang.Name, cfg.Lang.Code, m.ID, mk.Text, about)
 				e.Prompt = cfg.Prompt
+				if cfg.Fix != nil {
+					e.Fix = cfg.Fix(m.ID)
+				}
+				if cfg.From != nil {
+					e.SpreadFrom = cfg.From(m.ID)
+				}
 				r, err := tr.Chat(ctx, sys, user)
 				e.ReasoningTokens = r.ReasoningTokens
 				if err != nil {
@@ -426,14 +443,20 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 func choose(entries []Entry) (map[string]*Chosen, map[string]int) {
 	best := map[string]*Chosen{}
 	count := map[string]int{}
+	fixed := map[string]bool{} // L4j: an id with a good fix try keeps a fix try
 	for _, e := range entries {
-		if e.Error != "" {
+		if e.Error == "" && e.Fix != "" {
+			fixed[e.ID] = true
+		}
+	}
+	for _, e := range entries {
+		if e.Error != "" || (fixed[e.ID] && e.Fix == "") {
 			continue
 		}
 		count[e.ID]++
 		c := best[e.ID]
 		if c == nil || (e.Score != nil && (c.Score == nil || *e.Score < *c.Score)) {
-			best[e.ID] = &Chosen{ID: e.ID, Text: e.Text, Score: e.Score}
+			best[e.ID] = &Chosen{ID: e.ID, Text: e.Text, Score: e.Score, Revised: e.Fix != "", SpreadFrom: e.SpreadFrom}
 		}
 	}
 	return best, count

@@ -364,3 +364,29 @@ func (c *countSc) Score(ctx context.Context, p []Pair) ([]float64, error) {
 	}
 	return out, nil
 }
+
+// A fix try (L4j) is kept before a try without a fix, also when its score is
+// worse, and the result marks it revised.
+func TestFixKept(t *testing.T) {
+	one, three := 1.0, 3.0
+	es := []Entry{{ID: "a", Try: 1, Text: "Refazer", Score: &one}, {ID: "a", Try: 1, Text: "Tirar outra", Score: &three, Fix: "noun on a button"},
+		{ID: "b", Try: 1, Text: "Ok", Score: &one}}
+	best, _ := choose(es)
+	if best["a"].Text != "Tirar outra" || !best["a"].Revised || best["b"].Text != "Ok" || best["b"].Revised {
+		t.Fatalf("%+v %+v", best["a"], best["b"])
+	}
+}
+
+// A spread try keeps its spread_from after a rescore from the ledger (cmd/score).
+func TestSpreadKept(t *testing.T) {
+	one, two := 1.0, 2.0
+	res := Result{Run: "r1-spread", Previous: []string{"r0", "r1"}}
+	tries := []Entry{{Run: "r0", ID: "a", Try: 1, Text: "Anúncio", Score: &one},
+		{Run: "r1-spread", ID: "a", Try: 1, Text: "Publicação", Score: &two, Fix: "A related text was corrected", SpreadFrom: "b"},
+		{Run: "old", ID: "c", Try: 1, Text: "x", Score: &one}}
+	out := Rescore(res, []i18n.Message{{ID: "a"}, {ID: "c"}}, tries)
+	if len(out.Messages) != 1 || out.Messages[0].Text != "Publicação" || out.Messages[0].SpreadFrom != "b" || !out.Messages[0].Revised ||
+		len(out.Missing) != 1 || out.Missing[0] != "c" {
+		t.Fatalf("%+v", out)
+	}
+}

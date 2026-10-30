@@ -491,6 +491,20 @@ func Walk(g GraphFile, start []string) []Reached {
 	return out
 }
 
+// Spread returns the texts that a corrected translation of id must agree with
+// (L4j): its pairs and joined parts, and the texts of the same concept. Texts
+// that are only on the same screen are not returned: the screen judge sees them.
+func Spread(g GraphFile, id string) []Reached {
+	var out []Reached
+	for _, r := range Walk(g, []string{id}) {
+		f := strings.Fields(r.Via) // "<id> pair" or "<id> uses <concept> uses"
+		if len(f) == 2 && (f[1] == "pair" || f[1] == "part_of") || len(f) == 4 && f[1] == "uses" && f[3] == "uses" {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 // Impact is what a new version of the app text changes (cmd/graph).
 type Impact struct {
 	Added   []string  `json:"added"`

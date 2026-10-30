@@ -752,3 +752,22 @@ A judge reads a group of texts of one language together: all texts of one concep
 - `go run ./cmd/judge runs-ctx/*/*.json` writes `<lang>.judge.json`: the checks, each verdict, and the flagged texts with the reasons.
 - 5 new regression tests. The i18n module now has 44 tests.
 - Not deployed by this change.
+
+---
+
+## 62. Lost in translation: fix the flagged texts once, and spread the fix through the graph
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`, `i18n/graph.go`, `i18n/graph_test.go`
+**Sources:** `docs/sources/L4j-c.md`
+
+The sweep of #57 showed that other settings (effort, temperature) do not correct a wrong word. The judge's reason is new information, so the second try gets it in the prompt. A corrected word must also agree with the texts of the same idea, so the correction goes through the text graph.
+
+- `cmd/translate -fix <lang>.judge.json` translates each flagged text again, one time, with the context prompt and the line "Problems found in the earlier translation …: <reasons>. Do not repeat these problems."
+- Spread (`-spread`, on by default): each corrected text that changed reaches its pairs, its joined parts and the texts of the same concept (`i18n.Spread`). Texts that are only on the same screen are not reached; the screen judge sees them. Each reached text gets one try with the correction in its prompt ("A related text was corrected … Use the same word for the same idea"), and its concept block shows the corrected translation. A flagged, revised or shared text is not reached.
+- The new tries go into the same ledger and result. A text with a good new try keeps only the new tries; the result marks it `revised`, and a spread text also gets `spread_from`. Both stay after `cmd/score`.
+- The result before the round is kept as `<lang>.before-round1.json`, and the report as `<lang>.judge.round1.json` (then `round2`, and so on). After `cmd/score` and `cmd/judge` again, a text that is still flagged is not translated a third time. `cmd/translate` names it for human review.
+- 3 new regression tests (fix kept, spread kept after a rescore, spread targets). The i18n module now has 47 tests.
+- Not deployed by this change.

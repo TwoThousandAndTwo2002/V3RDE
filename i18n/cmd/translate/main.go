@@ -20,20 +20,23 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"v3rde/i18n"
+	"v3rde/i18n/judge"
 	"v3rde/i18n/mask"
 	"v3rde/i18n/muse"
 	"v3rde/i18n/rung"
 )
 
 type options struct {
-	code, outDir, image, keyFile, ids, effort, prevFile string
-	k, workers, limit, rpm                              int
-	temperature                                         float64
-	resume, force, withContext, score                   bool
+	code, outDir, image, keyFile, ids, effort, prevFile, fix string
+	k, workers, limit, rpm                                   int
+	temperature                                              float64
+	resume, force, withContext, score, spread                bool
 }
 
 func main() {
@@ -53,6 +56,8 @@ func main() {
 	flag.StringVar(&o.effort, "effort", "", "reasoning_effort for this run (default: low)")
 	flag.Float64Var(&o.temperature, "temperature", 0, "temperature for this run (0: the default 1.0)")
 	flag.BoolVar(&o.score, "score", true, "score with MetricX at the end of this run; -score=false leaves it to cmd/score (one container run for many results)")
+	flag.BoolVar(&o.spread, "spread", true, "with -fix: also translate again, once, the texts that a corrected text reaches through the graph (L4j)")
+	flag.StringVar(&o.fix, "fix", "", "a <lang>.judge.json: translate again, once, the texts it flags, with the problems in the prompt, and merge (L4j)")
 	flag.StringVar(&o.prevFile, "prev", "", "earlier result for the same idea in the prompt (default: <out>/<lang>.json if it is there)")
 	collapse := flag.Bool("collapse", false, "no requests: make <out>/<lang>.json follow the dedupe rule (lowest score per English text)")
 	flag.Parse()
@@ -135,15 +140,80 @@ func run(o options) error {
 	resPath := filepath.Join(o.outDir, o.code+".json")
 	var old rung.Result
 	haveOld := i18n.ReadJSON(resPath, &old) == nil
-	if !o.resume && !o.force && haveOld && rung.Complete(old, all, en.Source.Commit, client.Settings.Model, o.k, prompt) {
+	if o.fix != "" && !o.withContext {
+		return fmt.Errorf("-fix needs the context prompt (do not use -context=false)")
+	}
+	if !o.resume && !o.force && o.fix == "" && haveOld && rung.Complete(old, all, en.Source.Commit, client.Settings.Model, o.k, prompt) {
 		fmt.Printf("translate: %s is complete (run %s, prompt %s): skipped (-force translates it again)\n", resPath, old.Run, prompt)
 		return nil
 	}
-	if o.resume {
+	fixes := map[string]string{}
+	flagged := map[string][]string{} // -fix: the flagged ids and the reasons
+	if o.fix != "" {
+		if !haveOld {
+			return fmt.Errorf("-fix: no %s", resPath)
+		}
+		var rep judge.Report
+		if err := i18n.ReadJSON(o.fix, &rep); err != nil {
+			return fmt.Errorf("-fix: %v", err)
+		}
+		if rep.Lang != o.code {
+			return fmt.Errorf("-fix: %s is for %s, not %s", o.fix, rep.Lang, o.code)
+		}
+		revised := map[string]bool{}
+		earlier := map[string]string{}
+		for _, c := range old.Messages {
+			revised[c.ID], earlier[c.ID] = c.Revised, c.Text
+		}
+		msgs = nil
+		var human []string
+		for _, m := range all {
+			why := rep.Flagged[m.ID]
+			switch {
+			case len(why) == 0:
+			case revised[m.ID]: // once only: still flagged after one retranslation
+				human = append(human, m.ID)
+			default:
+				fixes[m.ID] = "Problems found in the earlier translation " + strconv.Quote(earlier[m.ID]) + ": " + strings.Join(why, " | ") + "\nDo not repeat these problems."
+				msgs = append(msgs, m)
+			}
+		}
+		if len(human) > 0 {
+			fmt.Printf("translate: %d texts still flagged after one retranslation, for human review: %s\n", len(human), strings.Join(human, ", "))
+		}
+		if len(msgs) == 0 {
+			fmt.Println("translate: nothing more to translate again in", o.fix)
+			return nil
+		}
+		// the report of this round is kept as the next free <lang>.judge.roundN.json;
+		// the next cmd/judge writes a new <lang>.judge.json
+		var round string
+		for n := 1; ; n++ {
+			round = strings.TrimSuffix(o.fix, ".judge.json") + ".judge.round" + strconv.Itoa(n) + ".json"
+			if _, err := os.Stat(round); os.IsNotExist(err) {
+				break
+			}
+		}
+		if err := os.Rename(o.fix, round); err != nil {
+			return err
+		}
+		// the result before this round, for the review page (cmd/report)
+		before := filepath.Join(o.outDir, o.code+".before-"+strings.TrimSuffix(filepath.Base(round), ".json")[len(o.code)+len(".judge."):]+".json")
+		raw, err := os.ReadFile(resPath)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(before, raw, 0o644); err != nil {
+			return err
+		}
+		flagged = rep.Flagged
+		o.resume = true // merge into the result
+		fmt.Printf("translate: %d flagged texts to translate again (report kept as %s)\n", len(msgs), round)
+	} else if o.resume {
 		if !haveOld {
 			return fmt.Errorf("resume: no %s", resPath)
 		}
-		if msgs = rung.Todo(old, all); len(msgs) == 0 {
+		if msgs = rung.Todo(old, all); len(msgs) == 0 && o.fix == "" {
 			fmt.Println("translate: nothing is missing in", resPath)
 			return nil
 		}
@@ -182,7 +252,16 @@ func run(o options) error {
 	if o.withContext {
 		kn := i18n.NewKnowledge(en.Messages, g, cf)
 		cfg.Key = func(m i18n.Message) string { return kn.Key(m.ID) }
-		cfg.About = func(id string, mk mask.Masked) string { return kn.Block(id, rung.Tags(mk), prev) }
+		cfg.About = func(id string, mk mask.Masked) string {
+			b := kn.Block(id, rung.Tags(mk), prev)
+			if f := fixes[id]; f != "" {
+				b += "\n" + f
+			}
+			return b
+		}
+	}
+	if len(fixes) > 0 {
+		cfg.Fix = func(id string) string { return fixes[id] }
 	}
 	var sc rung.Scorer = rung.Docker{Script: filepath.Join("..", "qe", "score.sh"), Image: o.image, Log: os.Stderr}
 	if !o.score {
@@ -194,6 +273,14 @@ func run(o options) error {
 	}
 	if o.resume {
 		if res, err = rung.Merge(old, res, all); err != nil {
+			return err
+		}
+	}
+	if len(fixes) > 0 && o.spread {
+		// L4j: the fix spreads through the graph. Each corrected text that
+		// changed reaches its pairs, joined parts and the texts of the same
+		// concept; each of them gets one try that knows the correction.
+		if res, err = spread(ctx, o, cfg, run, res, old, fixes, flagged, all, g, prev, client, sc, lf); err != nil {
 			return err
 		}
 	}
@@ -247,4 +334,71 @@ func collapseFile(code, outDir string) error {
 	}
 	fmt.Printf("translate: %s collapsed: %d messages, %d reuse another id's translation, %d missing (old file: %s)\n", p, len(c.Messages), same, len(c.Missing), keep)
 	return nil
+}
+
+// spread translates again, once, the texts that a corrected text reaches
+// through the graph (i18n.Spread): each try gets the correction in its prompt.
+// A text that is flagged, already revised, missing or that reuses another id's
+// translation is not reached. The first corrected text that reaches a text wins.
+func spread(ctx context.Context, o options, cfg rung.Config, run string, res, old rung.Result, fixes map[string]string,
+	flagged map[string][]string, all []i18n.Message, g i18n.GraphFile, prev map[string]string,
+	tr rung.Translator, sc rung.Scorer, lf *os.File) (rung.Result, error) {
+	before := map[string]rung.Chosen{}
+	for _, c := range old.Messages {
+		before[c.ID] = c
+	}
+	now := map[string]rung.Chosen{}
+	for _, c := range res.Messages {
+		now[c.ID] = c
+	}
+	en := map[string]i18n.Message{}
+	for _, m := range all {
+		en[m.ID] = m
+	}
+	var starts []string
+	for id := range fixes {
+		if c, ok := now[id]; ok && c.Revised && c.Text != before[id].Text {
+			starts = append(starts, id)
+		}
+	}
+	sort.Strings(starts)
+	from := map[string]string{}
+	notes := map[string]string{}
+	for _, s := range starts {
+		for _, r := range i18n.Spread(g, s) {
+			c, ok := now[r.ID]
+			if _, done := from[r.ID]; done || !ok || c.Revised || c.SameAs != "" || len(flagged[r.ID]) > 0 || en[r.ID].ID == "" {
+				continue
+			}
+			from[r.ID] = s
+			notes[r.ID] = "A related text was corrected (" + r.Via + "): " + strconv.Quote(en[s].Text) + " was " +
+				strconv.Quote(before[s].Text) + ", now " + strconv.Quote(now[s].Text) + ". Reasons: " + strings.Join(flagged[s], " | ") +
+				". Use the same word for the same idea. Change this translation only where it must change."
+		}
+	}
+	if len(from) == 0 {
+		fmt.Println("translate: spread: no related text to translate again")
+		return res, nil
+	}
+	var msgs []i18n.Message
+	for _, m := range all {
+		if from[m.ID] != "" {
+			msgs = append(msgs, m)
+		}
+	}
+	for id, c := range now { // the prompts see the corrected translations
+		prev[id] = c.Text
+	}
+	fmt.Printf("translate: spread: %d corrected texts reach %d related texts through the graph\n", len(starts), len(msgs))
+	cfg.Run = run + "-spread"
+	cfg.Fix = func(id string) string { return notes[id] }
+	cfg.From = func(id string) string { return from[id] }
+	for id, n := range notes { // cfg.About adds fixes[id] to the prompt
+		fixes[id] = n
+	}
+	add, err := rung.Run(ctx, cfg, msgs, tr, sc, lf)
+	if err != nil {
+		return res, err
+	}
+	return rung.Merge(res, add, all)
 }

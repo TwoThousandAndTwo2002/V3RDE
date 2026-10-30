@@ -87,6 +87,22 @@ func TestWalk(t *testing.T) {
 	}
 }
 
+// Spread: pairs, joined parts and the same concept; not texts only on the same screen.
+func TestSpread(t *testing.T) {
+	g := GraphFile{
+		Nodes: []Node{{ID: "a", Degree: 3}, {ID: "b", Degree: 1}, {ID: "c", Degree: 2}, {ID: "d", Degree: 5}, {ID: "e"}, {ID: "screen:S"}, {ID: "concept:k"}},
+		Edges: []Edge{{"a", "screen:S", "on_screen"}, {"b", "screen:S", "on_screen"}, {"a", "c", "pair"}, {"c", "screen:S", "on_screen"},
+			{"a", "concept:k", "uses"}, {"d", "concept:k", "uses"}, {"e", "a", "part_of"}},
+	}
+	var got []string
+	for _, x := range Spread(g, "a") {
+		got = append(got, x.ID)
+	}
+	if s := strings.Join(got, " "); s != "d c e" {
+		t.Fatalf("spread: %s", s)
+	}
+}
+
 // Stale: a text with no context, a changed English text, a context of a gone text.
 func TestStale(t *testing.T) {
 	msgs := []Message{{ID: "a", Text: "Close"}, {ID: "b", Text: "Retake"}, {ID: "c", Text: "New"}}
