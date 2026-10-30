@@ -788,3 +788,22 @@ The sweep of #57 showed that other settings (effort, temperature) do not correct
 - The review page and the graph page read this file to show the loop.
 - 1 new regression test. The i18n module now has 48 tests.
 - Not deployed by this change.
+
+---
+
+## 64. Lost in translation: translate one screen in one call
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/muse/batch.go`, `i18n/muse/batch_test.go`, `i18n/batch.go`, `i18n/batch_test.go`, `i18n/rung/batchrun.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4k-a.md`
+
+The run of #60-#63 (5 languages) showed two problems. Each text got its own call, so the 206 texts of a language took about 200 calls at the Baseten limit of 100 calls a minute. And the spread of #62 gave each reached text its own call, so one idea got different words: zh "Your listings" became 我的发布 ("my") while other texts of the same idea kept 你的 or got 您的.
+
+- `cmd/translate -batch 12` translates the texts of one screen in one call (at most 12 texts in a call; `i18n.BatchGroups`: the smallest screen of a text, then its first concept; the texts on no screen by concept). Each text keeps its own context block. The answer is one JSON object, id -> translation (prompt `batch-v1`, max_tokens 8192).
+- Each text of the answer gets its own ledger entry (`batch`: the group) and the same tag check. A text with no good answer from its group gets one call of its own, so no text is lost.
+- With `-fix`, each flagged text and the texts it reaches through the graph go in one call, in the same round, so the group corrects its texts together. Without `-batch`, `-fix` works as in #62.
+- In a test with fake servers, the 206 texts of a language took 25 calls.
+- 3 new regression tests. The i18n module now has 51 tests.
+- Not deployed by this change.

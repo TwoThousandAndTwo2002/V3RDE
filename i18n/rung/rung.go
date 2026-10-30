@@ -58,6 +58,10 @@ type Config struct {
 	// L4j: for a spread try, the id of the corrected text that reached this
 	// one through the graph ("" for none).
 	From func(id string) string
+	// L4k: groups for batch translation (nil: one call for each text). Each
+	// group is one call; a text with no good answer from its group gets one
+	// call of its own.
+	Batch func(msgs []i18n.Message) [][]i18n.Message
 }
 
 // Tags maps each protected part of a masked text to its tag: "{plural}" -> "<x1/>".
@@ -94,6 +98,7 @@ type Entry struct {
 	Prompt          string        `json:"prompt,omitempty"`
 	Fix             string        `json:"fix,omitempty"`         // L4j: the problems given to this try
 	SpreadFrom      string        `json:"spread_from,omitempty"` // L4j: a spread try: the corrected text that reached this one
+	Batch           string        `json:"batch,omitempty"`       // L4k: the group of a batch try (first id and size)
 }
 
 // ScoreLine is one ledger line (kind "score"), written after the scoring.
@@ -269,7 +274,11 @@ func Run(ctx context.Context, cfg Config, msgs []i18n.Message, tr Translator, sc
 		first[key(m)] = m.ID
 		uniq = append(uniq, m)
 	}
-	res, err := runUnique(ctx, cfg, uniq, also, tr, sc, ledger)
+	run := runUnique
+	if cfg.Batch != nil {
+		run = runBatched
+	}
+	res, err := run(ctx, cfg, uniq, also, tr, sc, ledger)
 	if err != nil {
 		return Result{}, err
 	}
@@ -388,6 +397,13 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 			}
 		}
 	}
+	return finish(ctx, cfg, msgs, entries, sc, enc)
+}
+
+// finish scores every valid model candidate in one Scorer call (when sc is
+// not nil) and keeps one try for each message.
+func finish(ctx context.Context, cfg Config, msgs []i18n.Message, entries []Entry, sc Scorer, enc *json.Encoder) (Result, error) {
+	now := func() string { return time.Now().UTC().Format(time.RFC3339) }
 	// score every valid model candidate in one batch
 	var pairs []Pair
 	var idx []int

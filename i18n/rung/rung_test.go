@@ -390,3 +390,56 @@ func TestSpreadKept(t *testing.T) {
 		t.Fatalf("%+v", out)
 	}
 }
+
+// Batch: one call for the group; a text that the answer leaves out and a text
+// with a lost tag get one call each; keep names are copied; the ledger shows the group.
+func TestBatchRun(t *testing.T) {
+	ms := []i18n.Message{
+		{ID: "VOICE.rename", Text: "Item {n}: “{from}” to “{to}”"},
+		{ID: "FRAME.brand", Text: "V3RDE"},
+		{ID: "CAPTURE.retake", Text: "Retake"},
+		{ID: "RECEIVE.gone", Text: "This food is gone"},
+		{ID: "RECEIVE.gone2", Text: "This food is gone"}, // same text: reuses RECEIVE.gone
+	}
+	var mu sync.Mutex
+	var batches, singles int
+	tr := &fakeTr{reply: func(user string, _ int32) (string, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		if strings.HasPrefix(user, "Texts:\n") {
+			batches++
+			return "{\"VOICE.rename\": \"Artículo <x1/>: de “<x2/>”\", \"RECEIVE.gone\": \"Esta comida ya no está\"}", nil // lost <x3/>; no retake
+		}
+		singles++
+		switch {
+		case strings.Contains(user, "VOICE.rename"):
+			return "Artículo <x1/>: de “<x2/>” a “<x3/>”", nil
+		case strings.Contains(user, "CAPTURE.retake"):
+			return "Repetir", nil
+		}
+		return "", muse.ErrNoAnswer
+	}}
+	c := cfg(1)
+	c.Prompt = muse.PromptBatch
+	c.Batch = func(in []i18n.Message) [][]i18n.Message { return [][]i18n.Message{in} }
+	var led bytes.Buffer
+	res, err := Run(context.Background(), c, ms, tr, nil, &led)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if batches != 1 || singles != 2 {
+		t.Fatalf("batch calls %d, single calls %d; want 1, 2", batches, singles)
+	}
+	got := map[string]Chosen{}
+	for _, x := range res.Messages {
+		got[x.ID] = x
+	}
+	if got["VOICE.rename"].Text != "Artículo {n}: de “{from}” a “{to}”" || got["CAPTURE.retake"].Text != "Repetir" ||
+		got["RECEIVE.gone"].Text != "Esta comida ya no está" || got["RECEIVE.gone2"].SameAs != "RECEIVE.gone" ||
+		got["FRAME.brand"].Text != "V3RDE" || len(res.Missing) != 0 || res.Prompt != muse.PromptBatch {
+		t.Fatalf("%+v missing %v", res.Messages, res.Missing)
+	}
+	if n := strings.Count(led.String(), `"batch":"VOICE.rename+3"`); n != 3 {
+		t.Fatalf("batch entries in the ledger: %d, want 3", n)
+	}
+}

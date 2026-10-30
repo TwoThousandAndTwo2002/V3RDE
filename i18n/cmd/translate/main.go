@@ -34,7 +34,7 @@ import (
 
 type options struct {
 	code, outDir, image, keyFile, ids, effort, prevFile, fix string
-	k, workers, limit, rpm                                   int
+	k, workers, limit, rpm, batch                            int
 	temperature                                              float64
 	resume, force, withContext, score, spread                bool
 }
@@ -56,6 +56,7 @@ func main() {
 	flag.StringVar(&o.effort, "effort", "", "reasoning_effort for this run (default: low)")
 	flag.Float64Var(&o.temperature, "temperature", 0, "temperature for this run (0: the default 1.0)")
 	flag.BoolVar(&o.score, "score", true, "score with MetricX at the end of this run; -score=false leaves it to cmd/score (one container run for many results)")
+	flag.IntVar(&o.batch, "batch", 0, "L4k: translate the texts of one screen in one call, at most this many texts in a call (0: one call for each text); needs the context prompt")
 	flag.BoolVar(&o.spread, "spread", true, "with -fix: also translate again, once, the texts that a corrected text reaches through the graph (L4j)")
 	flag.StringVar(&o.fix, "fix", "", "a <lang>.judge.json: translate again, once, the texts it flags, with the problems in the prompt, and merge (L4j)")
 	flag.StringVar(&o.prevFile, "prev", "", "earlier result for the same idea in the prompt (default: <out>/<lang>.json if it is there)")
@@ -115,6 +116,15 @@ func run(o options) error {
 	prompt := muse.PromptPlain
 	if o.withContext {
 		prompt = muse.PromptContext
+	}
+	if o.batch > 0 {
+		if !o.withContext {
+			return fmt.Errorf("-batch needs the context prompt (do not use -context=false)")
+		}
+		prompt = muse.PromptBatch
+		if client.Settings.MaxTokens < 8192 {
+			client.Settings.MaxTokens = 8192 // one answer holds the translations of the whole group
+		}
 	}
 	all := en.Messages
 	if o.ids != "" {
@@ -249,6 +259,9 @@ func run(o options) error {
 		len(msgs), o.code, o.k, o.workers, run, prompt, client.Settings.ReasoningEffort, client.Settings.Temperature, o.resume)
 	cfg := rung.Config{Run: run, Lang: *target, Keep: langs.Keep, K: o.k, Workers: o.workers, Settings: client.Settings,
 		Commit: en.Source.Commit, Prompt: prompt}
+	if o.batch > 0 {
+		cfg.Batch = func(ms []i18n.Message) [][]i18n.Message { return i18n.BatchGroups(g, ms, o.batch) }
+	}
 	if o.withContext {
 		kn := i18n.NewKnowledge(en.Messages, g, cf)
 		cfg.Key = func(m i18n.Message) string { return kn.Key(m.ID) }
@@ -267,6 +280,14 @@ func run(o options) error {
 	if !o.score {
 		sc = nil // cmd/score scores later, in one container run
 	}
+	if len(fixes) > 0 && o.spread && o.batch > 0 {
+		// L4k: with -batch the reached texts go in the same round as the
+		// flagged texts, so a group corrects its texts together in one call.
+		var n int
+		if msgs, n = planSpread(msgs, all, old, fixes, flagged, g, &cfg, o.batch); n > 0 {
+			fmt.Printf("translate: spread (batch): %d flagged texts reach %d related texts; one round for all %d texts\n", len(fixes)-n, n, len(msgs))
+		}
+	}
 	res, err := rung.Run(ctx, cfg, msgs, client, sc, lf)
 	if err != nil {
 		return err
@@ -276,7 +297,7 @@ func run(o options) error {
 			return err
 		}
 	}
-	if len(fixes) > 0 && o.spread {
+	if len(fixes) > 0 && o.spread && o.batch == 0 {
 		// L4j: the fix spreads through the graph. Each corrected text that
 		// changed reaches its pairs, joined parts and the texts of the same
 		// concept; each of them gets one try that knows the correction.
@@ -401,4 +422,72 @@ func spread(ctx context.Context, o options, cfg rung.Config, run string, res, ol
 		return res, err
 	}
 	return rung.Merge(res, add, all)
+}
+
+// planSpread (L4k, with -batch) adds to msgs the texts that the flagged texts
+// reach through the graph (i18n.Spread), each with a note about the correction
+// in the same round. It returns the new list and the number of texts added.
+func planSpread(msgs, all []i18n.Message, old rung.Result, fixes map[string]string, flagged map[string][]string,
+	g i18n.GraphFile, cfg *rung.Config, max int) ([]i18n.Message, int) {
+	before := map[string]rung.Chosen{}
+	for _, c := range old.Messages {
+		before[c.ID] = c
+	}
+	en := map[string]i18n.Message{}
+	for _, m := range all {
+		en[m.ID] = m
+	}
+	var starts []string
+	for id := range fixes {
+		starts = append(starts, id)
+	}
+	sort.Strings(starts)
+	from := map[string]string{}
+	for _, s := range starts {
+		for _, r := range i18n.Spread(g, s) {
+			c, ok := before[r.ID]
+			if _, done := from[r.ID]; done || !ok || c.Revised || c.SameAs != "" || len(flagged[r.ID]) > 0 || en[r.ID].ID == "" {
+				continue
+			}
+			from[r.ID] = s
+			fixes[r.ID] = "A related text is corrected in this same round (" + r.Via + "): " + strconv.Quote(en[s].Text) +
+				" (earlier " + strconv.Quote(before[s].Text) + "). Reasons: " + strings.Join(flagged[s], " | ") +
+				". Use the same word for the same idea. Change this translation only where it must change."
+		}
+	}
+	if len(from) == 0 {
+		return msgs, 0
+	}
+	for _, m := range all {
+		if from[m.ID] != "" {
+			msgs = append(msgs, m)
+		}
+	}
+	cfg.From = func(id string) string { return from[id] }
+	// one call for a flagged text and the texts it reaches (at most max in a call)
+	cfg.Batch = func(ms []i18n.Message) [][]i18n.Message {
+		by := map[string][]i18n.Message{}
+		var keys []string
+		for _, m := range ms {
+			k := m.ID
+			if f := from[m.ID]; f != "" {
+				k = f
+			}
+			if _, ok := by[k]; !ok {
+				keys = append(keys, k)
+			}
+			by[k] = append(by[k], m)
+		}
+		sort.Strings(keys)
+		var out [][]i18n.Message
+		for _, k := range keys {
+			for part := by[k]; len(part) > 0; {
+				n := (len(part) + (len(part)+max-1)/max - 1) / ((len(part) + max - 1) / max)
+				out = append(out, part[:n])
+				part = part[n:]
+			}
+		}
+		return out
+	}
+	return msgs, len(from)
 }
