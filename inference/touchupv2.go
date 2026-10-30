@@ -521,8 +521,12 @@ func ItemScan(dir, requestID string, item int) (string, [][4]int) {
 // token text) on img made at most 1536 px; the instances are in that JPEG's
 // frame (MaskRaster scales them).
 func (v *V2) samPrompt(ctx context.Context, jb []byte, prompt, purpose string) ([]Instance, float64, error) {
+	// X48l: without mask_encoding one_bit, a box or point prompt answers in the
+	// lossless "~" encoding, which DecodeOneBit does not read (box debug run,
+	// 2026-10-30): the mask was dropped. With it the answer is "!" (one_bit).
 	c, err := v.API.Do(ctx, purpose, map[string]any{"model": v.SAM,
-		"input": UserMessage(TextPart(prompt), ImagePart(jb, "image/jpeg"))})
+		"input":    UserMessage(TextPart(prompt), ImagePart(jb, "image/jpeg")),
+		"metadata": map[string]any{"mask_encoding": "one_bit"}})
 	cost := 0.0
 	if c != nil {
 		cost = c.Cost()

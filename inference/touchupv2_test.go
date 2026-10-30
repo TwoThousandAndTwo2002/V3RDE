@@ -159,6 +159,11 @@ func v3Server(t *testing.T, newPicture, rejectSize bool, bodies *atomic.Int32, i
 		}
 		line := "<0f>\n"
 		prompt := firstText(body)
+		if strings.HasPrefix(prompt, "<0f>1<|") { // X48l: a box or point prompt asks for one_bit masks
+			if md, _ := body["metadata"].(map[string]any); md["mask_encoding"] != "one_bit" {
+				t.Errorf("a %.12s prompt without mask_encoding one_bit: %v", prompt, body["metadata"])
+			}
+		}
 		switch {
 		case strings.HasPrefix(prompt, "<0f>1<|box;"): // step 1: the item and a strip of its neighbour
 			if !strings.Contains(prompt, ";w=") || strings.Contains(prompt, "point") {

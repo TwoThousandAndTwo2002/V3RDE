@@ -966,3 +966,15 @@ SAM found nothing for the scan's names ("plantains", "roma tomatoes"). The gener
 - The page shows the words mask, step 1 and step 2 side by side, all on the combo T9 chose (Muse Image bigger, then studio blur).
 - Tests: inference 93 (2 tests replaced).
 
+## 59. Touch-up v2: the box masks are read
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1 (no change). Only in the comparison tool.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`
+**Sources:** `docs/sources/X48l.md`
+
+On the last page, every box column said "no mask". A debug run showed why: SAM did give a mask for the box, but in a format that our decoder does not read.
+
+- Box and point prompts now ask for the format that the decoder reads (`mask_encoding: one_bit`). In the debug run this was also faster: under 1 s instead of 3 to 5 s.
+- Tests: inference 93 (no new test; the fake SAM now refuses a box prompt without the setting).
+
