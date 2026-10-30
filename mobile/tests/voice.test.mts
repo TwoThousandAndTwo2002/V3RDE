@@ -102,3 +102,10 @@ test("a line may not remove every item", () => {
   const some = proposalOf({ changes: [{ item: 2, remove: true }] });
   assert.equal(keepOne(ITEMS, some, "x"), some); // removing some items is fine
 });
+
+test("a line that names the pickup, changed or not, is marked", () => {
+  const same = chatTurn(ITEMS, "9 Elm Rd", proposalOf({ changes: [], pickup_text: "9 Elm Rd" }), "said", "pickup at 9 Elm Rd", W, M);
+  assert.equal(same.pickupMarked, false);
+  assert.equal(same.pickupSaid, true);
+  assert.equal(chatTurn(ITEMS, "", proposalOf({ changes: [] }), "typed", "hi", W, M).pickupSaid, false);
+});

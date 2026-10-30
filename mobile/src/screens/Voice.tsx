@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import * as RN from "react-native";
 import { ApiError, voice } from "../api";
-import { deviceLocale, type ItemForm } from "../logic";
+import { deviceLocale, type ChatLine, type ItemForm } from "../logic";
 import { canUndo, chatTurn, keepOne, liveMarks, proposalOf, undoTo, voiceError, voiceItems, type How, type Turn } from "../voice";
 import { VoiceError, useVoiceRecorder, type VoiceClip } from "../voicerec";
 import { ClipBusy } from "../clipsession";
@@ -32,10 +32,14 @@ export type Chat = {
   marks: Record<number, string>; pickupMarked: boolean;
   /** Clears the chat (after a post). */
   clear: () => void;
+  /** X48u: the chat lines for the label report. */
+  log: ChatLine[];
 };
 
 export function useChat({ items, pickup, onApply, onOpen }: {
-  items: ItemForm[]; pickup: string; onApply: (items: ItemForm[], pickup: string) => void;
+  items: ItemForm[]; pickup: string;
+  /** X48u: how says what made the change (a voice line, a typed line, Undo), for the label report. */
+  onApply: (items: ItemForm[], pickup: string, how: "voice" | "text" | "undo") => void;
   /** True while a line is out: Post waits for it. */
   onOpen: (open: boolean) => void;
 }): Chat {
@@ -70,7 +74,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
       const p = keepOne(nowItems, answer, VOICE.notAll);
       const t = chatTurn(nowItems, nowPickup, p, how, how === "typed" ? (said as { text: string }).text : p.transcript, VOICE,
         { title: VOICE.markTitle, servings: VOICE.markServings, mark: VOICE.mark });
-      if (t.count > 0) onApply(t.after.items, t.after.pickup);
+      if (t.count > 0) onApply(t.after.items, t.after.pickup, how === "said" ? "voice" : "text");
       setTurns((all) => [...all, t]);
       if (RN.Platform.OS === "ios") RN.AccessibilityInfo.announceForAccessibility([VOICE.made(t.count), ...t.lines].join(". "));
       if (how === "typed") setText("");
@@ -125,7 +129,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   const undo = () => {
     const back = undoTo(turns);
     if (!back) return;
-    onApply(back.items, back.pickup);
+    onApply(back.items, back.pickup, "undo");
     setTurns((all) => all.map((t, k) => (k === all.length - 1 ? { ...t, undone: true } : t)));
   };
 
@@ -172,5 +176,8 @@ export function useChat({ items, pickup, onApply, onOpen }: {
       </View>
     </Row>
   );
-  return { thread, bar, marks, pickupMarked, clear: () => { setTurns([]); setError(""); setText(""); } };
+  // X48u review: a line that set the pickup may hold an address: its words are not sent
+  const log: ChatLine[] = turns.map((t) => ({ how: t.how === "said" ? "voice" : "text", text: t.pickupSaid ? "" : t.text, changes: t.count,
+    ...(t.undone ? { undone: true } : {}), ...(t.pickupSaid ? { pickup: true } : {}) }));
+  return { thread, bar, marks, pickupMarked, log, clear: () => { setTurns([]); setError(""); setText(""); } };
 }

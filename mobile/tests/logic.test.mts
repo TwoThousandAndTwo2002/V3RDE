@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  answerToItems, labelReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
+  answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
   scanStep, scanPoll, itemDetails, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
@@ -166,4 +166,47 @@ test("scanPoll (X48c): a held poll at the version the app has; a second's wait w
 test("analyzeKind (U18): the limit of one user for the day gives the daily-limit sheet", () => {
   assert.equal(analyzeKind({ code: "caller_daily_cap_reached" }), "daily_cap");
   assert.equal(analyzeKind({ code: "daily_cap_reached" }), "daily_cap");
+});
+
+// X48u: every change in order, how it was made; typing is one edit; the pickup text is never kept.
+test("edits: diff, merge of typing, and the report", () => {
+  const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
+  const a = [it(1, "Bananas", "2"), it(2, "Pears", "1")];
+  const b = [it(1, "Ripe bananas", "6")];
+  assert.deepEqual(diffEdits(a, b, "Front", "Back door", "voice"), [
+    { item: 1, field: "title", from: "Bananas", to: "Ripe bananas", how: "voice" },
+    { item: 1, field: "servings", from: "2", to: "6", how: "voice" },
+    { item: 2, field: "remove", from: "Pears", to: "", how: "voice" },
+    { item: 0, field: "pickup", from: "", to: "", how: "voice" }]);
+  assert.deepEqual(diffEdits(b, a, "", "", "undo").map((e) => e.field), ["title", "servings", "remove"]); // the removed item is back
+  let log = addEdits([], diffEdits(a, [it(1, "B", "2"), a[1]], "", "", "hand"));
+  log = addEdits(log, diffEdits([it(1, "B", "2"), a[1]], [it(1, "Ba", "2"), a[1]], "", "", "hand"));
+  assert.deepEqual(log, [{ item: 1, field: "title", from: "Bananas", to: "Ba", how: "hand" }]); // typing = one edit
+  log = addEdits(log, [{ item: 1, field: "title", from: "Ba", to: "Bananas!", how: "text" }]);
+  assert.equal(log.length, 2);
+  assert.equal(addEdits([], Array.from({ length: 70 }, (_, k) => ({ item: 1, field: "servings" as const, from: "", to: String(k), how: "voice" as const }))).length, 64);
+  const r = labelReport("r", a, b, "posted", "", { edits: log, chat: [{ how: "voice", text: "x".repeat(600), changes: 3 }],
+    photos: { 1: { photo: "touched_up", touchup: "done" }, 2: { photo: "original", touchup: "" } } });
+  assert.equal(r.items[0].photo, "touched_up");
+  assert.equal(r.items[1].photo, ""); // not posted
+  assert.equal(r.edits?.length, 2);
+  assert.equal(r.chat?.[0].text.length, 500);
+  assert.equal("edits" in labelReport("r", a, b, "posted"), false); // nothing new: the X32g report as before
+});
+
+test("edits review fixes: typed back is no edit; bytes; pickup lines; the size limit", () => {
+  const e = (to: string) => ({ item: 1, field: "title" as const, from: "Soup", to, how: "hand" as const });
+  assert.deepEqual(addEdits(addEdits([], [e("Sou")]), [e("Soup")]), []); // typed back to the model's value
+  assert.equal(clipBytes("\u65e5\u672c\u8a9e", 7), "\u65e5\u672c"); // 3 bytes each: two fit in 7
+  assert.equal(clipBytes("abc", 10), "abc");
+  const it = (item: number) => ({ item, title: "T" + item, servings: "1", photo_id: "", description: "", err: "" });
+  const r = labelReport("r", [it(1)], [it(1)], "posted", "", { chat: [{ how: "text", text: "12 Elm Rd back door", changes: 1, pickup: true }] });
+  assert.equal(r.chat?.[0].text, "");
+  const big = labelReport("r", [it(1)], [it(1)], "posted", "", {
+    chat: Array.from({ length: 16 }, () => ({ how: "voice" as const, text: "\u65e5".repeat(500), changes: 1 })),
+    edits: Array.from({ length: 64 }, (_, k) => ({ item: 1, field: "servings" as const, from: "\u65e5".repeat(80), to: String(k), how: "voice" as const })) });
+  const fit = fitReport(big, 8 * 1024);
+  assert.ok(new TextEncoder().encode(JSON.stringify(fit)).length <= 8 * 1024);
+  assert.equal(fit.items.length, 1); // the item labels always stay
+  assert.ok((fit.chat?.length ?? 0) < 16);
 });

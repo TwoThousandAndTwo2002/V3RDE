@@ -15,20 +15,33 @@ import (
 // not -- and the service logs it next to the answer's own event (same
 // request_id), so thresholds can be tuned on real corrections. The report
 // never changes a listing; it is bounded (16 KB, 24 items, 120-character
-// titles) and logged as sent after these checks.
+// titles) and logged as sent after these checks. X48u: 32 KB, and "edits"
+// (at most 64, in order) and "chat" (at most 16 lines of 500 bytes).
 //
 //	POST /api/analyze/labels (session) | /v1/analyze/labels (bearer)
 //	{"request_id": "<32 hex>", "outcome": "posted|retake|closed", "locale": "en-US",
 //	 "items": [{"item":1, "photo_id":"…", "model_title":"…", "final_title":"…",
-//	            "model_servings":3, "final_servings":2, "kept":true}]}  -> 204
+//	            "model_servings":3, "final_servings":2, "kept":true, "photo":"touched_up", "touchup":"done"}],
+//	 "edits": [{"item":1, "field":"servings", "from":"3", "to":"2", "how":"voice"}],
+//	 "chat":  [{"how":"voice", "text":"two servings of item 1", "changes":1}]}  -> 204
 
 // CodeLabelsTooLarge: a labels report over 16 KB (413).
 const CodeLabelsTooLarge = "labels_too_large"
 
 const (
-	maxLabelBody  = 16 << 10
+	maxLabelBody  = 32 << 10 // X48u: edits and chat (was 16 KB)
 	maxLabelItems = 24
 	maxLabelText  = 120
+	maxLabelEdits = 64  // X48u
+	maxLabelChat  = 16  // X48u
+	maxChatText   = 500 // X48u: bytes of one chat line
+)
+
+var (
+	labelFields = map[string]bool{"title": true, "servings": true, "remove": true, "pickup": true, "photo": true}
+	labelHows   = map[string]bool{"hand": true, "voice": true, "text": true, "undo": true}
+	labelPhotos = map[string]bool{"": true, "original": true, "touched_up": true}
+	labelTouch  = map[string]bool{"": true, "done": true, "kept": true, "failed": true}
 )
 
 var (
@@ -41,14 +54,18 @@ type labelsIn struct {
 	Outcome   string      `json:"outcome"`
 	Locale    string      `json:"locale"`
 	Items     []LabelItem `json:"items"`
+	Edits     []LabelEdit `json:"edits"`
+	Chat      []LabelChat `json:"chat"`
 }
 
-func clip(s string) string {
+func clip(s string) string { return clipTo(s, maxLabelText) }
+
+func clipTo(s string, n int) string {
 	s = strings.TrimSpace(s)
-	if len(s) <= maxLabelText {
+	if len(s) <= n {
 		return s
 	}
-	s = s[:maxLabelText]
+	s = s[:n]
 	for !utf8.ValidString(s) {
 		s = s[:len(s)-1]
 	}
@@ -76,6 +93,30 @@ func CheckLabels(in *labelsIn) string {
 		return "at most 24 items"
 	case in.Locale != "" && !labelLocaleRe.MatchString(in.Locale):
 		return "locale must be a language tag like en-US"
+	case len(in.Edits) > maxLabelEdits:
+		return "at most 64 edits"
+	case len(in.Chat) > maxLabelChat:
+		return "at most 16 chat lines"
+	}
+	for i := range in.Edits {
+		e := &in.Edits[i]
+		if e.Item < 0 || e.Item > 99 || !labelFields[e.Field] || !labelHows[e.How] {
+			return "each edit needs an item (0-99), a field (title, servings, remove, pickup, photo) and how (hand, voice, text, undo)"
+		}
+		e.From, e.To = clip(e.From), clip(e.To)
+		if e.Field == "pickup" { // never the pickup text (an address): only that it changed and how
+			e.From, e.To = "", ""
+		}
+	}
+	for i := range in.Chat {
+		c := &in.Chat[i]
+		if (c.How != "voice" && c.How != "text") || c.Changes < 0 || c.Changes > 99 {
+			return "each chat line needs how (voice, text) and changes (0-99)"
+		}
+		c.Text = clipTo(c.Text, maxChatText)
+		if c.Pickup {
+			c.Text = "" // the words of a line that set the pickup may hold an address
+		}
 	}
 	for i := range in.Items {
 		it := &in.Items[i]
@@ -84,6 +125,9 @@ func CheckLabels(in *labelsIn) string {
 		}
 		it.ModelTitle, it.FinalTitle = clip(it.ModelTitle), clip(it.FinalTitle)
 		it.ModelServings, it.FinalServings = servings(it.ModelServings), servings(it.FinalServings)
+		if !labelPhotos[it.Photo] || !labelTouch[it.Touchup] {
+			return "photo must be original or touched_up, touchup done, kept or failed"
+		}
 	}
 	return ""
 }
@@ -97,7 +141,7 @@ func (c *ServiceConfig) labels(w http.ResponseWriter, r *http.Request) {
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, maxLabelBody+1))
 	if err != nil || len(body) > maxLabelBody {
-		writeJSONResp(w, http.StatusRequestEntityTooLarge, ErrorAnswer{Error: "labels over 16 KB", Code: CodeLabelsTooLarge})
+		writeJSONResp(w, http.StatusRequestEntityTooLarge, ErrorAnswer{Error: "labels over 32 KB", Code: CodeLabelsTooLarge})
 		return
 	}
 	var in labelsIn
@@ -114,6 +158,6 @@ func (c *ServiceConfig) labels(w http.ResponseWriter, r *http.Request) {
 	}
 	c.Events.Record(Event{TS: time.Now().UTC().Format(time.RFC3339Nano), Service: "analyze", Step: "labels",
 		RequestID: in.RequestID, Status: http.StatusNoContent, Route: "labels", Caller: kind, UserID: u.ID,
-		Model: c.Engine.Muse, Build: c.Build, Labels: &LabelSet{Outcome: in.Outcome, Locale: in.Locale, Items: in.Items}})
+		Model: c.Engine.Muse, Build: c.Build, Labels: &LabelSet{Outcome: in.Outcome, Locale: in.Locale, Items: in.Items, Edits: in.Edits, Chat: in.Chat}})
 	w.WriteHeader(http.StatusNoContent)
 }

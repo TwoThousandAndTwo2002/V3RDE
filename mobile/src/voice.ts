@@ -102,6 +102,8 @@ export type Turn = {
   how: How; text: string; lines: string[]; count: number;
   before: { items: ItemForm[]; pickup: string }; after: { items: ItemForm[]; pickup: string };
   marks: Record<number, string>; pickupMarked: boolean; undone: boolean;
+  /** X48u review: the line named a pickup (changed or not): its words may hold an address. */
+  pickupSaid: boolean;
 };
 
 /** The words of the chat marks on the cards. */
@@ -140,7 +142,7 @@ export function chatTurn(items: ItemForm[], pickup: string, p: Proposal, how: Ho
   }
   const count = changeCount(items, pickup, p);
   return { how, text, lines: count || p.unclear || p.dropped.length || p.new_items.length ? proposalLines(items, pickup, p, w) : [], count,
-    before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false };
+    before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false, pickupSaid: p.pickup_text !== undefined };
 }
 
 const sameList = (a: { items: ItemForm[]; pickup: string }, items: ItemForm[], pickup: string) =>

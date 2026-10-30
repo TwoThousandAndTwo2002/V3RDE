@@ -1082,3 +1082,19 @@ T9: a donor can delete a listing that is up, but only before someone grabs it.
 - In "Your listings", each free card has "Delete". A small popup asks first. A grabbed card says why it cannot be deleted.
 - Tests: listings 29 -> 31, mobile 92 -> 93.
 
+## 67. Review: every change to model fields is recorded
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change). The record feeds the self-improvement step.
+**Files:** `inference/events.go`, `inference/labels.go`, `inference/labels_test.go`, `mobile/src/logic.ts`, `mobile/src/screens/Review.tsx`, `mobile/src/screens/Voice.tsx`, `mobile/src/voice.ts`, `mobile/tests/logic.test.mts`, `mobile/tests/voice.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48u.md`
+
+T9: every change a user makes to a field the models made must be recorded, for self-improvement.
+
+- The label report of each scan now keeps every change in order: title, servings, a removed item, the pickup and the photo choice.
+- Each change says how it was made: by hand, by voice, by text, or by Undo. Typing in a field counts as one change.
+- The report keeps the chat lines and, for each item, the photo that posted and how its touch-up ended.
+- The pickup text is never kept (it can be an address). Only the fact that it changed is kept. A chat line that named a pickup is kept without its words.
+- The report always fits the service's limit; the item labels always stay.
+- Tests: inference 96 -> 97, mobile 93 -> 96.
+

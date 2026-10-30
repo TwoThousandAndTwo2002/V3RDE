@@ -96,6 +96,35 @@ type LabelSet struct {
 	Outcome string      `json:"outcome"` // posted | retake | closed
 	Locale  string      `json:"locale,omitempty"`
 	Items   []LabelItem `json:"items"`
+	// X48u (T9 2026-10-30: "all the changes made by users to fields generated
+	// by the models should be recorded as this can feed the self improvement
+	// process"): every change in order, and the chat lines.
+	Edits []LabelEdit `json:"edits,omitempty"`
+	Chat  []LabelChat `json:"chat,omitempty"`
+}
+
+// LabelEdit is one change of the review, in order. Field: title | servings |
+// remove | pickup | photo. How: hand | voice | text | undo. From and To are
+// the values (titles, servings, the photo choice); the pickup text is never
+// sent (an address), only that it changed and how.
+type LabelEdit struct {
+	Item  int    `json:"item"` // 0 = the pickup
+	Field string `json:"field"`
+	From  string `json:"from,omitempty"`
+	To    string `json:"to,omitempty"`
+	How   string `json:"how"`
+}
+
+// LabelChat is one chat line of the review: how it came (voice | text), the
+// words (as the voice ledger keeps the transcript), the changes it made.
+type LabelChat struct {
+	How     string `json:"how"`
+	Text    string `json:"text"`
+	Changes int    `json:"changes"`
+	Undone  bool   `json:"undone,omitempty"`
+	// Pickup: the line changed the pickup, so its words may hold an address:
+	// the app sends no text, and the service keeps none (X48u review)
+	Pickup bool `json:"pickup,omitempty"`
 }
 
 // LabelItem is one item of the answer as the user left it.
@@ -107,6 +136,10 @@ type LabelItem struct {
 	ModelServings int    `json:"model_servings"`
 	FinalServings int    `json:"final_servings"`
 	Kept          bool   `json:"kept"`
+	// X48u: the photo that posted: original | touched_up ("" = none chosen
+	// or not posted); the touch-up job's end when one ran: done | kept | failed
+	Photo   string `json:"photo,omitempty"`
+	Touchup string `json:"touchup,omitempty"`
 }
 
 // CaptureField keeps the app's "capture" field when it is one JSON object of

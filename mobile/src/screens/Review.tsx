@@ -10,8 +10,8 @@ import { KeyboardAvoidingView, TextInput, View, useWindowDimensions } from "reac
 import * as RN from "react-native";
 import { ApiError, analyzeLabels, listings, touchup, type Upload } from "../api";
 import {
-  deviceLocale, foundTitle, itemPhotoPath, labelReport, notPostedTitle, postTitle, postedSummary, postingText,
-  type ItemForm, type LabelOutcome,
+  addEdits, deviceLocale, diffEdits, fitReport, foundTitle, itemPhotoPath, labelReport, notPostedTitle, postTitle, postedSummary, postingText,
+  type ChatLine, type Edit, type EditHow, type ItemForm, type LabelOutcome, type PhotoLabel,
 } from "../logic";
 import { LIMITS, listingProblem, servingsInput, sourceNote, stepServings } from "../capture";
 import { layoutFor, space, useColors } from "../theme";
@@ -55,6 +55,23 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const [partial, setPartial] = useState(false);
   const busy = useRef(false);
   const [touch, setTouch] = useState<Record<number, TouchState>>({}); // by item number
+  // X48u: every change in order and how it was made, for the label report (refs: the report also goes at unmount)
+  const edits = useRef<Edit[]>([]);
+  const now = useRef({ items, pickup });
+  now.current = { items, pickup };
+  const touchNow = useRef(touch);
+  touchNow.current = touch;
+  const pickupStart = useRef(""); // X48u review: the pickup before a run of typing (typed back to it: no edit)
+  const change = (next: ItemForm[], place: string, how: EditHow) => {
+    const last = edits.current[edits.current.length - 1];
+    if (how === "hand" && place !== now.current.pickup && !(last?.how === "hand" && last.field === "pickup")) pickupStart.current = now.current.pickup;
+    edits.current = addEdits(edits.current, diffEdits(now.current.items, next, now.current.pickup, place, how));
+    const end = edits.current[edits.current.length - 1];
+    if (how === "hand" && place === pickupStart.current && end?.how === "hand" && end.field === "pickup") edits.current = edits.current.slice(0, -1);
+    now.current = { items: next, pickup: place };
+    setItems(next);
+    setPickup(place);
+  };
   const live = useRef(true);
   useEffect(() => () => { live.current = false; }, []);
   const removed = useRef(new Set<number>()); // items the user removed: their jobs stop
@@ -81,7 +98,13 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const touchFor = (it: ItemForm, n: number) => (it.photo_id ? (
     <TouchUp n={n} photoId={it.photo_id} state={touch[it.item] ?? { kind: "idle" }} locked={sending}
       onStart={() => startTouch(it.item, it.photo_id)}
-      onChoose={(c) => { const t = touch[it.item]; if (t?.kind === "offer") setOne(it.item, { ...t, chosen: c }); }} />
+      onChoose={(c) => {
+        const t = touch[it.item];
+        if (t?.kind !== "offer") return;
+        const name = (x: "original" | "edit") => (x === "edit" ? "touched_up" : "original");
+        if (t.chosen !== c) edits.current = addEdits(edits.current, [{ item: it.item, field: "photo", from: name(t.chosen), to: name(c), how: "hand" }]);
+        setOne(it.item, { ...t, chosen: c });
+      }} />
   ) : null);
   const working = items.some((it) => touch[it.item]?.kind === "working"); // only items still in the list
   const editOf = (it: ItemForm) => { const t = touch[it.item]; return t?.kind === "offer" && t.chosen === "edit" ? t.id : undefined; };
@@ -90,7 +113,16 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const tell = (final: ItemForm[], outcome: LabelOutcome) => {
     if (told.current || !answer.requestId) return;
     told.current = true;
-    analyzeLabels(labelReport(answer.requestId, answer.items, final, outcome, deviceLocale()));
+    const photos: Record<number, PhotoLabel> = {};
+    for (const a of answer.items) {
+      const t = touchNow.current[a.item];
+      photos[a.item] = {
+        photo: t?.kind === "offer" ? (t.chosen === "edit" ? "touched_up" : "original") : a.photo_id ? "original" : "",
+        touchup: t?.kind === "offer" ? "done" : t?.kind === "kept" ? "kept" : t?.kind === "failed" || t?.kind === "error" ? "failed" : "",
+      };
+    }
+    analyzeLabels(fitReport(labelReport(answer.requestId, answer.items, final, outcome, deviceLocale(),
+      { edits: edits.current, chat: chatLog.current, photos })));
   };
   useEffect(() => () => tell([], "closed"), []); // eslint-disable-line react-hooks/exhaustive-deps -- left with no post
   const startOver = () => {
@@ -100,7 +132,9 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   };
   const pickupBox = useRef<React.ComponentRef<typeof TextInput>>(null);
   const chat = useChat({ items, pickup, onOpen: (o) => { talking.current = o; },
-    onApply: (next, place) => { setItems(next); setPickup(place); setProblem(""); } });
+    onApply: (next, place, how) => { change(next, place, how); setProblem(""); } });
+  const chatLog = useRef<ChatLine[]>([]);
+  chatLog.current = chat.log.length ? chat.log : chatLog.current; // the chat clears after a post; its lines stay for the report
   const one = answer.items.length === 1;
 
   const post = async () => {
@@ -117,7 +151,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     busy.current = true;
     onBusy(true);
     setSending(true);
-    const sent = items; // the list as the user left it, for the label report
+    const sent: ItemForm[] = []; // X48u review: the items that posted, as the user left them, for the label report
     const left: ItemForm[] = [];
     let done = 0;
     for (let k = 0; k < items.length; k++) {
@@ -129,6 +163,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         const photoId = photoToPost(it.photo_id, touch[it.item] ?? { kind: "idle" });
         await listings.create(photoId ? { ...base, photo_id: photoId } : { ...base, photo: shot });
         done++;
+        sent.push(it);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) { busy.current = false; onBusy(false); return ended(); }
         if (one) setProblem(err instanceof Error ? err.message : String(err));
@@ -153,7 +188,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const pickupField = (
     <Field ref={pickupBox} testID="pickup" label={one ? REVIEW.pickup : REVIEW.pickupAll} value={pickup} multiline maxLength={LIMITS.pickup}
       placeholder={REVIEW.pickupHint} returnKeyType="done" submitBehavior="blurAndSubmit"
-      onChangeText={(t) => setPickup(t.replace(/\n/g, " "))} />
+      onChangeText={(t) => change(now.current.items, t.replace(/\n/g, " "), "hand")} />
   );
   const pickupMark = chat.pickupMarked ? (
     <Muted style={{ color: col.link, marginTop: space.hair, marginLeft: space.inset }}>{VOICE.markPickup}</Muted>
@@ -162,7 +197,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   if (one) {
     const it = items[0];
     const note = sourceNote(answer.source === "barcode" ? barcode : "", it.description);
-    const set = (f: Partial<ItemForm>) => setItems([{ ...it, ...f }]);
+    const set = (f: Partial<ItemForm>) => change([{ ...(now.current.items[0] ?? it), ...f }], now.current.pickup, "hand"); // X48u review: the latest item
     fields = (
       <View style={{ flex: 1, minWidth: 0 }}>
         <Rise i={2}><Field testID="title" label={REVIEW.title} value={it.title} maxLength={LIMITS.title} returnKeyType="next"
@@ -190,8 +225,8 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         {items.map((it, k) => (
           <Rise key={it.item} i={2 + k}>
             <ItemCard it={it} n={k + 1} touch={touchFor(it, k + 1)} mark={chat.marks[it.item]} editId={editOf(it)}
-              onChange={(f) => setItems(items.map((x) => (x.item === it.item ? f : x)))}
-              onRemove={() => { removed.current.add(it.item); setItems(items.filter((x) => x.item !== it.item)); }} /></Rise>
+              onChange={(f) => change(now.current.items.map((x) => (x.item === it.item ? f : x)), now.current.pickup, "hand")}
+              onRemove={() => { removed.current.add(it.item); change(now.current.items.filter((x) => x.item !== it.item), now.current.pickup, "hand"); }} /></Rise>
         ))}
         <Rise i={2 + items.length}>{pickupField}{pickupMark}</Rise>
         {problem ? <ErrorText>{problem}</ErrorText> : null}
