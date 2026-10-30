@@ -11,6 +11,7 @@ package inference
 //	              "keep ..." prompt), checked in code with analyze.SSIM
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -18,10 +19,15 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/draw"
 	"image/jpeg"
 	_ "image/png"
 	"io"
+	"math"
 	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -259,7 +265,7 @@ func (v *V2) postEdit(ctx context.Context, body map[string]any) ([]byte, ImageCa
 // the item). A container is added when its box holds at least half of the
 // item's mask pixels. It returns the w x h raster, a label ("food + plate"),
 // the number of masks and the cost of every SAM call.
-func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, containers []string) ([]byte, string, int, float64, error) {
+func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, containers []string, target image.Rectangle) ([]byte, string, int, float64, error) {
 	jb, err := small(img, 1536)
 	if err != nil {
 		return nil, "", 0, 0, err
@@ -299,13 +305,50 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 		return image.Rect(in.Left*w/in.W, in.Top*h/in.H, in.Right*w/in.W, in.Bottom*h/in.H)
 	}
 	mid := image.Rect(w/4, h/4, w*3/4, h*3/4)
-	for i := range concepts {
+	area := func(r image.Rectangle) float64 { return float64(r.Dx() * r.Dy()) }
+	// pick is the item's instances of one concept. With a target (the item's
+	// box from the scan, X48i): the instance that matches it best (IoU >= 0.3),
+	// and any other instance whose box is at least 70% inside it (one item in
+	// several masks); a neighbour (the tomatoes next to the bananas, the next
+	// cereal box) is left out. With no target: every instance that touches
+	// the middle (X48g).
+	pick := func(insts []Instance) []Instance {
 		var keep []Instance
-		for _, in := range got[i].inst {
-			if in.W > 0 && in.H > 0 && boxOf(in).Overlaps(mid) {
+		if target.Empty() {
+			for _, in := range insts {
+				if in.W > 0 && in.H > 0 && boxOf(in).Overlaps(mid) {
+					keep = append(keep, in)
+				}
+			}
+			return keep
+		}
+		best, bestIoU := -1, 0.0
+		for i, in := range insts {
+			if in.W <= 0 || in.H <= 0 {
+				continue
+			}
+			bx := boxOf(in)
+			inter := area(bx.Intersect(target))
+			if iou := inter / (area(bx) + area(target) - inter); iou > bestIoU {
+				best, bestIoU = i, iou
+			}
+		}
+		if best < 0 || bestIoU < 0.3 {
+			return nil
+		}
+		keep = append(keep, insts[best])
+		for i, in := range insts {
+			if i == best || in.W <= 0 || in.H <= 0 {
+				continue
+			}
+			if bx := boxOf(in); area(bx) > 0 && area(bx.Intersect(target)) >= 0.7*area(bx) {
 				keep = append(keep, in)
 			}
 		}
+		return keep
+	}
+	for i := range concepts {
+		keep := pick(got[i].inst)
 		m, n := MaskRaster(keep, w, h)
 		set := 0
 		for _, x := range m {
@@ -345,32 +388,79 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 	return nil, "", 0, cost, errors.New("sam: no mask of the item for " + strings.Join(concepts, ", "))
 }
 
-// WiderSource cuts the item again from the uploaded photo (orig), with a
-// wider margin (a share of the box): for an item photo too small to make
-// bigger in code. meta is the item photo's record (Kind "crop", Box, FrameW/H).
-func WiderSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, error) {
+// ItemSource cuts the item again from the uploaded photo (orig) with a
+// margin (a share of the box: CropMargin as the item photo, or wider for a
+// small one), and gives the item's box in the cut's pixels: the target of
+// SubjectMask (X48i). meta is the item photo's record (Kind "crop", Box,
+// FrameW/H, the box in SAM's frame of the upright upload).
+func ItemSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, image.Rectangle, error) {
 	if meta.Kind != "crop" || len(meta.Box) != 4 || meta.FrameW <= 0 || meta.FrameH <= 0 {
-		return nil, errors.New("not a crop with a box")
+		return nil, image.Rectangle{}, errors.New("not a crop with a box")
 	}
 	src, _, err := image.Decode(bytes.NewReader(orig))
 	if err != nil {
-		return nil, err
+		return nil, image.Rectangle{}, err
 	}
 	src = Upright(src, Orientation(orig))
-	jb, err := CropJPEG(src, Instance{Left: meta.Box[0], Top: meta.Box[1], Right: meta.Box[2], Bottom: meta.Box[3],
-		W: meta.FrameW, H: meta.FrameH}, margin)
-	if err != nil {
-		return nil, err
+	bd := src.Bounds()
+	sx, sy := float64(bd.Dx())/float64(meta.FrameW), float64(bd.Dy())/float64(meta.FrameH)
+	l, t, r, b := float64(meta.Box[0]), float64(meta.Box[1]), float64(meta.Box[2]), float64(meta.Box[3])
+	mx, my := margin*(r-l), margin*(b-t)
+	cut := image.Rect(int((l-mx)*sx), int((t-my)*sy), int((r+mx)*sx+0.5), int((b+my)*sy+0.5)).Add(bd.Min).Intersect(bd)
+	box := image.Rect(int(l*sx), int(t*sy), int(r*sx+0.5), int(b*sy+0.5)).Add(bd.Min).Intersect(cut)
+	if cut.Empty() || box.Empty() {
+		return nil, image.Rectangle{}, errors.New("crop: empty box")
 	}
-	out, _, err := image.Decode(bytes.NewReader(jb))
-	return out, err
+	out := image.NewRGBA(image.Rect(0, 0, cut.Dx(), cut.Dy()))
+	draw.Draw(out, out.Bounds(), src, cut.Min, draw.Src)
+	return out, box.Sub(cut.Min), nil
+}
+
+// ItemName is the name the scan gave the item: the analyze events of
+// request_id (events-*.jsonl in dir, the newest day first), the box whose
+// answer item is item. "" when it is not found.
+func ItemName(dir, requestID string, item int) string {
+	if requestID == "" || item <= 0 {
+		return ""
+	}
+	files, _ := filepath.Glob(filepath.Join(dir, "events-*.jsonl"))
+	sort.Sort(sort.Reverse(sort.StringSlice(files)))
+	for _, f := range files {
+		fh, err := os.Open(f)
+		if err != nil {
+			continue
+		}
+		sc := bufio.NewScanner(fh)
+		sc.Buffer(make([]byte, 1<<20), 1<<24)
+		for sc.Scan() {
+			if !bytes.Contains(sc.Bytes(), []byte(requestID)) {
+				continue
+			}
+			var ev struct {
+				RequestID string     `json:"request_id"`
+				Boxes     []EventBox `json:"boxes"`
+			}
+			if json.Unmarshal(sc.Bytes(), &ev) != nil || ev.RequestID != requestID {
+				continue
+			}
+			for _, b := range ev.Boxes {
+				if b.Item == item && b.Name != "" {
+					fh.Close()
+					return b.Name
+				}
+			}
+		}
+		fh.Close()
+	}
+	return ""
 }
 
 // Compare makes the X48h variants of one item photo (T9 2026-10-30: "for
 // packaging that is close to others i would like it isolated through
 // blurring the background and sharpened / enlarged. so essentially i want
 // studio blur and muse bigger"). src is what the edits start from: the item
-// photo, or WiderSource of it (note says which).
+// photo, or ItemSource of it (note says which); target is the item's box in
+// src (empty: not known), so a neighbour is not cut out with the item.
 //
 //	original     the item photo as it is
 //	sharp_blur   the combo: src made MuseInputEdge big in code, Muse Image
@@ -379,13 +469,13 @@ func WiderSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, 
 //	             itself, blurred, goes behind it. A refused edit: the code look.
 //	code_blur    the same without Muse Image (StudioLook on src), to compare
 //	muse_bigger  the Muse Image edit alone, with its score
-func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note string, concepts []string) ([]Variant, error) {
+func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target image.Rectangle, note string, concepts []string) ([]Variant, error) {
 	item, _, err := image.Decode(bytes.NewReader(photo))
 	if err != nil {
 		return nil, err
 	}
 	if src == nil {
-		src, note = item, "the item photo"
+		src, note, target = item, "the item photo", image.Rectangle{}
 	}
 	ib := item.Bounds()
 	out := []Variant{{Name: "original", W: ib.Dx(), H: ib.Dy(), JPEG: photo, Note: note}}
@@ -407,7 +497,7 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note st
 	go func() { jb, ic, e := v.EditJSON(ctx, inJPEG, BiggerPrompt); museC <- edit{jb, ic, e} }()
 	// code_blur while Muse works: the code look, the item and its container on src
 	cb := Variant{Name: "code_blur", Note: note}
-	cmask, clabel, cn, ccost, cerr := v.SubjectMask(ctx, src, concepts, ContainerConcepts)
+	cmask, clabel, cn, ccost, cerr := v.SubjectMask(ctx, src, concepts, ContainerConcepts, target)
 	cb.CostUSD, cb.Concept, cb.Masks = ccost, clabel, cn
 	codeImg, _ := blurStudio(src, analyze.StudioLook(), cmask, cerr)
 	if cerr != nil {
@@ -424,7 +514,14 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note st
 			mb.Error = "the edit is not an image"
 		} else {
 			s := analyze.SSIM(src, im)
-			ok := s >= SSIMMin
+			// the same shape too (X48i review): SSIM scales the edit to src's shape,
+			// so an edit that crops or pads must not pass, and the item's box must scale
+			sb, eb := src.Bounds(), im.Bounds()
+			ra, rb := float64(sb.Dx())/float64(sb.Dy()), float64(eb.Dx())/float64(eb.Dy())
+			ok := s >= SSIMMin && math.Abs(ra-rb) <= 0.03*ra
+			if !ok && s >= SSIMMin {
+				mb.Error = fmt.Sprintf("the edit has another shape (%dx%d for %dx%d)", eb.Dx(), eb.Dy(), sb.Dx(), sb.Dy())
+			}
 			mb.SSIM, mb.Passed = &s, &ok
 			done(&mb, im, t0)
 			if ok {
@@ -440,7 +537,11 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note st
 		sv.Concept, sv.Masks, sv.JPEG, sv.W, sv.H = cb.Concept, cb.Masks, cb.JPEG, cb.W, cb.H
 		sv.MS = time.Since(t0).Milliseconds() // the time until the edit was refused, with the code result
 	} else {
-		m, label, n, cost, err := v.SubjectMask(ctx, museImg, concepts, ContainerConcepts)
+		// the edit is src at another size (the check passed): the target scales with it
+		mbd, sbd := museImg.Bounds(), src.Bounds()
+		mt := image.Rect(target.Min.X*mbd.Dx()/sbd.Dx(), target.Min.Y*mbd.Dy()/sbd.Dy(),
+			target.Max.X*mbd.Dx()/sbd.Dx(), target.Max.Y*mbd.Dy()/sbd.Dy())
+		m, label, n, cost, err := v.SubjectMask(ctx, museImg, concepts, ContainerConcepts, mt)
 		sv.CostUSD += cost
 		sv.Concept, sv.Masks = label, n
 		light := analyze.Look{Levels: 0.5, Saturation: 1.05, Sharpen: 0.3, LongEdge: 1600}

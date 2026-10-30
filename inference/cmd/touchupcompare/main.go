@@ -49,6 +49,7 @@ func main() {
 	out := flag.String("out", "/out", "the output folder")
 	n := flag.Int("n", 6, "the newest n item photos")
 	minBytes := flag.Int64("min-bytes", 20000, "skip item photos smaller than this")
+	events := flag.String("events", "", "the analyze events folder: the item's name from the scan (X48i); \"\" = none")
 	concepts := flag.String("concepts", strings.Join(inference.SubjectConcepts, ","), "SAM concepts for the item, in order")
 	widerUnder := flag.Int("wider-under", 500, "cut again from the upload when the item photo's long edge is under this")
 	widerMargin := flag.Float64("wider-margin", 0.35, "the margin of that cut (a share of the box)")
@@ -120,8 +121,13 @@ func main() {
 			r.SHA = hex.EncodeToString(sum[:6])
 			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 			defer cancel()
-			src, note := widerSource(*photos, it.path, b, *widerUnder, *widerMargin)
-			vs, err := v.Compare(ctx, b, src, note, strings.Split(*concepts, ","))
+			src, target, note, name := itemSource(*photos, *events, it.path, b, *widerUnder, *widerMargin)
+			cs := strings.Split(*concepts, ",")
+			if name != "" { // the scan's name first (X48i)
+				cs = append([]string{strings.ToLower(name)}, cs...)
+				note += "; name from the scan: \u201c" + name + "\u201d"
+			}
+			vs, err := v.Compare(ctx, b, src, target, note, cs)
 			if err != nil {
 				r.Error = err.Error()
 				return
@@ -171,26 +177,36 @@ func main() {
 	fmt.Println("SUMMARY " + string(s))
 }
 
-// widerSource is the cut from the upload for a small item photo (nil and
-// "the item photo" when it is big enough, or not a crop, or the upload is gone).
-func widerSource(photos, itemPath string, item []byte, under int, margin float64) (image.Image, string) {
+// itemSource is the item cut again from the upload (X48i): with the item
+// photo's margin, or a wider one when the item photo is small; with the
+// item's box in the cut and the item's name from the scan. nil when the item
+// photo is not a crop or the upload is gone (then the item photo is used).
+func itemSource(photos, events, itemPath string, item []byte, under int, margin float64) (image.Image, image.Rectangle, string, string) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(item))
-	if err != nil || max(cfg.Width, cfg.Height) >= under {
-		return nil, "the item photo"
+	if err != nil {
+		return nil, image.Rectangle{}, "the item photo", ""
 	}
 	mb, err := os.ReadFile(strings.TrimSuffix(itemPath, ".jpg") + ".json")
 	var m inference.ItemPhotoMeta
 	if err != nil || json.Unmarshal(mb, &m) != nil || !inference.PhotoIDPattern.MatchString(m.PhotoID) {
-		return nil, "the item photo (no record)"
+		return nil, image.Rectangle{}, "the item photo (no record)", ""
+	}
+	name := ""
+	if events != "" {
+		name = inference.ItemName(events, m.RequestID, m.Item)
 	}
 	orig, err := os.ReadFile(filepath.Join(photos, filepath.Base(m.ImageSHA256)+".jpg"))
 	if err != nil {
-		return nil, "the item photo (no upload)"
+		return nil, image.Rectangle{}, "the item photo (no upload)", name
 	}
-	src, err := inference.WiderSource(orig, m, margin)
+	mg, how := inference.CropMargin, "the item cut again from the upload"
+	if max(cfg.Width, cfg.Height) < under {
+		mg, how = margin, "the item cut again from the upload, wider"
+	}
+	src, box, err := inference.ItemSource(orig, m, mg)
 	if err != nil {
-		return nil, "the item photo (" + err.Error() + ")"
+		return nil, image.Rectangle{}, "the item photo (" + err.Error() + ")", name
 	}
 	b := src.Bounds()
-	return src, fmt.Sprintf("cut again from the upload: %dx%d (item photo %dx%d)", b.Dx(), b.Dy(), cfg.Width, cfg.Height)
+	return src, box, fmt.Sprintf("%s: %dx%d, item box %v (item photo %dx%d)", how, b.Dx(), b.Dy(), box, cfg.Width, cfg.Height), name
 }

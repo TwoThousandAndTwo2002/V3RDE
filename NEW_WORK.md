@@ -925,3 +925,16 @@ T9 chose a combination from the second comparison page.
 - If Muse Image fails or is refused, the code result is used.
 - Tests: server 35 -> 36, inference 90 (2 tests replaced).
 
+## 56. Touch-up v2: the item is cut out alone
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1, Muse Image 1.0 (no change). Only in the comparison tool.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`, `inference/cmd/touchupcompare/main.go`
+**Sources:** `docs/sources/X48i.md`
+
+On the last page the cut kept neighbours of the same kind: the tomatoes next to the bananas, the plantains next to the tomatoes, the next cereal boxes.
+
+- The scan knows the item's box. The item is cut again from the upload with that box, and only the SAM mask that matches the box is kept (plus masks inside it).
+- The scan's name of the item is asked first, then "food", "fruit" and the others.
+- Tests: inference 90 -> 92.
+

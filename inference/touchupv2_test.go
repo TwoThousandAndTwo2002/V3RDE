@@ -14,6 +14,8 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -175,7 +177,7 @@ func TestCompareX48h(t *testing.T) {
 	srv := v3Server(t, false, false, &edits, &input)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	vs, err := v.Compare(context.Background(), photo, nil, "", SubjectConcepts)
+	vs, err := v.Compare(context.Background(), photo, nil, image.Rectangle{}, "", SubjectConcepts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +218,7 @@ func TestCompareRefusedAndNoMask(t *testing.T) {
 	srv := v3Server(t, true, true, &edits, nil)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	vs, err := v.Compare(context.Background(), photo, nil, "", []string{"food", "product"})
+	vs, err := v.Compare(context.Background(), photo, nil, image.Rectangle{}, "", []string{"food", "product"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,19 +238,69 @@ func TestCompareRefusedAndNoMask(t *testing.T) {
 	}
 }
 
-// WiderSource cuts the box again from the upload, in the upload's pixels,
-// with the wider margin.
-func TestWiderSource(t *testing.T) {
+// ItemSource cuts the box again from the upload, in the upload's pixels,
+// with the margin, and gives the item's box in the cut.
+func TestItemSource(t *testing.T) {
 	orig := itemJPEG(t, 800, 600, 0)
 	m := ItemPhotoMeta{Kind: "crop", Box: []int{150, 100, 250, 200}, FrameW: 400, FrameH: 300}
-	src, err := WiderSource(orig, m, 0.35)
+	src, box, err := ItemSource(orig, m, 0.35)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if b := src.Bounds(); b.Dx() < 335 || b.Dx() > 345 || b.Dy() < 335 || b.Dy() > 345 {
 		t.Fatalf("size %v (want about 340 x 340: 200 px of box + 2 x 70 px margin)", b)
 	}
-	if _, err := WiderSource(orig, ItemPhotoMeta{Kind: "full"}, 0.35); err == nil {
+	if box.Dx() < 198 || box.Dx() > 202 || box.Min.X < 68 || box.Min.X > 72 {
+		t.Fatalf("item box %v (want about (70,70)-(270,270))", box)
+	}
+	if _, _, err := ItemSource(orig, ItemPhotoMeta{Kind: "full"}, 0.35); err == nil {
 		t.Fatal("a full photo was cut")
+	}
+}
+
+// With a target, SubjectMask keeps the instance that matches the item's box
+// and leaves out a neighbour of the same concept (the next cereal box, the
+// tomatoes next to the bananas); with no target, both touch the middle.
+func TestSubjectMaskTarget(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		line := "<0f>\n"
+		if firstText(body) == "food" { // the item (left) and a neighbour (right), both near the middle
+			line = fmt.Sprintf("<0f>0<|box;x1=40;y1=40;x2=219;y2=259;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>,"+
+				"1<|box;x1=220;y1=40;x2=379;y2=259;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", fullMask(t, 40, 40), fullMask(t, 40, 40))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(textResp("sam", line))
+	}))
+	defer srv.Close()
+	v := &V2{API: &Client{URL: srv.URL, Key: "k"}, SAM: DefaultSAM}
+	img, _, _ := image.Decode(bytes.NewReader(itemJPEG(t, 400, 300, 0)))
+	m, label, n, _, err := v.SubjectMask(context.Background(), img, []string{"food"}, nil, image.Rect(50, 50, 210, 250))
+	if err != nil || label != "food" || n != 1 || m[150*400+100] != 1 || m[150*400+300] != 0 {
+		t.Fatalf("target: err %v label %q masks %d item %d neighbour %d", err, label, n, m[150*400+100], m[150*400+300])
+	}
+	if _, _, n, _, _ := v.SubjectMask(context.Background(), img, []string{"food"}, nil, image.Rectangle{}); n != 2 {
+		t.Fatalf("no target: %d masks, want 2", n)
+	}
+	if _, _, _, _, err := v.SubjectMask(context.Background(), img, []string{"food"}, nil, image.Rect(0, 0, 30, 30)); err == nil {
+		t.Fatal("a target that no instance matches gave a mask")
+	}
+}
+
+// ItemName reads the scan's name of the answer item from the events.
+func TestItemName(t *testing.T) {
+	dir := t.TempDir()
+	lines := `{"request_id":"r1","boxes":[{"n":1,"outcome":"item","item":1,"name":"Ripe plantains"},{"n":2,"outcome":"item","item":2,"name":"Roma tomatoes"}]}
+{"request_id":"r2","boxes":[{"n":1,"outcome":"not_food"}]}
+`
+	if err := os.WriteFile(filepath.Join(dir, "events-20261030.jsonl"), []byte(lines), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := ItemName(dir, "r1", 2); got != "Roma tomatoes" {
+		t.Fatalf("got %q", got)
+	}
+	if ItemName(dir, "r2", 1) != "" || ItemName(dir, "r9", 1) != "" || ItemName(dir, "", 1) != "" {
+		t.Fatal("a name for no item")
 	}
 }
