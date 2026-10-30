@@ -26,14 +26,15 @@ import (
 
 // Look is the settings of one edit.
 type Look struct {
-	Crop         [4]int  `json:"crop"`          // [left, top, right, bottom] on the 0-1000 grid; all 0 = the whole photo
-	Exposure     float64 `json:"exposure"`      // stops, -1 .. 1
-	Warmth       float64 `json:"warmth"`        // -0.3 .. 0.3 (+ = warmer)
-	Saturation   float64 `json:"saturation"`    // 0.8 .. 1.4 (1 = no change)
-	Sharpen      float64 `json:"sharpen"`       // 0 .. 2 (unsharp mask amount)
-	Levels       float64 `json:"levels"`        // 0 .. 1 (auto levels strength)
-	WhiteBalance float64 `json:"white_balance"` // 0 .. 1 (grey world strength)
-	LongEdge     int     `json:"long_edge"`     // the long edge of the result in px (at most 2x the crop)
+	Crop         [4]int  `json:"crop"`              // [left, top, right, bottom] on the 0-1000 grid; all 0 = the whole photo
+	Exposure     float64 `json:"exposure"`          // stops, -1 .. 1
+	Warmth       float64 `json:"warmth"`            // -0.3 .. 0.3 (+ = warmer)
+	Saturation   float64 `json:"saturation"`        // 0.8 .. 1.4 (1 = no change)
+	Sharpen      float64 `json:"sharpen"`           // 0 .. 2 (unsharp mask amount)
+	Levels       float64 `json:"levels"`            // 0 .. 1 (auto levels strength)
+	WhiteBalance float64 `json:"white_balance"`     // 0 .. 1 (grey world strength)
+	LongEdge     int     `json:"long_edge"`         // the long edge of the result in px (at most 2x the crop)
+	Clarity      float64 `json:"clarity,omitempty"` // X48g: 0 .. 1, local contrast (studio.go)
 }
 
 // AutoLook is the fixed look of the code-only mode.
@@ -448,6 +449,7 @@ func Enhance(img image.Image, l Look) *image.RGBA {
 	p.levels(l.Levels)
 	p.balance(l.WhiteBalance, l.Warmth)
 	p.tone(l.Exposure, l.Saturation)
+	p.clarity(l.Clarity)
 	p.sharpen(l.Sharpen)
 	return p.image()
 }

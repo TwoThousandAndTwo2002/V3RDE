@@ -65,57 +65,86 @@ func solidJPEG(t *testing.T, w, h int, c color.RGBA) []byte {
 	return b.Bytes()
 }
 
-// v2Server: Muse Spark answers a look, SAM a "food" mask (the left half of
-// the photo), Muse Image a blue photo (or 500 when edits fail).
-func v2Server(t *testing.T, editFails bool, edits *atomic.Int32) *httptest.Server {
-	blue := solidJPEG(t, 400, 300, color.RGBA{20, 40, 220, 255})
+// itemJPEG: an orange blob in the middle of a cluttered pattern.
+func itemJPEG(t *testing.T, w, h int, light int) []byte {
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			dx, dy := float64(x-w/2)/float64(w/4), float64(y-h/2)/float64(h/4)
+			if dx*dx+dy*dy < 1 {
+				img.SetRGBA(x, y, color.RGBA{uint8(min(255, 200+light)), uint8(min(255, 100+light+x%30)), 30, 255})
+			} else {
+				img.SetRGBA(x, y, color.RGBA{uint8((x*7)%200 + light/2), uint8((y*13)%200 + light/2), uint8((x * y) % 200), 255})
+			}
+		}
+	}
+	var b bytes.Buffer
+	if err := jpeg.Encode(&b, img, &jpeg.Options{Quality: 95}); err != nil {
+		t.Fatal(err)
+	}
+	return b.Bytes()
+}
+
+// v3Server: SAM finds the item only for "fruit"; Muse Image (JSON) answers the
+// fix prompt with a lighter copy of the photo and the bigger prompt with an
+// unrelated picture; with rejectSize, a body with "size" gets a 400 first.
+func v3Server(t *testing.T, photo []byte, rejectSize bool, bodies *atomic.Int32) *httptest.Server {
+	other := solidJPEG(t, 400, 300, color.RGBA{20, 40, 220, 255})
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer k" {
 			w.WriteHeader(401)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
 		if strings.HasSuffix(r.URL.Path, "/images/edits") {
-			edits.Add(1)
-			if err := r.ParseMultipartForm(8 << 20); err != nil || r.FormValue("model") != "muse-image-1.0" || r.FormValue("prompt") == "" {
+			bodies.Add(1)
+			imgs, _ := body["images"].([]any)
+			te, _ := body["tool_enablement"].(map[string]any)
+			first, _ := imgs[0].(map[string]any)
+			url, _ := first["image_url"].(string)
+			prompt, _ := body["prompt"].(string)
+			if r.Header.Get("Content-Type") != "application/json" || len(imgs) != 1 || !strings.HasPrefix(url, "data:image/jpeg;base64,") ||
+				te["enable_image_search"] != false || te["enable_web_search"] != false || te["enable_shell"] != false ||
+				!strings.Contains(prompt, "exactly as they are") {
+				t.Errorf("edit body: %d images, tools %v, prompt %.40s", len(imgs), te, prompt)
 				w.WriteHeader(400)
 				return
 			}
-			if editFails {
-				w.WriteHeader(500)
+			if _, has := body["size"]; has && rejectSize {
+				w.WriteHeader(400)
+				_, _ = w.Write([]byte(`{"error":{"code":"unsupported_parameter","param":"size"}}`))
 				return
 			}
-			_ = json.NewEncoder(w).Encode(map[string]any{"data": []any{map[string]any{"b64_json": b64std.StdEncoding.EncodeToString(blue)}}})
-			return
-		}
-		var body map[string]any
-		_ = json.NewDecoder(r.Body).Decode(&body)
-		if body["model"] == DefaultSAM {
-			if firstText(body) != "food" {
-				t.Errorf("SAM concept %q", firstText(body))
+			out := other
+			if strings.HasPrefix(prompt, "Correct the exposure") {
+				out = itemJPEG(t, 400, 300, 25)
 			}
-			line := fmt.Sprintf("<0f>0<|box;x1=0;y1=0;x2=399;y2=299;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", halfMask(t, 40, 40))
-			_ = json.NewEncoder(w).Encode(textResp("sam", line))
+			_ = json.NewEncoder(w).Encode(map[string]any{"data": []any{map[string]any{"b64_json": b64std.StdEncoding.EncodeToString(out)}}})
 			return
 		}
-		if !strings.HasPrefix(firstText(body), "This is a photo of food") {
-			t.Errorf("look prompt: %.40s", firstText(body))
+		if body["model"] != DefaultSAM {
+			t.Errorf("not a SAM call: %v", body["model"])
 		}
-		_ = json.NewEncoder(w).Encode(textResp("m", `{"exposure": 0.9, "saturation": 1.2, "crop": [0, 0, 1000, 1000]}`))
+		line := "<0f>\n"
+		if firstText(body) == "fruit" {
+			line = fmt.Sprintf("<0f>0<|box;x1=100;y1=75;x2=299;y2=224;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", halfMask(t, 40, 40))
+		}
+		_ = json.NewEncoder(w).Encode(textResp("sam", line))
 	}))
 }
 
-// Every variant comes back in order; smart takes the clamped look; smart_bg
-// keeps the food pixels of smart (the mask) and takes the background of the
-// edit; the costs add up.
-func TestCompareVariants(t *testing.T) {
+// The X48g variants: the studio modes cut the item out (the "fruit" mask, the
+// first concept that found it) and keep its pixels; the fix edit passes the
+// structure check; the bigger edit (a new picture) is refused.
+func TestCompareX48g(t *testing.T) {
+	photo := itemJPEG(t, 400, 300, 0)
 	var edits atomic.Int32
-	srv := v2Server(t, false, &edits)
+	srv := v3Server(t, photo, false, &edits)
 	defer srv.Close()
-	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, Muse: DefaultMuse, SAM: DefaultSAM,
-		ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	photo := solidJPEG(t, 400, 300, color.RGBA{200, 120, 40, 255})
-	vs, err := v.Compare(context.Background(), photo, true, true)
+	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
+	vs, err := v.Compare(context.Background(), photo, nil, "", SubjectConcepts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,56 +153,78 @@ func TestCompareVariants(t *testing.T) {
 	for _, x := range vs {
 		names = append(names, x.Name)
 		by[x.Name] = x
-		if x.Error != "" || len(x.JPEG) == 0 {
-			t.Errorf("%s: %q", x.Name, x.Error)
-		}
 	}
-	if strings.Join(names, ",") != "original,enhance,smart,smart_bg,current" || edits.Load() != 2 {
+	if strings.Join(names, ",") != "original,studio_plain,studio_blur,muse_fixed,muse_bigger" || edits.Load() != 2 {
 		t.Fatalf("variants %v, edits %d", names, edits.Load())
 	}
-	if by["enhance"].W != 800 || by["enhance"].H != 600 || by["smart"].Look.Exposure != 0.5 || by["smart"].Look.Saturation != 1.2 {
-		t.Fatalf("enhance %dx%d, smart look %+v", by["enhance"].W, by["enhance"].H, by["smart"].Look)
+	for _, n := range []string{"studio_plain", "studio_blur"} {
+		x := by[n]
+		want := 0.0 // one mask for both modes: its cost is counted once, on plain
+		if n == "studio_plain" {
+			want = 4 * PriceSAMPerImage
+		}
+		if x.Error != "" || x.Concept != "fruit" || x.Masks != 1 || len(x.JPEG) == 0 || x.CostUSD != want {
+			t.Fatalf("%s: %+v", n, x)
+		}
+		// cut to the item (the mask box plus 12%), then made 2x bigger (the most)
+		if x.Look.Crop[0] < 200 || x.Look.Crop[2] > 560 || x.W < 240 || x.W > 256 {
+			t.Errorf("%s: crop %v, %dx%d", n, x.Look.Crop, x.W, x.H)
+		}
 	}
-	g := by["smart_bg"]
-	img, err := jpeg.Decode(bytes.NewReader(g.JPEG))
-	if err != nil || g.Masks != 1 || g.W != 800 {
-		t.Fatalf("smart_bg: %v %d %d", err, g.Masks, g.W)
+	f, b := by["muse_fixed"], by["muse_bigger"]
+	if f.SSIM == nil || !*f.Passed || *f.SSIM < SSIMMin || f.CostUSD != ImageCallPrice {
+		t.Errorf("fixed: %+v ssim %v", f, f.SSIM)
 	}
-	if r, _, b, _ := img.At(100, 300).RGBA(); r>>8 < 150 || b>>8 > 120 {
-		t.Errorf("the food side is not the real photo: r %d b %d", r>>8, b>>8)
+	if b.SSIM == nil || *b.Passed || *b.SSIM >= SSIMMin {
+		t.Errorf("bigger (a new picture) passed: ssim %v", b.SSIM)
 	}
-	if r, _, b, _ := img.At(700, 300).RGBA(); b>>8 < 150 || r>>8 > 100 {
-		t.Errorf("the background is not the edit: r %d b %d", r>>8, b>>8)
-	}
-	if g.CostUSD < ImageCallPrice+PriceSAMPerImage || by["current"].CostUSD != ImageCallPrice || by["enhance"].CostUSD != 0 {
-		t.Errorf("costs: bg %.4f current %.4f enhance %.4f", g.CostUSD, by["current"].CostUSD, by["enhance"].CostUSD)
-	}
-	// thumbs
-	tb, err := Thumb(g.JPEG, 200, 80)
-	if c, _, e2 := image.DecodeConfig(bytes.NewReader(tb)); err != nil || e2 != nil || c.Width != 200 {
-		t.Fatalf("thumb: %v %v %d", err, e2, c.Width)
+	if by["original"].Note != "the item photo" {
+		t.Errorf("note %q", by["original"].Note)
 	}
 }
 
-// A failed Muse Image call: smart_bg and current carry the error, the code
-// variants still come back.
-func TestCompareEditFails(t *testing.T) {
+// No concept finds the item: the studio modes give the look only, with the
+// reason; a 400 on "size" is tried once more without the optional fields.
+func TestCompareNoMaskAndRetry(t *testing.T) {
+	photo := itemJPEG(t, 400, 300, 0)
 	var edits atomic.Int32
-	srv := v2Server(t, true, &edits)
+	srv := v3Server(t, photo, true, &edits)
 	defer srv.Close()
-	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, Muse: DefaultMuse, SAM: DefaultSAM,
-		ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	vs, err := v.Compare(context.Background(), solidJPEG(t, 300, 300, color.RGBA{90, 160, 60, 255}), true, true)
-	if err != nil || len(vs) != 5 {
-		t.Fatal(err, len(vs))
+	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
+	vs, err := v.Compare(context.Background(), photo, nil, "", []string{"food", "product"})
+	if err != nil {
+		t.Fatal(err)
 	}
 	for _, x := range vs {
-		failed := x.Name == "smart_bg" || x.Name == "current"
-		if failed != (x.Error != "") || (!failed && len(x.JPEG) == 0) {
-			t.Errorf("%s: %q %d bytes", x.Name, x.Error, len(x.JPEG))
+		switch x.Name {
+		case "studio_plain", "studio_blur":
+			if !strings.Contains(x.Error, "no mask of the item") || len(x.JPEG) == 0 {
+				t.Errorf("%s: %q", x.Name, x.Error)
+			}
+		case "muse_fixed":
+			if len(x.JPEG) == 0 || !strings.Contains(x.Error, "first try: HTTP 400") {
+				t.Errorf("retry: %q", x.Error)
+			}
 		}
 	}
-	if _, err := v.Compare(context.Background(), []byte("not an image"), false, false); err == nil {
-		t.Fatal("a bad photo gave variants")
+	if edits.Load() != 4 {
+		t.Errorf("edit calls %d, want 4 (2 x 400 + 2 retries)", edits.Load())
+	}
+}
+
+// WiderSource cuts the box again from the upload, in the upload's pixels,
+// with the wider margin.
+func TestWiderSource(t *testing.T) {
+	orig := itemJPEG(t, 800, 600, 0)
+	m := ItemPhotoMeta{Kind: "crop", Box: []int{150, 100, 250, 200}, FrameW: 400, FrameH: 300}
+	src, err := WiderSource(orig, m, 0.35)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b := src.Bounds(); b.Dx() < 335 || b.Dx() > 345 || b.Dy() < 335 || b.Dy() > 345 {
+		t.Fatalf("size %v (want about 340 x 340: 200 px of box + 2 x 70 px margin)", b)
+	}
+	if _, err := WiderSource(orig, ItemPhotoMeta{Kind: "full"}, 0.35); err == nil {
+		t.Fatal("a full photo was cut")
 	}
 }

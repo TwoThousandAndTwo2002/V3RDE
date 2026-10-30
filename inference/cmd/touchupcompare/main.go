@@ -1,10 +1,12 @@
-// Command touchupcompare makes the touch-up v2 comparison (X48f) on the box:
-// for the newest item photos of the analyze photo store, every variant of
-// inference/touchupv2.go (original, enhance, smart, smart_bg, current), with
-// the time and the cost of each. It writes full-size JPEGs, small JPEGs for
+// Command touchupcompare makes the touch-up v2 comparison (X48f, X48g) on the
+// box: for the newest item photos of the analyze photo store, every variant of
+// inference/touchupv2.go (original, studio_plain, studio_blur, muse_fixed,
+// muse_bigger), with the time, the cost and the structure score of each. An
+// item photo with a long edge under -wider-under px is cut again from the
+// upload with the -wider-margin margin (X48g option 4). It writes full-size JPEGs, small JPEGs for
 // the page, and results.json; it changes no service and no listing.
 //
-//	touchupcompare -photos /photos -key-file /run/secrets/meta_key -out /out [-n 6] [-current] [-bg]
+//	touchupcompare -photos /photos -key-file /run/secrets/meta_key -out /out [-n 6] [-concepts food,fruit,...]
 //
 // -parallel photos run at the same time (default 2: the box has 1.9 GiB);
 // inside one photo the Meta calls run at the same time.
@@ -13,12 +15,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"image"
+	_ "image/jpeg"
 	"log"
 	"net/http"
 	"os"
@@ -44,8 +49,9 @@ func main() {
 	out := flag.String("out", "/out", "the output folder")
 	n := flag.Int("n", 6, "the newest n item photos")
 	minBytes := flag.Int64("min-bytes", 20000, "skip item photos smaller than this")
-	withCurrent := flag.Bool("current", true, "also run today's touch-up (Muse Image light)")
-	withBG := flag.Bool("bg", true, "also run smart_bg (SAM mask + Muse Image background)")
+	concepts := flag.String("concepts", strings.Join(inference.SubjectConcepts, ","), "SAM concepts for the item, in order")
+	widerUnder := flag.Int("wider-under", 500, "cut again from the upload when the item photo's long edge is under this")
+	widerMargin := flag.Float64("wider-margin", 0.35, "the margin of that cut (a share of the box)")
 	upstream := flag.String("upstream", inference.DefaultUpstream, "POST /v1/responses")
 	imageBase := flag.String("image-base", "https://api.meta.ai/v1", "the base of POST .../images/edits")
 	imageModel := flag.String("image-model", "muse-image-1.0", "Muse Image model id")
@@ -114,7 +120,8 @@ func main() {
 			r.SHA = hex.EncodeToString(sum[:6])
 			ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 			defer cancel()
-			vs, err := v.Compare(ctx, b, *withCurrent, *withBG)
+			src, note := widerSource(*photos, it.path, b, *widerUnder, *widerMargin)
+			vs, err := v.Compare(ctx, b, src, note, strings.Split(*concepts, ","))
 			if err != nil {
 				r.Error = err.Error()
 				return
@@ -146,12 +153,12 @@ func main() {
 	errs := map[string]int{}
 	for _, r := range res {
 		for _, x := range r.Variants {
+			cost[x.Name] += x.CostUSD // a call that answered is paid, even when its image failed
 			if x.Error != "" && x.JPEG == nil {
 				errs[x.Name]++
 				continue
 			}
 			ms[x.Name] = append(ms[x.Name], x.MS)
-			cost[x.Name] += x.CostUSD
 		}
 	}
 	med := map[string]int64{}
@@ -162,4 +169,28 @@ func main() {
 	s, _ := json.Marshal(map[string]any{"photos": len(res), "median_ms": med, "cost_usd": cost, "errors": errs,
 		"wall_ms": time.Since(t0).Milliseconds()})
 	fmt.Println("SUMMARY " + string(s))
+}
+
+// widerSource is the cut from the upload for a small item photo (nil and
+// "the item photo" when it is big enough, or not a crop, or the upload is gone).
+func widerSource(photos, itemPath string, item []byte, under int, margin float64) (image.Image, string) {
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(item))
+	if err != nil || max(cfg.Width, cfg.Height) >= under {
+		return nil, "the item photo"
+	}
+	mb, err := os.ReadFile(strings.TrimSuffix(itemPath, ".jpg") + ".json")
+	var m inference.ItemPhotoMeta
+	if err != nil || json.Unmarshal(mb, &m) != nil || !inference.PhotoIDPattern.MatchString(m.PhotoID) {
+		return nil, "the item photo (no record)"
+	}
+	orig, err := os.ReadFile(filepath.Join(photos, filepath.Base(m.ImageSHA256)+".jpg"))
+	if err != nil {
+		return nil, "the item photo (no upload)"
+	}
+	src, err := inference.WiderSource(orig, m, margin)
+	if err != nil {
+		return nil, "the item photo (" + err.Error() + ")"
+	}
+	b := src.Bounds()
+	return src, fmt.Sprintf("cut again from the upload: %dx%d (item photo %dx%d)", b.Dx(), b.Dy(), cfg.Width, cfg.Height)
 }

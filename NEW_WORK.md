@@ -895,3 +895,18 @@ The touch-up of today takes about 28 s and can change the food. T9 asked for a s
 - T9 chooses the default from that page. Nothing changes in the app until then.
 - Tests: server 26 -> 32, inference 86 -> 89.
 
+## 54. Touch-up v2: studio modes, Muse Image called correctly, a check in code
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1 (the item mask), Muse Image 1.0 (two edits). Only in the comparison tool; the touch-up service does not change.
+**Files:** `server/studio.go` (new), `server/studio_test.go` (new), `server/enhance.go`, `inference/touchupv2.go`, `inference/touchupv2_test.go`, `inference/cmd/touchupcompare/main.go`
+**Sources:** `docs/sources/X48g.md`
+
+The first comparison page showed two problems. The code edit was too weak to see. Muse Image did not edit the photo: it made a new, unrelated picture.
+
+- **Studio (code):** a stronger look (clarity, sharpness, colour). The item is cut out with a SAM mask and made up to 2x bigger. The background is a light surface with a soft shadow, or the photo itself strongly blurred. No food pixel is painted.
+- **Muse Image:** now called as Meta's docs and cookbook show: JSON with the photo in `images`, search and shell tools off, and a prompt that names only the change and then what must stay.
+- **A check in code:** each Muse Image edit is compared with its source (SSIM). A new picture gets a low score and is refused.
+- **Small item photos:** under 500 px, the item is cut again from the upload with a wider margin, so the edits have more pixels.
+- Tests: server 32 -> 35, inference 89 -> 90.
+

@@ -1,18 +1,14 @@
 package inference
 
-// X48f: the touch-up v2 prototype (T9 2026-10-29: "isolate the item and
-// enhance the sharpness ... make it bigger"; "i wanna try 1 and then 2":
-// first the hybrid, then code only). It is used by cmd/touchupcompare, which
-// makes the side-by-side page for T9; the touch-up service does not change
-// until T9 chooses.
+// X48f / X48g: the touch-up v2 prototype (T9 2026-10-29: "isolate the item and
+// enhance the sharpness ... make it bigger"). It is used by cmd/touchupcompare,
+// which makes the side-by-side page for T9; the touch-up service does not
+// change until T9 chooses. X48g (after the X48f page) keeps two kinds:
 //
-//	enhance   code only: analyze.Enhance with analyze.AutoLook (no Meta call)
-//	smart     Muse Spark chooses the look (analyze.LookPrompt: numbers only),
-//	          then the same code makes the edit
-//	smart_bg  smart, then Muse Image paints a plain background and only its
-//	          background is used: the food pixels come from the smart edit
-//	          through a SAM 3.1 mask of "food" (analyze.Composite)
-//	current   the touch-up of today (Muse Image "light", post/touchup.go)
+//	studio_*      code only: StudioLook, the item cut out with a SAM mask, and a
+//	              background made in code (analyze.Studio); no pixel is painted
+//	muse_*        Muse Image called as the Meta cookbook does (JSON, tools off,
+//	              "keep ..." prompt), checked in code with analyze.SSIM
 
 import (
 	"bytes"
@@ -25,27 +21,12 @@ import (
 	"image/jpeg"
 	_ "image/png"
 	"io"
-	"mime/multipart"
 	"net/http"
-	"net/textproto"
 	"strings"
+	"sync"
 	"time"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
-)
-
-// The prompts of the Muse Image calls of the prototype.
-const (
-	// CurrentPrompt is post.EditPrompts["light"] of today (the "current" column).
-	CurrentPrompt = "Improve this food photo for a food-sharing post: correct the exposure, the white balance " +
-		"and the sharpness only. Do not add, remove, move, resize or change any food item, package, " +
-		"container, label, text or quantity. Do not change the color, the texture or how fresh the food " +
-		"looks. Keep the same framing and the same camera angle."
-	// BackgroundPrompt: only the background of this edit is used (the food is
-	// put back from the real photo), so the edit may not move the food.
-	BackgroundPrompt = "Replace everything behind and around the food with a plain, softly lit, light neutral " +
-		"surface. Keep the food, its container and its position exactly as they are, and keep the same framing " +
-		"and the same camera angle. Do not add anything."
 )
 
 // ImageCallPrice is the price of one Muse Image edit (post.PriceImagePerImage).
@@ -68,46 +49,6 @@ func small(img image.Image, long int) ([]byte, error) {
 		img = analyze.Enhance(img, analyze.Look{LongEdge: long, Saturation: 1})
 	}
 	return analyze.JPEG(img, 88)
-}
-
-// Look asks Muse Spark for the settings of img (over AutoLook).
-func (v *V2) Look(ctx context.Context, img image.Image) (analyze.Look, *Call, error) {
-	jb, err := small(img, 1024)
-	if err != nil {
-		return analyze.AutoLook(), nil, err
-	}
-	c, err := v.API.Do(ctx, "touchup:look", map[string]any{"model": v.Muse,
-		"input": UserMessage(TextPart(analyze.LookPrompt), ImagePart(jb, "image/jpeg"))})
-	if err != nil {
-		return analyze.AutoLook(), c, err
-	}
-	obj, err := analyze.ExtractJSON(c.Text())
-	if err != nil {
-		return analyze.AutoLook(), c, fmt.Errorf("look: %w", err)
-	}
-	return analyze.LookFrom(obj, analyze.AutoLook()), c, nil
-}
-
-// FoodMask is the union of SAM's "food" masks on img, as a w*h 0/1 raster of
-// img's size, and how many instances it holds.
-func (v *V2) FoodMask(ctx context.Context, img image.Image) ([]byte, int, *Call, error) {
-	jb, err := small(img, 1536)
-	if err != nil {
-		return nil, 0, nil, err
-	}
-	c, err := v.API.Do(ctx, "sam:food", map[string]any{"model": v.SAM,
-		"input":    UserMessage(TextPart("food"), ImagePart(jb, "image/jpeg")),
-		"metadata": map[string]any{"include_confidence": "true", "mask_encoding": "one_bit"}})
-	if err != nil {
-		return nil, 0, c, err
-	}
-	inst, _ := ParseSAM(c.Text())
-	b := img.Bounds()
-	m, n := MaskRaster(inst, b.Dx(), b.Dy())
-	if n == 0 {
-		return nil, 0, c, errors.New("sam: no food mask")
-	}
-	return m, n, c, nil
 }
 
 // MaskRaster draws the decoded box-local masks of inst (each in its own
@@ -155,40 +96,103 @@ type ImageCall struct {
 	Error   string  `json:"error,omitempty"`
 }
 
-// Edit is one Muse Image edit (the multipart call of post/touchup.go).
-func (v *V2) Edit(ctx context.Context, img []byte, prompt string) ([]byte, ImageCall, error) {
-	var ic ImageCall
-	var buf bytes.Buffer
-	mw := multipart.NewWriter(&buf)
-	fields := [][2]string{{"model", v.ImageModel}, {"prompt", prompt}, {"n", "1"},
-		{"output_format", "jpeg"}, {"response_format", "b64_json"}}
+// Variant is one column of the page.
+type Variant struct {
+	Name    string        `json:"name"`
+	MS      int64         `json:"ms"`
+	CostUSD float64       `json:"cost_usd"`
+	W       int           `json:"w"`
+	H       int           `json:"h"`
+	Error   string        `json:"error,omitempty"`
+	Look    *analyze.Look `json:"look,omitempty"`
+	Masks   int           `json:"masks,omitempty"`
+	// X48g
+	Concept string   `json:"concept,omitempty"` // the SAM concept of the mask
+	SSIM    *float64 `json:"ssim,omitempty"`    // the structure score against the source
+	Passed  *bool    `json:"passed,omitempty"`  // SSIM >= SSIMMin
+	Note    string   `json:"note,omitempty"`    // what the edit started from
+	JPEG    []byte   `json:"-"`
+}
+
+func done(v *Variant, img image.Image, t0 time.Time) {
+	v.MS = time.Since(t0).Milliseconds()
+	b, err := analyze.JPEG(img, 90)
+	if err != nil {
+		v.Error = err.Error()
+		return
+	}
+	v.JPEG, v.W, v.H = b, img.Bounds().Dx(), img.Bounds().Dy()
+}
+
+// X48g (T9 2026-10-30, after the X48f page): the Muse Image call of X48f made
+// a new picture (an unrelated meal), so it is called as the Meta cookbook
+// does: JSON with an "images" array, the search and shell tools off, and a
+// prompt that names only the change and ends with what must stay. Every edit
+// is compared with its source in code (analyze.SSIM); a low score is refused.
+
+// The X48g prompts: the change, then what stays (docs/sources/X48g.md).
+const (
+	FixPrompt = "Correct the exposure and the white balance of this photo and make it sharper. " +
+		"Keep every food item, package, container, label, text, quantity and position, the background, " +
+		"the framing and the camera angle exactly as they are. Do not add or remove anything."
+	BiggerPrompt = "Make this photo larger and sharper with clean, natural detail. " +
+		"Keep every food item, package, label, text, color, quantity and position, the background and the " +
+		"framing exactly as they are. Do not add or remove anything."
+)
+
+// SSIMMin is the lowest structure score an edit may have (analyze.SSIM): a
+// new picture scores far lower (X48g tests); the page shows every score.
+const SSIMMin = 0.5
+
+// SubjectConcepts are the SAM concepts tried for the item, in this order,
+// at the same time; the app adds the item's title first.
+var SubjectConcepts = []string{"food", "fruit", "packaged food", "product"}
+
+// EditJSON is one Muse Image edit in the JSON form (dev.meta.ai/docs
+// /image-generation): images = [{image_url: a data URL}], the tools off. A 400
+// that names an optional field is tried once more without those fields.
+func (v *V2) EditJSON(ctx context.Context, img []byte, prompt string) ([]byte, ImageCall, error) {
+	body := map[string]any{"model": v.ImageModel, "prompt": prompt, "n": 1,
+		"images":          []any{map[string]any{"image_url": "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(img)}},
+		"response_format": "b64_json", "output_format": "jpeg",
+		"tool_enablement": map[string]any{"enable_image_search": false, "enable_web_search": false, "enable_shell": false}}
 	if cfg, _, err := image.DecodeConfig(bytes.NewReader(img)); err == nil {
-		fields = append(fields, [2]string{"size", fmt.Sprintf("%dx%d", cfg.Width, cfg.Height)})
+		body["size"] = fmt.Sprintf("%dx%d", cfg.Width, cfg.Height)
 	}
-	for _, f := range fields {
-		_ = mw.WriteField(f[0], f[1])
+	b, ic, err := v.postEdit(ctx, body)
+	if err != nil && ic.Status == http.StatusBadRequest {
+		for _, k := range []string{"size", "response_format", "output_format", "n"} {
+			delete(body, k)
+		}
+		var ic2 ImageCall
+		b, ic2, err = v.postEdit(ctx, body)
+		ic2.MS += ic.MS
+		ic2.Error = strings.TrimSpace(ic2.Error + " (first try: " + ic.Error + ")")
+		if err == nil {
+			ic2.Error = "first try: " + ic.Error
+		}
+		ic = ic2
 	}
-	hd := textproto.MIMEHeader{}
-	hd.Set("Content-Disposition", `form-data; name="image"; filename="photo.jpg"`)
-	hd.Set("Content-Type", "image/jpeg")
-	pw, _ := mw.CreatePart(hd)
-	_, _ = pw.Write(img)
-	_ = mw.Close()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(v.ImageURL, "/")+"/images/edits", &buf)
+	return b, ic, err
+}
+
+func (v *V2) postEdit(ctx context.Context, body map[string]any) ([]byte, ImageCall, error) {
+	var ic ImageCall
+	jb, _ := json.Marshal(body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(v.ImageURL, "/")+"/images/edits", bytes.NewReader(jb))
 	if err != nil {
 		return nil, ic, err
 	}
 	req.Header.Set("Authorization", "Bearer "+v.API.Key)
-	req.Header.Set("Content-Type", mw.FormDataContentType())
+	req.Header.Set("Content-Type", "application/json")
 	hc := v.HTTP
 	if hc == nil {
 		hc = &http.Client{Timeout: 120 * time.Second}
 	}
 	t0 := time.Now()
 	resp, err := hc.Do(req)
-	ic.MS = time.Since(t0).Milliseconds()
 	if err != nil {
-		ic.Error = err.Error()
+		ic.MS, ic.Error = time.Since(t0).Milliseconds(), err.Error()
 		return nil, ic, err
 	}
 	defer resp.Body.Close()
@@ -202,131 +206,210 @@ func (v *V2) Edit(ctx context.Context, img []byte, prompt string) ([]byte, Image
 	var out struct {
 		Data []struct {
 			B64 string `json:"b64_json"`
+			URL string `json:"url"`
 		} `json:"data"`
 	}
 	if json.Unmarshal(raw, &out) != nil || len(out.Data) == 0 {
 		ic.Error = "no image in the answer"
 		return nil, ic, errors.New(ic.Error)
 	}
-	b, err := base64.StdEncoding.DecodeString(out.Data[0].B64)
-	if err != nil || len(b) == 0 {
-		ic.Error = "image is not base64"
+	if out.Data[0].B64 != "" {
+		b, err := base64.StdEncoding.DecodeString(out.Data[0].B64)
+		if err != nil || len(b) == 0 {
+			ic.Error = "image is not base64"
+			return nil, ic, errors.New(ic.Error)
+		}
+		return b, ic, nil
+	}
+	if out.Data[0].URL == "" {
+		ic.Error = "no image in the answer"
+		return nil, ic, errors.New(ic.Error)
+	}
+	greq, err := http.NewRequestWithContext(ctx, http.MethodGet, out.Data[0].URL, nil)
+	if err != nil {
+		ic.Error = "bad image url"
+		return nil, ic, err
+	}
+	gr, err := hc.Do(greq)
+	if err != nil {
+		ic.Error = "image url: " + err.Error()
+		return nil, ic, err
+	}
+	defer gr.Body.Close()
+	b, err := io.ReadAll(io.LimitReader(gr.Body, 40<<20))
+	if err != nil || gr.StatusCode != 200 || len(b) == 0 {
+		ic.Error = fmt.Sprintf("image url: HTTP %d", gr.StatusCode)
 		return nil, ic, errors.New(ic.Error)
 	}
 	return b, ic, nil
 }
 
-// Variant is one column of the page.
-type Variant struct {
-	Name    string        `json:"name"`
-	MS      int64         `json:"ms"`
-	CostUSD float64       `json:"cost_usd"`
-	W       int           `json:"w"`
-	H       int           `json:"h"`
-	Error   string        `json:"error,omitempty"`
-	Look    *analyze.Look `json:"look,omitempty"`
-	Masks   int           `json:"masks,omitempty"`
-	JPEG    []byte        `json:"-"`
-}
-
-func done(v *Variant, img image.Image, t0 time.Time) {
-	v.MS = time.Since(t0).Milliseconds()
-	b, err := analyze.JPEG(img, 90)
+// SubjectMask asks SAM for each concept at the same time and keeps the first
+// concept (in order) whose masks touch the middle of the photo and cover 3% to
+// 92% of it: the item photo is cut around the item, so the item is in the
+// middle. It returns the w x h raster of that concept's masks that touch the
+// middle, the concept, the number of masks and the cost of every SAM call.
+func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts []string) ([]byte, string, int, float64, error) {
+	jb, err := small(img, 1536)
 	if err != nil {
-		v.Error = err.Error()
-		return
+		return nil, "", 0, 0, err
 	}
-	v.JPEG, v.W, v.H = b, img.Bounds().Dx(), img.Bounds().Dy()
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	type res struct {
+		inst []Instance
+		cost float64
+		err  error
+	}
+	got := make([]res, len(concepts))
+	var wg sync.WaitGroup
+	for i, c := range concepts {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			call, err := v.API.Do(ctx, "sam:"+c, map[string]any{"model": v.SAM,
+				"input":    UserMessage(TextPart(c), ImagePart(jb, "image/jpeg")),
+				"metadata": map[string]any{"include_confidence": "true", "mask_encoding": "one_bit"}})
+			r := res{err: err}
+			if call != nil {
+				r.cost = call.Cost()
+			}
+			if err == nil {
+				r.inst, _ = ParseSAM(call.Text())
+			}
+			got[i] = r
+		}()
+	}
+	wg.Wait()
+	cost := 0.0
+	for _, r := range got {
+		cost += r.cost
+	}
+	mid := image.Rect(w/4, h/4, w*3/4, h*3/4)
+	for i, r := range got {
+		var keep []Instance
+		for _, in := range r.inst {
+			if in.W <= 0 || in.H <= 0 {
+				continue
+			}
+			box := image.Rect(in.Left*w/in.W, in.Top*h/in.H, in.Right*w/in.W, in.Bottom*h/in.H)
+			if box.Overlaps(mid) {
+				keep = append(keep, in)
+			}
+		}
+		m, n := MaskRaster(keep, w, h)
+		if n == 0 {
+			continue
+		}
+		set := 0
+		for _, x := range m {
+			set += int(x)
+		}
+		if share := float64(set) / float64(w*h); share >= 0.03 && share <= 0.92 {
+			return m, concepts[i], n, cost, nil
+		}
+	}
+	return nil, "", 0, cost, errors.New("sam: no mask of the item for " + strings.Join(concepts, ", "))
 }
 
-// Compare makes every variant of one photo; the Meta calls run at the same
-// time where they can (current with the rest; SAM with the background edit).
-func (v *V2) Compare(ctx context.Context, photo []byte, withCurrent, withBG bool) ([]Variant, error) {
-	src, _, err := image.Decode(bytes.NewReader(photo))
+// WiderSource cuts the item again from the uploaded photo (orig), with a
+// wider margin (a share of the box): for an item photo too small to make
+// bigger in code. meta is the item photo's record (Kind "crop", Box, FrameW/H).
+func WiderSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, error) {
+	if meta.Kind != "crop" || len(meta.Box) != 4 || meta.FrameW <= 0 || meta.FrameH <= 0 {
+		return nil, errors.New("not a crop with a box")
+	}
+	src, _, err := image.Decode(bytes.NewReader(orig))
 	if err != nil {
 		return nil, err
 	}
-	b := src.Bounds()
-	out := []Variant{{Name: "original", W: b.Dx(), H: b.Dy(), JPEG: photo}}
-	cur := make(chan Variant, 1)
-	if withCurrent {
-		go func() {
-			r := Variant{Name: "current"}
-			t0 := time.Now()
-			jb, ic, err := v.Edit(ctx, photo, CurrentPrompt)
-			r.CostUSD = ic.CostUSD
-			if err == nil {
-				if im, _, derr := image.Decode(bytes.NewReader(jb)); derr == nil {
-					done(&r, im, t0)
-				} else {
-					r.Error = "the edit is not an image"
-				}
-			} else {
-				r.Error = err.Error()
-			}
-			r.MS = time.Since(t0).Milliseconds()
-			cur <- r
-		}()
-	}
-	// code only
-	e := Variant{Name: "enhance"}
-	t0 := time.Now()
-	auto := analyze.AutoLook()
-	done(&e, analyze.Enhance(src, auto), t0)
-	e.Look = &auto
-	out = append(out, e)
-	// smart: the look from Muse Spark
-	s := Variant{Name: "smart"}
-	t0 = time.Now()
-	look, c, err := v.Look(ctx, src)
-	if c != nil {
-		s.CostUSD += c.Cost()
-	}
+	src = Upright(src, Orientation(orig))
+	jb, err := CropJPEG(src, Instance{Left: meta.Box[0], Top: meta.Box[1], Right: meta.Box[2], Bottom: meta.Box[3],
+		W: meta.FrameW, H: meta.FrameH}, margin)
 	if err != nil {
-		s.Error = "look: " + err.Error() + " (AutoLook used)"
+		return nil, err
 	}
-	smartImg := analyze.Enhance(src, look)
-	done(&s, smartImg, t0)
-	s.Look = &look
-	out = append(out, s)
-	if withBG {
-		g := Variant{Name: "smart_bg", CostUSD: s.CostUSD}
-		type maskRes struct {
-			m []byte
-			n int
-			c *Call
-			e error
-		}
-		mc := make(chan maskRes, 1)
-		go func() {
-			m, n, c, err := v.FoodMask(ctx, smartImg)
-			mc <- maskRes{m, n, c, err}
-		}()
-		bg, ic, berr := v.Edit(ctx, s.JPEG, BackgroundPrompt)
-		mr := <-mc
-		g.CostUSD += ic.CostUSD
-		if mr.c != nil {
-			g.CostUSD += mr.c.Cost()
-		}
-		var bgImg image.Image
-		if berr == nil {
-			bgImg, _, berr = image.Decode(bytes.NewReader(bg))
-		}
-		switch {
-		case berr != nil:
-			g.Error = "background: " + berr.Error()
-		case mr.e != nil:
-			g.Error = "mask: " + mr.e.Error()
-		default:
-			g.Masks = mr.n
-			feather := max(2, max(smartImg.Bounds().Dx(), smartImg.Bounds().Dy())/250)
-			done(&g, analyze.Composite(smartImg, bgImg, mr.m, feather), time.Now())
-		}
-		g.MS = time.Since(t0).Milliseconds() // from the start of smart: Spark, the code, then SAM and the edit at the same time
-		out = append(out, g)
+	out, _, err := image.Decode(bytes.NewReader(jb))
+	return out, err
+}
+
+// Compare makes the X48g variants of one item photo. src is what the edits
+// start from: the item photo, or WiderSource of it (note says which). SAM and
+// the two Muse Image edits run at the same time.
+//
+//	original      the item photo as it is
+//	studio_plain  code: StudioLook, cut to the item, a light surface + shadow
+//	studio_blur   code: the same, the photo itself blurred behind the item
+//	muse_fixed    Muse Image (FixPrompt), refused when SSIM < SSIMMin
+//	muse_bigger   Muse Image (BiggerPrompt) on src, the same check
+func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note string, concepts []string) ([]Variant, error) {
+	item, _, err := image.Decode(bytes.NewReader(photo))
+	if err != nil {
+		return nil, err
 	}
-	if withCurrent {
-		out = append(out, <-cur)
+	if src == nil {
+		src, note = item, "the item photo"
+	}
+	ib := item.Bounds()
+	out := []Variant{{Name: "original", W: ib.Dx(), H: ib.Dy(), JPEG: photo, Note: note}}
+	srcJPEG, err := analyze.JPEG(src, 92)
+	if err != nil {
+		return nil, err
+	}
+	t0 := time.Now()
+	type edit struct {
+		jb []byte
+		ic ImageCall
+		e  error
+	}
+	fixC, bigC := make(chan edit, 1), make(chan edit, 1)
+	go func() { jb, ic, e := v.EditJSON(ctx, srcJPEG, FixPrompt); fixC <- edit{jb, ic, e} }()
+	go func() { jb, ic, e := v.EditJSON(ctx, srcJPEG, BiggerPrompt); bigC <- edit{jb, ic, e} }()
+	mask, concept, n, samCost, merr := v.SubjectMask(ctx, src, concepts)
+	sb := src.Bounds()
+	for _, style := range []string{"plain", "blur"} {
+		r := Variant{Name: "studio_" + style, Concept: concept, Masks: n, Note: note}
+		if style == "plain" { // one mask for both: its SAM cost is counted once, here
+			r.CostUSD = samCost
+		}
+		look := analyze.StudioLook()
+		if merr != nil {
+			r.Error = merr.Error() + " (no new background; the look only)"
+			done(&r, analyze.Enhance(src, look), t0)
+			r.Look = &look
+			out = append(out, r)
+			continue
+		}
+		look.Crop = analyze.GridCrop(analyze.MaskBounds(mask, sb.Dx(), sb.Dy()), sb.Dx(), sb.Dy(), 0.12)
+		fg := analyze.Enhance(src, look)
+		fb := fg.Bounds()
+		alpha := analyze.MaskTo(mask, sb.Dx(), sb.Dy(), look.Crop, fb.Dx(), fb.Dy(), max(2, max(fb.Dx(), fb.Dy())/150))
+		done(&r, analyze.Studio(fg, alpha, style), t0)
+		r.Look = &look
+		out = append(out, r)
+	}
+	for _, x := range []struct {
+		name string
+		c    chan edit
+	}{{"muse_fixed", fixC}, {"muse_bigger", bigC}} {
+		e := <-x.c
+		r := Variant{Name: x.name, CostUSD: e.ic.CostUSD, Note: note}
+		if e.ic.Error != "" {
+			r.Error = e.ic.Error
+		}
+		if e.e == nil {
+			im, _, derr := image.Decode(bytes.NewReader(e.jb))
+			if derr != nil {
+				r.Error = "the edit is not an image"
+			} else {
+				s := analyze.SSIM(src, im)
+				ok := s >= SSIMMin
+				r.SSIM, r.Passed = &s, &ok
+				done(&r, im, t0)
+			}
+		}
+		r.MS = e.ic.MS
+		out = append(out, r)
 	}
 	return out, nil
 }
