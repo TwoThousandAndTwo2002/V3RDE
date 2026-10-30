@@ -1008,3 +1008,19 @@ On an iPhone, the microphone button started a voice clip but did not stop it. De
 - If the audio still does not start, the app stops waiting after 2 s and asks the user to tap again. The button never stays stuck.
 - Tests: mobile 86 -> 89.
 
+## 62. Touch-up: the service uses the scene rule
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Image 1.0, SAM 3.1. Muse Spark is no longer called for the touch-up check.
+**Files:** `inference/touchupauto.go` (new), `inference/touchupauto_test.go` (new), `inference/touchupv2.go`, `post/touchup.go`, `post/touchup_v2_test.go` (new), `post/cmd/touchup/main.go`, `post/go.mod`, `post/go.sum`, `post/Dockerfile`, `post/Dockerfile.dockerignore`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/X48o.md`
+
+T9 chose the "auto" column of the X48m page. The touch-up in the app now makes that picture.
+
+- The item is cut again from the uploaded photo, with the scan's box and the scan's name of the item.
+- Muse Image makes the item sharper and bigger. Code checks the edit (SSIM and the same shape). A new picture is refused, and then the code look is used on the photo.
+- "Background": the scene rule chooses the mask (words, or the box when the words mask spills or is missing), then the background is blurred. A plate or a tray stays.
+- "Light": the Muse edit only, with no new background.
+- The original photo is always kept. The reason on the job says which mask was used.
+- Tests: inference 94 -> 96, post 64 -> 66.
+

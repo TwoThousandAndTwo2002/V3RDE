@@ -116,11 +116,17 @@ services:
     command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
               "-token-file", "/run/secrets/analyze_token",   # X42e: /v1/touchup for the bearer token
               "-item-photos", "/item-photos", "-dir", "/data", "-events", "/events",
-              "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-caller-cap-usd", "${TOUCHUP_CALLER_CAP_USD:-0.5}", "-trust-forwarded"]
-    mem_limit: 256m
+              "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-caller-cap-usd", "${TOUCHUP_CALLER_CAP_USD:-0.5}", "-trust-forwarded",
+              # X48o: the auto touch-up (Muse Image bigger + the scene rule's mask + studio blur):
+              # the item is cut again from the upload; the scan's item names come from analyze's events
+              "-v2", "-photos", "/photos", "-analyze-events", "/analyze-events", "-reserve-usd", "0.06"]
+    mem_limit: 640m                # X48o: full-size pictures in code (2 at a time)
+    environment: {GOMEMLIMIT: 560MiB}
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
+      - ${V3RDE_PHOTOS:-~/V3RDE_photos}:/photos:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/analyze-events:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/touchup:/events

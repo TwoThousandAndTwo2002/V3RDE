@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/TwoThousandAndTwo2002/Icarus/inference"
 	"github.com/TwoThousandAndTwo2002/Icarus/post"
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
@@ -45,6 +46,9 @@ func main() {
 	queueWait := flag.Duration("queue-wait", 3*time.Minute, "X44c: the longest a batch job waits for a slot (then it fails, unpaid)")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	jobTimeout := flag.Duration("job-timeout", 90*time.Second, "one touch-up, both calls included")
+	v2 := flag.Bool("v2", false, "X48o: the auto touch-up (Muse Image bigger, SSIM check, the scene rule's mask, studio blur); false = the X35a edit + Muse Spark check")
+	photos := flag.String("photos", "", "X48o: the analyze upload folder, read-only (the item is cut again from it); empty = the item photo as it is")
+	analyzeEvents := flag.String("analyze-events", "", "X48o: the analyze events folder, read-only (the scan's item names); empty = the general concepts")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
 	flag.Parse()
 	post.TrustForwarded = *trustFwd
@@ -93,11 +97,18 @@ func main() {
 		JobTimeout:  *jobTimeout,
 		Build:       build,
 	}
+	if *v2 {
+		vc := &http.Client{Timeout: *jobTimeout, Transport: inference.MetaTransport}
+		cfg.V2 = &inference.V2{API: &inference.Client{URL: *base + "/responses", Key: key, Effort: "low", HTTP: vc},
+			Muse: inference.DefaultMuse, SAM: inference.DefaultSAM, ImageURL: *base, ImageModel: *imageModel, HTTP: vc}
+		cfg.Photos, cfg.AnalyzeEvents = *photos, *analyzeEvents
+	}
 	if !*noCheck {
 		cfg.Checker = &post.Muse{Base: *base, Key: key, Model: *checkModel, Effort: "low", HTTP: hc}
 	}
 	srv := &http.Server{Addr: *listen, Handler: post.NewTouchup(cfg), ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
+	log.Printf("icarus-touchup listening on %s v2=%v photos=%q analyze-events=%q", *listen, *v2, *photos, *analyzeEvents)
 	log.Printf("icarus-touchup listening on %s image=%s check=%v auth=%s bearer=%v item-photos=%q dir=%s cap=$%.2f spent_today=$%.4f build=%s (key %d bytes)",
 		*listen, *imageModel, !*noCheck, *authURL, bearer != nil, *itemPhotos, *dir, *capUSD, budget.Spent(), build, len(key))
 	log.Fatal(srv.ListenAndServe())

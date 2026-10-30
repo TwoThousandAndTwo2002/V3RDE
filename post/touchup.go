@@ -58,6 +58,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/TwoThousandAndTwo2002/Icarus/inference"
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
@@ -342,6 +343,15 @@ type TouchupConfig struct {
 	MaxInFlight int
 	JobTimeout  time.Duration // one touch-up, both calls included
 	Build       string
+	// X48o: the touch-up of the X48m page's "auto" column (inference.V2:
+	// Muse Image bigger, checked in code by SSIM, then the scene rule's mask
+	// and the studio blur). nil = the X35a edit + the Muse Spark check.
+	// Photos is the analyze upload folder (read-only), AnalyzeEvents its
+	// events (the scan's item names); both may be "" (then the item photo is
+	// used as it is, with the general concepts).
+	V2            *inference.V2
+	Photos        string
+	AnalyzeEvents string
 	// X44c: batch jobs that wait for a slot (at most MaxQueued at a time,
 	// each at most QueueWait; then it fails with nothing paid)
 	MaxQueued int
@@ -384,7 +394,7 @@ func NewTouchup(c *TouchupConfig) http.Handler {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, 200, map[string]any{"ok": true, "service": "touchup", "build": c.Build,
 			"spent_today_usd": c.Budget.Spent(), "cap_usd": c.Budget.Cap, "caller_cap_usd": c.Budget.PerCaller,
-			"image_model": c.Editor.Model, "in_flight": len(c.slots), "queued": c.queuedNow()})
+			"image_model": c.Editor.Model, "v2": c.V2 != nil, "in_flight": len(c.slots), "queued": c.queuedNow()})
 	})
 	for _, p := range []string{"/api/touchup", "/v1/touchup"} { // X42e: /v1 = the bearer token
 		mux.HandleFunc("POST "+p, c.start)
@@ -475,7 +485,9 @@ func (c *TouchupConfig) start(w http.ResponseWriter, r *http.Request) {
 	job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobRunning, Mode: mode, SourcePhotoID: src,
 		ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP, forwardedIP: ev.ForwardedIP,
 		capKey: who.RateKey}
-	if c.Checker != nil {
+	if c.V2 != nil {
+		job.CheckModel = "ssim" // X48o: the check is in code
+	} else if c.Checker != nil {
 		job.CheckModel = c.Checker.Model
 	}
 	c.mu.Lock()
@@ -599,7 +611,9 @@ func (c *TouchupConfig) batch(w http.ResponseWriter, r *http.Request) {
 		job := &Job{TouchupID: newHex(16), RequestID: id, Status: JobQueued, Mode: mode, SourcePhotoID: src,
 			ImageModel: c.Editor.Model, userID: who.User.ID, bearer: who.Bearer, remoteIP: ev.RemoteIP,
 			forwardedIP: ev.ForwardedIP, capKey: who.RateKey}
-		if c.Checker != nil {
+		if c.V2 != nil {
+			job.CheckModel = "ssim" // X48o: the check is in code
+		} else if c.Checker != nil {
 			job.CheckModel = c.Checker.Model
 		}
 		c.mu.Lock()
@@ -653,6 +667,10 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 	defer func() { <-c.slots }()
 	ctx, cancel := context.WithTimeout(context.Background(), c.JobTimeout)
 	defer cancel()
+	if c.V2 != nil {
+		c.runV2(ctx, job, img, hold, t0)
+		return
+	}
 	var calls []Call
 	status, reason, photoID := JobFailed, "", ""
 	edited, call, err := c.Editor.Edit(ctx, img, mime, prompt, AspectSize(img))
@@ -713,6 +731,55 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img)}})
 }
+
+// runV2 is run for X48o: the item is cut again from the upload (LoadItem),
+// then V2.Touchup. Its result is always a code-made picture with every food
+// pixel of the photo or of an edit that kept the photo's structure (SSIM), so
+// it is stored as done; the reason says which mask the scene rule chose.
+// "light" is the Muse bigger edit only (no mask, no new background).
+func (c *TouchupConfig) runV2(ctx context.Context, job *Job, img []byte, hold *Hold, t0 time.Time) {
+	it := inference.LoadItem(c.Photos, c.AnalyzeEvents, c.ItemPhotos, job.SourcePhotoID, img, WiderUnder, WiderMargin)
+	it.Light = job.Mode == ModeLight
+	r, err := c.V2.Touchup(ctx, it)
+	status, reason, photoID := JobFailed, "", ""
+	switch {
+	case err != nil:
+		reason = "the edit failed"
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			reason = "the edit took too long"
+		}
+	case errors.Is(ctx.Err(), context.DeadlineExceeded):
+		status, reason = JobKeptOriginal, "the edit took too long"
+	default:
+		photoID = newHex(16)
+		if err := c.store(job, photoID, img, r.JPEG); err != nil {
+			status, reason, photoID = JobKeptOriginal, "could not store the edit", ""
+		} else {
+			status, reason = JobDone, clip(r.Mask, 160)
+		}
+	}
+	cost := r.CostUSD
+	hold.Settle(cost)
+	ms := time.Since(t0).Milliseconds()
+	c.mu.Lock()
+	job.Status, job.Reason, job.PhotoID, job.CostUSD, job.LatencyMS = status, reason, photoID, cost, ms
+	job.ended = c.now()
+	snap := *job
+	c.mu.Unlock()
+	c.record(Event{RequestID: job.RequestID, TS: t0.UTC().Format(time.RFC3339Nano), Route: "touchup.job",
+		UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, CapKey: job.capKey, Status: 200, LatencyMS: ms, CostUSD: cost,
+		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
+			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
+			"source_sha256": sha256hex(img), "v2": true, "mask": r.Mask, "ssim": r.SSIM, "muse": r.Muse, "note": clip(r.Note, 240)}})
+}
+
+// WiderUnder, WiderMargin: an item photo with the long edge under WiderUnder
+// px is cut again with the margin WiderMargin (the X48j-X48m pages: -wider-under
+// 500, -wider-margin 0.35).
+const (
+	WiderUnder  = 500
+	WiderMargin = 0.35
+)
 
 // JobKeep is how long a finished job stays readable (the edited photo file
 // stays on the volume).

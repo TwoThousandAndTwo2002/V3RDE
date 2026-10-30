@@ -1,6 +1,6 @@
 # Icarus post services (X35): touchup, rescue, fanout, voice. Static Go binaries on
 # scratch, like inference. Build context = the repo root (compose: context ".",
-# dockerfile post/Dockerfile), because the module imports ../server and ../listings.
+# dockerfile post/Dockerfile), because the module imports ../server, ../listings and ../inference.
 # post/Dockerfile.dockerignore keeps the context to these folders. One
 # image holds every binary in post/cmd; compose picks one per service with
 # "entrypoint". The key and the token are read-only file mounts; events and
@@ -12,6 +12,10 @@ COPY server/*.go ./server/
 # X35d: the voice service imports the listing contract (listings/: limits + Validate).
 COPY listings/go.mod ./listings/
 COPY listings/*.go ./listings/
+# X48o: the touch-up service runs the auto touch-up of the inference module
+# (its Go files only; golang.org/x/image, BSD-3-Clause).
+COPY inference/go.mod inference/go.sum ./inference/
+COPY inference/*.go ./inference/
 COPY post/go.mod post/go.sum ./post/
 WORKDIR /src/post
 # X35d: the voice service uses github.com/go-audio/wav (Apache-2.0).
@@ -28,6 +32,8 @@ FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /out/ /
 COPY --from=build /src/post/third_party/GO_AUDIO_LICENSE.txt /licenses/GO_AUDIO_LICENSE.txt
+# X48o: the touch-up calls SAM 3.1 (the SAM License, as in the inference image).
+COPY inference/third_party/SAM_LICENSE.txt /licenses/SAM_LICENSE.txt
 COPY --from=build --chown=65534:65534 /data /data
 COPY --from=build --chown=65534:65534 /events /events
 USER 65534:65534

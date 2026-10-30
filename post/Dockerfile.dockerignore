@@ -5,4 +5,8 @@
 !server/*.go
 !listings/go.mod
 !listings/*.go
+!inference/go.mod
+!inference/go.sum
+!inference/*.go
+!inference/third_party/SAM_LICENSE.txt
 !post/

@@ -476,11 +476,35 @@ func ItemName(dir, requestID string, item int) string {
 // the boxes of every other object of that scan (X48k: the "not this" points;
 // any outcome, a not-food box is a neighbour too). "" and nil when not found.
 func ItemScan(dir, requestID string, item int) (string, [][4]int) {
+	files, _ := filepath.Glob(filepath.Join(dir, "events-*.jsonl"))
+	sort.Sort(sort.Reverse(sort.StringSlice(files)))
+	return itemScan(files, requestID, item)
+}
+
+// ItemScanNear is ItemScan for a scan made at ts (RFC 3339, the item photo
+// record's time): it reads only that UTC day's events and the next day's
+// (X48o review: the service must not read the whole event history per job).
+// A ts that does not parse finds nothing.
+func ItemScanNear(dir, requestID string, item int, ts string) (string, [][4]int) {
+	t, err := time.Parse(time.RFC3339Nano, ts)
+	if err != nil {
+		return "", nil
+	}
+	t = t.UTC()
+	var files []string
+	for _, d := range []time.Time{t.AddDate(0, 0, 1), t} {
+		f := filepath.Join(dir, "events-"+d.Format("20060102")+".jsonl")
+		if _, err := os.Stat(f); err == nil {
+			files = append(files, f)
+		}
+	}
+	return itemScan(files, requestID, item)
+}
+
+func itemScan(files []string, requestID string, item int) (string, [][4]int) {
 	if requestID == "" || item <= 0 {
 		return "", nil
 	}
-	files, _ := filepath.Glob(filepath.Join(dir, "events-*.jsonl"))
-	sort.Sort(sort.Reverse(sort.StringSlice(files)))
 	for _, f := range files {
 		fh, err := os.Open(f)
 		if err != nil {
