@@ -1,0 +1,12 @@
+{
+  "source": "en",
+  "languages": [
+    {"code": "en", "name": "English", "native": "English", "script": "Latn", "dir": "ltr", "role": "source"},
+    {"code": "es-419", "name": "Spanish (Latin America)", "native": "español (Latinoamérica)", "script": "Latn", "dir": "ltr", "role": "first"},
+    {"code": "pt-BR", "name": "Portuguese (Brazil)", "native": "português (Brasil)", "script": "Latn", "dir": "ltr", "role": "target"},
+    {"code": "zh-Hans", "name": "Chinese (Simplified)", "native": "中文（简体）", "script": "Hans", "dir": "ltr", "role": "target"},
+    {"code": "hi", "name": "Hindi", "native": "हिन्दी", "script": "Deva", "dir": "ltr", "role": "target"},
+    {"code": "ar", "name": "Arabic (Modern Standard)", "native": "العربية", "script": "Arab", "dir": "rtl", "role": "target"}
+  ],
+  "keep": ["V3RDE", "WhatsApp"]
+}

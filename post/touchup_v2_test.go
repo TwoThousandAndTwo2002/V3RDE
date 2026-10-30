@@ -144,7 +144,7 @@ func TestTouchupV2Background(t *testing.T) {
 	e, pid, stop := v2Env(t, &sam)
 	defer stop()
 	id := start(t, e, asUser(httptest.NewRequest("POST", "/api/touchup?mode=background&photo_id="+pid, nil), "u1"))
-	j := wait(t, e, "/api/touchup/"+id, "u1")
+	j := waitV2(t, e, "/api/touchup/"+id, "u1")
 	if j.Status != JobDone || j.PhotoID == "" || j.CheckModel != "ssim" || !strings.HasPrefix(j.Reason, "box: ") || j.CostUSD <= 0.01 {
 		t.Fatalf("job %+v", j)
 	}
@@ -178,8 +178,29 @@ func TestTouchupV2LightIsAuto(t *testing.T) {
 	e, pid, stop := v2Env(t, &sam)
 	defer stop()
 	id := start(t, e, asUser(httptest.NewRequest("POST", "/api/touchup?mode=light&photo_id="+pid, nil), "u1"))
-	j := wait(t, e, "/api/touchup/"+id, "u1")
+	j := waitV2(t, e, "/api/touchup/"+id, "u1")
 	if j.Status != JobDone || j.PhotoID == "" || !strings.HasPrefix(j.Reason, "box: ") || sam.Load() < 2 {
 		t.Fatalf("job %+v sam %d", j, sam.Load())
 	}
+}
+
+// waitV2 is wait with a longer limit (X49a: the auto touch-up works on whole
+// pictures; under a parallel test load it took more than wait's 2 s).
+func waitV2(t *testing.T, e *tuEnv, path, user string) Job {
+	t.Helper()
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		w := do(e.h, asUser(httptest.NewRequest("GET", path, nil), user))
+		if w.Code != 200 {
+			t.Fatalf("GET %s: %d %s", path, w.Code, w.Body)
+		}
+		var j Job
+		json.Unmarshal(w.Body.Bytes(), &j)
+		if j.Status != JobRunning {
+			return j
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatal("job did not finish in 30 s")
+	return Job{}
 }

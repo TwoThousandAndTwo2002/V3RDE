@@ -763,6 +763,25 @@ The gate ran on LiteRT 1.4.0 and took about 1.1 s for each photo on the box, bef
 - The thread count reaches the CPU engine again. The service keeps 1 thread until the box bench.
 - New tool `gatebench` (also in the image): it scores a folder of photos and compares two runs.
 
+## 44. Lost in translation: the translation quality estimator runs
+
+**When:** Oct 29 2026.
+**Branch:** `LIF` (lost in translation), made from `main`. It does not change `services` or `ui`.
+**Meta models:** none in this change. The estimator is for the translations that Muse Spark Open will make.
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `qe/Dockerfile`, `qe/smoke.sh`, `qe/smoke_input.jsonl`, `qe/run_predict.py`, `qe/test_qe.py`
+**Sources:** `docs/sources/L1.md`
+
+Muse Spark Open returns no log probabilities on our endpoint, so a translation cannot be scored from the translator itself. A separate quality estimator scores each translation from the source and the translation only (no reference).
+
+- One container image holds MetricX-24 with all package versions pinned. The model (Large, full precision) downloads into its own Docker volume on the first run. The bf16 model does not run on the laptop's ARM CPU, and the full-precision model is loaded with low memory use so that it fits the limit (root causes in the sources file).
+- The container has a hard 10 GB memory limit and no swap. The fp32 model did not fit in 6 GB (measured), so the Colima VM was raised to 12 GiB and the other containers are stopped while it runs.
+- A smoke test scores six English to Spanish pairs, three of them bad on purpose. It checks that the pipeline runs; it is not an accuracy measure.
+- Regression tests (`qe/test_qe.py`, 6 tests) keep the fixes in place: the package pins, the full-precision model, the low-memory load, the memory limit, and the smoke input format.
+- Not deployed by this change.
+
+---
+
 ## 45. The food gate uses 2 CPU threads
 
 **When:** Oct 29 2026.
@@ -775,6 +794,24 @@ The box bench (X45b) measured the gate on LiteRT 2.3.0 on the box.
 - With 2 threads one call takes 595 ms; with 1 thread it takes 1,071 ms (median, 50 photos).
 - When two calls run at the same time, both settings take about 1.1 s each.
 - The gate now uses 2 threads. No image is built again: only the gate container starts again.
+
+## 45. Lost in translation: the estimator image rebuilds from its cache
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `qe/Dockerfile`, `qe/test_qe.py`
+**Sources:** `docs/sources/L2.md`
+
+In #44, each change to a package pin built the whole package layer again and downloaded torch again.
+
+- The image keeps pip's and apt's downloads in build cache mounts, so a rebuilt layer downloads only what changed.
+- The layers go from the least often changed (system packages, torch) to the most often changed (our own code), so a change near the end does not rebuild what is before it.
+- Each run of the apply script shows, for every build step, whether it came from the cache.
+- A new regression test keeps this in place (`qe/test_qe.py`, 7 tests). The smoke test and its scores are the same as in #44.
+- Not deployed by this change.
+
+---
 
 ## 46. The app is on the live site
 
@@ -804,6 +841,27 @@ On the live site, two voice clips failed with "Could not read what you said". Th
 - The events line shows how many keywords were sent and how many were cut.
 - Tests: post 63 -> 64. A touch-up test no longer reads the events file before the second job has written its line (it failed one time on the Mac).
 
+## 47. Lost in translation: one English source file and the language list
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`. It reads the app code of `ui` at one pinned commit.
+**Meta models:** none in this change. The file is the input that Muse Spark Open will translate.
+**Files:** `i18n/` (a Go module: `lex.go`, `extract.go`, `gitread.go`, `languages.go`, `cmd/extract`, `i18n_test.go`, `testdata/`), `i18n/en.json`, `i18n/skipped.json`, `i18n/rules.json`, `i18n/source.json`, `i18n/languages.json`
+**Sources:** `docs/sources/L3.md`
+
+The English text of the app was in many files (`words.ts`, `signin.ts`, `logic.ts`, `ui.tsx` and others). Some lines were made by joining parts with `+`, which a translator cannot put in a different word order.
+
+- A Go extractor reads every `.ts` and `.tsx` file of `mobile/src` on branch `ui` at the commit in `i18n/source.json`, directly from git. It does not copy or change the app code.
+- Each line of text becomes one message in `i18n/en.json`, with an id (`VOICE.rename`), the full text with its values as placeholders (`Item {n}: “{from}” to “{to}”`), and the file and line it comes from. This includes the screen-reader labels.
+- Every other string of the app is in `i18n/skipped.json` with the rule that skipped it (code word, compared value, style or test id, color, SVG path, URL). A person can read the two files and see that no text is missing. The few decisions that a rule cannot make are in `i18n/rules.json`, each with a reason.
+- Some messages are parts that the app joins (for example `item found` for `plural()`). They are marked with the function they go to. The app must change to whole messages and per-language plural forms before those lines translate well; that is work for the `ui` branch, not this change.
+- `i18n/languages.json` lists English (source), Spanish for Latin America (`es-419`, first), Brazilian Portuguese (`pt-BR`), Simplified Chinese (`zh-Hans`), Hindi (`hi`) and Modern Standard Arabic (`ar-001`, right to left), and the names that stay in English (`V3RDE`, `WhatsApp`).
+- Regression tests (`i18n/i18n_test.go`, 7 tests): the lexer (comments, regex, escapes, nested templates), JSX text fails, the message rules, stale rules fail, `en.json` and `skipped.json` are what the extractor makes from the pinned commit, the language list (each native name in its own script), and the format of `en.json`.
+- When the app text changes on `ui`: put the new commit in `i18n/source.json` and run `go run ./cmd/extract` in `i18n/`.
+- Not deployed by this change.
+
+---
+
 ## 48. The food gate runs at the same time as SAM
 
 **When:** Oct 29 2026.
@@ -821,6 +879,22 @@ The speed plan (T9: single photo 5–6 s, multi-item 10–12 s). Before this cha
 - A scan job shows its first boxes only after the gate passed, so a photo that is not food shows no boxes.
 - Tests: inference 83 -> 84.
 
+## 48. Lost in translation: Arabic is `ar`, so every Arabic phone finds it
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/languages.json`, `i18n/i18n_test.go`
+**Sources:** `docs/sources/L3b.md`
+
+In #47 Arabic was `ar-001`. A phone set to Arabic has a tag such as `ar-EG` or `ar-SA`. Lookup removes subtags from the end (`ar-EG`, then `ar`), so it finds `ar` but never `ar-001`.
+
+- Arabic is now `ar`, so the Arabic text serves all Arabic regions. The text stays Modern Standard Arabic (the name in `languages.json` says so).
+- The language test expects `ar`.
+- Not deployed by this change.
+
+---
+
 ## 49. Each caller gets its own rate limit
 
 **When:** Oct 29 2026.
@@ -833,6 +907,23 @@ Through API Gateway every request seemed to come from the same address, so all c
 - The SME set API Gateway to send the caller's real address in the header `X-Client-Ip`. API Gateway replaces any value the caller sends.
 - The edge reads that address first, then the old header, and gives it to every service.
 - The edge does not pass `X-Client-Ip` on to the services.
+
+## 49. Lost in translation: names and values are locked before translation
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change. The tags are for the prompts to Muse Spark Open (#50).
+**Files:** `i18n/mask/mask.go`, `i18n/mask/mask_test.go`
+**Sources:** `docs/sources/L4a.md`
+
+A translator can change or lose a placeholder such as `{n}`, or translate a name such as `V3RDE`.
+
+- Before a message goes to the translator, each `{name}` and each name in `languages.json` "keep" becomes a numbered tag (`<x1/>`, `<x2/>`, ...).
+- After the translation, each tag must be there exactly once. A lost, doubled or unknown tag, or a bare `{name}`, is an error, and that translation is not used. The translator can move a tag to where the grammar of the language needs it.
+- Regression tests (`i18n/mask/mask_test.go`, 4 tests): masking, restore in Spanish, Chinese, Hindi and Arabic text and with the tags in a new order, the error cases, and a round trip of every message in `en.json`. The i18n module now has 11 tests.
+- Not deployed by this change.
+
+---
 
 ## 50. The app sees each step of a scan at once
 
@@ -848,6 +939,25 @@ The app asked for the scan job once a second, so the answer came up to 1 s late.
 - The app asks again at once. It does not sleep between polls, and it asks for the first time at once.
 - An older service has no version: the app then asks once a second, as before.
 - Tests: inference 84 -> 86, mobile 81 -> 82.
+
+## 50. Lost in translation: a Go client for Muse Spark Open on Baseten
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open (`meta-models/muse-spark-open-1026`), through Baseten. The tests use a fake server only; this change makes no calls to Baseten.
+**Files:** `i18n/muse/muse.go`, `i18n/muse/prompt.go`, `i18n/muse/muse_test.go`
+**Sources:** `docs/sources/L4b.md`
+
+- One request is one answer (Baseten supports only `n = 1`). More candidates are more requests.
+- The settings are fixed: the exact model name, temperature 1.0, top_p 1.0, `top_k: -1` (Baseten's default is 50), `reasoning_effort: low`, `max_tokens` 4096. Nothing is sent that Baseten rejects or ignores for this model (`n`, `logprobs`, `seed`).
+- The key comes from `BASETEN_API_KEY` and is never in an error message.
+- 429, 5xx and network errors are tried again (`Retry-After`, else 1 s, 2 s, 4 s). 400 and 401 are not.
+- An answer with no text (the reasoning used all the tokens) is an error, not an empty translation.
+- The prompt gives the target language, the tag rule (#49) and the message id as the only context of a short text.
+- Regression tests (`i18n/muse/muse_test.go`, 5 tests, fake server). The i18n module now has 16 tests.
+- Not deployed by this change.
+
+---
 
 ## 51. A listing keeps what the scanner found
 
@@ -865,6 +975,25 @@ The scanner finds more than the title and the servings, but a listing kept only 
 - The app does not show the details yet. That needs a mockup first.
 - Tests: listings 28 -> 29, mobile 82 -> 83.
 
+## 51. Lost in translation: rung 1, translate and score every message
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `i18n/rung/rung.go`, `i18n/rung/score.go`, `i18n/rung/util.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`, `qe/score.sh`
+**Sources:** `docs/sources/L4c.md`
+
+- `go run ./cmd/translate -lang es-419 -out <dir>` (in `i18n/`): every message of `en.json` goes to Muse Spark Open `k` times (default 1) with its tags (#49), 8 requests at a time.
+- Each answer is checked and its tags are put back. MetricX-24 (QE mode, the image of #44/#45) scores all good answers in one container run (`qe/score.sh`). For each message the answer with the lowest score is kept.
+- A message of only kept names (`V3RDE`, `WhatsApp`) is copied with no call.
+- The output goes outside the repo: `<lang>.json` (the kept text, its score, and the ids with no good answer) and `<lang>.ledger.jsonl` (one line for each try: the masked text, the raw answer, the error or score, the settings, the reasoning tokens and the `en.json` commit). A later change commits a reviewed result.
+- The scores rank the answers of one message. They are not an accuracy measure.
+- Regression tests (`i18n/rung/rung_test.go`, 2 tests, fake model and fake scorer). The i18n module now has 18 tests.
+- Not deployed by this change.
+
+---
+
 ## 52. The lists scroll, and Receive shows food of others only
 
 **When:** Oct 29 2026.
@@ -878,6 +1007,23 @@ On the web the lists did not scroll: older listings and the next pages of Receiv
 - The title of Give and of Receive is in one row of the same height, so it does not move when you change the role.
 - Receive does not show your own listings. You see them under Give. When a page holds only your listings, the list asks for the next page at once.
 - Tests: mobile 83 -> 86.
+
+## 52. Lost in translation: the Baseten key is kept in a file, like the Meta key
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `tools/lif_baseten_key.sh`, `i18n/muse/muse.go`, `i18n/muse/muse_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4d.md`
+
+In #51, `cmd/translate` read the key only from `BASETEN_API_KEY`, so each new shell needed the key again.
+
+- `tools/lif_baseten_key.sh` asks for the key once (the typing is hidden) and writes `~/.config/v3rde/baseten_api_key` (or `$V3RDE_CFG/baseten_api_key`) with mode 0600, in a folder with mode 0700. It never prints the key. The Meta key of the stack is kept the same way (`meta_model_api_key`, 0600).
+- `cmd/translate` reads the key from that file (`-key-file`). A file with another mode, or with more than the key, stops the run. With no file, it uses `BASETEN_API_KEY`. With neither, the error names the setup script. The key is never in an error message.
+- A new regression test (`i18n/muse/muse_test.go`, 6 tests). The i18n module now has 19 tests.
+- Not deployed by this change.
+
+---
 
 ## 53. Touch-up v2: a prototype and a side-by-side page
 
@@ -894,6 +1040,24 @@ The touch-up of today takes about 28 s and can change the food. T9 asked for a s
 - `touchupcompare` makes all variants and today's touch-up for the newest item photos on the box, with the time and the cost of each. The script `x48f_touchup_compare.sh` brings a side-by-side page to the Mac.
 - T9 chooses the default from that page. Nothing changes in the app until then.
 - Tests: server 26 -> 32, inference 86 -> 89.
+
+## 53. Lost in translation: requests at a steady rate, and a resume run
+
+**When:** Oct 29 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/muse/pace.go`, `i18n/muse/muse.go`, `i18n/muse/muse_test.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4e.md`
+
+The first Spanish run (run `20261029T215819Z`) kept 179 of 204 messages. All 25 failures were `HTTP 429: Rate limit exceeded`. There were no tag errors and no empty answers. Root cause: 8 workers sent all requests in about 80 seconds, and the client gave up after 4 tries in 7 seconds, which is less than the one-minute window of the limit.
+
+- A pacer spaces the requests evenly. It takes the limit from Baseten's `x-ratelimit-limit-requests` header, or from `-rpm`.
+- After a 429 with no `Retry-After`, the client waits 1, 2, 4, 8, 16 and 32 seconds, plus a random part of a second (6 retries, more than one minute in all).
+- `-resume` translates only the ids that are missing in `<out>/<lang>.json` and merges the new answers into it, in the `en.json` order. The earlier run id is kept in `previous_runs`. The ledger gets the new tries at the end.
+- 3 new regression tests (backoff, pacer, merge). The i18n module now has 22 tests.
+- Not deployed by this change.
+
+---
 
 ## 54. Touch-up v2: studio modes, Muse Image called correctly, a check in code
 
@@ -925,6 +1089,29 @@ T9 chose a combination from the second comparison page.
 - If Muse Image fails or is refused, the code result is used.
 - Tests: server 35 -> 36, inference 90 (2 tests replaced).
 
+## 55. Lost in translation: each English text once, Docker checked first, the ledger written as it goes
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/rung/rung.go`, `i18n/rung/score.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4f.md`
+
+Problems found in the first runs for 5 languages:
+- The same English text got different translations (zh-Hans: "no blob" became 无斑点 and 无 blob).
+- Colima was not running, so the scorer failed after all the requests. Every answer was lost, also the answers for languages that were already complete.
+
+The fixes:
+- Each English text is translated once. The other ids with the same text reuse that translation (`same_as`). 204 messages are 189 texts, so 189 requests for each language (T9 2026-10-30: once, always).
+- `-collapse` applies the same rule to an earlier result with no requests. For each text it keeps the translation with the lowest score, and it keeps the old file as `<lang>.before-dedupe.json`.
+- Before the first request, the run checks that Docker answers and that the MetricX image is there. If the check fails, no request is sent.
+- The ledger gets each try when its answer comes in (`"kind":"try"`), and each score after the scoring (`"kind":"score"`), so a failure later in the run does not lose answers.
+- A language whose result is complete (same `en.json` commit, model and k, made with dedupe) is skipped unless `-force` is given.
+- 4 new regression tests (dedupe, check first, complete, collapse). The i18n module now has 26 tests.
+- Not deployed by this change.
+
+---
+
 ## 56. Touch-up v2: the item is cut out alone
 
 **When:** Oct 30 2026.
@@ -937,6 +1124,30 @@ On the last page the cut kept neighbours of the same kind: the tomatoes next to 
 - The scan knows the item's box. The item is cut again from the upload with that box, and only the SAM mask that matches the box is kept (plus masks inside it).
 - The scan's name of the item is asked first, then "food", "fruit" and the others.
 - Tests: inference 90 -> 92.
+
+## 56. Lost in translation: the text graph, a context for every text
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`. It reads the app code of `ui` at the commit in `i18n/source.json`.
+**Meta models:** none in this change. The graph and the contexts are for the prompts to Muse Spark Open (next change).
+**Files:** `i18n/graph.go`, `i18n/graph_test.go`, `i18n/graph.json`, `i18n/context.json`, `i18n/concepts.json`, `i18n/cmd/graph/main.go`, `i18n/testdata/app/`, `i18n/extract.go`, `i18n/gitread.go`, `i18n/i18n_test.go`, `i18n/cmd/extract/main.go`, `i18n/en.json`
+**Sources:** `docs/sources/L4g.md`
+
+A translator needs to know what a text does and what is near it. In the first runs, "Post {plural}" was translated as a noun because nothing said that it is a button. When the app text changes, the texts that depend on it must be checked again.
+
+- **A context for every text:** `i18n/context.json` has one context for each text, in ASD-STE100. It gives the kind (button, title, error line ...), the screen, what the text does for the user, and what each placeholder holds. Each context stores the hash of the English text it was written for. All contexts are drafts until the user approves them.
+- **The text graph:** `i18n/graph.json` is made from the app code. Its nodes are the texts, the screens (10) and the main ideas of the app (14 concepts, `i18n/concepts.json`). Its edges are:
+  - `on_screen`: the screen shows the text (found in the code);
+  - `part_of`: the app joins the text into another text (found in the code);
+  - `uses`: the text names a concept;
+  - `opens` and `pair`: hand-made, for example "Log out" is paired with the sign-in button.
+- **The change walk:** `go run ./cmd/graph` compares the committed texts with a new ui commit. It lists the added, removed and changed texts, walks the graph from them, and lists the texts to check, most connected first.
+- **Checks:** a test fails when a text has no context, when the English text changed after its context was written, or when a context is left for a text that is gone. So a change to the app text cannot pass until its context is updated.
+- **Two texts recovered:** the extractor lost the literals in a joined line that starts with `(` (for example `(...) + " — your photo is kept."`). It now counts every literal and fails if one is not in a message or a skip. `en.json` has 206 messages, 2 more than before: `logic.retryText.your_photo_is_kept` and `capture.elapsedText`.
+- 8 new regression tests (`i18n/graph_test.go`). The i18n module now has 34 tests.
+- Not deployed by this change.
+
+---
 
 ## 57. Touch-up v2: one mask rule for every item
 
@@ -952,6 +1163,32 @@ Piles (tomatoes, plantains) still kept the pile next to them. SAM answers a pile
 - The page shows, for each SAM concept, how many masks SAM found and how many were kept.
 - Tests: inference 92 -> 93.
 
+## 57. Lost in translation: each prompt gets the context of its text from the graph
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/knowledge.go`, `i18n/knowledge_test.go`, `i18n/muse/prompt.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4h.md`
+
+#56 made the graph and the contexts. With this change, the translator uses them.
+
+- **The context in the prompt:** each prompt now has the context of its text (prompt `context-v1`):
+  - the kind and what the text does;
+  - what each tag holds;
+  - the texts it is paired with ("Log out" with the sign-in button);
+  - the line it is joined into, or the parts joined into it;
+  - up to 8 controls and titles near it on its screen;
+  - the earlier translations of the texts that name the same idea (from `<out>/<lang>.json` or `-prev`), so one idea keeps one word.
+  - A new rule tells the model that a button needs a verb, and that a text must not read like a near text with another action.
+- **Dedupe key:** the key is now the English text plus its context. The same English with another context is translated on its own.
+- **New texts are translated:** `-resume` and the skip check now compare the result with every text in `en.json`, so texts that are new in `en.json` are translated. A result made with the plain prompt is not complete for the context prompt.
+- **The sweep:** `-ids` runs a small batch, and `-effort` and `-temperature` set other settings for that run. `-context=false` sends the plain prompt for a comparison.
+- 2 new regression tests (context key, context block); the complete test now also covers new texts and the prompt. The i18n module now has 36 tests.
+- Not deployed by this change.
+
+---
+
 ## 58. Touch-up v2: the item's mask from the scan's box
 
 **When:** Oct 30 2026.
@@ -965,6 +1202,25 @@ SAM found nothing for the scan's names ("plantains", "roma tomatoes"). The gener
 - **Step 2:** one point inside that mask, plus a "not this" point on each other object of the same scan. This is the method of the SAM-PD paper.
 - The page shows the words mask, step 1 and step 2 side by side, all on the combo T9 chose (Muse Image bigger, then studio blur).
 - Tests: inference 93 (2 tests replaced).
+
+## 58. Lost in translation: translate many, score once
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `i18n/rung/batch.go`, `i18n/cmd/score/main.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4i.md`
+
+The sweep of #57 was 25 runs (5 languages × 5 settings), and each run started the MetricX container and loaded its model again. That was most of the 30 minutes. More languages come next.
+
+- `cmd/translate -score=false` translates and writes the result and the ledger with no scores (`"unscored": true`). It keeps the first good try.
+- `go run ./cmd/score <dir>/*/*.json` collects every try that has no score yet in all the given results. It scores them in one container run, so the model loads once. It writes a score line for each try to its ledger, and rewrites each result with the lowest-scored try. A second run scores nothing again.
+- The scores are the same MetricX-24 QE scores (0 to 25, lower is better). They rank the tries of one text and are not an accuracy measure.
+- 1 new regression test: two results, one scorer call, score lines in each ledger, and the lowest-scored try kept. The i18n module now has 37 tests.
+- Not deployed by this change.
+
+---
 
 ## 59. Touch-up v2: the box masks are read
 
@@ -994,6 +1250,28 @@ T9 chose the words mask for a meal and for packages, and the box mask for piles 
 - The page shows each photo's choice and the reason.
 - Tests: inference 93 -> 94.
 
+## 60. Lost in translation: checks with no model
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/judge/checks.go`, `i18n/judge/checks_test.go`, `i18n/judge/load.go`, `i18n/cmd/check/main.go`, `i18n/results.go`, `i18n/results_test.go`, `i18n/knowledge.go`, `i18n/cmd/score/main.go`, `i18n/rung/rung_test.go`
+**Sources:** `docs/sources/L4j-a.md`
+
+MetricX scores one text at a time. It does not see that two texts on one screen use the same word, or that one idea gets two words. These checks use the text graph of #56 and need no model.
+
+- `pair_same`: the two texts of a pair (for example Show and Hide) have the same translation.
+- `target_inconsistent`: two texts with the same text and context have different translations.
+- `source_same`: different English texts on one screen have one translation. Plural parts and brand names are not reported.
+- `untranslated`: a text in a language with a non-Latin script still has Latin words (emails are not counted).
+- `go run ./cmd/check runs-ctx/*/*.json` writes `<lang>.check.json` next to each result. On the earlier plain runs it finds real errors: pt "Grabbing…" as "Carregando…" (Loading), and zh "Post listing" and "listings" both as 发布列表.
+- `i18n.IsResult` keeps only `<lang>.json` names, so `cmd/score`, `cmd/check` and the judges do not read the report files next to the results.
+- Test fix: `TestRung` (from #51) failed about 1 time in 200. Root cause: its fake chose the lost-tag answer from a call count that all workers share, and the order of the workers changes from run to run. The fake now counts the tries of each message. 1000 runs with `-race` pass.
+- 2 new regression tests. The i18n module now has 39 tests.
+- Not deployed by this change.
+
+---
+
 ## 61. Voice: the clip can be stopped on iOS
 
 **When:** Oct 30 2026.
@@ -1007,6 +1285,27 @@ On an iPhone, the microphone button started a voice clip but did not stop it. De
 - Now the audio is made and started in the tap, before the microphone question.
 - If the audio still does not start, the app stops waiting after 2 s and asks the user to tap again. The button never stays stuck.
 - Tests: mobile 86 -> 89.
+
+## 61. Lost in translation: two judges read whole concepts and whole screens
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open (Baseten) and Muse Spark 1.3 (Meta Model API), only when `cmd/judge` runs; the tests use fakes.
+**Files:** `i18n/meta/meta.go`, `i18n/meta/meta_test.go`, `i18n/judge/judge.go`, `i18n/judge/judge_test.go`, `i18n/cmd/judge/main.go`
+**Sources:** `docs/sources/L4j-b.md`
+
+A judge reads a group of texts of one language together: all texts of one concept of the graph, or all texts of one screen. For each text it gets the English text, what the text does, and the translation.
+
+- A concept judge checks that one idea has one word, that buttons use the action form, and that the grammar is correct.
+- A screen judge checks that pairs and opposites read as different actions, that the form of address is the same on the screen, and that each text fits what it does.
+- Two judges: Muse Spark Open on Baseten and Muse Spark 1.3 on the Meta Model API. A text is flagged when one judge or one check reports it. The two judges are not yet compared with labels, so this report gives no accuracy numbers.
+- The answer is JSON with a verdict and issues. A text id that is not in the group is dropped. A fail with no known text is a judge error.
+- `meta/` is a small client for `https://api.meta.ai/v1/responses`. The key is in `~/.config/v3rde/meta_model_api_key` (mode 0600). Errors do not show the key.
+- `go run ./cmd/judge runs-ctx/*/*.json` writes `<lang>.judge.json`: the checks, each verdict, and the flagged texts with the reasons.
+- 5 new regression tests. The i18n module now has 44 tests.
+- Not deployed by this change.
+
+---
 
 ## 62. Touch-up: the service uses the scene rule
 
@@ -1024,6 +1323,25 @@ T9 chose the "auto" column of the X48m page. The touch-up in the app now makes t
 - The original photo is always kept. The reason on the job says which mask was used.
 - Tests: inference 94 -> 96, post 64 -> 66.
 
+## 62. Lost in translation: fix the flagged texts once, and spread the fix through the graph
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`, `i18n/graph.go`, `i18n/graph_test.go`
+**Sources:** `docs/sources/L4j-c.md`
+
+The sweep of #57 showed that other settings (effort, temperature) do not correct a wrong word. The judge's reason is new information, so the second try gets it in the prompt. A corrected word must also agree with the texts of the same idea, so the correction goes through the text graph.
+
+- `cmd/translate -fix <lang>.judge.json` translates each flagged text again, one time, with the context prompt and the line "Problems found in the earlier translation …: <reasons>. Do not repeat these problems."
+- Spread (`-spread`, on by default): each corrected text that changed reaches its pairs, its joined parts and the texts of the same concept (`i18n.Spread`). Texts that are only on the same screen are not reached; the screen judge sees them. Each reached text gets one try with the correction in its prompt ("A related text was corrected … Use the same word for the same idea"), and its concept block shows the corrected translation. A flagged, revised or shared text is not reached.
+- The new tries go into the same ledger and result. A text with a good new try keeps only the new tries; the result marks it `revised`, and a spread text also gets `spread_from`. Both stay after `cmd/score`.
+- The result before the round is kept as `<lang>.before-round1.json`, and the report as `<lang>.judge.round1.json` (then `round2`, and so on). After `cmd/score` and `cmd/judge` again, a text that is still flagged is not translated a third time. `cmd/translate` names it for human review.
+- 3 new regression tests (fix kept, spread kept after a rescore, spread targets). The i18n module now has 47 tests.
+- Not deployed by this change.
+
+---
+
 ## 63. Touch-up: one touch-up for every mode
 
 **When:** Oct 30 2026.
@@ -1037,6 +1355,23 @@ T9: the app has one touch-up, the auto one.
 - The "Light" path (the Muse edit only) is removed.
 - Tests: post 66 (one test changed).
 
+## 63. Lost in translation: one review file for the review page and the graph page
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/judge/review.go`, `i18n/judge/review_test.go`, `i18n/cmd/report/main.go`
+**Sources:** `docs/sources/L4j-d.md`
+
+- `go run ./cmd/report -out lif_review.json runs-ctx/*/*.json` joins, for each language and each text: the translation before and after the fix round, the MetricX scores, the findings of round 1 and of the last round (the check name or the judge model, the group and the reason), and `spread_from`.
+- Each text gets one status: `ok`, `fixed` (corrected and passes now), `spread` (changed because a related text was corrected, passes now), `review` (corrected once and flagged again: a person decides), `flagged` (flagged in the last round only), `missing`.
+- Each language gets a summary: the counts, the groups that each judge failed, and the judge errors. The counts are not accuracy numbers.
+- The review page and the graph page read this file to show the loop.
+- 1 new regression test. The i18n module now has 48 tests.
+- Not deployed by this change.
+
+---
+
 ## 64. Touch-up: one link in the app
 
 **When:** Oct 30 2026.
@@ -1049,6 +1384,25 @@ T9: one touch-up button, not two.
 - Each item now has one link, "Touch up photo", in place of "Better light" and "Plain background".
 - The link starts the auto touch-up (the Muse edit, the scene rule's mask, the blurred background).
 - Tests: mobile 89 -> 90.
+
+## 64. Lost in translation: translate one screen in one call
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/muse/batch.go`, `i18n/muse/batch_test.go`, `i18n/batch.go`, `i18n/batch_test.go`, `i18n/rung/batchrun.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4k-a.md`
+
+The run of #60-#63 (5 languages) showed two problems. Each text got its own call, so the 206 texts of a language took about 200 calls at the Baseten limit of 100 calls a minute. And the spread of #62 gave each reached text its own call, so one idea got different words: zh "Your listings" became 我的发布 ("my") while other texts of the same idea kept 你的 or got 您的.
+
+- `cmd/translate -batch 12` translates the texts of one screen in one call (at most 12 texts in a call; `i18n.BatchGroups`: the smallest screen of a text, then its first concept; the texts on no screen by concept). Each text keeps its own context block. The answer is one JSON object, id -> translation (prompt `batch-v1`, max_tokens 8192).
+- Each text of the answer gets its own ledger entry (`batch`: the group) and the same tag check. A text with no good answer from its group gets one call of its own, so no text is lost.
+- With `-fix`, each flagged text and the texts it reaches through the graph go in one call, in the same round, so the group corrects its texts together. Without `-batch`, `-fix` works as in #62.
+- In a test with fake servers, the 206 texts of a language took 25 calls.
+- 3 new regression tests. The i18n module now has 51 tests.
+- Not deployed by this change.
+
+---
 
 ## 65. Review: the chat bar (talk or type)
 
@@ -1067,6 +1421,21 @@ T9 approved the chat bar mockup. The review list now works like a chat with the 
 - The chat is cleared after a post. Post waits while the microphone is on.
 - A line cannot remove every item; it says so (Start over does that).
 - Tests: post 66 -> 67, mobile 90 -> 92.
+
+## 65. Lost in translation: compare the ways of translating
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change (it reads the results of `cmd/translate` and `cmd/judge`).
+**Files:** `i18n/judge/compare.go`, `i18n/judge/compare_test.go`, `i18n/cmd/compare/main.go`, `i18n/rung/ledger.go`, `i18n/rung/rung_test.go`
+**Sources:** `docs/sources/L4k-b.md`
+
+- `go run ./cmd/compare -arm plain=runs -arm context=runs-ctx:round1 -arm loop=runs-ctx -arm batch=runs-batch:round1 -arm batch+loop=runs-batch` puts the ways of translating side by side for each language, with the same measures: model calls, MetricX QE (median, number over 5), check issues, texts flagged by a check or a judge, texts flagged by both judges, and the groups each judge failed. It writes `compare.json` and `compare.md`.
+- `name=dir:round1` reads the result before the fix round (`<lang>.before-round1.json`, `<lang>.judge.round1.json`). Its scores come from the ledger (`rung.TextScores`), because `cmd/score` scores only `<lang>.json`.
+- `rung.Calls` counts the calls of a result from its ledger: one for each single try, one for each batch group.
+- These are measures, not accuracy: there are no human labels. MetricX ranks tries; the judges can disagree.
+- 2 new regression tests. The i18n module now has 53 tests.
+- Not deployed by this change.
 
 ## 66. Give: delete a listing before a grab
 
@@ -1097,4 +1466,18 @@ T9: every change a user makes to a field the models made must be recorded, for s
 - The pickup text is never kept (it can be an address). Only the fact that it changed is kept. A chat line that named a pickup is kept without its words.
 - The report always fits the service's limit; the item labels always stay.
 - Tests: inference 96 -> 97, mobile 93 -> 96.
+
+## 68. The translation work (LIF) joins the services branch
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Spark Open, Muse Spark 1.3 (no change; the LIF entries 47-65 say how they are used).
+**Files:** the LIF branch (`i18n/`, `qe/`, `docs/sources/L*.md`, `tools/lif_baseten_key.sh`) merged; `NEW_WORK.md`, `post/touchup_v2_test.go`
+**Sources:** `docs/sources/X49a.md`
+
+T9: the translation work of the LIF branch must run with the other services. First it joins the branch that is deployed.
+
+- A real merge: the LIF commits keep their history.
+- The only conflict was this file. It keeps every entry of both branches, in number order. The numbers both branches took (57, 63, 64, 65) stay on both entries.
+- No service changes. The translation container comes in the next changes.
+- Tests: i18n 53 and qe 7 (Python), added to the checks of every change. The auto touch-up tests wait longer (they failed under a parallel load).
 
