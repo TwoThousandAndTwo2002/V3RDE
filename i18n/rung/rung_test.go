@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 
 	"v3rde/i18n"
+	"v3rde/i18n/mask"
 	"v3rde/i18n/muse"
 )
 
@@ -207,20 +209,29 @@ func TestCheckFirst(t *testing.T) {
 	}
 }
 
-// Complete needs every message, the same commit, model and k, and dedupe.
+// Complete needs every message of en.json (also a new one), the same commit,
+// model, k and prompt, and dedupe.
 func TestComplete(t *testing.T) {
-	r := Result{Commit: "c", Model: "m", K: 1, Dedupe: true, Messages: []Chosen{{ID: "a"}}, Missing: []string{}}
-	if !Complete(r, "c", "m", 1) {
+	ms := []i18n.Message{{ID: "a"}}
+	r := Result{Commit: "c", Model: "m", K: 1, Dedupe: true, Prompt: muse.PromptContext, Messages: []Chosen{{ID: "a"}}, Missing: []string{}}
+	if !Complete(r, ms, "c", "m", 1, muse.PromptContext) {
 		t.Fatal("complete")
 	}
 	for _, bad := range []Result{
-		{Commit: "c", Model: "m", K: 1, Dedupe: false, Messages: r.Messages},
-		{Commit: "c", Model: "m", K: 1, Dedupe: true, Messages: r.Messages, Missing: []string{"b"}},
-		{Commit: "d", Model: "m", K: 1, Dedupe: true, Messages: r.Messages},
+		{Commit: "c", Model: "m", K: 1, Dedupe: false, Prompt: muse.PromptContext, Messages: r.Messages},
+		{Commit: "c", Model: "m", K: 1, Dedupe: true, Prompt: muse.PromptContext, Messages: r.Messages, Missing: []string{"b"}},
+		{Commit: "d", Model: "m", K: 1, Dedupe: true, Prompt: muse.PromptContext, Messages: r.Messages},
+		{Commit: "c", Model: "m", K: 1, Dedupe: true, Messages: r.Messages}, // plain prompt
 	} {
-		if Complete(bad, "c", "m", 1) {
+		if Complete(bad, ms, "c", "m", 1, muse.PromptContext) {
 			t.Errorf("not complete: %+v", bad)
 		}
+	}
+	if Complete(r, append(ms, i18n.Message{ID: "new"}), "c", "m", 1, muse.PromptContext) {
+		t.Error("a text that is new in en.json makes the result not complete")
+	}
+	if got := Todo(r, append(ms, i18n.Message{ID: "new"})); len(got) != 1 || got[0].ID != "new" {
+		t.Errorf("todo %v", got)
 	}
 }
 
@@ -236,5 +247,38 @@ func TestCollapse(t *testing.T) {
 	x, y := got.Messages[0], got.Messages[1]
 	if x.Text != "无斑点" || x.SameAs != "y.no_blob" || y.Text != "无斑点" || y.SameAs != "" || got.Messages[2].Text != "重拍" {
 		t.Fatalf("%+v %+v", x, y)
+	}
+}
+
+// With a context, the dedupe key is the text and its context: the same English
+// with two contexts gets two requests; each prompt has its own context block.
+func TestContextKey(t *testing.T) {
+	ms := []i18n.Message{{ID: "a.close", Text: "Close"}, {ID: "b.close", Text: "Close"}, {ID: "c.close", Text: "Close"}}
+	ctxs := map[string]string{"a.close": "camera", "b.close": "sheet", "c.close": "sheet"}
+	var users []string
+	var mu sync.Mutex
+	tr := &fakeTr{reply: func(user string, n int32) (string, error) {
+		mu.Lock()
+		users = append(users, user)
+		mu.Unlock()
+		return "Cerrar", nil
+	}}
+	c := cfg(1)
+	c.Prompt = muse.PromptContext
+	c.Key = func(m i18n.Message) string { return m.Text + "|" + ctxs[m.ID] }
+	c.About = func(id string, mk mask.Masked) string { return "What it does: closes the " + ctxs[id] }
+	res, err := Run(context.Background(), c, ms, tr, &fakeSc{}, &bytes.Buffer{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr.calls != 2 || res.Prompt != muse.PromptContext {
+		t.Fatalf("calls %d prompt %s", tr.calls, res.Prompt)
+	}
+	joined := strings.Join(users, "\n")
+	if !strings.Contains(joined, "Context:\nWhat it does: closes the camera") || !strings.Contains(joined, "closes the sheet") {
+		t.Fatalf("prompts: %s", joined)
+	}
+	if res.Messages[2].SameAs != "b.close" {
+		t.Errorf("c.close must reuse b.close: %+v", res.Messages[2])
 	}
 }

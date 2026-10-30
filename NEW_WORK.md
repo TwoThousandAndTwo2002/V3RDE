@@ -664,3 +664,29 @@ A translator needs to know what a text does and what is near it. In the first ru
 - **Two texts recovered:** the extractor lost the literals in a joined line that starts with `(` (for example `(...) + " — your photo is kept."`). It now counts every literal and fails if one is not in a message or a skip. `en.json` has 206 messages, 2 more than before: `logic.retryText.your_photo_is_kept` and `capture.elapsedText`.
 - 8 new regression tests (`i18n/graph_test.go`). The i18n module now has 34 tests.
 - Not deployed by this change.
+
+---
+
+## 57. Lost in translation: each prompt gets the context of its text from the graph
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/knowledge.go`, `i18n/knowledge_test.go`, `i18n/muse/prompt.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4h.md`
+
+#56 made the graph and the contexts. With this change, the translator uses them.
+
+- **The context in the prompt:** each prompt now has the context of its text (prompt `context-v1`):
+  - the kind and what the text does;
+  - what each tag holds;
+  - the texts it is paired with ("Log out" with the sign-in button);
+  - the line it is joined into, or the parts joined into it;
+  - up to 8 controls and titles near it on its screen;
+  - the earlier translations of the texts that name the same idea (from `<out>/<lang>.json` or `-prev`), so one idea keeps one word.
+  - A new rule tells the model that a button needs a verb, and that a text must not read like a near text with another action.
+- **Dedupe key:** the key is now the English text plus its context. The same English with another context is translated on its own.
+- **New texts are translated:** `-resume` and the skip check now compare the result with every text in `en.json`, so texts that are new in `en.json` are translated. A result made with the plain prompt is not complete for the context prompt.
+- **The sweep:** `-ids` runs a small batch, and `-effort` and `-temperature` set other settings for that run. `-context=false` sends the plain prompt for a comparison.
+- 2 new regression tests (context key, context block); the complete test now also covers new texts and the prompt. The i18n module now has 36 tests.
+- Not deployed by this change.

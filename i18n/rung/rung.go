@@ -46,6 +46,22 @@ type Config struct {
 	Workers  int
 	Settings muse.Settings
 	Commit   string // the ui commit of en.json
+	// L4h: the context of a text for its prompt (nil: the plain prompt), the
+	// dedupe key (nil: the English text), and the name of the prompt.
+	About  func(id string, mk mask.Masked) string
+	Key    func(m i18n.Message) string
+	Prompt string
+}
+
+// Tags maps each protected part of a masked text to its tag: "{plural}" -> "<x1/>".
+func Tags(mk mask.Masked) map[string]string {
+	t := map[string]string{}
+	for k, o := range mk.Orig {
+		if _, ok := t[o]; !ok {
+			t[o] = fmt.Sprintf("<x%d/>", k+1)
+		}
+	}
+	return t
 }
 
 // Entry is one ledger line (kind "try"): one try for one message text. It is
@@ -68,6 +84,7 @@ type Entry struct {
 	ReasoningTokens int           `json:"reasoning_tokens,omitempty"`
 	Settings        muse.Settings `json:"settings"`
 	Commit          string        `json:"en_commit"`
+	Prompt          string        `json:"prompt,omitempty"`
 }
 
 // ScoreLine is one ledger line (kind "score"), written after the scoring.
@@ -101,6 +118,14 @@ type Result struct {
 	Missing  []string `json:"missing"`                 // ids with no valid candidate
 	Previous []string `json:"previous_runs,omitempty"` // earlier runs kept by Merge
 	Dedupe   bool     `json:"dedupe"`                  // each English text translated once (L4f)
+	Prompt   string   `json:"prompt,omitempty"`        // plain or context-v1 (L4h); empty: plain
+}
+
+func promptOf(r Result) string {
+	if r.Prompt == "" {
+		return muse.PromptPlain
+	}
+	return r.Prompt
 }
 
 // Collapse makes an earlier result (made before dedupe) follow the dedupe rule
@@ -141,10 +166,39 @@ func Collapse(r Result, msgs []i18n.Message) Result {
 	return out
 }
 
-// Complete: r has every message, with this commit, model and k, made with dedupe.
-// cmd/translate skips such a language unless -force.
-func Complete(r Result, commit, model string, k int) bool {
-	return len(r.Messages) > 0 && len(r.Missing) == 0 && r.Commit == commit && r.Model == model && r.K == k && r.Dedupe
+// Complete: r has a translation for every message of msgs, with this commit,
+// model, k and prompt, made with dedupe. cmd/translate skips such a language
+// unless -force.
+func Complete(r Result, msgs []i18n.Message, commit, model string, k int, prompt string) bool {
+	if len(r.Missing) != 0 || r.Commit != commit || r.Model != model || r.K != k || !r.Dedupe || promptOf(r) != prompt {
+		return false
+	}
+	have := map[string]bool{}
+	for _, c := range r.Messages {
+		have[c.ID] = true
+	}
+	for _, m := range msgs {
+		if !have[m.ID] {
+			return false
+		}
+	}
+	return len(msgs) > 0
+}
+
+// Todo: the messages of msgs that r has no translation for (also the texts that
+// are new in en.json since r was made).
+func Todo(r Result, msgs []i18n.Message) []i18n.Message {
+	have := map[string]bool{}
+	for _, c := range r.Messages {
+		have[c.ID] = true
+	}
+	var out []i18n.Message
+	for _, m := range msgs {
+		if !have[m.ID] {
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 // Merge adds the messages of a resume run (add) to an earlier result (old):
@@ -152,7 +206,7 @@ func Complete(r Result, commit, model string, k int) bool {
 // missing ids are the ones that neither run has. Old must be the same
 // language, en.json commit, model and k.
 func Merge(old, add Result, msgs []i18n.Message) (Result, error) {
-	if old.Lang != add.Lang || old.Commit != add.Commit || old.Model != add.Model || old.K != add.K || old.Dedupe != add.Dedupe {
+	if old.Lang != add.Lang || old.Commit != add.Commit || old.Model != add.Model || old.K != add.K || old.Dedupe != add.Dedupe || promptOf(old) != promptOf(add) {
 		return Result{}, fmt.Errorf("resume: the earlier result is %s/%s/%s/k=%d, this run is %s/%s/%s/k=%d",
 			old.Lang, old.Commit, old.Model, old.K, add.Lang, add.Commit, add.Model, add.K)
 	}
@@ -186,15 +240,19 @@ func Run(ctx context.Context, cfg Config, msgs []i18n.Message, tr Translator, sc
 	if err := sc.Check(ctx); err != nil {
 		return Result{}, fmt.Errorf("the scorer cannot run, so no request was sent: %v", err)
 	}
-	first := map[string]string{}  // text -> first id
+	key := cfg.Key
+	if key == nil {
+		key = func(m i18n.Message) string { return m.Text }
+	}
+	first := map[string]string{}  // key -> first id
 	also := map[string][]string{} // first id -> other ids
 	var uniq []i18n.Message
 	for _, m := range msgs {
-		if id, ok := first[m.Text]; ok {
+		if id, ok := first[key(m)]; ok {
 			also[id] = append(also[id], m.ID)
 			continue
 		}
-		first[m.Text] = m.ID
+		first[key(m)] = m.ID
 		uniq = append(uniq, m)
 	}
 	res, err := runUnique(ctx, cfg, uniq, also, tr, sc, ledger)
@@ -205,9 +263,12 @@ func Run(ctx context.Context, cfg Config, msgs []i18n.Message, tr Translator, sc
 	for _, c := range res.Messages {
 		by[c.ID] = c
 	}
-	res.Messages, res.Missing, res.Dedupe = nil, []string{}, true
+	res.Messages, res.Missing, res.Dedupe, res.Prompt = nil, []string{}, true, cfg.Prompt
+	if res.Prompt == "" {
+		res.Prompt = muse.PromptPlain
+	}
 	for _, m := range msgs {
-		rep := first[m.Text]
+		rep := first[key(m)]
 		c, ok := by[rep]
 		if !ok {
 			res.Missing = append(res.Missing, m.ID)
@@ -246,7 +307,12 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 				m, mk := msgs[j.m], masks[j.m]
 				e := Entry{Kind: "try", Time: now(), Run: cfg.Run, ID: m.ID, Also: also[m.ID], Lang: cfg.Lang.Code, Try: j.try, Source: m.Text,
 					Masked: mk.Text, Settings: cfg.Settings, Commit: cfg.Commit}
-				sys, user := muse.Prompt(cfg.Lang.Name, cfg.Lang.Code, m.ID, mk.Text)
+				about := ""
+				if cfg.About != nil {
+					about = cfg.About(m.ID, mk)
+				}
+				sys, user := muse.PromptWith(cfg.Lang.Name, cfg.Lang.Code, m.ID, mk.Text, about)
+				e.Prompt = cfg.Prompt
 				r, err := tr.Chat(ctx, sys, user)
 				e.ReasoningTokens = r.ReasoningTokens
 				if err != nil {
