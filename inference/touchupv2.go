@@ -132,17 +132,26 @@ func done(v *Variant, img image.Image, t0 time.Time) {
 
 // The X48g prompts: the change, then what stays (docs/sources/X48g.md).
 const (
-	FixPrompt = "Correct the exposure and the white balance of this photo and make it sharper. " +
-		"Keep every food item, package, container, label, text, quantity and position, the background, " +
-		"the framing and the camera angle exactly as they are. Do not add or remove anything."
 	BiggerPrompt = "Make this photo larger and sharper with clean, natural detail. " +
 		"Keep every food item, package, label, text, color, quantity and position, the background and the " +
 		"framing exactly as they are. Do not add or remove anything."
 )
 
-// SSIMMin is the lowest structure score an edit may have (analyze.SSIM): a
-// new picture scores far lower (X48g tests); the page shows every score.
-const SSIMMin = 0.5
+// SSIMMin is the lowest structure score an edit may have (analyze.SSIM).
+// X48h: on the X48g page the true edits scored 0.82-0.97 and the edits that
+// re-framed the scene (new boxes around a cereal box) 0.12-0.67, two of them
+// over the old limit of 0.5; 0.75 separates them.
+const SSIMMin = 0.75
+
+// ContainerConcepts are asked with the item (X48h, T9 2026-10-30: "any
+// container that food which is ready to eat in should be visible. this
+// includes buffet trays and other serving bowls"): a container whose box holds
+// at least half of the item's mask is kept with the item.
+var ContainerConcepts = []string{"plate", "bowl", "food tray", "takeout container"}
+
+// MuseInputEdge: the source is made this big in code before Muse Image (X48h:
+// a 232 px source came back re-framed, with invented neighbours).
+const MuseInputEdge = 1024
 
 // SubjectConcepts are the SAM concepts tried for the item, in this order,
 // at the same time; the app adds the item's title first.
@@ -244,33 +253,34 @@ func (v *V2) postEdit(ctx context.Context, body map[string]any) ([]byte, ImageCa
 	return b, ic, nil
 }
 
-// SubjectMask asks SAM for each concept at the same time and keeps the first
-// concept (in order) whose masks touch the middle of the photo and cover 3% to
-// 92% of it: the item photo is cut around the item, so the item is in the
-// middle. It returns the w x h raster of that concept's masks that touch the
-// middle, the concept, the number of masks and the cost of every SAM call.
-func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts []string) ([]byte, string, int, float64, error) {
+// SubjectMask asks SAM for each concept and each container concept at the
+// same time. The item is the first concept (in order) whose masks touch the
+// middle of the photo and cover 3% to 92% of it (the item photo is cut around
+// the item). A container is added when its box holds at least half of the
+// item's mask pixels. It returns the w x h raster, a label ("food + plate"),
+// the number of masks and the cost of every SAM call.
+func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, containers []string) ([]byte, string, int, float64, error) {
 	jb, err := small(img, 1536)
 	if err != nil {
 		return nil, "", 0, 0, err
 	}
 	b := img.Bounds()
 	w, h := b.Dx(), b.Dy()
+	all := append(append([]string{}, concepts...), containers...)
 	type res struct {
 		inst []Instance
 		cost float64
-		err  error
 	}
-	got := make([]res, len(concepts))
+	got := make([]res, len(all))
 	var wg sync.WaitGroup
-	for i, c := range concepts {
+	for i, c := range all {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			call, err := v.API.Do(ctx, "sam:"+c, map[string]any{"model": v.SAM,
 				"input":    UserMessage(TextPart(c), ImagePart(jb, "image/jpeg")),
 				"metadata": map[string]any{"include_confidence": "true", "mask_encoding": "one_bit"}})
-			r := res{err: err}
+			var r res
 			if call != nil {
 				r.cost = call.Cost()
 			}
@@ -285,29 +295,52 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts []string
 	for _, r := range got {
 		cost += r.cost
 	}
+	boxOf := func(in Instance) image.Rectangle {
+		return image.Rect(in.Left*w/in.W, in.Top*h/in.H, in.Right*w/in.W, in.Bottom*h/in.H)
+	}
 	mid := image.Rect(w/4, h/4, w*3/4, h*3/4)
-	for i, r := range got {
+	for i := range concepts {
 		var keep []Instance
-		for _, in := range r.inst {
-			if in.W <= 0 || in.H <= 0 {
-				continue
-			}
-			box := image.Rect(in.Left*w/in.W, in.Top*h/in.H, in.Right*w/in.W, in.Bottom*h/in.H)
-			if box.Overlaps(mid) {
+		for _, in := range got[i].inst {
+			if in.W > 0 && in.H > 0 && boxOf(in).Overlaps(mid) {
 				keep = append(keep, in)
 			}
 		}
 		m, n := MaskRaster(keep, w, h)
-		if n == 0 {
-			continue
-		}
 		set := 0
 		for _, x := range m {
 			set += int(x)
 		}
-		if share := float64(set) / float64(w*h); share >= 0.03 && share <= 0.92 {
-			return m, concepts[i], n, cost, nil
+		if n == 0 || float64(set) < 0.03*float64(w*h) || float64(set) > 0.92*float64(w*h) {
+			continue
 		}
+		label := concepts[i]
+		for k, c := range containers {
+			var hold []Instance
+			for _, in := range got[len(concepts)+k].inst {
+				if in.W <= 0 || in.H <= 0 {
+					continue
+				}
+				r := boxOf(in).Intersect(image.Rect(0, 0, w, h)) // raster coordinates
+				inside := 0
+				for y := r.Min.Y; y < r.Max.Y; y++ {
+					for x := r.Min.X; x < r.Max.X; x++ {
+						inside += int(m[y*w+x])
+					}
+				}
+				if 2*inside >= set {
+					hold = append(hold, in)
+				}
+			}
+			if cm, cn := MaskRaster(hold, w, h); cn > 0 {
+				for j, x := range cm {
+					m[j] |= x
+				}
+				n += cn
+				label += " + " + c
+			}
+		}
+		return m, label, n, cost, nil
 	}
 	return nil, "", 0, cost, errors.New("sam: no mask of the item for " + strings.Join(concepts, ", "))
 }
@@ -333,15 +366,19 @@ func WiderSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, 
 	return out, err
 }
 
-// Compare makes the X48g variants of one item photo. src is what the edits
-// start from: the item photo, or WiderSource of it (note says which). SAM and
-// the two Muse Image edits run at the same time.
+// Compare makes the X48h variants of one item photo (T9 2026-10-30: "for
+// packaging that is close to others i would like it isolated through
+// blurring the background and sharpened / enlarged. so essentially i want
+// studio blur and muse bigger"). src is what the edits start from: the item
+// photo, or WiderSource of it (note says which).
 //
-//	original      the item photo as it is
-//	studio_plain  code: StudioLook, cut to the item, a light surface + shadow
-//	studio_blur   code: the same, the photo itself blurred behind the item
-//	muse_fixed    Muse Image (FixPrompt), refused when SSIM < SSIMMin
-//	muse_bigger   Muse Image (BiggerPrompt) on src, the same check
+//	original     the item photo as it is
+//	sharp_blur   the combo: src made MuseInputEdge big in code, Muse Image
+//	             BiggerPrompt, SSIM >= SSIMMin; then SAM finds the item and
+//	             its container on that edit, the item is cut out and the edit
+//	             itself, blurred, goes behind it. A refused edit: the code look.
+//	code_blur    the same without Muse Image (StudioLook on src), to compare
+//	muse_bigger  the Muse Image edit alone, with its score
 func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note string, concepts []string) ([]Variant, error) {
 	item, _, err := image.Decode(bytes.NewReader(photo))
 	if err != nil {
@@ -352,7 +389,11 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note st
 	}
 	ib := item.Bounds()
 	out := []Variant{{Name: "original", W: ib.Dx(), H: ib.Dy(), JPEG: photo, Note: note}}
-	srcJPEG, err := analyze.JPEG(src, 92)
+	in := src
+	if sb := src.Bounds(); max(sb.Dx(), sb.Dy()) < MuseInputEdge {
+		in = analyze.Resize(src, MuseInputEdge)
+	}
+	inJPEG, err := analyze.JPEG(in, 92)
 	if err != nil {
 		return nil, err
 	}
@@ -362,56 +403,68 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, note st
 		ic ImageCall
 		e  error
 	}
-	fixC, bigC := make(chan edit, 1), make(chan edit, 1)
-	go func() { jb, ic, e := v.EditJSON(ctx, srcJPEG, FixPrompt); fixC <- edit{jb, ic, e} }()
-	go func() { jb, ic, e := v.EditJSON(ctx, srcJPEG, BiggerPrompt); bigC <- edit{jb, ic, e} }()
-	mask, concept, n, samCost, merr := v.SubjectMask(ctx, src, concepts)
-	sb := src.Bounds()
-	for _, style := range []string{"plain", "blur"} {
-		r := Variant{Name: "studio_" + style, Concept: concept, Masks: n, Note: note}
-		if style == "plain" { // one mask for both: its SAM cost is counted once, here
-			r.CostUSD = samCost
-		}
-		look := analyze.StudioLook()
-		if merr != nil {
-			r.Error = merr.Error() + " (no new background; the look only)"
-			done(&r, analyze.Enhance(src, look), t0)
-			r.Look = &look
-			out = append(out, r)
-			continue
-		}
-		look.Crop = analyze.GridCrop(analyze.MaskBounds(mask, sb.Dx(), sb.Dy()), sb.Dx(), sb.Dy(), 0.12)
-		fg := analyze.Enhance(src, look)
-		fb := fg.Bounds()
-		alpha := analyze.MaskTo(mask, sb.Dx(), sb.Dy(), look.Crop, fb.Dx(), fb.Dy(), max(2, max(fb.Dx(), fb.Dy())/150))
-		done(&r, analyze.Studio(fg, alpha, style), t0)
-		r.Look = &look
-		out = append(out, r)
+	museC := make(chan edit, 1)
+	go func() { jb, ic, e := v.EditJSON(ctx, inJPEG, BiggerPrompt); museC <- edit{jb, ic, e} }()
+	// code_blur while Muse works: the code look, the item and its container on src
+	cb := Variant{Name: "code_blur", Note: note}
+	cmask, clabel, cn, ccost, cerr := v.SubjectMask(ctx, src, concepts, ContainerConcepts)
+	cb.CostUSD, cb.Concept, cb.Masks = ccost, clabel, cn
+	codeImg, _ := blurStudio(src, analyze.StudioLook(), cmask, cerr)
+	if cerr != nil {
+		cb.Error = cerr.Error() + " (no new background; the look only)"
 	}
-	for _, x := range []struct {
-		name string
-		c    chan edit
-	}{{"muse_fixed", fixC}, {"muse_bigger", bigC}} {
-		e := <-x.c
-		r := Variant{Name: x.name, CostUSD: e.ic.CostUSD, Note: note}
-		if e.ic.Error != "" {
-			r.Error = e.ic.Error
-		}
-		if e.e == nil {
-			im, _, derr := image.Decode(bytes.NewReader(e.jb))
-			if derr != nil {
-				r.Error = "the edit is not an image"
-			} else {
-				s := analyze.SSIM(src, im)
-				ok := s >= SSIMMin
-				r.SSIM, r.Passed = &s, &ok
-				done(&r, im, t0)
+	done(&cb, codeImg, t0)
+	// the Muse edit and its check
+	e := <-museC
+	mb := Variant{Name: "muse_bigger", CostUSD: e.ic.CostUSD, Note: note, Error: e.ic.Error}
+	var museImg image.Image
+	if e.e == nil {
+		im, _, derr := image.Decode(bytes.NewReader(e.jb))
+		if derr != nil {
+			mb.Error = "the edit is not an image"
+		} else {
+			s := analyze.SSIM(src, im)
+			ok := s >= SSIMMin
+			mb.SSIM, mb.Passed = &s, &ok
+			done(&mb, im, t0)
+			if ok {
+				museImg = im
 			}
 		}
-		r.MS = e.ic.MS
-		out = append(out, r)
 	}
-	return out, nil
+	mb.MS = e.ic.MS
+	// the combo
+	sv := Variant{Name: "sharp_blur", CostUSD: mb.CostUSD, Note: note, SSIM: mb.SSIM, Passed: mb.Passed}
+	if museImg == nil {
+		sv.Error = "the Muse edit was refused or failed: the code look is used"
+		sv.Concept, sv.Masks, sv.JPEG, sv.W, sv.H = cb.Concept, cb.Masks, cb.JPEG, cb.W, cb.H
+		sv.MS = time.Since(t0).Milliseconds() // the time until the edit was refused, with the code result
+	} else {
+		m, label, n, cost, err := v.SubjectMask(ctx, museImg, concepts, ContainerConcepts)
+		sv.CostUSD += cost
+		sv.Concept, sv.Masks = label, n
+		light := analyze.Look{Levels: 0.5, Saturation: 1.05, Sharpen: 0.3, LongEdge: 1600}
+		img, _ := blurStudio(museImg, light, m, err)
+		if err != nil {
+			sv.Error = err.Error() + " (the sharp edit, no new background)"
+		}
+		done(&sv, img, t0)
+	}
+	return append(out, sv, cb, mb), nil
+}
+
+// blurStudio is the look on src, cut to the mask (plus 12%) with the photo
+// itself blurred behind the item; with no mask (merr), the look only.
+func blurStudio(src image.Image, look analyze.Look, mask []byte, merr error) (image.Image, analyze.Look) {
+	if merr != nil || mask == nil {
+		return analyze.Enhance(src, look), look
+	}
+	sb := src.Bounds()
+	look.Crop = analyze.GridCrop(analyze.MaskBounds(mask, sb.Dx(), sb.Dy()), sb.Dx(), sb.Dy(), 0.12)
+	fg := analyze.Enhance(src, look)
+	fb := fg.Bounds()
+	alpha := analyze.MaskTo(mask, sb.Dx(), sb.Dy(), look.Crop, fb.Dx(), fb.Dy(), max(2, max(fb.Dx(), fb.Dy())/150))
+	return analyze.Studio(fg, alpha, "blur"), look
 }
 
 // Thumb is img (a JPEG) with the long edge at most long px, at quality q.

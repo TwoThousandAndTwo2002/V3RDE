@@ -234,3 +234,13 @@ func SSIM(a, b image.Image) float64 {
 	}
 	return sum / float64(n)
 }
+
+// Resize is img with its long edge set to long px (Catmull-Rom), with no
+// limit on the factor: X48h makes a small source big before Muse Image,
+// which then draws the detail (Enhance keeps its 2x limit for code edits).
+func Resize(img image.Image, long int) *image.RGBA {
+	b := img.Bounds()
+	scale := float64(long) / float64(max(b.Dx(), b.Dy()))
+	w, h := max(1, int(math.Round(float64(b.Dx())*scale))), max(1, int(math.Round(float64(b.Dy())*scale)))
+	return toPlanes(img, b).resize(w, h).image()
+}

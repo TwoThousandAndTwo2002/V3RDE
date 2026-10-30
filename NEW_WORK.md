@@ -910,3 +910,18 @@ The first comparison page showed two problems. The code edit was too weak to see
 - **Small item photos:** under 500 px, the item is cut again from the upload with a wider margin, so the edits have more pixels.
 - Tests: server 32 -> 35, inference 89 -> 90.
 
+## 55. Touch-up v2: the combo T9 chose (Muse bigger, then studio blur, the container kept)
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Image 1.0 (one edit), SAM 3.1 (food and container masks). Only in the comparison tool; the touch-up service does not change yet.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`, `server/studio.go` (`Resize`), `server/studio_test.go`
+**Sources:** `docs/sources/X48h.md`
+
+T9 chose a combination from the second comparison page.
+
+- **Sharp + blur:** the photo is made 1024 px in code, then Muse Image makes it bigger and sharper. The edit must pass the structure check. Then the item is cut out of that edit and the edit itself, blurred, goes behind it.
+- **The container stays:** SAM is also asked for a plate, a bowl, a food tray and a takeout container. A container that holds the food is kept with it.
+- **A stricter check:** the limit is 0.75. On the last page, every true edit scored 0.82 or more, and every edit that invented a wider scene scored 0.67 or less.
+- If Muse Image fails or is refused, the code result is used.
+- Tests: server 35 -> 36, inference 90 (2 tests replaced).
+

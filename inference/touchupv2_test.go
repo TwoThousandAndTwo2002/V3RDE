@@ -11,11 +11,14 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
+
+	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
 // halfMask is a w x h one_bit payload whose left half is set.
@@ -85,10 +88,24 @@ func itemJPEG(t *testing.T, w, h int, light int) []byte {
 	return b.Bytes()
 }
 
-// v3Server: SAM finds the item only for "fruit"; Muse Image (JSON) answers the
-// fix prompt with a lighter copy of the photo and the bigger prompt with an
-// unrelated picture; with rejectSize, a body with "size" gets a 400 first.
-func v3Server(t *testing.T, photo []byte, rejectSize bool, bodies *atomic.Int32) *httptest.Server {
+// fullMask is a w x h one_bit payload with every pixel set.
+func fullMask(t *testing.T, w, h int) string {
+	r := make([]byte, w*h)
+	for i := range r {
+		r[i] = 1
+	}
+	p, err := encodeOneBit(r, w, h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+// v3Server: SAM finds the item only for "fruit" and a plate around it for
+// "plate"; Muse Image (JSON) answers with a lighter, bigger copy of the photo
+// (or, with newPicture, an unrelated picture); with rejectSize, a body with
+// "size" gets a 400 first. inputs records the long edge of each edit input.
+func v3Server(t *testing.T, newPicture, rejectSize bool, bodies *atomic.Int32, inputs *atomic.Int32) *httptest.Server {
 	other := solidJPEG(t, 400, 300, color.RGBA{20, 40, 220, 255})
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer k" {
@@ -112,14 +129,25 @@ func v3Server(t *testing.T, photo []byte, rejectSize bool, bodies *atomic.Int32)
 				w.WriteHeader(400)
 				return
 			}
+			var edited []byte // the input, a little brighter and 1.5x bigger: a true edit
+			if raw, err := b64std.StdEncoding.DecodeString(strings.TrimPrefix(url, "data:image/jpeg;base64,")); err == nil {
+				if im, _, err := image.Decode(bytes.NewReader(raw)); err == nil {
+					b := im.Bounds()
+					if inputs != nil {
+						inputs.Store(int32(max(b.Dx(), b.Dy())))
+					}
+					big := analyze.Resize(im, max(b.Dx(), b.Dy())*3/2)
+					edited, _ = analyze.JPEG(analyze.Enhance(big, analyze.Look{Exposure: 0.1, Saturation: 1.05}), 90)
+				}
+			}
 			if _, has := body["size"]; has && rejectSize {
 				w.WriteHeader(400)
 				_, _ = w.Write([]byte(`{"error":{"code":"unsupported_parameter","param":"size"}}`))
 				return
 			}
-			out := other
-			if strings.HasPrefix(prompt, "Correct the exposure") {
-				out = itemJPEG(t, 400, 300, 25)
+			out := edited
+			if newPicture {
+				out = other
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{"data": []any{map[string]any{"b64_json": b64std.StdEncoding.EncodeToString(out)}}})
 			return
@@ -128,20 +156,23 @@ func v3Server(t *testing.T, photo []byte, rejectSize bool, bodies *atomic.Int32)
 			t.Errorf("not a SAM call: %v", body["model"])
 		}
 		line := "<0f>\n"
-		if firstText(body) == "fruit" {
+		switch firstText(body) {
+		case "fruit":
 			line = fmt.Sprintf("<0f>0<|box;x1=100;y1=75;x2=299;y2=224;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", halfMask(t, 40, 40))
+		case "plate":
+			line = fmt.Sprintf("<0f>0<|box;x1=60;y1=40;x2=339;y2=259;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", fullMask(t, 40, 40))
 		}
 		_ = json.NewEncoder(w).Encode(textResp("sam", line))
 	}))
 }
 
-// The X48g variants: the studio modes cut the item out (the "fruit" mask, the
-// first concept that found it) and keep its pixels; the fix edit passes the
-// structure check; the bigger edit (a new picture) is refused.
-func TestCompareX48g(t *testing.T) {
+// The X48h variants: Muse gets the source made 1024 px in code; its edit
+// passes the check; the combo cuts the item AND its plate out of the edit;
+// code_blur does the same on the source.
+func TestCompareX48h(t *testing.T) {
 	photo := itemJPEG(t, 400, 300, 0)
-	var edits atomic.Int32
-	srv := v3Server(t, photo, false, &edits)
+	var edits, input atomic.Int32
+	srv := v3Server(t, false, false, &edits, &input)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
 	vs, err := v.Compare(context.Background(), photo, nil, "", SubjectConcepts)
@@ -154,61 +185,54 @@ func TestCompareX48g(t *testing.T) {
 		names = append(names, x.Name)
 		by[x.Name] = x
 	}
-	if strings.Join(names, ",") != "original,studio_plain,studio_blur,muse_fixed,muse_bigger" || edits.Load() != 2 {
-		t.Fatalf("variants %v, edits %d", names, edits.Load())
+	if strings.Join(names, ",") != "original,sharp_blur,code_blur,muse_bigger" || edits.Load() != 1 || input.Load() != MuseInputEdge {
+		t.Fatalf("variants %v, edits %d, Muse input %d px", names, edits.Load(), input.Load())
 	}
-	for _, n := range []string{"studio_plain", "studio_blur"} {
-		x := by[n]
-		want := 0.0 // one mask for both modes: its cost is counted once, on plain
-		if n == "studio_plain" {
-			want = 4 * PriceSAMPerImage
-		}
-		if x.Error != "" || x.Concept != "fruit" || x.Masks != 1 || len(x.JPEG) == 0 || x.CostUSD != want {
-			t.Fatalf("%s: %+v", n, x)
-		}
-		// cut to the item (the mask box plus 12%), then made 2x bigger (the most)
-		if x.Look.Crop[0] < 200 || x.Look.Crop[2] > 560 || x.W < 240 || x.W > 256 {
-			t.Errorf("%s: crop %v, %dx%d", n, x.Look.Crop, x.W, x.H)
+	s, c, m := by["sharp_blur"], by["code_blur"], by["muse_bigger"]
+	if m.SSIM == nil || !*m.Passed || *m.SSIM < SSIMMin {
+		t.Fatalf("muse: ssim %v passed %v error %q", m.SSIM, m.Passed, m.Error)
+	}
+	for _, x := range []Variant{s, c} {
+		if x.Error != "" || x.Concept != "fruit + plate" || x.Masks != 2 || len(x.JPEG) == 0 {
+			t.Fatalf("%s: error %q concept %q masks %d", x.Name, x.Error, x.Concept, x.Masks)
 		}
 	}
-	f, b := by["muse_fixed"], by["muse_bigger"]
-	if f.SSIM == nil || !*f.Passed || *f.SSIM < SSIMMin || f.CostUSD != ImageCallPrice {
-		t.Errorf("fixed: %+v ssim %v", f, f.SSIM)
+	// 8 SAM calls (4 concepts + 4 containers) for each of the two masks, and the edit
+	want := ImageCallPrice + 8*PriceSAMPerImage
+	if math.Abs(s.CostUSD-want) > 1e-9 || math.Abs(c.CostUSD-8*PriceSAMPerImage) > 1e-9 {
+		t.Errorf("costs: combo %.4f (want %.4f), code %.4f", s.CostUSD, want, c.CostUSD)
 	}
-	if b.SSIM == nil || *b.Passed || *b.SSIM >= SSIMMin {
-		t.Errorf("bigger (a new picture) passed: ssim %v", b.SSIM)
-	}
-	if by["original"].Note != "the item photo" {
-		t.Errorf("note %q", by["original"].Note)
+	// the plate is kept: the combo is cut to the plate's box, wider than the fruit's half box
+	if s.W*3 < s.H*3 || s.W < 900 {
+		t.Errorf("combo %dx%d: the plate was cut away", s.W, s.H)
 	}
 }
 
-// No concept finds the item: the studio modes give the look only, with the
-// reason; a 400 on "size" is tried once more without the optional fields.
-func TestCompareNoMaskAndRetry(t *testing.T) {
+// A new picture from Muse: refused; the combo is the code result. No mask:
+// the look only, with the reason. A 400 on "size" is tried once more.
+func TestCompareRefusedAndNoMask(t *testing.T) {
 	photo := itemJPEG(t, 400, 300, 0)
 	var edits atomic.Int32
-	srv := v3Server(t, photo, true, &edits)
+	srv := v3Server(t, true, true, &edits, nil)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
 	vs, err := v.Compare(context.Background(), photo, nil, "", []string{"food", "product"})
 	if err != nil {
 		t.Fatal(err)
 	}
+	by := map[string]Variant{}
 	for _, x := range vs {
-		switch x.Name {
-		case "studio_plain", "studio_blur":
-			if !strings.Contains(x.Error, "no mask of the item") || len(x.JPEG) == 0 {
-				t.Errorf("%s: %q", x.Name, x.Error)
-			}
-		case "muse_fixed":
-			if len(x.JPEG) == 0 || !strings.Contains(x.Error, "first try: HTTP 400") {
-				t.Errorf("retry: %q", x.Error)
-			}
-		}
+		by[x.Name] = x
 	}
-	if edits.Load() != 4 {
-		t.Errorf("edit calls %d, want 4 (2 x 400 + 2 retries)", edits.Load())
+	m, s, c := by["muse_bigger"], by["sharp_blur"], by["code_blur"]
+	if m.Passed == nil || *m.Passed || !strings.Contains(m.Error, "first try: HTTP 400") || edits.Load() != 2 {
+		t.Fatalf("muse: passed %v error %q, edits %d", m.Passed, m.Error, edits.Load())
+	}
+	if !strings.Contains(s.Error, "refused") || string(s.JPEG) != string(c.JPEG) {
+		t.Errorf("combo did not fall back to the code result: %q", s.Error)
+	}
+	if !strings.Contains(c.Error, "no mask of the item") {
+		t.Errorf("code_blur: %q", c.Error)
 	}
 }
 

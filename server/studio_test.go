@@ -116,3 +116,15 @@ func TestClarityAndMasks(t *testing.T) {
 		t.Fatalf("grow: %d -> %d", n0, n1)
 	}
 }
+
+// Resize has no 2x limit (X48h: a small source for Muse Image).
+func TestResize(t *testing.T) {
+	a, _ := scene(232, 361)
+	r := Resize(a, 1024)
+	if r.Bounds().Dy() != 1024 || r.Bounds().Dx() < 656 || r.Bounds().Dx() > 660 {
+		t.Fatalf("size %v", r.Bounds())
+	}
+	if s := SSIM(a, r); s < 0.9 {
+		t.Fatalf("ssim %.3f", s)
+	}
+}
