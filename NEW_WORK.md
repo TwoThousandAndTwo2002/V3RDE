@@ -771,3 +771,20 @@ The sweep of #57 showed that other settings (effort, temperature) do not correct
 - The result before the round is kept as `<lang>.before-round1.json`, and the report as `<lang>.judge.round1.json` (then `round2`, and so on). After `cmd/score` and `cmd/judge` again, a text that is still flagged is not translated a third time. `cmd/translate` names it for human review.
 - 3 new regression tests (fix kept, spread kept after a rescore, spread targets). The i18n module now has 47 tests.
 - Not deployed by this change.
+
+---
+
+## 63. Lost in translation: one review file for the review page and the graph page
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change.
+**Files:** `i18n/judge/review.go`, `i18n/judge/review_test.go`, `i18n/cmd/report/main.go`
+**Sources:** `docs/sources/L4j-d.md`
+
+- `go run ./cmd/report -out lif_review.json runs-ctx/*/*.json` joins, for each language and each text: the translation before and after the fix round, the MetricX scores, the findings of round 1 and of the last round (the check name or the judge model, the group and the reason), and `spread_from`.
+- Each text gets one status: `ok`, `fixed` (corrected and passes now), `spread` (changed because a related text was corrected, passes now), `review` (corrected once and flagged again: a person decides), `flagged` (flagged in the last round only), `missing`.
+- Each language gets a summary: the counts, the groups that each judge failed, and the judge errors. The counts are not accuracy numbers.
+- The review page and the graph page read this file to show the loop.
+- 1 new regression test. The i18n module now has 48 tests.
+- Not deployed by this change.
