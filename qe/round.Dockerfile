@@ -7,8 +7,9 @@
 FROM golang:1.26-alpine AS build
 WORKDIR /src/i18n
 COPY i18n/ ./
-# Tests run before the binary is built (as the other images)
-RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod CGO_ENABLED=0 go test -count=1 ./... \
+# Tests run before the binary is built (as the other images). TestFilesUpToDate reads the git history
+# of the ui branch, which is not in this build context: it runs in every SUP script, with the whole repo.
+RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod CGO_ENABLED=0 go test -count=1 -skip '^TestFilesUpToDate$' ./... \
  && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/round ./cmd/round
 
 # ---- the MetricX image (qe/Dockerfile, L1/L2) ----

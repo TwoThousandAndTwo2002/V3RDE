@@ -1498,3 +1498,15 @@ T9: when the app changes, a translation round must rebuild the text graph, tag w
 - Also fixed: the post image now rebuilds when only the inference code changes.
 - Tests: i18n 53 -> 64.
 
+## 70. The translation image builds on the box
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change).
+**Files:** `qe/round.Dockerfile`
+**Sources:** `docs/sources/X49c.md`
+
+The first build of the translation image on the box stopped. One test in the build reads the git history, and the build has no git history.
+
+- The image build now skips that one test. Every other test still runs before the build.
+- The SUP scripts still run that test with the whole repo.
+
