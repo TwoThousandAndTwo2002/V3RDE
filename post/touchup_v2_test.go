@@ -172,14 +172,14 @@ func TestTouchupV2Background(t *testing.T) {
 	}
 }
 
-// "light": the Muse bigger edit only: no SAM call, no new background.
-func TestTouchupV2Light(t *testing.T) {
+// X48q: "light" gets the same auto touch-up as "background" (one touch-up).
+func TestTouchupV2LightIsAuto(t *testing.T) {
 	var sam atomic.Int32
 	e, pid, stop := v2Env(t, &sam)
 	defer stop()
 	id := start(t, e, asUser(httptest.NewRequest("POST", "/api/touchup?mode=light&photo_id="+pid, nil), "u1"))
 	j := wait(t, e, "/api/touchup/"+id, "u1")
-	if j.Status != JobDone || j.PhotoID == "" || j.Reason != "light: no new background" || sam.Load() != 0 {
+	if j.Status != JobDone || j.PhotoID == "" || !strings.HasPrefix(j.Reason, "box: ") || sam.Load() < 2 {
 		t.Fatalf("job %+v sam %d", j, sam.Load())
 	}
 }

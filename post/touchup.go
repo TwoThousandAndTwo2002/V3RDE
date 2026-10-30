@@ -736,10 +736,9 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 // then V2.Touchup. Its result is always a code-made picture with every food
 // pixel of the photo or of an edit that kept the photo's structure (SSIM), so
 // it is stored as done; the reason says which mask the scene rule chose.
-// "light" is the Muse bigger edit only (no mask, no new background).
+// Every mode gets the same auto touch-up (T9: the app has one touch-up).
 func (c *TouchupConfig) runV2(ctx context.Context, job *Job, img []byte, hold *Hold, t0 time.Time) {
 	it := inference.LoadItem(c.Photos, c.AnalyzeEvents, c.ItemPhotos, job.SourcePhotoID, img, WiderUnder, WiderMargin)
-	it.Light = job.Mode == ModeLight
 	r, err := c.V2.Touchup(ctx, it)
 	status, reason, photoID := JobFailed, "", ""
 	switch {

@@ -1024,3 +1024,16 @@ T9 chose the "auto" column of the X48m page. The touch-up in the app now makes t
 - The original photo is always kept. The reason on the job says which mask was used.
 - Tests: inference 94 -> 96, post 64 -> 66.
 
+## 63. Touch-up: one touch-up for every mode
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Image 1.0, SAM 3.1 (no change).
+**Files:** `inference/touchupauto.go`, `post/touchup.go`, `post/touchup_v2_test.go`
+**Sources:** `docs/sources/X48q.md`
+
+T9: the app has one touch-up, the auto one.
+
+- "Light" now gives the same result as "Background": the Muse edit, the scene rule's mask and the blurred background.
+- The "Light" path (the Muse edit only) is removed.
+- Tests: post 66 (one test changed).
+

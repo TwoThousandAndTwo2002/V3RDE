@@ -40,9 +40,6 @@ type TouchItem struct {
 	Target   image.Rectangle // the item's box in Src (empty: not known)
 	Concepts []string        // the scan's name of the item first, then SubjectConcepts
 	Note     string
-	// Light: the Muse bigger edit only (the app's "light" mode): no mask and
-	// no new background, so no SAM call.
-	Light bool
 }
 
 // LoadItem reads an item photo's record (<itemDir>/<id>.json) and cuts the
@@ -127,19 +124,6 @@ func (v *V2) Touchup(ctx context.Context, it TouchItem) (AutoResult, error) {
 				base, look, r.Muse = im, analyze.Look{Levels: 0.5, Saturation: 1.05, Sharpen: 0.3, LongEdge: 1600}, true
 			}
 		}
-	}
-	if it.Light {
-		r.Mask = "light: no new background"
-		img := analyze.Enhance(base, look)
-		out, err := analyze.JPEG(img, 90)
-		if err != nil {
-			return r, err
-		}
-		r.JPEG, r.W, r.H = out, img.Bounds().Dx(), img.Bounds().Dy()
-		if !r.Muse {
-			r.Mask = "the Muse edit was refused or failed: the code look on the photo; " + r.Mask
-		}
-		return r, nil
 	}
 	bb, sbd := base.Bounds(), src.Bounds()
 	t := image.Rect(it.Target.Min.X*bb.Dx()/sbd.Dx(), it.Target.Min.Y*bb.Dy()/sbd.Dy(),
