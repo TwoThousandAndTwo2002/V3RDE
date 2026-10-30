@@ -690,3 +690,22 @@ A translator needs to know what a text does and what is near it. In the first ru
 - **The sweep:** `-ids` runs a small batch, and `-effort` and `-temperature` set other settings for that run. `-context=false` sends the plain prompt for a comparison.
 - 2 new regression tests (context key, context block); the complete test now also covers new texts and the prompt. The i18n module now has 36 tests.
 - Not deployed by this change.
+
+---
+
+## 58. Lost in translation: translate many, score once
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Open-source dependency:** MetricX-24 (Google, Apache-2.0), labelled as such.
+**Files:** `i18n/rung/batch.go`, `i18n/cmd/score/main.go`, `i18n/rung/rung.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4i.md`
+
+The sweep of #57 was 25 runs (5 languages × 5 settings), and each run started the MetricX container and loaded its model again. That was most of the 30 minutes. More languages come next.
+
+- `cmd/translate -score=false` translates and writes the result and the ledger with no scores (`"unscored": true`). It keeps the first good try.
+- `go run ./cmd/score <dir>/*/*.json` collects every try that has no score yet in all the given results. It scores them in one container run, so the model loads once. It writes a score line for each try to its ledger, and rewrites each result with the lowest-scored try. A second run scores nothing again.
+- The scores are the same MetricX-24 QE scores (0 to 25, lower is better). They rank the tries of one text and are not an accuracy measure.
+- 1 new regression test: two results, one scorer call, score lines in each ledger, and the lowest-scored try kept. The i18n module now has 37 tests.
+- Not deployed by this change.

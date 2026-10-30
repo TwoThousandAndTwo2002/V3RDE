@@ -119,6 +119,7 @@ type Result struct {
 	Previous []string `json:"previous_runs,omitempty"` // earlier runs kept by Merge
 	Dedupe   bool     `json:"dedupe"`                  // each English text translated once (L4f)
 	Prompt   string   `json:"prompt,omitempty"`        // plain or context-v1 (L4h); empty: plain
+	Unscored bool     `json:"unscored,omitempty"`      // translated with -score=false; cmd/score scores it (L4i)
 }
 
 func promptOf(r Result) string {
@@ -237,8 +238,10 @@ func Run(ctx context.Context, cfg Config, msgs []i18n.Message, tr Translator, sc
 	if cfg.K < 1 || cfg.Workers < 1 {
 		return Result{}, fmt.Errorf("k and workers must be 1 or more")
 	}
-	if err := sc.Check(ctx); err != nil {
-		return Result{}, fmt.Errorf("the scorer cannot run, so no request was sent: %v", err)
+	if sc != nil {
+		if err := sc.Check(ctx); err != nil {
+			return Result{}, fmt.Errorf("the scorer cannot run, so no request was sent: %v", err)
+		}
 	}
 	key := cfg.Key
 	if key == nil {
@@ -377,7 +380,7 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 			idx = append(idx, k)
 		}
 	}
-	if len(pairs) > 0 {
+	if len(pairs) > 0 && sc != nil {
 		scores, err := sc.Score(ctx, pairs)
 		if err != nil {
 			return Result{}, fmt.Errorf("score: %v", err)
@@ -404,20 +407,9 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 		}
 		return entries[a].Try < entries[b].Try
 	})
-	// keep the lowest score (MetricX: lower is better); a tie keeps the first try
-	res := Result{Run: cfg.Run, Lang: cfg.Lang.Code, Commit: cfg.Commit, Model: cfg.Settings.Model, K: cfg.K, Missing: []string{}}
-	best := map[string]*Chosen{}
-	count := map[string]int{}
-	for _, e := range entries {
-		if e.Error != "" {
-			continue
-		}
-		count[e.ID]++
-		c := best[e.ID]
-		if c == nil || (e.Score != nil && c.Score != nil && *e.Score < *c.Score) {
-			best[e.ID] = &Chosen{ID: e.ID, Text: e.Text, Score: e.Score}
-		}
-	}
+	res := Result{Run: cfg.Run, Lang: cfg.Lang.Code, Commit: cfg.Commit, Model: cfg.Settings.Model, K: cfg.K, Missing: []string{},
+		Unscored: sc == nil && len(pairs) > 0}
+	best, count := choose(entries)
 	for _, m := range msgs {
 		if c := best[m.ID]; c != nil {
 			c.Candidates = count[m.ID]
@@ -427,6 +419,24 @@ func runUnique(ctx context.Context, cfg Config, msgs []i18n.Message, also map[st
 		}
 	}
 	return res, nil
+}
+
+// choose keeps, for each id, the try with the lowest score (MetricX: lower is
+// better); a tie, or no scores yet, keeps the first try. Entries are in try order.
+func choose(entries []Entry) (map[string]*Chosen, map[string]int) {
+	best := map[string]*Chosen{}
+	count := map[string]int{}
+	for _, e := range entries {
+		if e.Error != "" {
+			continue
+		}
+		count[e.ID]++
+		c := best[e.ID]
+		if c == nil || (e.Score != nil && (c.Score == nil || *e.Score < *c.Score)) {
+			best[e.ID] = &Chosen{ID: e.ID, Text: e.Text, Score: e.Score}
+		}
+	}
+	return best, count
 }
 
 // onlyTags: the masked text has nothing but tags and spaces or punctuation.

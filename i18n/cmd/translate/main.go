@@ -33,7 +33,7 @@ type options struct {
 	code, outDir, image, keyFile, ids, effort, prevFile string
 	k, workers, limit, rpm                              int
 	temperature                                         float64
-	resume, force, withContext                          bool
+	resume, force, withContext, score                   bool
 }
 
 func main() {
@@ -52,6 +52,7 @@ func main() {
 	flag.StringVar(&o.ids, "ids", "", "only these message ids, comma-separated (a small batch, for the sweep)")
 	flag.StringVar(&o.effort, "effort", "", "reasoning_effort for this run (default: low)")
 	flag.Float64Var(&o.temperature, "temperature", 0, "temperature for this run (0: the default 1.0)")
+	flag.BoolVar(&o.score, "score", true, "score with MetricX at the end of this run; -score=false leaves it to cmd/score (one container run for many results)")
 	flag.StringVar(&o.prevFile, "prev", "", "earlier result for the same idea in the prompt (default: <out>/<lang>.json if it is there)")
 	collapse := flag.Bool("collapse", false, "no requests: make <out>/<lang>.json follow the dedupe rule (lowest score per English text)")
 	flag.Parse()
@@ -183,7 +184,10 @@ func run(o options) error {
 		cfg.Key = func(m i18n.Message) string { return kn.Key(m.ID) }
 		cfg.About = func(id string, mk mask.Masked) string { return kn.Block(id, rung.Tags(mk), prev) }
 	}
-	sc := rung.Docker{Script: filepath.Join("..", "qe", "score.sh"), Image: o.image, Log: os.Stderr}
+	var sc rung.Scorer = rung.Docker{Script: filepath.Join("..", "qe", "score.sh"), Image: o.image, Log: os.Stderr}
+	if !o.score {
+		sc = nil // cmd/score scores later, in one container run
+	}
 	res, err := rung.Run(ctx, cfg, msgs, client, sc, lf)
 	if err != nil {
 		return err
@@ -199,6 +203,9 @@ func run(o options) error {
 		return err
 	}
 	fmt.Printf("translate: %d kept, %d missing\n  %s\n  %s\n", len(res.Messages), len(res.Missing), resPath, ledgerPath)
+	if res.Unscored {
+		fmt.Println("translate: not scored yet: go run ./cmd/score", resPath)
+	}
 	return nil
 }
 

@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -281,4 +283,75 @@ func TestContextKey(t *testing.T) {
 	if res.Messages[2].SameAs != "b.close" {
 		t.Errorf("c.close must reuse b.close: %+v", res.Messages[2])
 	}
+}
+
+// With no scorer the run translates and keeps the first try (unscored); then
+// ScoreAll scores two results in one call, writes score lines and keeps the
+// lowest-scored try.
+func TestBatchScore(t *testing.T) {
+	dir := t.TempDir()
+	ms := []i18n.Message{{ID: "CAPTURE.retake", Text: "Retake"}, {ID: "RECEIVE.gone", Text: "This food is gone"}}
+	var paths []string
+	for _, lang := range []string{"es-419", "pt-BR"} {
+		tr := &fakeTr{reply: func(user string, n int32) (string, error) {
+			if strings.Contains(user, "Retake") {
+				return map[int32]string{1: "Volver a tomar la foto otra vez", 2: "Repetir"}[(n-1)%2+1], nil
+			}
+			return "Ya no está", nil
+		}}
+		c := cfg(2)
+		c.Workers = 1 // fixed order of the answers
+		c.Lang.Code = lang
+		d := filepath.Join(dir, lang)
+		os.MkdirAll(d, 0o755)
+		lf, _ := os.Create(filepath.Join(d, lang+".ledger.jsonl"))
+		res, err := Run(context.Background(), c, ms, tr, nil, lf)
+		lf.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !res.Unscored || res.Messages[0].Score != nil {
+			t.Fatalf("an unscored run: %+v", res)
+		}
+		b, _ := json.Marshal(res)
+		p := filepath.Join(d, lang+".json")
+		os.WriteFile(p, b, 0o644)
+		paths = append(paths, p)
+	}
+	sc := &countSc{}
+	n, err := ScoreAll(context.Background(), paths, ms, sc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sc.calls != 1 || n != 8 {
+		t.Fatalf("scorer calls %d, pairs %d; want 1 call, 8 pairs", sc.calls, n)
+	}
+	for _, p := range paths {
+		var r Result
+		if err := i18n.ReadJSON(p, &r); err != nil {
+			t.Fatal(err)
+		}
+		if r.Unscored || r.Messages[0].Text != "Repetir" || r.Messages[0].Score == nil {
+			t.Errorf("%s: %+v", p, r.Messages[0])
+		}
+		led, _ := os.ReadFile(filepath.Join(filepath.Dir(p), r.Lang+".ledger.jsonl"))
+		if c := strings.Count(string(led), `"kind":"score"`); c != 4 {
+			t.Errorf("%s: %d score lines, want 4", p, c)
+		}
+	}
+	if n, err := ScoreAll(context.Background(), paths, ms, sc); err != nil || n != 0 || sc.calls != 1 {
+		t.Fatalf("a second run scores nothing again: %d pairs, %d calls, %v", n, sc.calls, err)
+	}
+}
+
+type countSc struct{ calls int }
+
+func (c *countSc) Check(ctx context.Context) error { return nil }
+func (c *countSc) Score(ctx context.Context, p []Pair) ([]float64, error) {
+	c.calls++
+	out := make([]float64, len(p))
+	for i, x := range p {
+		out[i] = float64(len([]rune(x.Hypothesis))) / 10
+	}
+	return out, nil
 }
