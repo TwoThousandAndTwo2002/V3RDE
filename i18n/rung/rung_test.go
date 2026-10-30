@@ -443,3 +443,35 @@ func TestBatchRun(t *testing.T) {
 		t.Fatalf("batch entries in the ledger: %d, want 3", n)
 	}
 }
+
+// Calls and TextScores: one call for each single try and for each batch group; copies and other runs are not counted.
+func TestCalls(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "x.ledger.jsonl")
+	lines := `{"kind":"try","run":"r1","id":"a","try":1,"batch":"a+2"}
+{"kind":"try","run":"r1","id":"b","try":1,"batch":"a+2"}
+{"kind":"try","run":"r1","id":"c","try":1}
+{"kind":"try","run":"r1","id":"d","try":0,"copied":true}
+{"kind":"score","run":"r1","id":"c","try":1,"score":1.5}
+{"kind":"try","run":"r2","id":"a","try":1,"batch":"a+1"}
+{"kind":"try","run":"old","id":"a","try":1}
+`
+	if err := os.WriteFile(p, []byte(lines), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	n, err := Calls(p, Result{Run: "r2", Previous: []string{"r1"}})
+	if err != nil || n != 3 {
+		t.Fatalf("calls %d (%v), want 3", n, err)
+	}
+	if err := os.WriteFile(p, []byte(`{"kind":"try","run":"r1","id":"c","try":1,"text":"Hola"}
+{"kind":"score","run":"r1","id":"c","try":1,"score":2.5}
+{"kind":"try","run":"r1","id":"c","try":2,"text":"Hola"}
+{"kind":"score","run":"r1","id":"c","try":2,"score":1.5}
+{"kind":"try","run":"r1","id":"d","try":1,"text":"x","error":"tags"}
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ts, err := TextScores(p)
+	if err != nil || len(ts) != 1 || ts["c\x00Hola"] != 1.5 {
+		t.Fatalf("text scores %v (%v)", ts, err)
+	}
+}

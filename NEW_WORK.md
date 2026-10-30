@@ -807,3 +807,20 @@ The run of #60-#63 (5 languages) showed two problems. Each text got its own call
 - In a test with fake servers, the 206 texts of a language took 25 calls.
 - 3 new regression tests. The i18n module now has 51 tests.
 - Not deployed by this change.
+
+---
+
+## 65. Lost in translation: compare the ways of translating
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** none in this change (it reads the results of `cmd/translate` and `cmd/judge`).
+**Files:** `i18n/judge/compare.go`, `i18n/judge/compare_test.go`, `i18n/cmd/compare/main.go`, `i18n/rung/ledger.go`, `i18n/rung/rung_test.go`
+**Sources:** `docs/sources/L4k-b.md`
+
+- `go run ./cmd/compare -arm plain=runs -arm context=runs-ctx:round1 -arm loop=runs-ctx -arm batch=runs-batch:round1 -arm batch+loop=runs-batch` puts the ways of translating side by side for each language, with the same measures: model calls, MetricX QE (median, number over 5), check issues, texts flagged by a check or a judge, texts flagged by both judges, and the groups each judge failed. It writes `compare.json` and `compare.md`.
+- `name=dir:round1` reads the result before the fix round (`<lang>.before-round1.json`, `<lang>.judge.round1.json`). Its scores come from the ledger (`rung.TextScores`), because `cmd/score` scores only `<lang>.json`.
+- `rung.Calls` counts the calls of a result from its ledger: one for each single try, one for each batch group.
+- These are measures, not accuracy: there are no human labels. MetricX ranks tries; the judges can disagree.
+- 2 new regression tests. The i18n module now has 53 tests.
+- Not deployed by this change.
