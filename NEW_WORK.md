@@ -952,3 +952,17 @@ Piles (tomatoes, plantains) still kept the pile next to them. SAM answers a pile
 - The page shows, for each SAM concept, how many masks SAM found and how many were kept.
 - Tests: inference 92 -> 93.
 
+## 58. Touch-up v2: the item's mask from the scan's box
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1 (box and point prompts), Muse Image 1.0 (no change). Only in the comparison tool.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`, `inference/cmd/touchupcompare/main.go`
+**Sources:** `docs/sources/X48k.md`
+
+SAM found nothing for the scan's names ("plantains", "roma tomatoes"). The general words ("fruit", "food") gave one mask over two piles.
+
+- **Step 1 (the established way):** the scan's box of the item goes to SAM as a box prompt, and SAM gives back one mask.
+- **Step 2:** one point inside that mask, plus a "not this" point on each other object of the same scan. This is the method of the SAM-PD paper.
+- The page shows the words mask, step 1 and step 2 side by side, all on the combo T9 chose (Muse Image bigger, then studio blur).
+- Tests: inference 93 (2 tests replaced).
+

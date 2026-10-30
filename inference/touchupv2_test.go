@@ -158,7 +158,20 @@ func v3Server(t *testing.T, newPicture, rejectSize bool, bodies *atomic.Int32, i
 			t.Errorf("not a SAM call: %v", body["model"])
 		}
 		line := "<0f>\n"
-		switch firstText(body) {
+		prompt := firstText(body)
+		switch {
+		case strings.HasPrefix(prompt, "<0f>1<|box;"): // step 1: the item and a strip of its neighbour
+			if !strings.Contains(prompt, ";w=") || strings.Contains(prompt, "point") {
+				t.Errorf("box prompt %q", prompt)
+			}
+			line = fmt.Sprintf("<0f>1<|box;x1=100;y1=75;x2=349;y2=224;w=400;h=300|><|mask;x=0;y=0;data=40,40,%s|>\n", fullMask(t, 40, 40))
+		case strings.HasPrefix(prompt, "<0f>1<|point;"): // step 2: one point and not-this points: the item only
+			if !strings.Contains(prompt, "|>-<|point;") || strings.Contains(prompt, "box") {
+				t.Errorf("point prompt %q", prompt)
+			}
+			line = fmt.Sprintf("<0f>1<|box;x1=100;y1=75;x2=249;y2=224;w=400;h=300|><|mask;x=0;y=0;data=40,40,%s|>\n", fullMask(t, 40, 40))
+		}
+		switch prompt {
 		case "fruit":
 			line = fmt.Sprintf("<0f>0<|box;x1=100;y1=75;x2=299;y2=224;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", halfMask(t, 40, 40))
 		case "plate":
@@ -168,16 +181,19 @@ func v3Server(t *testing.T, newPicture, rejectSize bool, bodies *atomic.Int32, i
 	}))
 }
 
-// The X48h variants: Muse gets the source made 1024 px in code; its edit
-// passes the check; the combo cuts the item AND its plate out of the edit;
-// code_blur does the same on the source.
-func TestCompareX48h(t *testing.T) {
+// The X48k variants: Muse gets the source made 1024 px in code and passes the
+// check; every variant is cut from that edit; words keeps the X48j mask
+// (fruit + plate); box asks SAM with the item's box; box_refine adds one point
+// and a not-this point on the other object and gets the item without the strip.
+func TestCompareX48k(t *testing.T) {
 	photo := itemJPEG(t, 400, 300, 0)
 	var edits, input atomic.Int32
 	srv := v3Server(t, false, false, &edits, &input)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	vs, err := v.Compare(context.Background(), photo, nil, image.Rectangle{}, "", SubjectConcepts)
+	src, _, _ := image.Decode(bytes.NewReader(photo))
+	target, others := image.Rect(100, 75, 250, 225), []image.Rectangle{image.Rect(260, 60, 400, 240)}
+	vs, err := v.Compare(context.Background(), photo, src, target, others, "test", SubjectConcepts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,38 +203,37 @@ func TestCompareX48h(t *testing.T) {
 		names = append(names, x.Name)
 		by[x.Name] = x
 	}
-	if strings.Join(names, ",") != "original,sharp_blur,code_blur,muse_bigger" || edits.Load() != 1 || input.Load() != MuseInputEdge {
+	if strings.Join(names, ",") != "original,words,box,box_refine,muse_bigger" || edits.Load() != 1 || input.Load() != MuseInputEdge {
 		t.Fatalf("variants %v, edits %d, Muse input %d px", names, edits.Load(), input.Load())
 	}
-	s, c, m := by["sharp_blur"], by["code_blur"], by["muse_bigger"]
-	if m.SSIM == nil || !*m.Passed || *m.SSIM < SSIMMin {
-		t.Fatalf("muse: ssim %v passed %v error %q", m.SSIM, m.Passed, m.Error)
+	m := by["muse_bigger"]
+	if m.SSIM == nil || !*m.Passed {
+		t.Fatalf("muse: ssim %v error %q", m.SSIM, m.Error)
 	}
-	for _, x := range []Variant{s, c} {
-		if x.Error != "" || !strings.HasPrefix(x.Concept, "fruit + plate (SAM kept/found:") || x.Masks != 2 || len(x.JPEG) == 0 {
-			t.Fatalf("%s: error %q concept %q masks %d", x.Name, x.Error, x.Concept, x.Masks)
+	for _, n := range []string{"words", "box", "box_refine"} {
+		if x := by[n]; x.Error != "" || len(x.JPEG) == 0 || x.SSIM == nil {
+			t.Fatalf("%s: error %q, %d bytes", n, x.Error, len(x.JPEG))
 		}
 	}
-	// 8 SAM calls (4 concepts + 4 containers) for each of the two masks, and the edit
-	want := ImageCallPrice + 8*PriceSAMPerImage
-	if math.Abs(s.CostUSD-want) > 1e-9 || math.Abs(c.CostUSD-8*PriceSAMPerImage) > 1e-9 {
-		t.Errorf("costs: combo %.4f (want %.4f), code %.4f", s.CostUSD, want, c.CostUSD)
+	if !strings.HasPrefix(by["box"].Concept, "box + plate") || !strings.HasPrefix(by["box_refine"].Concept, "box + 1 point, 1 not-this point(s) + plate") {
+		t.Errorf("concepts: box %q, refine %q", by["box"].Concept, by["box_refine"].Concept)
 	}
-	// the plate is kept: the combo is cut to the plate's box, wider than the fruit's half box
-	if s.W*3 < s.H*3 || s.W < 900 {
-		t.Errorf("combo %dx%d: the plate was cut away", s.W, s.H)
+	// costs: the edit + 1 box call + 4 container calls; refine: the edit + the box call + 1 point call + 4 container calls
+	if b, r := by["box"].CostUSD, by["box_refine"].CostUSD; math.Abs(b-(ImageCallPrice+5*PriceSAMPerImage)) > 1e-9 || math.Abs(r-(ImageCallPrice+6*PriceSAMPerImage)) > 1e-9 {
+		t.Errorf("costs: box %.4f refine %.4f", b, r)
 	}
 }
 
-// A new picture from Muse: refused; the combo is the code result. No mask:
-// the look only, with the reason. A 400 on "size" is tried once more.
-func TestCompareRefusedAndNoMask(t *testing.T) {
+// No other object: box_refine is the box mask. No box (a whole-photo item):
+// the box variants say so. A refused Muse edit: the code look on the photo.
+func TestCompareX48kEdges(t *testing.T) {
 	photo := itemJPEG(t, 400, 300, 0)
 	var edits atomic.Int32
-	srv := v3Server(t, true, true, &edits, nil)
+	srv := v3Server(t, true, false, &edits, nil)
 	defer srv.Close()
 	v := &V2{API: &Client{URL: srv.URL + "/responses", Key: "k"}, SAM: DefaultSAM, ImageURL: srv.URL, ImageModel: "muse-image-1.0"}
-	vs, err := v.Compare(context.Background(), photo, nil, image.Rectangle{}, "", []string{"food", "product"})
+	src, _, _ := image.Decode(bytes.NewReader(photo))
+	vs, err := v.Compare(context.Background(), photo, src, image.Rect(100, 75, 250, 225), nil, "test", SubjectConcepts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,15 +241,25 @@ func TestCompareRefusedAndNoMask(t *testing.T) {
 	for _, x := range vs {
 		by[x.Name] = x
 	}
-	m, s, c := by["muse_bigger"], by["sharp_blur"], by["code_blur"]
-	if m.Passed == nil || *m.Passed || !strings.Contains(m.Error, "first try: HTTP 400") || edits.Load() != 2 {
-		t.Fatalf("muse: passed %v error %q, edits %d", m.Passed, m.Error, edits.Load())
+	if by["muse_bigger"].Passed == nil || *by["muse_bigger"].Passed || !strings.Contains(by["box"].Error, "refused") {
+		t.Fatalf("refused edit: %v %q", by["muse_bigger"].Passed, by["box"].Error)
 	}
-	if !strings.Contains(s.Error, "refused") || string(s.JPEG) != string(c.JPEG) {
-		t.Errorf("combo did not fall back to the code result: %q", s.Error)
+	if !strings.HasPrefix(by["box_refine"].Concept, "no other object in the scan: the box mask") || len(by["box_refine"].JPEG) == 0 ||
+		by["box_refine"].CostUSD != by["box"].CostUSD {
+		t.Errorf("no others: %q, cost %.4f vs box %.4f", by["box_refine"].Concept, by["box_refine"].CostUSD, by["box"].CostUSD)
 	}
-	if !strings.Contains(c.Error, "no mask of the item") {
-		t.Errorf("code_blur: %q", c.Error)
+	// an other object whose centre is inside the item's box (its plate) is not a not-this point
+	vs, _ = v.Compare(context.Background(), photo, src, image.Rect(100, 75, 250, 225), []image.Rectangle{image.Rect(60, 40, 300, 260)}, "test", SubjectConcepts)
+	for _, x := range vs {
+		if x.Name == "box_refine" && !strings.HasPrefix(x.Concept, "no other object in the scan") {
+			t.Errorf("the plate became a not-this point: %q", x.Concept)
+		}
+	}
+	vs, _ = v.Compare(context.Background(), photo, nil, image.Rectangle{}, nil, "", SubjectConcepts)
+	for _, x := range vs {
+		if (x.Name == "box" || x.Name == "box_refine") && !strings.Contains(x.Error, "no item box from the scan") {
+			t.Errorf("%s with no box: %q", x.Name, x.Error)
+		}
 	}
 }
 
@@ -243,9 +268,13 @@ func TestCompareRefusedAndNoMask(t *testing.T) {
 func TestItemSource(t *testing.T) {
 	orig := itemJPEG(t, 800, 600, 0)
 	m := ItemPhotoMeta{Kind: "crop", Box: []int{150, 100, 250, 200}, FrameW: 400, FrameH: 300}
-	src, box, err := ItemSource(orig, m, 0.35)
+	src, box, os2, err := ItemSource(orig, m, 0.35, [4]int{260, 100, 360, 200}, [4]int{0, 0, 10, 10})
 	if err != nil {
 		t.Fatal(err)
+	}
+	// the other box (x 260-360 in the frame) is 520-720 in the upload; the cut starts at 230: 290-340 in the cut (cut edge); the far box is outside
+	if len(os2) != 1 || os2[0].Min.X < 285 || os2[0].Min.X > 295 {
+		t.Fatalf("others %v", os2)
 	}
 	if b := src.Bounds(); b.Dx() < 335 || b.Dx() > 345 || b.Dy() < 335 || b.Dy() > 345 {
 		t.Fatalf("size %v (want about 340 x 340: 200 px of box + 2 x 70 px margin)", b)
@@ -253,7 +282,7 @@ func TestItemSource(t *testing.T) {
 	if box.Dx() < 198 || box.Dx() > 202 || box.Min.X < 68 || box.Min.X > 72 {
 		t.Fatalf("item box %v (want about (70,70)-(270,270))", box)
 	}
-	if _, _, err := ItemSource(orig, ItemPhotoMeta{Kind: "full"}, 0.35); err == nil {
+	if _, _, _, err := ItemSource(orig, ItemPhotoMeta{Kind: "full"}, 0.35); err == nil {
 		t.Fatal("a full photo was cut")
 	}
 }
@@ -299,6 +328,19 @@ func TestItemName(t *testing.T) {
 	}
 	if got := ItemName(dir, "r1", 2); got != "Roma tomatoes" {
 		t.Fatalf("got %q", got)
+	}
+	if name, others := ItemScan(dir, "r1", 2); name != "Roma tomatoes" || len(others) != 1 {
+		t.Fatalf("scan: %q %v", name, others)
+	}
+	// an earlier event of the same request without the item is skipped
+	extra := `{"request_id":"r3","boxes":[{"n":1,"outcome":"not_food"}]}
+{"request_id":"r3","boxes":[{"n":1,"outcome":"item","item":1,"name":"Pears","box":[1,2,3,4]},{"n":2,"outcome":"not_food","box":[5,6,7,8]}]}
+`
+	if err := os.WriteFile(filepath.Join(dir, "events-20261031.jsonl"), []byte(extra), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if name, others := ItemScan(dir, "r3", 1); name != "Pears" || len(others) != 1 || others[0] != [4]int{5, 6, 7, 8} {
+		t.Fatalf("retry event: %q %v", name, others)
 	}
 	if ItemName(dir, "r2", 1) != "" || ItemName(dir, "r9", 1) != "" || ItemName(dir, "", 1) != "" {
 		t.Fatal("a name for no item")

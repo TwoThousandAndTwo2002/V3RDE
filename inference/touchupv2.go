@@ -421,13 +421,13 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 // small one), and gives the item's box in the cut's pixels: the target of
 // SubjectMask (X48i). meta is the item photo's record (Kind "crop", Box,
 // FrameW/H, the box in SAM's frame of the upright upload).
-func ItemSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, image.Rectangle, error) {
+func ItemSource(orig []byte, meta ItemPhotoMeta, margin float64, others ...[4]int) (image.Image, image.Rectangle, []image.Rectangle, error) {
 	if meta.Kind != "crop" || len(meta.Box) != 4 || meta.FrameW <= 0 || meta.FrameH <= 0 {
-		return nil, image.Rectangle{}, errors.New("not a crop with a box")
+		return nil, image.Rectangle{}, nil, errors.New("not a crop with a box")
 	}
 	src, _, err := image.Decode(bytes.NewReader(orig))
 	if err != nil {
-		return nil, image.Rectangle{}, err
+		return nil, image.Rectangle{}, nil, err
 	}
 	src = Upright(src, Orientation(orig))
 	bd := src.Bounds()
@@ -437,19 +437,34 @@ func ItemSource(orig []byte, meta ItemPhotoMeta, margin float64) (image.Image, i
 	cut := image.Rect(int((l-mx)*sx), int((t-my)*sy), int((r+mx)*sx+0.5), int((b+my)*sy+0.5)).Add(bd.Min).Intersect(bd)
 	box := image.Rect(int(l*sx), int(t*sy), int(r*sx+0.5), int(b*sy+0.5)).Add(bd.Min).Intersect(cut)
 	if cut.Empty() || box.Empty() {
-		return nil, image.Rectangle{}, errors.New("crop: empty box")
+		return nil, image.Rectangle{}, nil, errors.New("crop: empty box")
 	}
 	out := image.NewRGBA(image.Rect(0, 0, cut.Dx(), cut.Dy()))
 	draw.Draw(out, out.Bounds(), src, cut.Min, draw.Src)
-	return out, box.Sub(cut.Min), nil
+	// X48k: the scan's other boxes (the same SAM frame) in the cut's pixels
+	var os2 []image.Rectangle
+	for _, o := range others {
+		r := image.Rect(int(float64(o[0])*sx), int(float64(o[1])*sy), int(float64(o[2])*sx+0.5), int(float64(o[3])*sy+0.5)).Add(bd.Min).Intersect(cut)
+		if !r.Empty() {
+			os2 = append(os2, r.Sub(cut.Min))
+		}
+	}
+	return out, box.Sub(cut.Min), os2, nil
 }
 
-// ItemName is the name the scan gave the item: the analyze events of
-// request_id (events-*.jsonl in dir, the newest day first), the box whose
-// answer item is item. "" when it is not found.
+// ItemName is the name the scan gave the item (ItemScan).
 func ItemName(dir, requestID string, item int) string {
+	name, _ := ItemScan(dir, requestID, item)
+	return name
+}
+
+// ItemScan reads the analyze events of request_id (events-*.jsonl in dir,
+// the newest day first): the name of the box whose answer item is item, and
+// the boxes of every other object of that scan (X48k: the "not this" points;
+// any outcome, a not-food box is a neighbour too). "" and nil when not found.
+func ItemScan(dir, requestID string, item int) (string, [][4]int) {
 	if requestID == "" || item <= 0 {
-		return ""
+		return "", nil
 	}
 	files, _ := filepath.Glob(filepath.Join(dir, "events-*.jsonl"))
 	sort.Sort(sort.Reverse(sort.StringSlice(files)))
@@ -471,39 +486,234 @@ func ItemName(dir, requestID string, item int) string {
 			if json.Unmarshal(sc.Bytes(), &ev) != nil || ev.RequestID != requestID {
 				continue
 			}
+			found, name := false, ""
+			var others [][4]int
 			for _, b := range ev.Boxes {
-				if b.Item == item && b.Name != "" {
-					fh.Close()
-					return b.Name
+				if b.Item == item {
+					found = true
+					if name == "" {
+						name = b.Name
+					}
+				} else {
+					others = append(others, b.Box)
 				}
 			}
+			if !found { // another event of the same request (X48k review): look on
+				continue
+			}
+			fh.Close()
+			return name, others
 		}
 		fh.Close()
 	}
-	return ""
+	return "", nil
 }
 
-// Compare makes the X48h variants of one item photo (T9 2026-10-30: "for
-// packaging that is close to others i would like it isolated through
-// blurring the background and sharpened / enlarged. so essentially i want
-// studio blur and muse bigger"). src is what the edits start from: the item
-// photo, or ItemSource of it (note says which); target is the item's box in
-// src (empty: not known), so a neighbour is not cut out with the item.
+// X48k (T9 2026-10-30, after a review of how others do it): the
+// established way (Grounded-SAM) gives each detector box to SAM as a box
+// prompt and keeps the one mask; our scan is the detector. SAM-PD
+// (arxiv.org/abs/2403.04194) adds a second step: one positive point inside
+// the first mask and negative points sampled from the other objects. The
+// service takes one kind of prompt per request, so the two steps are two
+// requests (docs/sources/X48k.md).
+
+// samPrompt sends one SAM request with a box or point prompt (prompt is the
+// token text) on img made at most 1536 px; the instances are in that JPEG's
+// frame (MaskRaster scales them).
+func (v *V2) samPrompt(ctx context.Context, jb []byte, prompt, purpose string) ([]Instance, float64, error) {
+	c, err := v.API.Do(ctx, purpose, map[string]any{"model": v.SAM,
+		"input": UserMessage(TextPart(prompt), ImagePart(jb, "image/jpeg"))})
+	cost := 0.0
+	if c != nil {
+		cost = c.Cost()
+	}
+	if err != nil {
+		return nil, cost, err
+	}
+	inst, _ := ParseSAM(c.Text())
+	return inst, cost, nil
+}
+
+// promptFrame is img as the JPEG SAM gets and the scale from img's pixels to it.
+func promptFrame(img image.Image) ([]byte, int, int, float64, error) {
+	jb, err := small(img, 1536)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(jb))
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+	return jb, cfg.Width, cfg.Height, float64(cfg.Width) / float64(img.Bounds().Dx()), nil
+}
+
+// BoxMask is step 1: the item's box (in img's pixels) as a SAM box prompt;
+// the mask of object 1 as a raster of img's size.
+func (v *V2) BoxMask(ctx context.Context, img image.Image, box image.Rectangle) ([]byte, int, float64, error) {
+	jb, fw, fh, k, err := promptFrame(img)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	sc := func(x int, lim int) int { return max(0, min(lim-1, int(float64(x)*k))) }
+	prompt := fmt.Sprintf("<0f>1<|box;x1=%d;y1=%d;x2=%d;y2=%d;w=%d;h=%d|>",
+		sc(box.Min.X, fw), sc(box.Min.Y, fh), sc(box.Max.X-1, fw), sc(box.Max.Y-1, fh), fw, fh)
+	inst, cost, err := v.samPrompt(ctx, jb, prompt, "sam:box")
+	if err != nil {
+		return nil, 0, cost, err
+	}
+	b := img.Bounds()
+	m, n := MaskRaster(inst, b.Dx(), b.Dy())
+	if n == 0 {
+		return nil, 0, cost, errors.New("sam: no mask for the item's box")
+	}
+	return m, n, cost, nil
+}
+
+// RefineMask is step 2 (SAM-PD): one positive point (the pixel of rough
+// nearest its centre) and one negative point at the centre of each other
+// object of the scan that is in the photo, except an object whose centre is
+// inside the item's own box (target): that is the item's plate or tray, or
+// the same item again (X48k review). With no other object there is nothing
+// to refine: rough is returned.
+func (v *V2) RefineMask(ctx context.Context, img image.Image, rough []byte, target image.Rectangle, others []image.Rectangle) ([]byte, int, int, float64, error) {
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	var sx, sy, cnt float64
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			if rough[y*w+x] != 0 {
+				sx, sy, cnt = sx+float64(x), sy+float64(y), cnt+1
+			}
+		}
+	}
+	if cnt == 0 {
+		return nil, 0, 0, 0, errors.New("refine: the first mask is empty")
+	}
+	cx, cy := sx/cnt, sy/cnt
+	px, py, bestD := 0, 0, math.MaxFloat64
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			if rough[y*w+x] != 0 {
+				if d := (float64(x)-cx)*(float64(x)-cx) + (float64(y)-cy)*(float64(y)-cy); d < bestD {
+					px, py, bestD = x, y, d
+				}
+			}
+		}
+	}
+	var negs []image.Point
+	for _, o := range others {
+		c := image.Pt((o.Min.X+o.Max.X)/2, (o.Min.Y+o.Max.Y)/2)
+		if c.In(b) && !c.In(target) {
+			negs = append(negs, c)
+		}
+	}
+	if len(negs) == 0 {
+		return rough, 0, 0, 0, nil
+	}
+	jb, fw, fh, k, err := promptFrame(img)
+	if err != nil {
+		return nil, 0, 0, 0, err
+	}
+	pt := func(p image.Point) string {
+		return fmt.Sprintf("<|point;x=%d;y=%d;w=%d;h=%d|>", max(0, min(fw-1, int(float64(p.X)*k))), max(0, min(fh-1, int(float64(p.Y)*k))), fw, fh)
+	}
+	prompt := "<0f>1" + pt(image.Pt(px, py))
+	for _, n := range negs {
+		prompt += "-" + pt(n)
+	}
+	inst, cost, err := v.samPrompt(ctx, jb, prompt, "sam:refine")
+	if err != nil {
+		return nil, len(negs), 0, cost, err
+	}
+	m, n := MaskRaster(inst, w, h)
+	if n == 0 {
+		return nil, len(negs), 0, cost, errors.New("sam: no mask for the refined points")
+	}
+	return m, len(negs), n, cost, nil
+}
+
+// WithContainers adds the containers that hold the food (D216) to m: SAM is
+// asked for each container concept at the same time; a container whose box
+// holds at least half of the food's pixels is added.
+func (v *V2) WithContainers(ctx context.Context, img image.Image, m []byte) (string, int, float64) {
+	jb, err := small(img, 1536)
+	if err != nil {
+		return "", 0, 0
+	}
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	set := 0
+	for _, x := range m {
+		set += int(x)
+	}
+	got := make([][]Instance, len(ContainerConcepts))
+	costs := make([]float64, len(ContainerConcepts))
+	var wg sync.WaitGroup
+	for i, c := range ContainerConcepts {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			call, err := v.API.Do(ctx, "sam:"+c, map[string]any{"model": v.SAM,
+				"input":    UserMessage(TextPart(c), ImagePart(jb, "image/jpeg")),
+				"metadata": map[string]any{"include_confidence": "true", "mask_encoding": "one_bit"}})
+			if call != nil {
+				costs[i] = call.Cost()
+			}
+			if err == nil {
+				got[i], _ = ParseSAM(call.Text())
+			}
+		}()
+	}
+	wg.Wait()
+	label, n, cost := "", 0, 0.0
+	for i, c := range ContainerConcepts {
+		cost += costs[i]
+		var hold []Instance
+		for _, in := range got[i] {
+			if in.W <= 0 || in.H <= 0 {
+				continue
+			}
+			r := image.Rect(in.Left*w/in.W, in.Top*h/in.H, in.Right*w/in.W, in.Bottom*h/in.H).Intersect(image.Rect(0, 0, w, h))
+			inside := 0
+			for y := r.Min.Y; y < r.Max.Y; y++ {
+				for x := r.Min.X; x < r.Max.X; x++ {
+					inside += int(m[y*w+x])
+				}
+			}
+			if set > 0 && 2*inside >= set {
+				hold = append(hold, in)
+			}
+		}
+		if cm, cn := MaskRaster(hold, w, h); cn > 0 {
+			for j, x := range cm {
+				m[j] |= x
+			}
+			n += cn
+			label += " + " + c
+		}
+	}
+	return label, n, cost
+}
+
+// Compare makes the X48k variants of one item photo. src is what the edits
+// start from (the item photo, or ItemSource of it; note says which); target
+// is the item's box in src and others the boxes of the scan's other objects
+// in src (both empty when not known). Every variant is the combo T9 chose
+// (X48h: Muse Image bigger + studio blur); only the mask differs:
 //
-//	original     the item photo as it is
-//	sharp_blur   the combo: src made MuseInputEdge big in code, Muse Image
-//	             BiggerPrompt, SSIM >= SSIMMin; then SAM finds the item and
-//	             its container on that edit, the item is cut out and the edit
-//	             itself, blurred, goes behind it. A refused edit: the code look.
-//	code_blur    the same without Muse Image (StudioLook on src), to compare
-//	muse_bigger  the Muse Image edit alone, with its score
-func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target image.Rectangle, note string, concepts []string) ([]Variant, error) {
+//	original      the item photo as it is
+//	words         the X48j mask: SAM concepts, the pieces inside the box
+//	box           step 1: the item's box as a SAM box prompt (Grounded-SAM)
+//	box_refine    step 2: + one positive point and negative points on the
+//	              other objects (SAM-PD); = box when there is no other object
+//	muse_bigger   the Muse Image edit alone, with its score
+func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target image.Rectangle, others []image.Rectangle, note string, concepts []string) ([]Variant, error) {
 	item, _, err := image.Decode(bytes.NewReader(photo))
 	if err != nil {
 		return nil, err
 	}
 	if src == nil {
-		src, note, target = item, "the item photo", image.Rectangle{}
+		src, note, target, others = item, "the item photo", image.Rectangle{}, nil
 	}
 	ib := item.Bounds()
 	out := []Variant{{Name: "original", W: ib.Dx(), H: ib.Dy(), JPEG: photo, Note: note}}
@@ -516,34 +726,16 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target 
 		return nil, err
 	}
 	t0 := time.Now()
-	type edit struct {
-		jb []byte
-		ic ImageCall
-		e  error
-	}
-	museC := make(chan edit, 1)
-	go func() { jb, ic, e := v.EditJSON(ctx, inJPEG, BiggerPrompt); museC <- edit{jb, ic, e} }()
-	// code_blur while Muse works: the code look, the item and its container on src
-	cb := Variant{Name: "code_blur", Note: note}
-	cmask, clabel, cn, ccost, cerr := v.SubjectMask(ctx, src, concepts, ContainerConcepts, target)
-	cb.CostUSD, cb.Concept, cb.Masks = ccost, clabel, cn
-	codeImg, _ := blurStudio(src, analyze.StudioLook(), cmask, cerr)
-	if cerr != nil {
-		cb.Error = cerr.Error() + " (no new background; the look only)"
-	}
-	done(&cb, codeImg, t0)
-	// the Muse edit and its check
-	e := <-museC
-	mb := Variant{Name: "muse_bigger", CostUSD: e.ic.CostUSD, Note: note, Error: e.ic.Error}
-	var museImg image.Image
-	if e.e == nil {
-		im, _, derr := image.Decode(bytes.NewReader(e.jb))
+	jb, ic, eerr := v.EditJSON(ctx, inJPEG, BiggerPrompt)
+	mb := Variant{Name: "muse_bigger", CostUSD: ic.CostUSD, Note: note, Error: ic.Error, MS: ic.MS}
+	base, look := src, analyze.StudioLook()
+	if eerr == nil {
+		im, _, derr := image.Decode(bytes.NewReader(jb))
 		if derr != nil {
 			mb.Error = "the edit is not an image"
 		} else {
 			s := analyze.SSIM(src, im)
-			// the same shape too (X48i review): SSIM scales the edit to src's shape,
-			// so an edit that crops or pads must not pass, and the item's box must scale
+			// the same shape too (X48i review): an edit that crops or pads must not pass
 			sb, eb := src.Bounds(), im.Bounds()
 			ra, rb := float64(sb.Dx())/float64(sb.Dy()), float64(eb.Dx())/float64(eb.Dy())
 			ok := s >= SSIMMin && math.Abs(ra-rb) <= 0.03*ra
@@ -552,34 +744,99 @@ func (v *V2) Compare(ctx context.Context, photo []byte, src image.Image, target 
 			}
 			mb.SSIM, mb.Passed = &s, &ok
 			done(&mb, im, t0)
+			mb.MS = ic.MS
 			if ok {
-				museImg = im
+				base, look = im, analyze.Look{Levels: 0.5, Saturation: 1.05, Sharpen: 0.3, LongEdge: 1600}
 			}
 		}
 	}
-	mb.MS = e.ic.MS
-	// the combo
-	sv := Variant{Name: "sharp_blur", CostUSD: mb.CostUSD, Note: note, SSIM: mb.SSIM, Passed: mb.Passed}
-	if museImg == nil {
-		sv.Error = "the Muse edit was refused or failed: the code look is used"
-		sv.Concept, sv.Masks, sv.JPEG, sv.W, sv.H = cb.Concept, cb.Masks, cb.JPEG, cb.W, cb.H
-		sv.MS = time.Since(t0).Milliseconds() // the time until the edit was refused, with the code result
-	} else {
-		// the edit is src at another size (the check passed): the target scales with it
-		mbd, sbd := museImg.Bounds(), src.Bounds()
-		mt := image.Rect(target.Min.X*mbd.Dx()/sbd.Dx(), target.Min.Y*mbd.Dy()/sbd.Dy(),
-			target.Max.X*mbd.Dx()/sbd.Dx(), target.Max.Y*mbd.Dy()/sbd.Dy())
-		m, label, n, cost, err := v.SubjectMask(ctx, museImg, concepts, ContainerConcepts, mt)
-		sv.CostUSD += cost
-		sv.Concept, sv.Masks = label, n
-		light := analyze.Look{Levels: 0.5, Saturation: 1.05, Sharpen: 0.3, LongEdge: 1600}
-		img, _ := blurStudio(museImg, light, m, err)
-		if err != nil {
-			sv.Error = err.Error() + " (the sharp edit, no new background)"
-		}
-		done(&sv, img, t0)
+	refused := base == src
+	// the boxes in base's pixels (the edit is src at another size)
+	bb, sbd := base.Bounds(), src.Bounds()
+	scale := func(r image.Rectangle) image.Rectangle {
+		return image.Rect(r.Min.X*bb.Dx()/sbd.Dx(), r.Min.Y*bb.Dy()/sbd.Dy(), r.Max.X*bb.Dx()/sbd.Dx(), r.Max.Y*bb.Dy()/sbd.Dy())
 	}
-	return append(out, sv, cb, mb), nil
+	t := scale(target)
+	var os2 []image.Rectangle
+	for _, o := range others {
+		os2 = append(os2, scale(o))
+	}
+	mk := func(name string) Variant {
+		r := Variant{Name: name, CostUSD: mb.CostUSD, Note: note, SSIM: mb.SSIM, Passed: mb.Passed}
+		if refused {
+			r.Error = "the Muse edit was refused or failed: the code look on the photo"
+		}
+		return r
+	}
+	finish := func(r *Variant, m []byte, merr error) {
+		img, _ := blurStudio(base, look, m, merr)
+		if merr != nil {
+			r.Error = strings.TrimSpace(r.Error + " " + merr.Error() + " (no new background)")
+		}
+		done(r, img, t0)
+	}
+	vs := [3]Variant{mk("words"), mk("box"), mk("box_refine")}
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() { // words: the X48j mask (containers included)
+		defer wg.Done()
+		m, label, n, cost, err := v.SubjectMask(ctx, base, concepts, ContainerConcepts, t)
+		vs[0].CostUSD += cost
+		vs[0].Concept, vs[0].Masks = label, n
+		finish(&vs[0], m, err)
+	}()
+	go func() { // box, then the refine step on its mask
+		defer wg.Done()
+		if t.Empty() {
+			for k := 1; k < 3; k++ {
+				vs[k].Error = strings.TrimSpace(vs[k].Error + " no item box from the scan (a whole-photo item)")
+				finish(&vs[k], nil, errors.New("no box"))
+			}
+			return
+		}
+		m, n, cost, err := v.BoxMask(ctx, base, t)
+		vs[1].CostUSD += cost
+		vs[2].CostUSD += cost
+		var rm []byte
+		var rerr error
+		negs, rn := 0, 0
+		if err == nil {
+			var rc float64
+			rm, negs, rn, rc, rerr = v.RefineMask(ctx, base, m, t, os2)
+			vs[2].CostUSD += rc
+		} else {
+			rerr = err
+		}
+		for k, mm := range [][]byte{m, rm} {
+			if k == 1 && err == nil && rerr == nil && negs == 0 { // nothing to refine: the box result, paid once
+				vs[2].JPEG, vs[2].W, vs[2].H, vs[2].Masks, vs[2].MS = vs[1].JPEG, vs[1].W, vs[1].H, vs[1].Masks, vs[1].MS
+				vs[2].CostUSD, vs[2].Error = vs[1].CostUSD, vs[1].Error
+				vs[2].Concept = "no other object in the scan: the box mask" + strings.TrimPrefix(vs[1].Concept, "box")
+				continue
+			}
+			e := err
+			if k == 1 {
+				e = rerr
+			}
+			if e == nil && mm != nil {
+				cp := append([]byte(nil), mm...)
+				label, cn, cc := v.WithContainers(ctx, base, cp)
+				vs[1+k].CostUSD += cc
+				if k == 0 {
+					vs[1].Concept, vs[1].Masks = "box"+label, n+cn
+				} else {
+					vs[2].Concept, vs[2].Masks = fmt.Sprintf("box + 1 point, %d not-this point(s)%s", negs, label), rn+cn
+					if negs == 0 {
+						vs[2].Concept = "no other object in the scan: the box mask" + label
+					}
+				}
+				mm = cp
+			}
+			finish(&vs[1+k], mm, e)
+		}
+	}()
+	wg.Wait()
+	return append(append(out, vs[:]...), mb), nil
 }
 
 // blurStudio is the look on src, cut to the mask (plus 12%) with the photo
