@@ -1,0 +1,1564 @@
+{
+  "note": "Hand-written context of each text of en.json, in ASD-STE100: what kind of text it is, where it shows, what it does for the user, and what each value holds. en_hash is the hash of the English text that the context was written for (L4g). Draft until approved.",
+  "contexts": {
+    "api.request.timed_out_try_again": {
+      "kind": "Error line",
+      "screen": "Any screen after a request",
+      "does": "The app sent a request to the server and got no answer in time. The user can try the same action again.",
+      "en_hash": "1aa0464f13bf",
+      "status": "draft"
+    },
+    "api.request.network_error_check_the": {
+      "kind": "Error line",
+      "screen": "Any screen after a request",
+      "does": "The phone could not reach the server. The user must check the internet connection.",
+      "en_hash": "3f1f68125c5c",
+      "status": "draft"
+    },
+    "api.analyze.stopped": {
+      "kind": "Error line",
+      "screen": "Camera, while the photo is checked",
+      "does": "The user stopped the food check of a photo. Internal; the app usually does not show it.",
+      "en_hash": "1a4f630ac1b6",
+      "status": "draft"
+    },
+    "api.analyze.timed_out_try_again": {
+      "kind": "Error line",
+      "screen": "Camera, while the photo is checked",
+      "does": "The food check of a photo took too long. The photo is kept. The user can send it again.",
+      "en_hash": "1aa0464f13bf",
+      "status": "draft"
+    },
+    "api.analyze.try_again": {
+      "kind": "Error line",
+      "screen": "Camera, while the photo is checked",
+      "does": "The server lost the food check job. The photo is kept. The user can send it again.",
+      "en_hash": "d8b8392e2c54",
+      "status": "draft"
+    },
+    "api.photoUrl.photo": {
+      "kind": "Error line",
+      "screen": "Listing photo",
+      "does": "The app could not load the photo of a listing. Developer text.",
+      "values": {
+        "status": "HTTP status number, for example 404"
+      },
+      "en_hash": "661498427578",
+      "status": "draft"
+    },
+    "api.photoUrl.photo_read_failed": {
+      "kind": "Error line",
+      "screen": "Listing photo",
+      "does": "The app could not read a downloaded photo. Developer text.",
+      "en_hash": "fb743a6b73d3",
+      "status": "draft"
+    },
+    "capture.elapsedText": {
+      "kind": "Part of a joined line",
+      "screen": "Camera, while the photo is checked",
+      "does": "A time in seconds with one decimal, added after 'Analyzing…', for example '2.4 s'. 's' is the symbol for seconds.",
+      "values": {
+        "p1": "the seconds, for example 2.4"
+      },
+      "en_hash": "13a21058286f",
+      "status": "draft"
+    },
+    "FORM_WORDS.title": {
+      "kind": "Error line",
+      "screen": "Review of a listing",
+      "does": "The title of the food item is empty or too long. It must have 1 to 80 characters.",
+      "en_hash": "eb180a79cd8a",
+      "status": "draft"
+    },
+    "FORM_WORDS.servings": {
+      "kind": "Error line",
+      "screen": "Review of a listing",
+      "does": "The number of servings is not a whole number from 1 to 99.",
+      "en_hash": "5a52be0ef652",
+      "status": "draft"
+    },
+    "FORM_WORDS.pickup": {
+      "kind": "Error line",
+      "screen": "Review of a listing",
+      "does": "The pickup details are empty or too long. They must have 1 to 200 characters.",
+      "en_hash": "e62dec81c0d2",
+      "status": "draft"
+    },
+    "capture.sourceNote.from_the_barcode": {
+      "kind": "Line under a title",
+      "screen": "Review of one listing",
+      "does": "Tells where the title of the item came from: the product barcode that the camera read.",
+      "values": {
+        "barcode": "the barcode number, for example 012345678905"
+      },
+      "en_hash": "35515fbe1406",
+      "status": "draft"
+    },
+    "capture.sourceNote.the_scanner_says": {
+      "kind": "Line under a title",
+      "screen": "Review of one listing",
+      "does": "Tells where the title came from: the food scanner described the photo with these words.",
+      "values": {
+        "description": "a short description of the food in English from the scanner"
+      },
+      "en_hash": "5bfdf6808e57",
+      "status": "draft"
+    },
+    "clipsession.a_recording_is_already": {
+      "kind": "Error line",
+      "screen": "Voice changes",
+      "does": "The microphone is already recording. Developer text.",
+      "en_hash": "3e94cfa10360",
+      "status": "draft"
+    },
+    "clipsession.the_recording_was_cancelled": {
+      "kind": "Error line",
+      "screen": "Voice changes",
+      "does": "The voice recording stopped before it ended. Developer text.",
+      "en_hash": "157e861f7608",
+      "status": "draft"
+    },
+    "clipsession.not_recording": {
+      "kind": "Error line",
+      "screen": "Voice changes",
+      "does": "The app tried to stop a recording that did not start. Developer text.",
+      "en_hash": "91b6bac12286",
+      "status": "draft"
+    },
+    "logic.retryText.the_scanner_is_busy": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The food scanner has too much work. The user must wait some seconds. The photo stays in the app, so the user does not need to take it again.",
+      "en_hash": "2bc023c400d0",
+      "status": "draft"
+    },
+    "logic.retryText.too_many_photos_this": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The user sent too many photos in one minute. The user must wait one minute. The photo stays in the app, so the user does not need to take it again.",
+      "en_hash": "b33e111d8f6f",
+      "status": "draft"
+    },
+    "logic.retryText.the_food_check_is": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The food check service is not available now. The photo stays in the app, so the user does not need to take it again.",
+      "en_hash": "060c80a58a72",
+      "status": "draft"
+    },
+    "logic.retryText.this_photo_took_too": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The check of this photo took too long. A closer photo with fewer items helps. The photo stays in the app, so the user does not need to take it again.",
+      "en_hash": "6f0861813ffd",
+      "status": "draft"
+    },
+    "logic.retryText.the_food_scanner_is": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The food scanner had a server error. The user can try again. The photo stays in the app, so the user does not need to take it again.",
+      "en_hash": "4f3d11c29f99",
+      "status": "draft"
+    },
+    "logic.retryText.your_photo_is_kept": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "Added after the error text of the server: the photo stays in the app, so the user does not need to take it again.",
+      "values": {
+        "p1": "the error text of the server, or 'Request failed (502)'"
+      },
+      "en_hash": "cfbb03ad1634",
+      "status": "draft"
+    },
+    "logic.retryText.request_failed": {
+      "kind": "Error line",
+      "screen": "Camera, sheet 'Try again?'",
+      "does": "The food check failed with an HTTP error. Then the app adds ' — your photo is kept.'",
+      "values": {
+        "status": "HTTP status number"
+      },
+      "en_hash": "d5f9abf9557a",
+      "status": "draft"
+    },
+    "logic.foundTitle.item_found": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Title of the review list. The app shows '1 item found'. Noun phrase, singular.",
+      "en_hash": "6367f9ffad0d",
+      "status": "draft"
+    },
+    "logic.foundTitle.items_found": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Title of the review list. The app shows '{n} items found', for example '3 items found'. Plural.",
+      "en_hash": "10d67d4332ad",
+      "status": "draft"
+    },
+    "logic.postTitle.post": {
+      "kind": "Button",
+      "screen": "Review of several items",
+      "does": "Button. Verb in the imperative: the user posts all the items as listings now. {plural} is '1 listing' or '3 listings'.",
+      "values": {
+        "plural": "a count and a noun, for example '3 listings'"
+      },
+      "en_hash": "acf970ba26f1",
+      "status": "draft"
+    },
+    "logic.postTitle.listing": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Noun, singular: one food offer that other users can see and grab. Goes in the button 'Post 1 listing'.",
+      "en_hash": "0fc4dfc4feb3",
+      "status": "draft"
+    },
+    "logic.postTitle.listings": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Noun, plural: food offers that other users can see and grab. Goes in the button 'Post 3 listings'.",
+      "en_hash": "8a836f245cd6",
+      "status": "draft"
+    },
+    "logic.postingText": {
+      "kind": "Status line",
+      "screen": "Review of several items",
+      "does": "Shows progress while the app posts the items one by one.",
+      "values": {
+        "i": "the number of the item that posts now",
+        "n": "all items"
+      },
+      "en_hash": "4d2d752d3a84",
+      "status": "draft"
+    },
+    "logic.notPostedTitle.item_not_posted": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Title after a post with errors: '1 item not posted'. Singular.",
+      "en_hash": "ccc606363478",
+      "status": "draft"
+    },
+    "logic.notPostedTitle.items_not_posted": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Title after a post with errors: '2 items not posted'. Plural.",
+      "en_hash": "40d59c6eecbb",
+      "status": "draft"
+    },
+    "logic.postedSummary.listing": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Noun, singular, in the line '1 listing posted. ...'",
+      "en_hash": "0fc4dfc4feb3",
+      "status": "draft"
+    },
+    "logic.postedSummary.listings": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Noun, plural, in the line '3 listings posted. ...'",
+      "en_hash": "8a836f245cd6",
+      "status": "draft"
+    },
+    "logic.postedSummary.1_item_is": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Start of the clause '1 item is kept here'. Singular subject and verb.",
+      "en_hash": "5cddac049fa6",
+      "status": "draft"
+    },
+    "logic.postedSummary.items_are": {
+      "kind": "Part of a joined line",
+      "screen": "Review of several items",
+      "does": "Start of the clause '2 items are kept here'. Plural subject and verb 'are' (the items stay; they are not posted).",
+      "values": {
+        "left": "the number of items that did not post"
+      },
+      "en_hash": "af4bb1cd29c6",
+      "status": "draft"
+    },
+    "logic.postedSummary.posted_kept_here_try": {
+      "kind": "Error line",
+      "screen": "Review of several items",
+      "does": "Some items posted, some did not. The items that did not post stay on the screen. The user can try again.",
+      "values": {
+        "plural": "for example '3 listings'",
+        "p2": "for example '1 item is' or '2 items are'"
+      },
+      "en_hash": "1e6ef8584a0e",
+      "status": "draft"
+    },
+    "FIXED_TEXT.401": {
+      "kind": "Error line",
+      "screen": "Any screen",
+      "does": "The session is not valid. The user must sign in again.",
+      "en_hash": "1ee43f36e1c1",
+      "status": "draft"
+    },
+    "FIXED_TEXT.429": {
+      "kind": "Error line",
+      "screen": "Any screen",
+      "does": "The user sent too many requests. The user must wait one minute.",
+      "en_hash": "4c7d85f32d39",
+      "status": "draft"
+    },
+    "logic.errorMessage.the_food_scanner_is": {
+      "kind": "Error line",
+      "screen": "Camera",
+      "does": "The food scanner server is busy. The user can try again.",
+      "en_hash": "948e41b4f2d8",
+      "status": "draft"
+    },
+    "logic.errorMessage.the_service_is_busy": {
+      "kind": "Error line",
+      "screen": "Any screen",
+      "does": "A server of the app is busy. The user can try again.",
+      "en_hash": "160a7ccb591a",
+      "status": "draft"
+    },
+    "logic.errorMessage.request_failed": {
+      "kind": "Error line",
+      "screen": "Any screen",
+      "does": "A request failed with an HTTP error number.",
+      "values": {
+        "status": "HTTP status number"
+      },
+      "en_hash": "d5f9abf9557a",
+      "status": "draft"
+    },
+    "SIGN_IN.title": {
+      "kind": "Title",
+      "screen": "Sign-in screen",
+      "does": "Title of the first screen. Tells what the app does: people share food or find food.",
+      "en_hash": "3694b465a6d3",
+      "status": "draft"
+    },
+    "SIGN_IN.line": {
+      "kind": "Line under the title",
+      "screen": "Sign-in screen",
+      "does": "Tells the user: the same form signs in to an account or makes a new account.",
+      "en_hash": "e9e8b939676f",
+      "status": "draft"
+    },
+    "SIGN_IN.email": {
+      "kind": "Field label",
+      "screen": "Sign-in and reset screens",
+      "does": "Label of the email address field.",
+      "en_hash": "969ccbd3cf63",
+      "status": "draft"
+    },
+    "SIGN_IN.emailHint": {
+      "kind": "Placeholder",
+      "screen": "Sign-in and reset screens",
+      "does": "Example text in the empty email field. An example email address; keep it as an email address.",
+      "en_hash": "8d12b7f58c0d",
+      "status": "draft"
+    },
+    "SIGN_IN.password": {
+      "kind": "Field label",
+      "screen": "Sign-in screen",
+      "does": "Label of the password field.",
+      "en_hash": "e7cf3ef4f17c",
+      "status": "draft"
+    },
+    "SIGN_IN.rule": {
+      "kind": "Hint under a field",
+      "screen": "Sign-in screen",
+      "does": "Tells the minimum length of the password.",
+      "values": {
+        "MIN_PASSWORD": "a number, now 8"
+      },
+      "en_hash": "d2306d639817",
+      "status": "draft"
+    },
+    "SIGN_IN.incomplete": {
+      "kind": "Error line",
+      "screen": "Sign-in screen",
+      "does": "The email or the password is missing or too short.",
+      "values": {
+        "MIN_PASSWORD": "a number, now 8"
+      },
+      "en_hash": "0181fa68f402",
+      "status": "draft"
+    },
+    "SIGN_IN.badEmail": {
+      "kind": "Error line",
+      "screen": "Sign-in and reset screens",
+      "does": "The text in the email field is not an email address. Keep the example address as it is.",
+      "en_hash": "3d388fd41aaf",
+      "status": "draft"
+    },
+    "SIGN_IN.waiting": {
+      "kind": "Button, busy",
+      "screen": "Sign-in screen",
+      "does": "Shows on the Continue button while the app signs the user in.",
+      "en_hash": "8b9d3de8ae00",
+      "status": "draft"
+    },
+    "SIGN_IN.noAccount": {
+      "kind": "Error line",
+      "screen": "Sign-in screen",
+      "does": "No account has this email and password. The link 'Create one' follows on the same line.",
+      "en_hash": "b08679a5d4ac",
+      "status": "draft"
+    },
+    "SIGN_IN.create": {
+      "kind": "Link",
+      "screen": "Sign-in screen",
+      "does": "Link after 'No account found.': makes a new account with the email and password in the form. 'one' means an account.",
+      "en_hash": "b6ab95ea0749",
+      "status": "draft"
+    },
+    "SIGN_IN.go": {
+      "kind": "Button",
+      "screen": "Sign-in screen",
+      "does": "Main button. Signs in with the email and password. Verb or short action word.",
+      "en_hash": "31fbef162594",
+      "status": "draft"
+    },
+    "SIGN_IN.show": {
+      "kind": "Small button in a field",
+      "screen": "Sign-in and reset screens",
+      "does": "Shows the password as plain text. One short verb.",
+      "en_hash": "0df6f1cad36c",
+      "status": "draft"
+    },
+    "SIGN_IN.hide": {
+      "kind": "Small button in a field",
+      "screen": "Sign-in and reset screens",
+      "does": "Hides the password again. One short verb.",
+      "en_hash": "ac20a57bfde0",
+      "status": "draft"
+    },
+    "SIGN_IN.showName": {
+      "kind": "Screen reader label",
+      "screen": "Sign-in and reset screens",
+      "does": "What a screen reader says for the Show button: shows the password.",
+      "en_hash": "6aeaa6a53d09",
+      "status": "draft"
+    },
+    "SIGN_IN.hideName": {
+      "kind": "Screen reader label",
+      "screen": "Sign-in and reset screens",
+      "does": "What a screen reader says for the Hide button: hides the password.",
+      "en_hash": "a60a56c584b3",
+      "status": "draft"
+    },
+    "RESET.forgot": {
+      "kind": "Link",
+      "screen": "Sign-in screen",
+      "does": "Opens the screen to reset a forgotten password. A question.",
+      "en_hash": "30c1d8d3e912",
+      "status": "draft"
+    },
+    "RESET.askTitle": {
+      "kind": "Title",
+      "screen": "Password reset screens",
+      "does": "Title of the screen where the user asks for a reset link.",
+      "en_hash": "59fa4379be1f",
+      "status": "draft"
+    },
+    "RESET.askLine": {
+      "kind": "Line under the title",
+      "screen": "Password reset screens",
+      "does": "Tells the user: the app sends a link to the email address.",
+      "en_hash": "4f299de2c001",
+      "status": "draft"
+    },
+    "RESET.send": {
+      "kind": "Button",
+      "screen": "Password reset screens",
+      "does": "Sends the reset link to the email in the field. Verb in the imperative.",
+      "en_hash": "b386634c8b43",
+      "status": "draft"
+    },
+    "RESET.sending": {
+      "kind": "Button, busy",
+      "screen": "Password reset screens",
+      "does": "Shows on the Send link button while the app sends.",
+      "en_hash": "b8ed5279e897",
+      "status": "draft"
+    },
+    "RESET.back": {
+      "kind": "Button and link",
+      "screen": "Password reset screens",
+      "does": "Goes back to the sign-in screen. The user does not reset the password.",
+      "en_hash": "71fe31ccd37c",
+      "status": "draft"
+    },
+    "RESET.sentTitle": {
+      "kind": "Title",
+      "screen": "Password reset screens",
+      "does": "Title after the link is sent. Tells the user to look in the email inbox.",
+      "en_hash": "7732287944e2",
+      "status": "draft"
+    },
+    "RESET.sent": {
+      "kind": "Line under the title",
+      "screen": "Password reset screens",
+      "does": "Tells the user that a link is on its way if an account uses this email, and how long the link works.",
+      "values": {
+        "email": "the email address the user typed",
+        "RESET_MINUTES": "a number of minutes, now 30"
+      },
+      "en_hash": "562035964ae6",
+      "status": "draft"
+    },
+    "RESET.newTitle": {
+      "kind": "Title",
+      "screen": "Password reset screens",
+      "does": "Title of the screen where the user types a new password (opened from the link in the email).",
+      "en_hash": "887a560b8253",
+      "status": "draft"
+    },
+    "RESET.newLine": {
+      "kind": "Line under the title",
+      "screen": "Password reset screens",
+      "does": "Tells the minimum length of the new password.",
+      "values": {
+        "MIN_PASSWORD": "a number, now 8"
+      },
+      "en_hash": "0e0a7ab12312",
+      "status": "draft"
+    },
+    "RESET.newPassword": {
+      "kind": "Field label",
+      "screen": "Password reset screens",
+      "does": "Label of the field for the new password.",
+      "en_hash": "3dd9df4441fb",
+      "status": "draft"
+    },
+    "RESET.save": {
+      "kind": "Button",
+      "screen": "Password reset screens",
+      "does": "Saves the new password. Verb in the imperative.",
+      "en_hash": "e86cf7b88cde",
+      "status": "draft"
+    },
+    "RESET.saving": {
+      "kind": "Button, busy",
+      "screen": "Password reset screens",
+      "does": "Shows on the Save password button while the app saves.",
+      "en_hash": "23e39291d613",
+      "status": "draft"
+    },
+    "RESET.short": {
+      "kind": "Error line",
+      "screen": "Password reset screens",
+      "does": "The new password is too short.",
+      "values": {
+        "MIN_PASSWORD": "a number, now 8"
+      },
+      "en_hash": "783908105e40",
+      "status": "draft"
+    },
+    "RESET.expired": {
+      "kind": "Error line",
+      "screen": "Password reset screens",
+      "does": "The reset link is too old or was already used. The link 'Send a new link' follows on the same line.",
+      "en_hash": "4ef4f6cfd873",
+      "status": "draft"
+    },
+    "RESET.again": {
+      "kind": "Link",
+      "screen": "Password reset screens",
+      "does": "Goes back to ask for a new reset link.",
+      "en_hash": "675a0bd30e66",
+      "status": "draft"
+    },
+    "ui.Shutter": {
+      "kind": "Screen reader label",
+      "screen": "Camera",
+      "does": "What a screen reader says for the round shutter button: takes a photo.",
+      "en_hash": "7100ac9979a6",
+      "status": "draft"
+    },
+    "ui.ReviewCard.title_of_item": {
+      "kind": "Screen reader label",
+      "screen": "Review of several items",
+      "does": "Screen reader label of the title field of item {n} in the review list.",
+      "values": {
+        "n": "the item number in the list: 1, 2, 3 ..."
+      },
+      "en_hash": "cb3ad591c60f",
+      "status": "draft"
+    },
+    "ui.ReviewCard.remove_item": {
+      "kind": "Screen reader label",
+      "screen": "Review of several items",
+      "does": "Screen reader label of the X button that removes item {n} from the review list. The item is not posted.",
+      "values": {
+        "n": "the item number in the list: 1, 2, 3 ..."
+      },
+      "en_hash": "6bda3e9843cf",
+      "status": "draft"
+    },
+    "ui.ReviewCard.fewer_servings_of_item": {
+      "kind": "Screen reader label",
+      "screen": "Review of several items",
+      "does": "Screen reader label of the minus button: one serving less for item {n}.",
+      "values": {
+        "n": "the item number in the list: 1, 2, 3 ..."
+      },
+      "en_hash": "8205a2e7c6e6",
+      "status": "draft"
+    },
+    "ui.ReviewCard.servings_of_item": {
+      "kind": "Screen reader label",
+      "screen": "Review of several items",
+      "does": "Screen reader label of the servings number field of item {n}.",
+      "values": {
+        "n": "the item number in the list: 1, 2, 3 ..."
+      },
+      "en_hash": "cd94be4f176e",
+      "status": "draft"
+    },
+    "ui.ReviewCard.more_servings_of_item": {
+      "kind": "Screen reader label",
+      "screen": "Review of several items",
+      "does": "Screen reader label of the plus button: one serving more for item {n}.",
+      "values": {
+        "n": "the item number in the list: 1, 2, 3 ..."
+      },
+      "en_hash": "e201ee6e0abc",
+      "status": "draft"
+    },
+    "voicerec.start.allow_the_microphone_to": {
+      "kind": "Error line",
+      "screen": "Voice changes (phone)",
+      "does": "The user did not allow the microphone. The user must allow it to give changes by voice.",
+      "en_hash": "cfba21064158",
+      "status": "draft"
+    },
+    "voicerec.start.the_microphone_did_not": {
+      "kind": "Error line",
+      "screen": "Voice changes (phone)",
+      "does": "The microphone did not start recording.",
+      "en_hash": "4963ce3ebe6d",
+      "status": "draft"
+    },
+    "webcam.frame.no_canvas": {
+      "kind": "Error line",
+      "screen": "Camera (web)",
+      "does": "The browser could not make a picture from the camera. Developer text; the ui branch will replace it.",
+      "en_hash": "daf8335aa4a9",
+      "status": "draft"
+    },
+    "webcam.frame.no_blob": {
+      "kind": "Error line",
+      "screen": "Camera (web)",
+      "does": "The browser could not save the camera picture as a file. Developer text; the ui branch will replace it.",
+      "en_hash": "3cf626a62467",
+      "status": "draft"
+    },
+    "webcam.no_canvas": {
+      "kind": "Error line",
+      "screen": "Camera (web)",
+      "does": "The browser could not make a picture from the camera. Developer text; the ui branch will replace it.",
+      "en_hash": "daf8335aa4a9",
+      "status": "draft"
+    },
+    "webcam.no_blob": {
+      "kind": "Error line",
+      "screen": "Camera (web)",
+      "does": "The browser could not save the camera picture as a file. Developer text; the ui branch will replace it.",
+      "en_hash": "3cf626a62467",
+      "status": "draft"
+    },
+    "webvoice.startWebCapture.this_browser_cannot_record": {
+      "kind": "Error line",
+      "screen": "Voice changes (web)",
+      "does": "This browser cannot record sound on this page. The page must use https.",
+      "en_hash": "9780425c1e3c",
+      "status": "draft"
+    },
+    "webvoice.startWebCapture.allow_the_microphone_to": {
+      "kind": "Error line",
+      "screen": "Voice changes (web)",
+      "does": "The user did not allow the microphone in the browser. The user must allow it to give changes by voice.",
+      "en_hash": "cfba21064158",
+      "status": "draft"
+    },
+    "webvoice.startWebCapture.the_microphone_did_not": {
+      "kind": "Error line",
+      "screen": "Voice changes (web)",
+      "does": "The microphone did not start recording in the browser.",
+      "en_hash": "4963ce3ebe6d",
+      "status": "draft"
+    },
+    "webvoice.startWebCapture.the_microphone_did_not_2": {
+      "kind": "Error line",
+      "screen": "Voice changes (web)",
+      "does": "The microphone did not start recording in the browser.",
+      "en_hash": "4963ce3ebe6d",
+      "status": "draft"
+    },
+    "ROLE.title": {
+      "kind": "Title",
+      "screen": "Role sheet (menu)",
+      "does": "Title of the menu where the user picks a role: give food or receive food.",
+      "en_hash": "68f2a0c9acf0",
+      "status": "draft"
+    },
+    "ROLE.give": {
+      "kind": "Card title and tab",
+      "screen": "Role sheet (menu) and top tabs",
+      "does": "Role: the user offers food to other people. One verb.",
+      "en_hash": "c6402106c821",
+      "status": "draft"
+    },
+    "ROLE.giveLine": {
+      "kind": "Card line",
+      "screen": "Role sheet (menu)",
+      "does": "Explains the Give role.",
+      "en_hash": "cf66bc79fb0e",
+      "status": "draft"
+    },
+    "ROLE.receive": {
+      "kind": "Card title and tab",
+      "screen": "Role sheet (menu) and top tabs",
+      "does": "Role: the user finds and takes food that other people offer. One verb.",
+      "en_hash": "bac9d15ad9f1",
+      "status": "draft"
+    },
+    "ROLE.receiveLine": {
+      "kind": "Card line",
+      "screen": "Role sheet (menu)",
+      "does": "Explains the Receive role.",
+      "en_hash": "d958ddbc8a5a",
+      "status": "draft"
+    },
+    "ROLE.logout": {
+      "kind": "Button",
+      "screen": "Role sheet (menu) and top bar",
+      "does": "Signs the user out of the account. The user goes back to the sign-in screen. Not 'sign in'.",
+      "en_hash": "49616145514e",
+      "status": "draft"
+    },
+    "ROLE.close": {
+      "kind": "Screen reader label",
+      "screen": "Role sheet (menu)",
+      "does": "Closes the role menu. The role does not change.",
+      "en_hash": "7d9eb7acb13e",
+      "status": "draft"
+    },
+    "ROLE.selected": {
+      "kind": "Screen reader word",
+      "screen": "Role sheet (menu)",
+      "does": "Said after the role card that is chosen now. Adjective: chosen, active.",
+      "en_hash": "57fd7a0cf33f",
+      "status": "draft"
+    },
+    "ROLE.change": {
+      "kind": "Not shown now",
+      "screen": "Role sheet (menu)",
+      "does": "Not used by any screen now (words.ts only). Meaning: opens the role menu to pick the other role.",
+      "en_hash": "a43a8d8cfd29",
+      "status": "draft"
+    },
+    "FRAME.brand": {
+      "kind": "App name",
+      "screen": "Header",
+      "does": "The app name. Do not translate.",
+      "en_hash": "c11f25312ccb",
+      "status": "draft"
+    },
+    "FRAME.menu": {
+      "kind": "Screen reader label",
+      "screen": "Header (phone)",
+      "does": "The menu button with three lines. Opens the role menu.",
+      "en_hash": "99af6606ff9d",
+      "status": "draft"
+    },
+    "FRAME.tabs": {
+      "kind": "Screen reader label",
+      "screen": "Top bar (wide screen)",
+      "does": "Name of the tab group with the two roles Give and Receive. Noun, plural.",
+      "en_hash": "c25337055464",
+      "status": "draft"
+    },
+    "FRAME.expired": {
+      "kind": "Error line",
+      "screen": "Any screen",
+      "does": "The sign-in session ended. The user must sign in again.",
+      "en_hash": "176c077ea16e",
+      "status": "draft"
+    },
+    "RECEIVE.title": {
+      "kind": "Title",
+      "screen": "Receive screen",
+      "does": "Title of the list of food offers that people can take now.",
+      "en_hash": "2a4729fa7647",
+      "status": "draft"
+    },
+    "RECEIVE.loading": {
+      "kind": "Status line",
+      "screen": "Receive screen",
+      "does": "Shows while the list loads.",
+      "en_hash": "ba3bbbe10d8b",
+      "status": "draft"
+    },
+    "RECEIVE.empty": {
+      "kind": "Status line",
+      "screen": "Receive screen",
+      "does": "No food is offered now. The user can look again later.",
+      "en_hash": "846543758de9",
+      "status": "draft"
+    },
+    "RECEIVE.grab": {
+      "kind": "Button",
+      "screen": "Receive screen",
+      "does": "Button on a food card. The user takes this food offer for himself or herself. Short verb.",
+      "en_hash": "7d935f258918",
+      "status": "draft"
+    },
+    "RECEIVE.grabbing": {
+      "kind": "Button, busy",
+      "screen": "Receive screen",
+      "does": "Shows on the Grab button while the app takes the offer.",
+      "en_hash": "5ae02b3130d8",
+      "status": "draft"
+    },
+    "RECEIVE.gone": {
+      "kind": "Error line",
+      "screen": "Receive screen",
+      "does": "Another user took this food first, or the offer ended.",
+      "en_hash": "98876d574529",
+      "status": "draft"
+    },
+    "RECEIVE.grabbed": {
+      "kind": "Title",
+      "screen": "Receive screen, sheet after a grab",
+      "does": "The user took the food offer. Next the user goes to the pickup place or sends a message to the giver.",
+      "en_hash": "083b2b33e2fc",
+      "status": "draft"
+    },
+    "RECEIVE.maps": {
+      "kind": "Button",
+      "screen": "Receive screen, sheet after a grab",
+      "does": "Opens the pickup place in a maps app.",
+      "en_hash": "119e66d117ae",
+      "status": "draft"
+    },
+    "RECEIVE.chat": {
+      "kind": "Button",
+      "screen": "Receive screen, sheet after a grab",
+      "does": "Opens WhatsApp with a message to the giver. Brand name, do not translate.",
+      "en_hash": "6a40edf1fc87",
+      "status": "draft"
+    },
+    "RECEIVE.close": {
+      "kind": "Screen reader label",
+      "screen": "Receive screen, sheet after a grab",
+      "does": "Closes the sheet. The grab stays.",
+      "en_hash": "7d9eb7acb13e",
+      "status": "draft"
+    },
+    "RECEIVE.yours": {
+      "kind": "Line on a card",
+      "screen": "Receive screen",
+      "does": "This food offer is from the user. The user cannot grab it.",
+      "en_hash": "8a0799132a4d",
+      "status": "draft"
+    },
+    "RECEIVE.collected": {
+      "kind": "Status on a card",
+      "screen": "Receive and Give screens",
+      "does": "State of a food offer: the receiver picked up the food. Past participle.",
+      "en_hash": "1533d367e933",
+      "status": "draft"
+    },
+    "RECEIVE.expired": {
+      "kind": "Status on a card",
+      "screen": "Receive and Give screens",
+      "does": "State of a food offer: its time ended and nobody picked it up.",
+      "en_hash": "424a2551d356",
+      "status": "draft"
+    },
+    "RECEIVE.timeLeft": {
+      "kind": "Screen reader label",
+      "screen": "Receive and Give screens",
+      "does": "Said before the minutes and seconds that the offer stays up.",
+      "en_hash": "fc891b508273",
+      "status": "draft"
+    },
+    "words.servings.1_serving": {
+      "kind": "Line on a card",
+      "screen": "Receive and Give screens",
+      "does": "The amount of food: one portion for one person.",
+      "en_hash": "9a431ffbd774",
+      "status": "draft"
+    },
+    "words.servings.servings": {
+      "kind": "Line on a card",
+      "screen": "Receive and Give screens",
+      "does": "The amount of food: portions for {n} people.",
+      "values": {
+        "n": "a number from 2 to 99"
+      },
+      "en_hash": "e2cc8eb39b7b",
+      "status": "draft"
+    },
+    "words.grabMessage": {
+      "kind": "Message text",
+      "screen": "WhatsApp message to the giver",
+      "does": "The message that the receiver sends to the giver after a grab. Friendly, short, first person.",
+      "values": {
+        "title": "the food title",
+        "servings": "for example '3 servings'",
+        "pickup_text": "where to collect, typed by the giver",
+        "email": "the receiver's email"
+      },
+      "en_hash": "bf255ccd0c57",
+      "status": "draft"
+    },
+    "GIVE.title": {
+      "kind": "Title",
+      "screen": "Give screen",
+      "does": "Title of the list of food offers that the user posted.",
+      "en_hash": "1def1ed931de",
+      "status": "draft"
+    },
+    "GIVE.loading": {
+      "kind": "Status line",
+      "screen": "Give screen",
+      "does": "Shows while the list loads.",
+      "en_hash": "ba3bbbe10d8b",
+      "status": "draft"
+    },
+    "GIVE.empty": {
+      "kind": "Status line",
+      "screen": "Give screen",
+      "does": "The user has no food offers yet. Tells how to make one.",
+      "en_hash": "4df5aadd6540",
+      "status": "draft"
+    },
+    "GIVE.add": {
+      "kind": "Button",
+      "screen": "Give screen",
+      "does": "Opens the camera to make a new food offer. '+' then a noun phrase.",
+      "en_hash": "34ba96e4dc65",
+      "status": "draft"
+    },
+    "words.postedText.listings_are_posted_they": {
+      "kind": "Toast",
+      "screen": "Give screen",
+      "does": "Short message after the post: several food offers are up now for 30 minutes.",
+      "values": {
+        "n": "a number from 2"
+      },
+      "en_hash": "8526b9eb1b7b",
+      "status": "draft"
+    },
+    "words.postedText.listed_it_stays_up": {
+      "kind": "Toast",
+      "screen": "Give screen",
+      "does": "Short message after the post: one food offer is up now for 30 minutes.",
+      "en_hash": "bf8430a29b07",
+      "status": "draft"
+    },
+    "CAPTURE.hint": {
+      "kind": "Hint on the camera",
+      "screen": "Camera",
+      "does": "Tells the user what to do: aim at a product barcode or take a photo of the food.",
+      "en_hash": "3748a9cfe14e",
+      "status": "draft"
+    },
+    "CAPTURE.dropHint": {
+      "kind": "Hint on the camera",
+      "screen": "Camera (web)",
+      "does": "Added after the hint: the user can also drag an image file onto the page.",
+      "en_hash": "b5394abb56b0",
+      "status": "draft"
+    },
+    "CAPTURE.dropNow": {
+      "kind": "Hint on the camera",
+      "screen": "Camera (web)",
+      "does": "Shows while the user drags a file over the page: let go to use the image.",
+      "en_hash": "3c8d5386d25e",
+      "status": "draft"
+    },
+    "CAPTURE.close": {
+      "kind": "Screen reader label",
+      "screen": "Camera",
+      "does": "The X button. Closes the camera; no listing is made.",
+      "en_hash": "0b19d4a6f40b",
+      "status": "draft"
+    },
+    "CAPTURE.upload": {
+      "kind": "Button",
+      "screen": "Camera",
+      "does": "Opens the photo library to pick a photo that is on the device.",
+      "en_hash": "892ab035618c",
+      "status": "draft"
+    },
+    "CAPTURE.shoot": {
+      "kind": "Screen reader label",
+      "screen": "Camera",
+      "does": "The shutter button: takes a photo now.",
+      "en_hash": "7100ac9979a6",
+      "status": "draft"
+    },
+    "CAPTURE.cancel": {
+      "kind": "Button",
+      "screen": "Camera (no camera)",
+      "does": "Closes the camera card; no listing is made.",
+      "en_hash": "19766ed6ccb2",
+      "status": "draft"
+    },
+    "CAPTURE.allow": {
+      "kind": "Line",
+      "screen": "Camera",
+      "does": "The app needs camera access to take a photo.",
+      "en_hash": "acb75e19ca9b",
+      "status": "draft"
+    },
+    "CAPTURE.allowLink": {
+      "kind": "Link",
+      "screen": "Camera",
+      "does": "Asks the phone for camera access.",
+      "en_hash": "e18835ef2f6c",
+      "status": "draft"
+    },
+    "CAPTURE.blocked": {
+      "kind": "Line",
+      "screen": "Camera",
+      "does": "Camera access is off in the phone settings. The user can still upload a photo.",
+      "en_hash": "664b84f73cc9",
+      "status": "draft"
+    },
+    "CAPTURE.shotFailed": {
+      "kind": "Error line",
+      "screen": "Camera",
+      "does": "The camera did not take the photo. The user can try again.",
+      "en_hash": "8be4c44915b5",
+      "status": "draft"
+    },
+    "CAPTURE.use": {
+      "kind": "Title",
+      "screen": "Camera, sheet after the photo",
+      "does": "Question: does the user want to send this photo to the food check?",
+      "en_hash": "9fee6d190de5",
+      "status": "draft"
+    },
+    "CAPTURE.again": {
+      "kind": "Title",
+      "screen": "Camera, sheet after an error",
+      "does": "Question after an error: does the user want to send the same photo again?",
+      "en_hash": "d0db5cc848ec",
+      "status": "draft"
+    },
+    "CAPTURE.retake": {
+      "kind": "Button",
+      "screen": "Camera, sheets after the photo",
+      "does": "Throws away this photo and opens the camera to take a new photo. Short verb phrase.",
+      "en_hash": "1c62f54c28ff",
+      "status": "draft"
+    },
+    "CAPTURE.usePhoto": {
+      "kind": "Button",
+      "screen": "Camera, sheet after the photo",
+      "does": "Sends this photo to the food check.",
+      "en_hash": "66a0773a4c0b",
+      "status": "draft"
+    },
+    "CAPTURE.tryAgain": {
+      "kind": "Button",
+      "screen": "Camera, sheet after an error",
+      "does": "Sends the same photo to the food check again.",
+      "en_hash": "d8b8392e2c54",
+      "status": "draft"
+    },
+    "CAPTURE.barcode": {
+      "kind": "Line",
+      "screen": "Camera, sheet after the photo",
+      "does": "Shows the barcode number that the camera read.",
+      "values": {
+        "code": "the barcode number"
+      },
+      "en_hash": "2c286745cf9f",
+      "status": "draft"
+    },
+    "CAPTURE.analyzing": {
+      "kind": "Title",
+      "screen": "Camera",
+      "does": "Shows while the food check runs. The app adds the seconds, for example 'Analyzing… 2.4 s'.",
+      "en_hash": "89b633adede6",
+      "status": "draft"
+    },
+    "CAPTURE.notFood": {
+      "kind": "Title",
+      "screen": "Camera, answer sheet",
+      "does": "The photo shows no food. Asks the user to take a photo of a food item.",
+      "en_hash": "5e29f0e3a654",
+      "status": "draft"
+    },
+    "CAPTURE.notFoodLine": {
+      "kind": "Line",
+      "screen": "Camera, answer sheet",
+      "does": "Explains the title 'Try a food item'.",
+      "en_hash": "3547b366b564",
+      "status": "draft"
+    },
+    "CAPTURE.noNameOne": {
+      "kind": "Title",
+      "screen": "Camera, answer sheet",
+      "does": "The scanner sees food but cannot name the one item.",
+      "en_hash": "76c50fa6b5d1",
+      "status": "draft"
+    },
+    "CAPTURE.noNameOneLine": {
+      "kind": "Line",
+      "screen": "Camera, answer sheet",
+      "does": "Tells the user how to fix it: a closer photo.",
+      "en_hash": "efd7cc0f6c9b",
+      "status": "draft"
+    },
+    "CAPTURE.noNameMany": {
+      "kind": "Title",
+      "screen": "Camera, answer sheet",
+      "does": "The scanner sees several items but cannot name them.",
+      "en_hash": "001f4c52a504",
+      "status": "draft"
+    },
+    "CAPTURE.noNameManyLine": {
+      "kind": "Line",
+      "screen": "Camera, answer sheet",
+      "does": "Tells the user how to fix it: a closer photo with fewer items.",
+      "en_hash": "fcf5798659bb",
+      "status": "draft"
+    },
+    "CAPTURE.listed": {
+      "kind": "Title",
+      "screen": "Camera, answer sheet",
+      "does": "The user already posted this item and it is still up.",
+      "en_hash": "eefc26c69713",
+      "status": "draft"
+    },
+    "CAPTURE.listedLine": {
+      "kind": "Line",
+      "screen": "Camera, answer sheet",
+      "does": "Explains: the item is in the user's list. 'Your listings' is the name of the Give screen.",
+      "en_hash": "905a2b6061c7",
+      "status": "draft"
+    },
+    "CAPTURE.seeMine": {
+      "kind": "Button",
+      "screen": "Camera, answer sheet",
+      "does": "Closes the camera and shows the user's own food offers (the Give screen).",
+      "en_hash": "d9148ff7f084",
+      "status": "draft"
+    },
+    "CAPTURE.paused": {
+      "kind": "Title",
+      "screen": "Camera, answer sheet",
+      "does": "The food scanner stopped for today because the daily limit is reached.",
+      "en_hash": "8fa7c1af947f",
+      "status": "draft"
+    },
+    "CAPTURE.pausedLine": {
+      "kind": "Line",
+      "screen": "Camera, answer sheet",
+      "does": "Explains: the photo scanner stops until tomorrow; reading a barcode still works.",
+      "en_hash": "b81caa0af081",
+      "status": "draft"
+    },
+    "CAPTURE.closeFlow": {
+      "kind": "Button",
+      "screen": "Camera, answer sheet",
+      "does": "Closes the camera; no listing is made.",
+      "en_hash": "7d9eb7acb13e",
+      "status": "draft"
+    },
+    "REVIEW.one": {
+      "kind": "Title",
+      "screen": "Review of a listing",
+      "does": "Title of the form for one food offer before it is posted.",
+      "en_hash": "8a0799132a4d",
+      "status": "draft"
+    },
+    "REVIEW.check": {
+      "kind": "Line",
+      "screen": "Review of a listing (several items)",
+      "does": "Asks the user to check each item and remove the items that the user does not want to share.",
+      "en_hash": "c45e286d6130",
+      "status": "draft"
+    },
+    "REVIEW.title": {
+      "kind": "Field label",
+      "screen": "Review of a listing",
+      "does": "Label of the field with the name of the food item.",
+      "en_hash": "7e8cd2056da7",
+      "status": "draft"
+    },
+    "REVIEW.servings": {
+      "kind": "Field label",
+      "screen": "Review of a listing",
+      "does": "Label of the number of portions.",
+      "en_hash": "32939bbee29c",
+      "status": "draft"
+    },
+    "REVIEW.fewer": {
+      "kind": "Screen reader label",
+      "screen": "Review of a listing",
+      "does": "The minus button: one serving less.",
+      "en_hash": "c2c8b5326a4f",
+      "status": "draft"
+    },
+    "REVIEW.more": {
+      "kind": "Screen reader label",
+      "screen": "Review of a listing",
+      "does": "The plus button: one serving more.",
+      "en_hash": "6a6f4141d8e4",
+      "status": "draft"
+    },
+    "REVIEW.pickup": {
+      "kind": "Field label",
+      "screen": "Review of a listing",
+      "does": "Label of the field: where and how the receiver collects the food.",
+      "en_hash": "91f5294b8bda",
+      "status": "draft"
+    },
+    "REVIEW.pickupAll": {
+      "kind": "Field label",
+      "screen": "Review of a listing (several items)",
+      "does": "Label of the one pickup field that applies to all items.",
+      "en_hash": "b59754126eef",
+      "status": "draft"
+    },
+    "REVIEW.pickupHint": {
+      "kind": "Placeholder",
+      "screen": "Review of a listing",
+      "does": "Example text in the empty pickup field. Gives a sample place. Adapt the street example to the language.",
+      "en_hash": "36afc7ac39fa",
+      "status": "draft"
+    },
+    "REVIEW.startOver": {
+      "kind": "Button",
+      "screen": "Review of a listing",
+      "does": "Throws away this review and opens the camera again.",
+      "en_hash": "5eed7e9fc8f3",
+      "status": "draft"
+    },
+    "REVIEW.post": {
+      "kind": "Button",
+      "screen": "Review of a listing (one item)",
+      "does": "Posts the food offer now so that other users can see it. Verb in the imperative and a noun.",
+      "en_hash": "87a48f9d584f",
+      "status": "draft"
+    },
+    "REVIEW.posting": {
+      "kind": "Button, busy",
+      "screen": "Review of a listing",
+      "does": "Shows on the post button while the app posts.",
+      "en_hash": "648a2ef491ba",
+      "status": "draft"
+    },
+    "REVIEW.notPosted": {
+      "kind": "Error line",
+      "screen": "Review of a listing (several items)",
+      "does": "This item did not post. It stays in the list so the user can try again.",
+      "en_hash": "a12d28f84313",
+      "status": "draft"
+    },
+    "REVIEW.nonePosted": {
+      "kind": "Error line",
+      "screen": "Review of a listing (several items)",
+      "does": "No item posted. The user can try again.",
+      "en_hash": "b8d43150213e",
+      "status": "draft"
+    },
+    "TOUCH.light": {
+      "kind": "Link",
+      "screen": "Photo touch-up, in the review",
+      "does": "Starts a touch-up that makes the photo brighter.",
+      "en_hash": "fb10f57de1e1",
+      "status": "draft"
+    },
+    "TOUCH.background": {
+      "kind": "Link",
+      "screen": "Photo touch-up, in the review",
+      "does": "Starts a touch-up that puts a plain background behind the food.",
+      "en_hash": "7f3618f52b1d",
+      "status": "draft"
+    },
+    "TOUCH.working": {
+      "kind": "Status line",
+      "screen": "Photo touch-up, in the review",
+      "does": "Shows while the touch-up runs.",
+      "en_hash": "45a601396204",
+      "status": "draft"
+    },
+    "TOUCH.original": {
+      "kind": "Choice label",
+      "screen": "Photo touch-up, in the review",
+      "does": "The photo as the user took it. Noun or adjective.",
+      "en_hash": "88d759ea02ce",
+      "status": "draft"
+    },
+    "TOUCH.edit": {
+      "kind": "Choice label",
+      "screen": "Photo touch-up, in the review",
+      "does": "The photo after the touch-up. Past participle.",
+      "en_hash": "1b6234f5aa17",
+      "status": "draft"
+    },
+    "TOUCH.choose": {
+      "kind": "Line",
+      "screen": "Photo touch-up, in the review",
+      "does": "Asks the user to pick one of two photos for the post.",
+      "en_hash": "e977e6e8e83f",
+      "status": "draft"
+    },
+    "TOUCH.kept": {
+      "kind": "Line",
+      "screen": "Photo touch-up, in the review",
+      "does": "The app did not use the touch-up because it changed the food. The original photo stays.",
+      "en_hash": "843987960f1a",
+      "status": "draft"
+    },
+    "TOUCH.failed": {
+      "kind": "Error line",
+      "screen": "Photo touch-up, in the review",
+      "does": "The touch-up failed. The original photo stays.",
+      "en_hash": "360c022dae14",
+      "status": "draft"
+    },
+    "TOUCH.busy": {
+      "kind": "Error line",
+      "screen": "Photo touch-up, in the review",
+      "does": "The touch-up service is busy. The user can try again in one minute.",
+      "en_hash": "d7c7645e347c",
+      "status": "draft"
+    },
+    "TOUCH.paused": {
+      "kind": "Error line",
+      "screen": "Photo touch-up, in the review",
+      "does": "The touch-up stopped for today because the daily limit is reached.",
+      "en_hash": "7da497363ddb",
+      "status": "draft"
+    },
+    "TOUCH.wait": {
+      "kind": "Error line",
+      "screen": "Review of a listing",
+      "does": "The user tapped post while a touch-up still runs. The user must wait.",
+      "en_hash": "bc335bb3c8ae",
+      "status": "draft"
+    },
+    "TOUCH.ofItem": {
+      "kind": "Part of a joined line",
+      "screen": "Photo touch-up, in the review",
+      "does": "Added to a screen reader label to tell which item, for example 'Better light of item 2'.",
+      "values": {
+        "n": "the item number"
+      },
+      "en_hash": "5d293b72c4df",
+      "status": "draft"
+    },
+    "VOICE.say": {
+      "kind": "Hint",
+      "screen": "Voice changes, in the review",
+      "does": "Tells the user to say the changes for the listing out loud.",
+      "en_hash": "182d5ef05eea",
+      "status": "draft"
+    },
+    "VOICE.start": {
+      "kind": "Screen reader label",
+      "screen": "Voice changes, in the review",
+      "does": "The microphone button: starts the recording.",
+      "en_hash": "a5e3cc5d34c6",
+      "status": "draft"
+    },
+    "VOICE.stop": {
+      "kind": "Screen reader label",
+      "screen": "Voice changes, in the review",
+      "does": "The stop button: ends the recording.",
+      "en_hash": "ac854c05ea5e",
+      "status": "draft"
+    },
+    "VOICE.listening": {
+      "kind": "Status line",
+      "screen": "Voice changes, in the review",
+      "does": "The app records now. A tap on the button stops it.",
+      "en_hash": "ee3c26e38e81",
+      "status": "draft"
+    },
+    "VOICE.working": {
+      "kind": "Status line",
+      "screen": "Voice changes, in the review",
+      "does": "The app reads the recording.",
+      "en_hash": "780299e1d40f",
+      "status": "draft"
+    },
+    "VOICE.heard": {
+      "kind": "Line",
+      "screen": "Voice changes, in the review",
+      "does": "Shows the words that the app heard, in quotes.",
+      "values": {
+        "t": "the spoken words, in the user's language"
+      },
+      "en_hash": "fb018c348824",
+      "status": "draft"
+    },
+    "VOICE.apply": {
+      "kind": "Button",
+      "screen": "Voice changes, in the review",
+      "does": "Applies all the proposed changes to the listing form.",
+      "en_hash": "85045ccc0567",
+      "status": "draft"
+    },
+    "VOICE.keep": {
+      "kind": "Button",
+      "screen": "Voice changes, in the review",
+      "does": "Ignores the proposed changes. The form stays as it is.",
+      "en_hash": "98efcb9aab4f",
+      "status": "draft"
+    },
+    "VOICE.ok": {
+      "kind": "Button",
+      "screen": "Voice changes, in the review",
+      "does": "Closes the voice result when nothing changes.",
+      "en_hash": "565339bc4d33",
+      "status": "draft"
+    },
+    "VOICE.micOff": {
+      "kind": "Error line",
+      "screen": "Voice changes, in the review",
+      "does": "The microphone is not allowed. The user must allow it.",
+      "en_hash": "984c3698d96a",
+      "status": "draft"
+    },
+    "VOICE.failed": {
+      "kind": "Error line",
+      "screen": "Voice changes, in the review",
+      "does": "The app could not read the recording. The user can try again.",
+      "en_hash": "b06464352e6d",
+      "status": "draft"
+    },
+    "VOICE.noSpeech": {
+      "kind": "Error line",
+      "screen": "Voice changes, in the review",
+      "does": "The recording had no speech. The user can try again.",
+      "en_hash": "9621a79b9ab8",
+      "status": "draft"
+    },
+    "VOICE.busy": {
+      "kind": "Error line",
+      "screen": "Voice changes, in the review",
+      "does": "The voice service is busy. The user can try again in one minute.",
+      "en_hash": "8dd0b837c77c",
+      "status": "draft"
+    },
+    "VOICE.paused": {
+      "kind": "Error line",
+      "screen": "Voice changes, in the review",
+      "does": "Voice changes stopped for today because the daily limit is reached.",
+      "en_hash": "eb5d35bd4268",
+      "status": "draft"
+    },
+    "VOICE.rename": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "One line in the list of proposed changes: the title of item {n} changes from one name to another.",
+      "values": {
+        "n": "item number",
+        "from": "old title",
+        "to": "new title"
+      },
+      "en_hash": "779428b76bfc",
+      "status": "draft"
+    },
+    "VOICE.servings": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "The number of servings of item {n} changes.",
+      "values": {
+        "n": "item number",
+        "from": "old number",
+        "to": "new number"
+      },
+      "en_hash": "fa934b87e742",
+      "status": "draft"
+    },
+    "VOICE.remove": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "Item {n} is removed from the list.",
+      "values": {
+        "n": "item number",
+        "title": "item title"
+      },
+      "en_hash": "f439a0842b40",
+      "status": "draft"
+    },
+    "VOICE.pickup": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "The pickup details change to this text.",
+      "values": {
+        "text": "new pickup details"
+      },
+      "en_hash": "46a668240ba0",
+      "status": "draft"
+    },
+    "VOICE.question": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "The app did not understand a part and shows it as a question.",
+      "values": {
+        "text": "the unclear part"
+      },
+      "en_hash": "9155a6208b59",
+      "status": "draft"
+    },
+    "VOICE.notAdded": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "The user asked for a new item by voice. The app does not add it, because a listing needs a photo.",
+      "values": {
+        "title": "item title",
+        "n": "number of servings"
+      },
+      "en_hash": "429216a395a6",
+      "status": "draft"
+    },
+    "VOICE.removedBefore": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "A change was for an item that the user already removed, so the app does not use it.",
+      "en_hash": "38820cefc703",
+      "status": "draft"
+    },
+    "VOICE.dropped": {
+      "kind": "Proposed change",
+      "screen": "Voice changes, in the review",
+      "does": "A part of the speech that the app does not use.",
+      "values": {
+        "text": "the part"
+      },
+      "en_hash": "223e1bbbbee7",
+      "status": "draft"
+    },
+    "VOICE.unnamed": {
+      "kind": "Item name",
+      "screen": "Voice changes, in the review",
+      "does": "Name for an item with no title, sent to the voice service: 'Item 2'.",
+      "values": {
+        "n": "item number"
+      },
+      "en_hash": "446bc9b826d4",
+      "status": "draft"
+    },
+    "VOICE.first": {
+      "kind": "Error line",
+      "screen": "Review of a listing",
+      "does": "The user tapped post before deciding about the voice changes. The user must apply or keep them first.",
+      "en_hash": "d21564b6d736",
+      "status": "draft"
+    },
+    "VOICE.none": {
+      "kind": "Line",
+      "screen": "Voice changes, in the review",
+      "does": "The app found no change in the speech.",
+      "en_hash": "c93cff3dec4e",
+      "status": "draft"
+    }
+  }
+}

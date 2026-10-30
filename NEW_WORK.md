@@ -640,3 +640,27 @@ The fixes:
 - A language whose result is complete (same `en.json` commit, model and k, made with dedupe) is skipped unless `-force` is given.
 - 4 new regression tests (dedupe, check first, complete, collapse). The i18n module now has 26 tests.
 - Not deployed by this change.
+
+---
+
+## 56. Lost in translation: the text graph, a context for every text
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`. It reads the app code of `ui` at the commit in `i18n/source.json`.
+**Meta models:** none in this change. The graph and the contexts are for the prompts to Muse Spark Open (next change).
+**Files:** `i18n/graph.go`, `i18n/graph_test.go`, `i18n/graph.json`, `i18n/context.json`, `i18n/concepts.json`, `i18n/cmd/graph/main.go`, `i18n/testdata/app/`, `i18n/extract.go`, `i18n/gitread.go`, `i18n/i18n_test.go`, `i18n/cmd/extract/main.go`, `i18n/en.json`
+**Sources:** `docs/sources/L4g.md`
+
+A translator needs to know what a text does and what is near it. In the first runs, "Post {plural}" was translated as a noun because nothing said that it is a button. When the app text changes, the texts that depend on it must be checked again.
+
+- **A context for every text:** `i18n/context.json` has one context for each text, in ASD-STE100. It gives the kind (button, title, error line ...), the screen, what the text does for the user, and what each placeholder holds. Each context stores the hash of the English text it was written for. All contexts are drafts until the user approves them.
+- **The text graph:** `i18n/graph.json` is made from the app code. Its nodes are the texts, the screens (10) and the main ideas of the app (14 concepts, `i18n/concepts.json`). Its edges are:
+  - `on_screen`: the screen shows the text (found in the code);
+  - `part_of`: the app joins the text into another text (found in the code);
+  - `uses`: the text names a concept;
+  - `opens` and `pair`: hand-made, for example "Log out" is paired with the sign-in button.
+- **The change walk:** `go run ./cmd/graph` compares the committed texts with a new ui commit. It lists the added, removed and changed texts, walks the graph from them, and lists the texts to check, most connected first.
+- **Checks:** a test fails when a text has no context, when the English text changed after its context was written, or when a context is left for a text that is gone. So a change to the app text cannot pass until its context is updated.
+- **Two texts recovered:** the extractor lost the literals in a joined line that starts with `(` (for example `(...) + " — your photo is kept."`). It now counts every literal and fails if one is not in a message or a skip. `en.json` has 206 messages, 2 more than before: `logic.retryText.your_photo_is_kept` and `capture.elapsedText`.
+- 8 new regression tests (`i18n/graph_test.go`). The i18n module now has 34 tests.
+- Not deployed by this change.

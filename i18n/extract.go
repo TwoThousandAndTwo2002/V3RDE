@@ -103,6 +103,7 @@ type fileState struct {
 	msgs   []Message
 	skips  []Skipped
 	owners []string // the owner of each message, before ids are made
+	seen   int      // literals that a chain, a skip or an object key took
 }
 
 // owner is the name a message gets: OBJ.KEY for a value in a named object,
@@ -271,9 +272,15 @@ func (f *fileState) walk(toks []Token, stack []frame) {
 			case t.Text == "(" && pendingFn != "":
 				fr.kind, fr.name = "fn", pendingFn
 				pendingFn = ""
-			case t.Text == "{" && bodyFn != "":
+			case t.Text == "{" && bodyFn != "" && at(i-1).Text != ":": // ): { a: T } { -- the first {} is the return type
 				fr.kind, fr.name = "fn", bodyFn
 				bodyFn = ""
+			}
+			// a chain can start with "(": (a ? b : c) + " text" (L4g: such literals were lost)
+			// (not a call: f( or x[0]( or a)( continue the operand before them)
+			if pv := at(i - 1); t.Text == "(" && pv.Text != "+" && pv.Text != "." && pv.Text != "?." &&
+				pv.Kind != Close && pv.Kind != Str && pv.Kind != Num && (pv.Kind != Ident || keywords[pv.Text]) {
+				f.chain(toks, i, stack)
 			}
 			stack = append(stack, fr)
 			continue
@@ -294,6 +301,7 @@ func (f *fileState) walk(toks []Token, stack []frame) {
 				top.curKey = t.Text
 				if t.Kind == Str {
 					top.curKey = "" // a quoted key: not a words key
+					f.seen++
 				}
 				i++ // the ':'
 				continue
@@ -337,6 +345,7 @@ func (f *fileState) chain(toks []Token, i int, stack []frame) {
 	for _, p := range parts {
 		if p[1]-p[0] == 1 && toks[p[0]].Kind == Str {
 			hasStr = true
+			f.seen++
 			lit := toks[p[0]]
 			if lit.Tmpl {
 				for _, part := range lit.Parts {
@@ -463,6 +472,10 @@ func Extract(file, src string, lists *Lists) (File, error) {
 	stem = strings.ReplaceAll(stem, "/", ".")
 	f := &fileState{file: file, stem: stem, lists: lists}
 	f.walk(toks, nil)
+	// every literal must be in a message, in skipped.json, or be an object key (L4g)
+	if total := countStr(toks); f.seen != total {
+		return File{}, fmt.Errorf("%s: %d of %d literals are not in a message or a skip", file, total-f.seen, total)
+	}
 	// ids: the owner; owners with more than one message add a slug of the text
 	count := map[string]int{}
 	for _, o := range f.owners {
@@ -548,4 +561,17 @@ func All(files map[string]string, lists *Lists) ([]Message, []Skipped, error) {
 		}
 	}
 	return msgs, skips, nil
+}
+
+func countStr(toks []Token) int {
+	n := 0
+	for _, t := range toks {
+		if t.Kind == Str {
+			n++
+			for _, p := range t.Parts {
+				n += countStr(p)
+			}
+		}
+	}
+	return n
 }

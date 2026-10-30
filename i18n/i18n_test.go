@@ -136,7 +136,7 @@ func TestStaleRule(t *testing.T) {
 // en.json and skipped.json are what the extractor makes from the ui commit
 // in source.json: every literal of the app is in one of them.
 func TestFilesUpToDate(t *testing.T) {
-	en, sk, n, err := Build("..", ".")
+	en, sk, gr, n, err := Build("..", ".")
 	if err != nil {
 		t.Fatalf("%v (the apply script fetches the ui branch first)", err)
 	}
@@ -145,6 +145,9 @@ func TestFilesUpToDate(t *testing.T) {
 	}
 	if !bytes.Equal(sk, []byte(read(t, "skipped.json"))) {
 		t.Error("skipped.json is not up to date: go run ./cmd/extract")
+	}
+	if !bytes.Equal(gr, []byte(read(t, "graph.json"))) {
+		t.Error("graph.json is not up to date: go run ./cmd/extract")
 	}
 	if n < 150 {
 		t.Errorf("only %d messages", n)

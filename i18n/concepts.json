@@ -1,0 +1,258 @@
+{
+  "note": "The main ideas of the app (concepts) and the edges made by hand: opens (a control opens a screen) and pairs (pairs and opposites). A concept term is matched as a whole word in the English text (L4g).",
+  "concepts": {
+    "listing": {
+      "about": "A food offer that a giver posts and other users can see and grab.",
+      "terms": [
+        "listing",
+        "listings",
+        "listed",
+        "offered"
+      ]
+    },
+    "post": {
+      "about": "The action that makes a listing visible to other users.",
+      "terms": [
+        "post",
+        "posted",
+        "posting"
+      ]
+    },
+    "serving": {
+      "about": "One portion of food for one person.",
+      "terms": [
+        "serving",
+        "servings"
+      ]
+    },
+    "pickup": {
+      "about": "Where and how the receiver collects the food.",
+      "terms": [
+        "pickup",
+        "collect",
+        "collected"
+      ]
+    },
+    "grab": {
+      "about": "A receiver takes a listing for himself or herself.",
+      "terms": [
+        "grab",
+        "grabbed",
+        "grabbing"
+      ]
+    },
+    "role": {
+      "about": "What the user does in the app: give food or receive food.",
+      "terms": [
+        "give",
+        "receive",
+        "role",
+        "roles"
+      ]
+    },
+    "item": {
+      "about": "One food item in a photo or in the review list.",
+      "terms": [
+        "item",
+        "items"
+      ]
+    },
+    "photo": {
+      "about": "The picture of the food that the giver takes or uploads.",
+      "terms": [
+        "photo",
+        "photos",
+        "image",
+        "camera",
+        "retake"
+      ]
+    },
+    "scanner": {
+      "about": "The service that checks the photo and names the food.",
+      "terms": [
+        "scanner",
+        "scanning",
+        "analyzing",
+        "food check"
+      ]
+    },
+    "barcode": {
+      "about": "The product barcode that the camera reads.",
+      "terms": [
+        "barcode"
+      ]
+    },
+    "touch-up": {
+      "about": "A change to the photo: better light or a plain background.",
+      "terms": [
+        "touch-up",
+        "touching",
+        "touched"
+      ]
+    },
+    "voice": {
+      "about": "Changes to the listing that the user says out loud.",
+      "terms": [
+        "voice",
+        "talk",
+        "talking",
+        "said",
+        "speech",
+        "microphone",
+        "listening",
+        "recording"
+      ]
+    },
+    "account": {
+      "about": "The user's account: email, password, sign in and sign out.",
+      "terms": [
+        "email",
+        "password",
+        "account",
+        "session",
+        "sign in",
+        "sign up",
+        "log in",
+        "log out",
+        "signing"
+      ]
+    },
+    "busy": {
+      "about": "A service is busy or at its limit; the user waits or tries again.",
+      "terms": [
+        "busy",
+        "limit",
+        "paused",
+        "try again"
+      ]
+    }
+  },
+  "opens": [
+    [
+      "GIVE.add",
+      "Capture"
+    ],
+    [
+      "CAPTURE.seeMine",
+      "Give"
+    ],
+    [
+      "RESET.forgot",
+      "Reset"
+    ],
+    [
+      "RESET.back",
+      "Login"
+    ],
+    [
+      "RESET.again",
+      "Reset"
+    ],
+    [
+      "FRAME.menu",
+      "Role"
+    ],
+    [
+      "ROLE.give",
+      "Give"
+    ],
+    [
+      "ROLE.receive",
+      "Receive"
+    ],
+    [
+      "ROLE.logout",
+      "Login"
+    ],
+    [
+      "REVIEW.startOver",
+      "Capture"
+    ],
+    [
+      "CAPTURE.usePhoto",
+      "Review"
+    ],
+    [
+      "CAPTURE.tryAgain",
+      "Review"
+    ],
+    [
+      "SIGN_IN.go",
+      "Role"
+    ]
+  ],
+  "pairs": [
+    [
+      "SIGN_IN.show",
+      "SIGN_IN.hide"
+    ],
+    [
+      "SIGN_IN.showName",
+      "SIGN_IN.hideName"
+    ],
+    [
+      "ROLE.logout",
+      "SIGN_IN.go"
+    ],
+    [
+      "ROLE.give",
+      "ROLE.receive"
+    ],
+    [
+      "ROLE.giveLine",
+      "ROLE.receiveLine"
+    ],
+    [
+      "REVIEW.fewer",
+      "REVIEW.more"
+    ],
+    [
+      "VOICE.start",
+      "VOICE.stop"
+    ],
+    [
+      "VOICE.apply",
+      "VOICE.keep"
+    ],
+    [
+      "CAPTURE.retake",
+      "CAPTURE.usePhoto"
+    ],
+    [
+      "CAPTURE.retake",
+      "CAPTURE.tryAgain"
+    ],
+    [
+      "TOUCH.original",
+      "TOUCH.edit"
+    ],
+    [
+      "TOUCH.light",
+      "TOUCH.background"
+    ],
+    [
+      "RECEIVE.collected",
+      "RECEIVE.expired"
+    ],
+    [
+      "RESET.send",
+      "RESET.back"
+    ],
+    [
+      "GIVE.title",
+      "RECEIVE.title"
+    ],
+    [
+      "SIGN_IN.noAccount",
+      "SIGN_IN.create"
+    ],
+    [
+      "RESET.expired",
+      "RESET.again"
+    ],
+    [
+      "CAPTURE.use",
+      "CAPTURE.again"
+    ]
+  ]
+}

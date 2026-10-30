@@ -95,8 +95,8 @@ type SkippedFile struct {
 	Skipped []Skipped `json:"skipped"`
 }
 
-// Build makes en.json and skipped.json from the repo and the files in dir (i18n/).
-func Build(repo, dir string) (en, skipped []byte, n int, err error) {
+// Build makes en.json, skipped.json and graph.json from the repo and the files in dir (i18n/).
+func Build(repo, dir string) (en, skipped, graph []byte, n int, err error) {
 	var src Source
 	var lists Lists
 	if err = ReadJSON(filepath.Join(dir, "source.json"), &src); err != nil {
@@ -113,7 +113,25 @@ func Build(repo, dir string) (en, skipped []byte, n int, err error) {
 	if err != nil {
 		return
 	}
+	g, err := GraphOf(src, files, msgs, dir)
+	if err != nil {
+		return
+	}
 	en = Marshal(EnFile{Source: src, Language: "en", Messages: msgs})
 	skipped = Marshal(SkippedFile{Source: src, Skipped: skips})
-	return en, skipped, len(msgs), nil
+	graph = Marshal(g)
+	return en, skipped, graph, len(msgs), nil
+}
+
+// GraphOf builds the text graph with the concepts of dir/concepts.json.
+func GraphOf(src Source, files map[string]string, msgs []Message, dir string) (GraphFile, error) {
+	var cf ConceptFile
+	if err := ReadJSON(filepath.Join(dir, "concepts.json"), &cf); err != nil {
+		return GraphFile{}, err
+	}
+	screens, err := Screens(files, msgs)
+	if err != nil {
+		return GraphFile{}, err
+	}
+	return BuildGraph(src, msgs, screens, cf)
 }

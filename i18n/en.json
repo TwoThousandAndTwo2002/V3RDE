@@ -50,6 +50,14 @@
       "arg": "Error"
     },
     {
+      "id": "capture.elapsedText",
+      "text": "{p1} s",
+      "params": [
+        "p1"
+      ],
+      "where": "capture.ts:17"
+    },
+    {
       "id": "FORM_WORDS.title",
       "text": "Give a title of 1 to 80 characters",
       "where": "capture.ts:34"
@@ -122,6 +130,14 @@
       "id": "logic.retryText.the_food_scanner_is",
       "text": "The food scanner is busy, try again — your photo is kept.",
       "where": "logic.ts:91"
+    },
+    {
+      "id": "logic.retryText.your_photo_is_kept",
+      "text": "{p1} — your photo is kept.",
+      "params": [
+        "p1"
+      ],
+      "where": "logic.ts:92"
     },
     {
       "id": "logic.retryText.request_failed",

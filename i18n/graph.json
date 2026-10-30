@@ -1,0 +1,3621 @@
+{
+  "source": {
+    "branch": "ui",
+    "commit": "c36d8a7ded305d51c3757d4e85aaa4fa926d93b2",
+    "dir": "mobile/src"
+  },
+  "nodes": [
+    {
+      "id": "api.request.timed_out_try_again",
+      "type": "text",
+      "label": "Timed out, try again",
+      "degree": 1
+    },
+    {
+      "id": "api.request.network_error_check_the",
+      "type": "text",
+      "label": "Network error, check the connection",
+      "degree": 0
+    },
+    {
+      "id": "api.analyze.stopped",
+      "type": "text",
+      "label": "Stopped",
+      "degree": 1
+    },
+    {
+      "id": "api.analyze.timed_out_try_again",
+      "type": "text",
+      "label": "Timed out, try again",
+      "degree": 2
+    },
+    {
+      "id": "api.analyze.try_again",
+      "type": "text",
+      "label": "Try again",
+      "degree": 2
+    },
+    {
+      "id": "api.photoUrl.photo",
+      "type": "text",
+      "label": "photo {status}",
+      "degree": 1
+    },
+    {
+      "id": "api.photoUrl.photo_read_failed",
+      "type": "text",
+      "label": "photo read failed",
+      "degree": 1
+    },
+    {
+      "id": "capture.elapsedText",
+      "type": "text",
+      "label": "{p1} s",
+      "degree": 1
+    },
+    {
+      "id": "FORM_WORDS.title",
+      "type": "text",
+      "label": "Give a title of 1 to 80 characters",
+      "degree": 2
+    },
+    {
+      "id": "FORM_WORDS.servings",
+      "type": "text",
+      "label": "Give servings from 1 to 99",
+      "degree": 3
+    },
+    {
+      "id": "FORM_WORDS.pickup",
+      "type": "text",
+      "label": "Give pickup details of 1 to 200 characters",
+      "degree": 3
+    },
+    {
+      "id": "capture.sourceNote.from_the_barcode",
+      "type": "text",
+      "label": "From the barcode {barcode}",
+      "degree": 2
+    },
+    {
+      "id": "capture.sourceNote.the_scanner_says",
+      "type": "text",
+      "label": "The scanner says: {description}",
+      "degree": 2
+    },
+    {
+      "id": "clipsession.a_recording_is_already",
+      "type": "text",
+      "label": "A recording is already running",
+      "degree": 1
+    },
+    {
+      "id": "clipsession.the_recording_was_cancelled",
+      "type": "text",
+      "label": "The recording was cancelled",
+      "degree": 1
+    },
+    {
+      "id": "clipsession.not_recording",
+      "type": "text",
+      "label": "Not recording",
+      "degree": 1
+    },
+    {
+      "id": "logic.retryText.the_scanner_is_busy",
+      "type": "text",
+      "label": "The scanner is busy. Wait a few seconds — your photo is kept.",
+      "degree": 5
+    },
+    {
+      "id": "logic.retryText.too_many_photos_this",
+      "type": "text",
+      "label": "Too many photos this minute. Wait a minute — your photo is kept.",
+      "degree": 3
+    },
+    {
+      "id": "logic.retryText.the_food_check_is",
+      "type": "text",
+      "label": "The food check is not available right now — your photo is kept.",
+      "degree": 4
+    },
+    {
+      "id": "logic.retryText.this_photo_took_too",
+      "type": "text",
+      "label": "This photo took too long. Try a closer photo of fewer items — your photo is kept.",
+      "degree": 4
+    },
+    {
+      "id": "logic.retryText.the_food_scanner_is",
+      "type": "text",
+      "label": "The food scanner is busy, try again — your photo is kept.",
+      "degree": 5
+    },
+    {
+      "id": "logic.retryText.your_photo_is_kept",
+      "type": "text",
+      "label": "{p1} — your photo is kept.",
+      "degree": 8
+    },
+    {
+      "id": "logic.retryText.request_failed",
+      "type": "text",
+      "label": "Request failed ({status})",
+      "degree": 2
+    },
+    {
+      "id": "logic.foundTitle.item_found",
+      "type": "text",
+      "label": "item found",
+      "degree": 2
+    },
+    {
+      "id": "logic.foundTitle.items_found",
+      "type": "text",
+      "label": "items found",
+      "degree": 2
+    },
+    {
+      "id": "logic.postTitle.post",
+      "type": "text",
+      "label": "Post {plural}",
+      "degree": 4
+    },
+    {
+      "id": "logic.postTitle.listing",
+      "type": "text",
+      "label": "listing",
+      "degree": 3
+    },
+    {
+      "id": "logic.postTitle.listings",
+      "type": "text",
+      "label": "listings",
+      "degree": 3
+    },
+    {
+      "id": "logic.postingText",
+      "type": "text",
+      "label": "Posting {i} of {n}…",
+      "degree": 2
+    },
+    {
+      "id": "logic.notPostedTitle.item_not_posted",
+      "type": "text",
+      "label": "item not posted",
+      "degree": 3
+    },
+    {
+      "id": "logic.notPostedTitle.items_not_posted",
+      "type": "text",
+      "label": "items not posted",
+      "degree": 3
+    },
+    {
+      "id": "logic.postedSummary.listing",
+      "type": "text",
+      "label": "listing",
+      "degree": 3
+    },
+    {
+      "id": "logic.postedSummary.listings",
+      "type": "text",
+      "label": "listings",
+      "degree": 3
+    },
+    {
+      "id": "logic.postedSummary.1_item_is",
+      "type": "text",
+      "label": "1 item is",
+      "degree": 3
+    },
+    {
+      "id": "logic.postedSummary.items_are",
+      "type": "text",
+      "label": "{left} items are",
+      "degree": 3
+    },
+    {
+      "id": "logic.postedSummary.posted_kept_here_try",
+      "type": "text",
+      "label": "{plural} posted. {p2} kept here; try again.",
+      "degree": 7
+    },
+    {
+      "id": "FIXED_TEXT.401",
+      "type": "text",
+      "label": "Please log in again",
+      "degree": 1
+    },
+    {
+      "id": "FIXED_TEXT.429",
+      "type": "text",
+      "label": "Too many requests, wait a minute",
+      "degree": 0
+    },
+    {
+      "id": "logic.errorMessage.the_food_scanner_is",
+      "type": "text",
+      "label": "The food scanner is busy, try again",
+      "degree": 2
+    },
+    {
+      "id": "logic.errorMessage.the_service_is_busy",
+      "type": "text",
+      "label": "The service is busy, try again",
+      "degree": 1
+    },
+    {
+      "id": "logic.errorMessage.request_failed",
+      "type": "text",
+      "label": "Request failed ({status})",
+      "degree": 0
+    },
+    {
+      "id": "SIGN_IN.title",
+      "type": "text",
+      "label": "Share or find a meal",
+      "degree": 1
+    },
+    {
+      "id": "SIGN_IN.line",
+      "type": "text",
+      "label": "Sign in or sign up",
+      "degree": 2
+    },
+    {
+      "id": "SIGN_IN.email",
+      "type": "text",
+      "label": "Email",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.emailHint",
+      "type": "text",
+      "label": "you@email.com",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.password",
+      "type": "text",
+      "label": "Password",
+      "degree": 2
+    },
+    {
+      "id": "SIGN_IN.rule",
+      "type": "text",
+      "label": "{MIN_PASSWORD} characters or more",
+      "degree": 1
+    },
+    {
+      "id": "SIGN_IN.incomplete",
+      "type": "text",
+      "label": "Enter your email and a password of {MIN_PASSWORD} characters or more",
+      "degree": 2
+    },
+    {
+      "id": "SIGN_IN.badEmail",
+      "type": "text",
+      "label": "Enter an email like you@email.com",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.waiting",
+      "type": "text",
+      "label": "Signing in…",
+      "degree": 2
+    },
+    {
+      "id": "SIGN_IN.noAccount",
+      "type": "text",
+      "label": "No account found.",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.create",
+      "type": "text",
+      "label": "Create one",
+      "degree": 2
+    },
+    {
+      "id": "SIGN_IN.go",
+      "type": "text",
+      "label": "Continue",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.show",
+      "type": "text",
+      "label": "Show",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.hide",
+      "type": "text",
+      "label": "Hide",
+      "degree": 3
+    },
+    {
+      "id": "SIGN_IN.showName",
+      "type": "text",
+      "label": "Show password",
+      "degree": 4
+    },
+    {
+      "id": "SIGN_IN.hideName",
+      "type": "text",
+      "label": "Hide password",
+      "degree": 4
+    },
+    {
+      "id": "RESET.forgot",
+      "type": "text",
+      "label": "Forgot password?",
+      "degree": 3
+    },
+    {
+      "id": "RESET.askTitle",
+      "type": "text",
+      "label": "Reset your password",
+      "degree": 2
+    },
+    {
+      "id": "RESET.askLine",
+      "type": "text",
+      "label": "We send a link to your email",
+      "degree": 2
+    },
+    {
+      "id": "RESET.send",
+      "type": "text",
+      "label": "Send link",
+      "degree": 2
+    },
+    {
+      "id": "RESET.sending",
+      "type": "text",
+      "label": "Sending…",
+      "degree": 1
+    },
+    {
+      "id": "RESET.back",
+      "type": "text",
+      "label": "Back to sign in",
+      "degree": 4
+    },
+    {
+      "id": "RESET.sentTitle",
+      "type": "text",
+      "label": "Check your email",
+      "degree": 2
+    },
+    {
+      "id": "RESET.sent",
+      "type": "text",
+      "label": "If an account uses {email}, a link to set a new password is on its way. It works for {RESET_MINUTES} minutes.",
+      "degree": 2
+    },
+    {
+      "id": "RESET.newTitle",
+      "type": "text",
+      "label": "Set a new password",
+      "degree": 2
+    },
+    {
+      "id": "RESET.newLine",
+      "type": "text",
+      "label": "Choose a password of {MIN_PASSWORD} characters or more",
+      "degree": 2
+    },
+    {
+      "id": "RESET.newPassword",
+      "type": "text",
+      "label": "New password",
+      "degree": 2
+    },
+    {
+      "id": "RESET.save",
+      "type": "text",
+      "label": "Save password",
+      "degree": 2
+    },
+    {
+      "id": "RESET.saving",
+      "type": "text",
+      "label": "Saving…",
+      "degree": 1
+    },
+    {
+      "id": "RESET.short",
+      "type": "text",
+      "label": "Use {MIN_PASSWORD} characters or more",
+      "degree": 1
+    },
+    {
+      "id": "RESET.expired",
+      "type": "text",
+      "label": "This link has expired or was used.",
+      "degree": 2
+    },
+    {
+      "id": "RESET.again",
+      "type": "text",
+      "label": "Send a new link",
+      "degree": 3
+    },
+    {
+      "id": "ui.Shutter",
+      "type": "text",
+      "label": "Take photo",
+      "degree": 2
+    },
+    {
+      "id": "ui.ReviewCard.title_of_item",
+      "type": "text",
+      "label": "Title of item {n}",
+      "degree": 2
+    },
+    {
+      "id": "ui.ReviewCard.remove_item",
+      "type": "text",
+      "label": "Remove item {n}",
+      "degree": 2
+    },
+    {
+      "id": "ui.ReviewCard.fewer_servings_of_item",
+      "type": "text",
+      "label": "Fewer servings of item {n}",
+      "degree": 3
+    },
+    {
+      "id": "ui.ReviewCard.servings_of_item",
+      "type": "text",
+      "label": "Servings of item {n}",
+      "degree": 3
+    },
+    {
+      "id": "ui.ReviewCard.more_servings_of_item",
+      "type": "text",
+      "label": "More servings of item {n}",
+      "degree": 3
+    },
+    {
+      "id": "voicerec.start.allow_the_microphone_to",
+      "type": "text",
+      "label": "Allow the microphone to talk to the app",
+      "degree": 1
+    },
+    {
+      "id": "voicerec.start.the_microphone_did_not",
+      "type": "text",
+      "label": "The microphone did not start",
+      "degree": 1
+    },
+    {
+      "id": "webcam.frame.no_canvas",
+      "type": "text",
+      "label": "no canvas",
+      "degree": 0
+    },
+    {
+      "id": "webcam.frame.no_blob",
+      "type": "text",
+      "label": "no blob",
+      "degree": 0
+    },
+    {
+      "id": "webcam.no_canvas",
+      "type": "text",
+      "label": "no canvas",
+      "degree": 0
+    },
+    {
+      "id": "webcam.no_blob",
+      "type": "text",
+      "label": "no blob",
+      "degree": 0
+    },
+    {
+      "id": "webvoice.startWebCapture.this_browser_cannot_record",
+      "type": "text",
+      "label": "This browser cannot record here (https is needed)",
+      "degree": 0
+    },
+    {
+      "id": "webvoice.startWebCapture.allow_the_microphone_to",
+      "type": "text",
+      "label": "Allow the microphone to talk to the app",
+      "degree": 1
+    },
+    {
+      "id": "webvoice.startWebCapture.the_microphone_did_not",
+      "type": "text",
+      "label": "The microphone did not start",
+      "degree": 1
+    },
+    {
+      "id": "webvoice.startWebCapture.the_microphone_did_not_2",
+      "type": "text",
+      "label": "The microphone did not start",
+      "degree": 1
+    },
+    {
+      "id": "ROLE.title",
+      "type": "text",
+      "label": "What do you want to do?",
+      "degree": 1
+    },
+    {
+      "id": "ROLE.give",
+      "type": "text",
+      "label": "Give",
+      "degree": 5
+    },
+    {
+      "id": "ROLE.giveLine",
+      "type": "text",
+      "label": "Share your food",
+      "degree": 3
+    },
+    {
+      "id": "ROLE.receive",
+      "type": "text",
+      "label": "Receive",
+      "degree": 5
+    },
+    {
+      "id": "ROLE.receiveLine",
+      "type": "text",
+      "label": "Find food near you",
+      "degree": 3
+    },
+    {
+      "id": "ROLE.logout",
+      "type": "text",
+      "label": "Log out",
+      "degree": 5
+    },
+    {
+      "id": "ROLE.close",
+      "type": "text",
+      "label": "Close",
+      "degree": 1
+    },
+    {
+      "id": "ROLE.selected",
+      "type": "text",
+      "label": "Selected",
+      "degree": 2
+    },
+    {
+      "id": "ROLE.change",
+      "type": "text",
+      "label": "Change role",
+      "degree": 1
+    },
+    {
+      "id": "FRAME.brand",
+      "type": "text",
+      "label": "V3RDE",
+      "degree": 1
+    },
+    {
+      "id": "FRAME.menu",
+      "type": "text",
+      "label": "Menu",
+      "degree": 2
+    },
+    {
+      "id": "FRAME.tabs",
+      "type": "text",
+      "label": "Roles",
+      "degree": 2
+    },
+    {
+      "id": "FRAME.expired",
+      "type": "text",
+      "label": "Your session has ended. Sign in again.",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.title",
+      "type": "text",
+      "label": "Available now",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.loading",
+      "type": "text",
+      "label": "Loading…",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.empty",
+      "type": "text",
+      "label": "Nothing is offered now. Look again in a few minutes.",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.grab",
+      "type": "text",
+      "label": "Grab",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.grabbing",
+      "type": "text",
+      "label": "Grabbing…",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.gone",
+      "type": "text",
+      "label": "This food is gone",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.grabbed",
+      "type": "text",
+      "label": "You grabbed it",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.maps",
+      "type": "text",
+      "label": "Maps",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.chat",
+      "type": "text",
+      "label": "WhatsApp",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.close",
+      "type": "text",
+      "label": "Close",
+      "degree": 1
+    },
+    {
+      "id": "RECEIVE.yours",
+      "type": "text",
+      "label": "Your listing",
+      "degree": 2
+    },
+    {
+      "id": "RECEIVE.collected",
+      "type": "text",
+      "label": "Collected",
+      "degree": 4
+    },
+    {
+      "id": "RECEIVE.expired",
+      "type": "text",
+      "label": "Expired",
+      "degree": 3
+    },
+    {
+      "id": "RECEIVE.timeLeft",
+      "type": "text",
+      "label": "Time left",
+      "degree": 2
+    },
+    {
+      "id": "words.servings.1_serving",
+      "type": "text",
+      "label": "1 serving",
+      "degree": 3
+    },
+    {
+      "id": "words.servings.servings",
+      "type": "text",
+      "label": "{n} servings",
+      "degree": 3
+    },
+    {
+      "id": "words.grabMessage",
+      "type": "text",
+      "label": "Hi! I grabbed \"{title}\" on V3RDE ({servings}). Pickup: {pickup_text}. I am {email}. When can I come?",
+      "degree": 3
+    },
+    {
+      "id": "GIVE.title",
+      "type": "text",
+      "label": "Your listings",
+      "degree": 3
+    },
+    {
+      "id": "GIVE.loading",
+      "type": "text",
+      "label": "Loading…",
+      "degree": 1
+    },
+    {
+      "id": "GIVE.empty",
+      "type": "text",
+      "label": "Nothing is listed yet. Take a photo of a meal to share it.",
+      "degree": 3
+    },
+    {
+      "id": "GIVE.add",
+      "type": "text",
+      "label": "+ New listing",
+      "degree": 3
+    },
+    {
+      "id": "words.postedText.listings_are_posted_they",
+      "type": "text",
+      "label": "{n} listings are posted. They stay up for 30 minutes.",
+      "degree": 3
+    },
+    {
+      "id": "words.postedText.listed_it_stays_up",
+      "type": "text",
+      "label": "Listed. It stays up for 30 minutes.",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.hint",
+      "type": "text",
+      "label": "Point at a barcode, or take a photo of the food",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.dropHint",
+      "type": "text",
+      "label": "or drop an image here",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.dropNow",
+      "type": "text",
+      "label": "Drop to use this image",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.close",
+      "type": "text",
+      "label": "Close the camera",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.upload",
+      "type": "text",
+      "label": "Upload a photo",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.shoot",
+      "type": "text",
+      "label": "Take photo",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.cancel",
+      "type": "text",
+      "label": "Cancel",
+      "degree": 1
+    },
+    {
+      "id": "CAPTURE.allow",
+      "type": "text",
+      "label": "Allow camera access to take a photo.",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.allowLink",
+      "type": "text",
+      "label": "Allow camera",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.blocked",
+      "type": "text",
+      "label": "Camera access is off. Upload a photo.",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.shotFailed",
+      "type": "text",
+      "label": "The photo failed. Try again.",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.use",
+      "type": "text",
+      "label": "Use this photo?",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.again",
+      "type": "text",
+      "label": "Try again?",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.retake",
+      "type": "text",
+      "label": "Retake",
+      "degree": 4
+    },
+    {
+      "id": "CAPTURE.usePhoto",
+      "type": "text",
+      "label": "Use photo",
+      "degree": 4
+    },
+    {
+      "id": "CAPTURE.tryAgain",
+      "type": "text",
+      "label": "Try again",
+      "degree": 4
+    },
+    {
+      "id": "CAPTURE.barcode",
+      "type": "text",
+      "label": "Barcode {code}",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.analyzing",
+      "type": "text",
+      "label": "Analyzing…",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.notFood",
+      "type": "text",
+      "label": "Try a food item",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.notFoodLine",
+      "type": "text",
+      "label": "This does not look like food. Take a photo of the food item.",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.noNameOne",
+      "type": "text",
+      "label": "The scanner cannot name this item",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.noNameOneLine",
+      "type": "text",
+      "label": "Take a closer photo of the food item.",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.noNameMany",
+      "type": "text",
+      "label": "The scanner cannot name these items",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.noNameManyLine",
+      "type": "text",
+      "label": "Take a closer photo of fewer items.",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.listed",
+      "type": "text",
+      "label": "Already listed",
+      "degree": 2
+    },
+    {
+      "id": "CAPTURE.listedLine",
+      "type": "text",
+      "label": "This item is already up in Your listings.",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.seeMine",
+      "type": "text",
+      "label": "See my listings",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.paused",
+      "type": "text",
+      "label": "Scanning is paused",
+      "degree": 3
+    },
+    {
+      "id": "CAPTURE.pausedLine",
+      "type": "text",
+      "label": "The scanner reached the limit for today. A barcode still works.",
+      "degree": 4
+    },
+    {
+      "id": "CAPTURE.closeFlow",
+      "type": "text",
+      "label": "Close",
+      "degree": 1
+    },
+    {
+      "id": "REVIEW.one",
+      "type": "text",
+      "label": "Your listing",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.check",
+      "type": "text",
+      "label": "Check each item. Remove what you do not want to share.",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.title",
+      "type": "text",
+      "label": "Title",
+      "degree": 1
+    },
+    {
+      "id": "REVIEW.servings",
+      "type": "text",
+      "label": "Servings",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.fewer",
+      "type": "text",
+      "label": "Fewer servings",
+      "degree": 3
+    },
+    {
+      "id": "REVIEW.more",
+      "type": "text",
+      "label": "More servings",
+      "degree": 3
+    },
+    {
+      "id": "REVIEW.pickup",
+      "type": "text",
+      "label": "Pickup details",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.pickupAll",
+      "type": "text",
+      "label": "Pickup details (for all items)",
+      "degree": 3
+    },
+    {
+      "id": "REVIEW.pickupHint",
+      "type": "text",
+      "label": "Where to collect, for example Lobby of 12 Main St",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.startOver",
+      "type": "text",
+      "label": "Start over",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.post",
+      "type": "text",
+      "label": "Post listing",
+      "degree": 3
+    },
+    {
+      "id": "REVIEW.posting",
+      "type": "text",
+      "label": "Posting…",
+      "degree": 2
+    },
+    {
+      "id": "REVIEW.notPosted",
+      "type": "text",
+      "label": "This item did not post. It stays here.",
+      "degree": 3
+    },
+    {
+      "id": "REVIEW.nonePosted",
+      "type": "text",
+      "label": "No item posted. Try again.",
+      "degree": 4
+    },
+    {
+      "id": "TOUCH.light",
+      "type": "text",
+      "label": "Better light",
+      "degree": 2
+    },
+    {
+      "id": "TOUCH.background",
+      "type": "text",
+      "label": "Plain background",
+      "degree": 2
+    },
+    {
+      "id": "TOUCH.working",
+      "type": "text",
+      "label": "Touching up the photo…",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.original",
+      "type": "text",
+      "label": "Original",
+      "degree": 2
+    },
+    {
+      "id": "TOUCH.edit",
+      "type": "text",
+      "label": "Touched up",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.choose",
+      "type": "text",
+      "label": "Choose the photo to post:",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.kept",
+      "type": "text",
+      "label": "The photo stays as it is: the check saw a change to the food.",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.failed",
+      "type": "text",
+      "label": "The touch-up did not work. The photo stays as it is.",
+      "degree": 4
+    },
+    {
+      "id": "TOUCH.busy",
+      "type": "text",
+      "label": "The touch-up is busy. Try again in a minute.",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.paused",
+      "type": "text",
+      "label": "Touch-up is paused for today.",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.wait",
+      "type": "text",
+      "label": "Wait for the touch-up to end, then post.",
+      "degree": 3
+    },
+    {
+      "id": "TOUCH.ofItem",
+      "type": "text",
+      "label": "of item {n}",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.say",
+      "type": "text",
+      "label": "Say what to change",
+      "degree": 1
+    },
+    {
+      "id": "VOICE.start",
+      "type": "text",
+      "label": "Start talking",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.stop",
+      "type": "text",
+      "label": "Stop talking",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.listening",
+      "type": "text",
+      "label": "Listening… Tap to stop.",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.working",
+      "type": "text",
+      "label": "Reading what you said…",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.heard",
+      "type": "text",
+      "label": "You said: “{t}”",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.apply",
+      "type": "text",
+      "label": "Apply changes",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.keep",
+      "type": "text",
+      "label": "Keep as is",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.ok",
+      "type": "text",
+      "label": "OK",
+      "degree": 1
+    },
+    {
+      "id": "VOICE.micOff",
+      "type": "text",
+      "label": "Allow the microphone to talk.",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.failed",
+      "type": "text",
+      "label": "Could not read what you said. Try again.",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.noSpeech",
+      "type": "text",
+      "label": "No speech was heard. Try again.",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.busy",
+      "type": "text",
+      "label": "Voice is busy. Try again in a minute.",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.paused",
+      "type": "text",
+      "label": "Voice is paused for today.",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.rename",
+      "type": "text",
+      "label": "Item {n}: “{from}” to “{to}”",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.servings",
+      "type": "text",
+      "label": "Item {n}: {from} to {to} servings",
+      "degree": 3
+    },
+    {
+      "id": "VOICE.remove",
+      "type": "text",
+      "label": "Remove item {n}: {title}",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.pickup",
+      "type": "text",
+      "label": "Pickup: {text}",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.question",
+      "type": "text",
+      "label": "Question: {text}",
+      "degree": 1
+    },
+    {
+      "id": "VOICE.notAdded",
+      "type": "text",
+      "label": "Not added (a listing needs a photo): {title}, {n} servings",
+      "degree": 4
+    },
+    {
+      "id": "VOICE.removedBefore",
+      "type": "text",
+      "label": "Not used: a change for an item that you removed.",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.dropped",
+      "type": "text",
+      "label": "Not used: {text}",
+      "degree": 1
+    },
+    {
+      "id": "VOICE.unnamed",
+      "type": "text",
+      "label": "Item {n}",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.first",
+      "type": "text",
+      "label": "Apply or keep the voice changes first.",
+      "degree": 2
+    },
+    {
+      "id": "VOICE.none",
+      "type": "text",
+      "label": "No change found in what you said.",
+      "degree": 2
+    },
+    {
+      "id": "screen:Capture",
+      "type": "screen",
+      "label": "Capture",
+      "degree": 44
+    },
+    {
+      "id": "screen:Frame",
+      "type": "screen",
+      "label": "Frame",
+      "degree": 9
+    },
+    {
+      "id": "screen:Give",
+      "type": "screen",
+      "label": "Give",
+      "degree": 13
+    },
+    {
+      "id": "screen:Login",
+      "type": "screen",
+      "label": "Login",
+      "degree": 19
+    },
+    {
+      "id": "screen:Receive",
+      "type": "screen",
+      "label": "Receive",
+      "degree": 18
+    },
+    {
+      "id": "screen:Reset",
+      "type": "screen",
+      "label": "Reset",
+      "degree": 24
+    },
+    {
+      "id": "screen:Review",
+      "type": "screen",
+      "label": "Review",
+      "degree": 44
+    },
+    {
+      "id": "screen:Role",
+      "type": "screen",
+      "label": "Role",
+      "degree": 10
+    },
+    {
+      "id": "screen:TouchUp",
+      "type": "screen",
+      "label": "TouchUp",
+      "degree": 9
+    },
+    {
+      "id": "screen:Voice",
+      "type": "screen",
+      "label": "Voice",
+      "degree": 24
+    },
+    {
+      "id": "concept:account",
+      "type": "concept",
+      "label": "account",
+      "degree": 23
+    },
+    {
+      "id": "concept:barcode",
+      "type": "concept",
+      "label": "barcode",
+      "degree": 4
+    },
+    {
+      "id": "concept:busy",
+      "type": "concept",
+      "label": "busy",
+      "degree": 20
+    },
+    {
+      "id": "concept:grab",
+      "type": "concept",
+      "label": "grab",
+      "degree": 4
+    },
+    {
+      "id": "concept:item",
+      "type": "concept",
+      "label": "item",
+      "degree": 29
+    },
+    {
+      "id": "concept:listing",
+      "type": "concept",
+      "label": "listing",
+      "degree": 17
+    },
+    {
+      "id": "concept:photo",
+      "type": "concept",
+      "label": "photo",
+      "degree": 31
+    },
+    {
+      "id": "concept:pickup",
+      "type": "concept",
+      "label": "pickup",
+      "degree": 7
+    },
+    {
+      "id": "concept:post",
+      "type": "concept",
+      "label": "post",
+      "degree": 12
+    },
+    {
+      "id": "concept:role",
+      "type": "concept",
+      "label": "role",
+      "degree": 7
+    },
+    {
+      "id": "concept:scanner",
+      "type": "concept",
+      "label": "scanner",
+      "degree": 11
+    },
+    {
+      "id": "concept:serving",
+      "type": "concept",
+      "label": "serving",
+      "degree": 11
+    },
+    {
+      "id": "concept:touch-up",
+      "type": "concept",
+      "label": "touch-up",
+      "degree": 6
+    },
+    {
+      "id": "concept:voice",
+      "type": "concept",
+      "label": "voice",
+      "degree": 20
+    }
+  ],
+  "edges": [
+    {
+      "from": "CAPTURE.again",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.allow",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.allowLink",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.analyzing",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.barcode",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.blocked",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.cancel",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.close",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.closeFlow",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.dropHint",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.dropNow",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.hint",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.listed",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.listedLine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.noNameMany",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.noNameManyLine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.noNameOne",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.noNameOneLine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.notFood",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.notFoodLine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.paused",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.pausedLine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.retake",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.seeMine",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.shoot",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.shotFailed",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.tryAgain",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.upload",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.use",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "CAPTURE.usePhoto",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "api.analyze.stopped",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "api.analyze.timed_out_try_again",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "api.analyze.try_again",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "capture.elapsedText",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.request_failed",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.the_food_check_is",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.the_food_scanner_is",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.the_scanner_is_busy",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.this_photo_took_too",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.too_many_photos_this",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.your_photo_is_kept",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.Shutter",
+      "to": "screen:Capture",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FRAME.brand",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FRAME.menu",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FRAME.tabs",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.give",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.giveLine",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.logout",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.receive",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.receiveLine",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.selected",
+      "to": "screen:Frame",
+      "kind": "on_screen"
+    },
+    {
+      "from": "GIVE.add",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "GIVE.empty",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "GIVE.loading",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "GIVE.title",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.collected",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.expired",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.timeLeft",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.postedText.listed_it_stays_up",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.postedText.listings_are_posted_they",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.servings.1_serving",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.servings.servings",
+      "to": "screen:Give",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.forgot",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.badEmail",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.create",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.email",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.emailHint",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.go",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.hide",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.hideName",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.incomplete",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.line",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.noAccount",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.password",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.rule",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.show",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.showName",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.title",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.waiting",
+      "to": "screen:Login",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.chat",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.close",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.collected",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.empty",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.expired",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.gone",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.grab",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.grabbed",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.grabbing",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.loading",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.maps",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.timeLeft",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.title",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RECEIVE.yours",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.grabMessage",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.servings.1_serving",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "words.servings.servings",
+      "to": "screen:Receive",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.again",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.askLine",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.askTitle",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.back",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.expired",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.newLine",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.newPassword",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.newTitle",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.save",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.saving",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.send",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.sending",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.sent",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.sentTitle",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "RESET.short",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.badEmail",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.email",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.emailHint",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.hide",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.hideName",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.show",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "SIGN_IN.showName",
+      "to": "screen:Reset",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FORM_WORDS.pickup",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FORM_WORDS.servings",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "FORM_WORDS.title",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.check",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.fewer",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.more",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.nonePosted",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.notPosted",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.one",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.pickup",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.pickupAll",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.pickupHint",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.post",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.posting",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.servings",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.startOver",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "REVIEW.title",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.busy",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.failed",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.paused",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.wait",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.first",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "capture.sourceNote.from_the_barcode",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "capture.sourceNote.the_scanner_says",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.foundTitle.item_found",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.foundTitle.items_found",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.notPostedTitle.item_not_posted",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.notPostedTitle.items_not_posted",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postTitle.listing",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postTitle.listings",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postTitle.post",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postedSummary.1_item_is",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postedSummary.items_are",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postedSummary.listing",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postedSummary.listings",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postedSummary.posted_kept_here_try",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.postingText",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.ReviewCard.fewer_servings_of_item",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.ReviewCard.more_servings_of_item",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.ReviewCard.remove_item",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.ReviewCard.servings_of_item",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ui.ReviewCard.title_of_item",
+      "to": "screen:Review",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.close",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.give",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.giveLine",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.logout",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.receive",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.receiveLine",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.selected",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "ROLE.title",
+      "to": "screen:Role",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.background",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.choose",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.edit",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.failed",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.kept",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.light",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.ofItem",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.original",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "TOUCH.working",
+      "to": "screen:TouchUp",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.apply",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.busy",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.dropped",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.failed",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.heard",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.keep",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.listening",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.micOff",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.noSpeech",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.none",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.notAdded",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.ok",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.paused",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.pickup",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.question",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.remove",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.removedBefore",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.rename",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.say",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.servings",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.start",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.stop",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.unnamed",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "VOICE.working",
+      "to": "screen:Voice",
+      "kind": "on_screen"
+    },
+    {
+      "from": "logic.retryText.the_scanner_is_busy",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.retryText.too_many_photos_this",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.retryText.the_food_check_is",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.retryText.this_photo_took_too",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.retryText.the_food_scanner_is",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.retryText.request_failed",
+      "to": "logic.retryText.your_photo_is_kept",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postTitle.listing",
+      "to": "logic.postTitle.post",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postTitle.listings",
+      "to": "logic.postTitle.post",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postedSummary.listing",
+      "to": "logic.postedSummary.posted_kept_here_try",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postedSummary.listings",
+      "to": "logic.postedSummary.posted_kept_here_try",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postedSummary.1_item_is",
+      "to": "logic.postedSummary.posted_kept_here_try",
+      "kind": "part_of"
+    },
+    {
+      "from": "logic.postedSummary.items_are",
+      "to": "logic.postedSummary.posted_kept_here_try",
+      "kind": "part_of"
+    },
+    {
+      "from": "api.request.timed_out_try_again",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "api.analyze.timed_out_try_again",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "api.analyze.try_again",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "api.photoUrl.photo",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "api.photoUrl.photo_read_failed",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "FORM_WORDS.title",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "FORM_WORDS.servings",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "FORM_WORDS.servings",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "FORM_WORDS.pickup",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "FORM_WORDS.pickup",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "capture.sourceNote.from_the_barcode",
+      "to": "concept:barcode",
+      "kind": "uses"
+    },
+    {
+      "from": "capture.sourceNote.the_scanner_says",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "clipsession.a_recording_is_already",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "clipsession.the_recording_was_cancelled",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "clipsession.not_recording",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_scanner_is_busy",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_scanner_is_busy",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_scanner_is_busy",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.too_many_photos_this",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_food_check_is",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_food_check_is",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.this_photo_took_too",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.this_photo_took_too",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_food_scanner_is",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_food_scanner_is",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.the_food_scanner_is",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.retryText.your_photo_is_kept",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.foundTitle.item_found",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.foundTitle.items_found",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postTitle.post",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postTitle.listing",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postTitle.listings",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postingText",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.notPostedTitle.item_not_posted",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.notPostedTitle.item_not_posted",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.notPostedTitle.items_not_posted",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.notPostedTitle.items_not_posted",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.listing",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.listings",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.1_item_is",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.items_are",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.posted_kept_here_try",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.postedSummary.posted_kept_here_try",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "FIXED_TEXT.401",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.errorMessage.the_food_scanner_is",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.errorMessage.the_food_scanner_is",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "logic.errorMessage.the_service_is_busy",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.line",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.email",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.emailHint",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.password",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.incomplete",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.badEmail",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.waiting",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.noAccount",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.showName",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "SIGN_IN.hideName",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.forgot",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.askTitle",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.askLine",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.back",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.sentTitle",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.sent",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.newTitle",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.newLine",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.newPassword",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RESET.save",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.Shutter",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.title_of_item",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.remove_item",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.fewer_servings_of_item",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.fewer_servings_of_item",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.servings_of_item",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.servings_of_item",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.more_servings_of_item",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "ui.ReviewCard.more_servings_of_item",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "voicerec.start.allow_the_microphone_to",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "voicerec.start.the_microphone_did_not",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "webvoice.startWebCapture.allow_the_microphone_to",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "webvoice.startWebCapture.the_microphone_did_not",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "webvoice.startWebCapture.the_microphone_did_not_2",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "ROLE.give",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "ROLE.receive",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "ROLE.logout",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "ROLE.change",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "FRAME.tabs",
+      "to": "concept:role",
+      "kind": "uses"
+    },
+    {
+      "from": "FRAME.expired",
+      "to": "concept:account",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.empty",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.grab",
+      "to": "concept:grab",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.grabbing",
+      "to": "concept:grab",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.grabbed",
+      "to": "concept:grab",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.yours",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "RECEIVE.collected",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "words.servings.1_serving",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "words.servings.servings",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "words.grabMessage",
+      "to": "concept:grab",
+      "kind": "uses"
+    },
+    {
+      "from": "words.grabMessage",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "GIVE.title",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "GIVE.empty",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "GIVE.empty",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "GIVE.add",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "words.postedText.listings_are_posted_they",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "words.postedText.listings_are_posted_they",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "words.postedText.listed_it_stays_up",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.hint",
+      "to": "concept:barcode",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.hint",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.dropHint",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.dropNow",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.close",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.upload",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.shoot",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.allow",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.allowLink",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.blocked",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.shotFailed",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.shotFailed",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.use",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.again",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.retake",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.usePhoto",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.tryAgain",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.barcode",
+      "to": "concept:barcode",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.analyzing",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.notFood",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.notFoodLine",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.notFoodLine",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameOne",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameOne",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameOneLine",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameOneLine",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameMany",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameMany",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameManyLine",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.noNameManyLine",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.listed",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.listedLine",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.listedLine",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.seeMine",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.paused",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.paused",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.pausedLine",
+      "to": "concept:barcode",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.pausedLine",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "CAPTURE.pausedLine",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.one",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.check",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.servings",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.fewer",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.more",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.pickup",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.pickupAll",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.pickupAll",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.pickupHint",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.post",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.post",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.posting",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.notPosted",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.notPosted",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.nonePosted",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.nonePosted",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "REVIEW.nonePosted",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.working",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.working",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.edit",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.choose",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.choose",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.kept",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.kept",
+      "to": "concept:scanner",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.failed",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.failed",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.busy",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.busy",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.paused",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.paused",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.wait",
+      "to": "concept:post",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.wait",
+      "to": "concept:touch-up",
+      "kind": "uses"
+    },
+    {
+      "from": "TOUCH.ofItem",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.start",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.stop",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.listening",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.working",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.heard",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.micOff",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.failed",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.failed",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.noSpeech",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.noSpeech",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.busy",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.busy",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.paused",
+      "to": "concept:busy",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.paused",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.rename",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.servings",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.servings",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.remove",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.pickup",
+      "to": "concept:pickup",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.notAdded",
+      "to": "concept:listing",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.notAdded",
+      "to": "concept:photo",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.notAdded",
+      "to": "concept:serving",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.removedBefore",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.unnamed",
+      "to": "concept:item",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.first",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "VOICE.none",
+      "to": "concept:voice",
+      "kind": "uses"
+    },
+    {
+      "from": "GIVE.add",
+      "to": "screen:Capture",
+      "kind": "opens"
+    },
+    {
+      "from": "CAPTURE.seeMine",
+      "to": "screen:Give",
+      "kind": "opens"
+    },
+    {
+      "from": "RESET.forgot",
+      "to": "screen:Reset",
+      "kind": "opens"
+    },
+    {
+      "from": "RESET.back",
+      "to": "screen:Login",
+      "kind": "opens"
+    },
+    {
+      "from": "RESET.again",
+      "to": "screen:Reset",
+      "kind": "opens"
+    },
+    {
+      "from": "FRAME.menu",
+      "to": "screen:Role",
+      "kind": "opens"
+    },
+    {
+      "from": "ROLE.give",
+      "to": "screen:Give",
+      "kind": "opens"
+    },
+    {
+      "from": "ROLE.receive",
+      "to": "screen:Receive",
+      "kind": "opens"
+    },
+    {
+      "from": "ROLE.logout",
+      "to": "screen:Login",
+      "kind": "opens"
+    },
+    {
+      "from": "REVIEW.startOver",
+      "to": "screen:Capture",
+      "kind": "opens"
+    },
+    {
+      "from": "CAPTURE.usePhoto",
+      "to": "screen:Review",
+      "kind": "opens"
+    },
+    {
+      "from": "CAPTURE.tryAgain",
+      "to": "screen:Review",
+      "kind": "opens"
+    },
+    {
+      "from": "SIGN_IN.go",
+      "to": "screen:Role",
+      "kind": "opens"
+    },
+    {
+      "from": "SIGN_IN.show",
+      "to": "SIGN_IN.hide",
+      "kind": "pair"
+    },
+    {
+      "from": "SIGN_IN.showName",
+      "to": "SIGN_IN.hideName",
+      "kind": "pair"
+    },
+    {
+      "from": "ROLE.logout",
+      "to": "SIGN_IN.go",
+      "kind": "pair"
+    },
+    {
+      "from": "ROLE.give",
+      "to": "ROLE.receive",
+      "kind": "pair"
+    },
+    {
+      "from": "ROLE.giveLine",
+      "to": "ROLE.receiveLine",
+      "kind": "pair"
+    },
+    {
+      "from": "REVIEW.fewer",
+      "to": "REVIEW.more",
+      "kind": "pair"
+    },
+    {
+      "from": "VOICE.start",
+      "to": "VOICE.stop",
+      "kind": "pair"
+    },
+    {
+      "from": "VOICE.apply",
+      "to": "VOICE.keep",
+      "kind": "pair"
+    },
+    {
+      "from": "CAPTURE.retake",
+      "to": "CAPTURE.usePhoto",
+      "kind": "pair"
+    },
+    {
+      "from": "CAPTURE.retake",
+      "to": "CAPTURE.tryAgain",
+      "kind": "pair"
+    },
+    {
+      "from": "TOUCH.original",
+      "to": "TOUCH.edit",
+      "kind": "pair"
+    },
+    {
+      "from": "TOUCH.light",
+      "to": "TOUCH.background",
+      "kind": "pair"
+    },
+    {
+      "from": "RECEIVE.collected",
+      "to": "RECEIVE.expired",
+      "kind": "pair"
+    },
+    {
+      "from": "RESET.send",
+      "to": "RESET.back",
+      "kind": "pair"
+    },
+    {
+      "from": "GIVE.title",
+      "to": "RECEIVE.title",
+      "kind": "pair"
+    },
+    {
+      "from": "SIGN_IN.noAccount",
+      "to": "SIGN_IN.create",
+      "kind": "pair"
+    },
+    {
+      "from": "RESET.expired",
+      "to": "RESET.again",
+      "kind": "pair"
+    },
+    {
+      "from": "CAPTURE.use",
+      "to": "CAPTURE.again",
+      "kind": "pair"
+    }
+  ]
+}
