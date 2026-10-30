@@ -19,6 +19,17 @@ type Docker struct {
 	Log    io.Writer
 }
 
+// Check: the docker daemon answers and the MetricX image is there.
+func (d Docker) Check(ctx context.Context) error {
+	if out, err := exec.CommandContext(ctx, "docker", "info", "--format", "{{.ServerVersion}}").CombinedOutput(); err != nil {
+		return fmt.Errorf("docker does not answer (is Colima running? colima start): %s", bytes.TrimSpace(out))
+	}
+	if out, err := exec.CommandContext(ctx, "docker", "image", "inspect", "--format", "{{.Id}}", d.Image).CombinedOutput(); err != nil {
+		return fmt.Errorf("the MetricX image %s is not there: %s", d.Image, bytes.TrimSpace(out))
+	}
+	return nil
+}
+
 // Score writes the pairs as MetricX input, runs the container once, and reads the scores.
 func (d Docker) Score(ctx context.Context, pairs []Pair) ([]float64, error) {
 	dir, err := os.MkdirTemp("", "v3rde_score_")

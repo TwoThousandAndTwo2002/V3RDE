@@ -617,3 +617,26 @@ The first Spanish run (run `20261029T215819Z`) kept 179 of 204 messages. All 25 
 - `-resume` translates only the ids that are missing in `<out>/<lang>.json` and merges the new answers into it, in the `en.json` order. The earlier run id is kept in `previous_runs`. The ledger gets the new tries at the end.
 - 3 new regression tests (backoff, pacer, merge). The i18n module now has 22 tests.
 - Not deployed by this change.
+
+---
+
+## 55. Lost in translation: each English text once, Docker checked first, the ledger written as it goes
+
+**When:** Oct 30 2026.
+**Branch:** `LIF`. It does not change `services` or `ui`.
+**Meta models:** Muse Spark Open, through Baseten (only when `cmd/translate` runs; the tests use fakes).
+**Files:** `i18n/rung/rung.go`, `i18n/rung/score.go`, `i18n/rung/rung_test.go`, `i18n/cmd/translate/main.go`
+**Sources:** `docs/sources/L4f.md`
+
+Problems found in the first runs for 5 languages:
+- The same English text got different translations (zh-Hans: "no blob" became 无斑点 and 无 blob).
+- Colima was not running, so the scorer failed after all the requests. Every answer was lost, also the answers for languages that were already complete.
+
+The fixes:
+- Each English text is translated once. The other ids with the same text reuse that translation (`same_as`). 204 messages are 189 texts, so 189 requests for each language (T9 2026-10-30: once, always).
+- `-collapse` applies the same rule to an earlier result with no requests. For each text it keeps the translation with the lowest score, and it keeps the old file as `<lang>.before-dedupe.json`.
+- Before the first request, the run checks that Docker answers and that the MetricX image is there. If the check fails, no request is sent.
+- The ledger gets each try when its answer comes in (`"kind":"try"`), and each score after the scoring (`"kind":"score"`), so a failure later in the run does not lose answers.
+- A language whose result is complete (same `en.json` commit, model and k, made with dedupe) is skipped unless `-force` is given.
+- 4 new regression tests (dedupe, check first, complete, collapse). The i18n module now has 26 tests.
+- Not deployed by this change.

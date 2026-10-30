@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -23,10 +24,20 @@ func (f *fakeTr) Chat(ctx context.Context, sys, user string) (muse.Reply, error)
 	return muse.Reply{Text: txt, ReasoningTokens: 10}, err
 }
 
-type fakeSc struct{ got []Pair }
+type fakeSc struct {
+	got      []Pair
+	checkErr error
+	ledger   *bytes.Buffer // the ledger as it was when Score was called
+	seen     int           // try lines in the ledger at that time
+}
+
+func (f *fakeSc) Check(ctx context.Context) error { return f.checkErr }
 
 func (f *fakeSc) Score(ctx context.Context, p []Pair) ([]float64, error) {
 	f.got = p
+	if f.ledger != nil {
+		f.seen = strings.Count(f.ledger.String(), `"kind":"try"`)
+	}
 	out := make([]float64, len(p))
 	for i, x := range p {
 		out[i] = float64(len([]rune(x.Hypothesis))) / 10 // shorter is "better" in this fake
@@ -65,8 +76,8 @@ func TestRung(t *testing.T) {
 			return "", muse.ErrNoAnswer
 		}
 	}}
-	sc := &fakeSc{}
 	var led bytes.Buffer
+	sc := &fakeSc{ledger: &led}
 	res, err := Run(context.Background(), cfg(3), msgs, tr, sc, &led)
 	if err != nil {
 		t.Fatal(err)
@@ -75,8 +86,9 @@ func TestRung(t *testing.T) {
 		t.Fatalf("calls %d, want 9", tr.calls)
 	}
 	lines := strings.Split(strings.TrimSpace(led.String()), "\n")
-	if len(lines) != 10 {
-		t.Fatalf("ledger lines %d, want 10", len(lines))
+	tries := strings.Count(led.String(), `"kind":"try"`)
+	if tries != 10 || sc.seen != 10 {
+		t.Fatalf("try lines %d (%d before the scoring), want 10 (10)", tries, sc.seen)
 	}
 	got := map[string]Chosen{}
 	for _, c := range res.Messages {
@@ -96,8 +108,11 @@ func TestRung(t *testing.T) {
 	}
 	var first Entry
 	json.Unmarshal([]byte(lines[0]), &first)
-	if first.ID != "VOICE.rename" || first.Try != 1 || first.Settings.TopK != -1 || first.Commit != "c0" {
-		t.Errorf("ledger order or fields: %+v", first)
+	if first.Kind != "try" || first.Settings.TopK != -1 || first.Commit != "c0" {
+		t.Errorf("ledger fields: %+v", first)
+	}
+	if n := strings.Count(led.String(), `"kind":"score"`); n != len(sc.got) || n < 3 { // one per scored answer
+		t.Errorf("score lines %d, scored pairs %d", n, len(sc.got))
 	}
 	if strings.Contains(led.String(), `"error":"tags: tags not exactly once`) == false {
 		t.Error("the lost tag is not in the ledger")
@@ -152,5 +167,74 @@ func TestMerge(t *testing.T) {
 	add.Model = "other"
 	if _, err := Merge(old, add, msgs); err == nil {
 		t.Fatal("another model must be refused")
+	}
+}
+
+// Each English text is translated once; the other ids reuse it (same_as).
+func TestDedupe(t *testing.T) {
+	ms := []i18n.Message{{ID: "ROLE.close", Text: "Close"}, {ID: "RECEIVE.close", Text: "Close"}, {ID: "CAPTURE.retake", Text: "Retake"}, {ID: "CAPTURE.closeFlow", Text: "Close"}}
+	tr := &fakeTr{reply: func(user string, n int32) (string, error) {
+		if strings.Contains(user, "Close") {
+			return "Cerrar", nil
+		}
+		return "Repetir", nil
+	}}
+	var led bytes.Buffer
+	res, err := Run(context.Background(), cfg(1), ms, tr, &fakeSc{}, &led)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr.calls != 2 || !res.Dedupe || len(res.Messages) != 4 {
+		t.Fatalf("calls %d dedupe %v messages %d", tr.calls, res.Dedupe, len(res.Messages))
+	}
+	for _, c := range res.Messages {
+		want := map[string]string{"ROLE.close": "", "RECEIVE.close": "ROLE.close", "CAPTURE.closeFlow": "ROLE.close", "CAPTURE.retake": ""}[c.ID]
+		if c.SameAs != want || (strings.HasSuffix(c.ID, "lose") || c.ID == "CAPTURE.closeFlow") && c.Text != "Cerrar" {
+			t.Errorf("%+v", c)
+		}
+	}
+	if !strings.Contains(led.String(), `"also":["RECEIVE.close","CAPTURE.closeFlow"]`) {
+		t.Errorf("ledger has no also list: %s", led.String())
+	}
+}
+
+// When the scorer cannot run, no request goes to the model.
+func TestCheckFirst(t *testing.T) {
+	tr := &fakeTr{reply: func(string, int32) (string, error) { return "x", nil }}
+	_, err := Run(context.Background(), cfg(1), msgs, tr, &fakeSc{checkErr: errors.New("docker does not answer")}, &bytes.Buffer{})
+	if err == nil || tr.calls != 0 || !strings.Contains(err.Error(), "no request was sent") {
+		t.Fatalf("%v, %d calls", err, tr.calls)
+	}
+}
+
+// Complete needs every message, the same commit, model and k, and dedupe.
+func TestComplete(t *testing.T) {
+	r := Result{Commit: "c", Model: "m", K: 1, Dedupe: true, Messages: []Chosen{{ID: "a"}}, Missing: []string{}}
+	if !Complete(r, "c", "m", 1) {
+		t.Fatal("complete")
+	}
+	for _, bad := range []Result{
+		{Commit: "c", Model: "m", K: 1, Dedupe: false, Messages: r.Messages},
+		{Commit: "c", Model: "m", K: 1, Dedupe: true, Messages: r.Messages, Missing: []string{"b"}},
+		{Commit: "d", Model: "m", K: 1, Dedupe: true, Messages: r.Messages},
+	} {
+		if Complete(bad, "c", "m", 1) {
+			t.Errorf("not complete: %+v", bad)
+		}
+	}
+}
+
+// Collapse keeps the lowest-scored translation of a shared text for every id.
+func TestCollapse(t *testing.T) {
+	a, b := 1.28, 0.99
+	ms := []i18n.Message{{ID: "x.no_blob", Text: "no blob"}, {ID: "y.no_blob", Text: "no blob"}, {ID: "z", Text: "Retake"}}
+	r := Result{Messages: []Chosen{{ID: "x.no_blob", Text: "无 blob", Score: &a}, {ID: "y.no_blob", Text: "无斑点", Score: &b}, {ID: "z", Text: "重拍"}}}
+	got := Collapse(r, ms)
+	if !got.Dedupe || len(got.Messages) != 3 || len(got.Missing) != 0 {
+		t.Fatalf("%+v", got)
+	}
+	x, y := got.Messages[0], got.Messages[1]
+	if x.Text != "无斑点" || x.SameAs != "y.no_blob" || y.Text != "无斑点" || y.SameAs != "" || got.Messages[2].Text != "重拍" {
+		t.Fatalf("%+v %+v", x, y)
 	}
 }

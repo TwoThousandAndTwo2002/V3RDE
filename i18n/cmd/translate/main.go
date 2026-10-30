@@ -32,14 +32,23 @@ func main() {
 	keyFile := flag.String("key-file", muse.KeyFile(), "file with the Baseten key (mode 0600)")
 	rpm := flag.Int("rpm", 0, "requests per minute (0: the limit that Baseten's answers give)")
 	resume := flag.Bool("resume", false, "translate only the missing ids of <out>/<lang>.json and merge")
+	force := flag.Bool("force", false, "translate again even when <out>/<lang>.json is complete")
+	collapse := flag.Bool("collapse", false, "no requests: make <out>/<lang>.json follow the dedupe rule (lowest score per English text)")
 	flag.Parse()
-	if err := run(*lang, *k, *workers, *limit, *outDir, *image, *keyFile, *rpm, *resume); err != nil {
+	if *collapse {
+		if err := collapseFile(*lang, *outDir); err != nil {
+			fmt.Fprintln(os.Stderr, "translate:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if err := run(*lang, *k, *workers, *limit, *outDir, *image, *keyFile, *rpm, *resume, *force); err != nil {
 		fmt.Fprintln(os.Stderr, "translate:", err)
 		os.Exit(1)
 	}
 }
 
-func run(code string, k, workers, limit int, outDir, image, keyFile string, rpm int, resume bool) error {
+func run(code string, k, workers, limit int, outDir, image, keyFile string, rpm int, resume, force bool) error {
 	if outDir == "" {
 		return fmt.Errorf("-out is required")
 	}
@@ -72,6 +81,13 @@ func run(code string, k, workers, limit int, outDir, image, keyFile string, rpm 
 	msgs := all
 	resPath := filepath.Join(outDir, code+".json")
 	var old rung.Result
+	if !resume && !force {
+		var done rung.Result
+		if err := i18n.ReadJSON(resPath, &done); err == nil && rung.Complete(done, en.Source.Commit, client.Settings.Model, k) && limit == 0 {
+			fmt.Printf("translate: %s is complete (run %s): skipped (-force translates it again)\n", resPath, done.Run)
+			return nil
+		}
+	}
 	if resume {
 		if err := i18n.ReadJSON(resPath, &old); err != nil {
 			return fmt.Errorf("resume: %v", err)
@@ -121,5 +137,45 @@ func run(code string, k, workers, limit int, outDir, image, keyFile string, rpm 
 		return err
 	}
 	fmt.Printf("translate: %d kept, %d missing\n  %s\n  %s\n", len(res.Messages), len(res.Missing), resPath, ledgerPath)
+	return nil
+}
+
+// collapseFile rewrites <out>/<lang>.json with rung.Collapse; the old file is kept as <lang>.before-dedupe.json.
+func collapseFile(code, outDir string) error {
+	var en i18n.EnFile
+	if err := i18n.ReadJSON("en.json", &en); err != nil {
+		return err
+	}
+	p := filepath.Join(outDir, code+".json")
+	raw, err := os.ReadFile(p)
+	if err != nil {
+		return err
+	}
+	var r rung.Result
+	if err := json.Unmarshal(raw, &r); err != nil {
+		return err
+	}
+	if r.Commit != en.Source.Commit {
+		return fmt.Errorf("%s is for en.json commit %s, not %s", p, r.Commit, en.Source.Commit)
+	}
+	keep := filepath.Join(outDir, code+".before-dedupe.json")
+	if _, err := os.Stat(keep); err == nil {
+		return fmt.Errorf("%s exists: this file was collapsed before", keep)
+	}
+	if err := os.WriteFile(keep, raw, 0o644); err != nil {
+		return err
+	}
+	c := rung.Collapse(r, en.Messages)
+	b, _ := json.MarshalIndent(c, "", "  ")
+	if err := os.WriteFile(p, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	same := 0
+	for _, m := range c.Messages {
+		if m.SameAs != "" {
+			same++
+		}
+	}
+	fmt.Printf("translate: %s collapsed: %d messages, %d reuse another id's translation, %d missing (old file: %s)\n", p, len(c.Messages), same, len(c.Missing), keep)
 	return nil
 }
