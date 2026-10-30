@@ -211,10 +211,6 @@
       "VOICE.stop"
     ],
     [
-      "VOICE.apply",
-      "VOICE.keep"
-    ],
-    [
       "CAPTURE.retake",
       "CAPTURE.usePhoto"
     ],
@@ -225,10 +221,6 @@
     [
       "TOUCH.original",
       "TOUCH.edit"
-    ],
-    [
-      "TOUCH.light",
-      "TOUCH.background"
     ],
     [
       "RECEIVE.collected",

@@ -1481,3 +1481,20 @@ T9: the translation work of the LIF branch must run with the other services. Fir
 - No service changes. The translation container comes in the next changes.
 - Tests: i18n 53 and qe 7 (Python), added to the checks of every change. The auto touch-up tests wait longer (they failed under a parallel load).
 
+## 69. Translation rounds run on the box
+
+**When:** Oct 30 2026.
+**Meta models:** Muse Spark Open (translation and a judge), Muse Spark 1.3 (a judge). MetricX-24 (Google, Apache-2.0) scores.
+**Files:** `i18n/cmd/round/main.go`, `i18n/round/round.go`, `i18n/round/run.go`, `i18n/round/round_test.go`, `i18n/tree.go`, `i18n/tree_test.go`, `i18n/rung/score.go`, `i18n/rung/local_test.go`, `i18n/concepts.json`, `i18n/graph.json`, `qe/round.Dockerfile`, `qe/round.Dockerfile.dockerignore`, `tools/lif_round.sh`, `tools/v3rde_stack.sh`, `deploy/docker-compose.yml`, `deploy/Caddyfile`
+**Sources:** `docs/sources/X49b.md`
+
+T9: when the app changes, a translation round must rebuild the text graph, tag what was added or changed, and translate only that. It must run on the box with the other services.
+
+- After a deploy, the box runs one round as a job. When the app text did not change, it stops at once.
+- A round reads the app text of the deployed code, compares it with the last round, and makes a tag. Then it translates only the changed texts and the texts they reach in the graph.
+- It uses one screen per call, two judges, and one fix round with the judges' reasons. MetricX scores each try.
+- Texts that pass go live at `/i18n/<lang>.json`. A text that fails two times keeps its last good translation and goes on a review list.
+- The job needs about 10 GB while MetricX scores, so it runs only when that much memory is free. It never fails a deploy.
+- Also fixed: the post image now rebuilds when only the inference code changes.
+- Tests: i18n 53 -> 64.
+

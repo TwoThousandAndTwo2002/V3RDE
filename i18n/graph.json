@@ -1023,13 +1023,13 @@
       "id": "TOUCH.light",
       "type": "text",
       "label": "Better light",
-      "degree": 2
+      "degree": 1
     },
     {
       "id": "TOUCH.background",
       "type": "text",
       "label": "Plain background",
-      "degree": 2
+      "degree": 1
     },
     {
       "id": "TOUCH.working",
@@ -1131,13 +1131,13 @@
       "id": "VOICE.apply",
       "type": "text",
       "label": "Apply changes",
-      "degree": 2
+      "degree": 1
     },
     {
       "id": "VOICE.keep",
       "type": "text",
       "label": "Keep as is",
-      "degree": 2
+      "degree": 1
     },
     {
       "id": "VOICE.ok",
@@ -3563,11 +3563,6 @@
       "kind": "pair"
     },
     {
-      "from": "VOICE.apply",
-      "to": "VOICE.keep",
-      "kind": "pair"
-    },
-    {
       "from": "CAPTURE.retake",
       "to": "CAPTURE.usePhoto",
       "kind": "pair"
@@ -3580,11 +3575,6 @@
     {
       "from": "TOUCH.original",
       "to": "TOUCH.edit",
-      "kind": "pair"
-    },
-    {
-      "from": "TOUCH.light",
-      "to": "TOUCH.background",
       "kind": "pair"
     },
     {

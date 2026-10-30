@@ -30,6 +30,7 @@ services:
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ${V3RDE_WEB:-./mobile/web-dist}:/srv:ro   # D191: the app (the ui branch, merged); deploy/web is the old holding page
+      - ${V3RDE_I18N:-~/V3RDE_i18n}:/srv-i18n:ro  # X49b: the published translations (the lif job writes them)
     depends_on: [analyze, auth, listings]
 
   auth:
@@ -229,7 +230,28 @@ services:
     volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/telemetry:/spool:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/ledger:/ledger-data"]
 
 # Explicit names: the volumes are v3rde_auth ... (not v3rde_v3rde_auth).
+
+  # X49b: the translation round (LIF), a one-shot job, never up with the stack (profile "lif"):
+  # tools/lif_round.sh runs it after a deploy; it does nothing when the app text did not change.
+  # MetricX needs about 10 GB while it scores; the job stops after the round.
+  lif:
+    profiles: ["lif"]
+    build: {context: ., dockerfile: qe/round.Dockerfile}
+    image: v3rde-lif
+    mem_limit: 10g
+    memswap_limit: 10g
+    cpus: 3
+    volumes:
+      - ./:/repo:ro
+      - v3rde_lif_state:/state
+      - ${V3RDE_I18N:-~/V3RDE_i18n}:/out
+      - v3rde_qe_hf:/root/.cache/huggingface
+      - ${V3RDE_LIF_SEED:-~/V3RDE_lif_seed}:/seed:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/baseten_api_key:/secrets/baseten_api_key:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/secrets/meta_model_api_key:ro
 volumes:
+  v3rde_lif_state: {name: v3rde_lif_state}   # X49b: the translation rounds (live texts, ledgers, history)
+  v3rde_qe_hf: {name: v3rde_qe_hf}           # X49b: the MetricX model files (downloaded once)
   v3rde_auth: {name: v3rde_auth}
   v3rde_listings: {name: v3rde_listings}
   v3rde_rescue: {name: v3rde_rescue}

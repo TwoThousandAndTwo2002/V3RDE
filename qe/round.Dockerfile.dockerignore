@@ -1,0 +1,4 @@
+# Only what qe/round.Dockerfile needs (BuildKit reads <Dockerfile>.dockerignore)
+*
+!i18n/
+!qe/run_predict.py

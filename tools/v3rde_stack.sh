@@ -17,6 +17,7 @@
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
 #   V3RDE_PORT    the host port of the edge, on 127.0.0.1 (8080)
 #   V3RDE_WEB     the folder the edge serves at / (mobile/web-dist, the app; D191)
+#   V3RDE_I18N    X49b: the published translations, served at /i18n/ (the lif job writes them)
 # No secret is printed: checks report counts, owners and modes only.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -25,6 +26,8 @@ export V3RDE_ASSETS="${V3RDE_ASSETS:-/opt/v3rde/assets}"
 export V3RDE_PHOTOS="${V3RDE_PHOTOS:-$HOME/V3RDE_photos}"
 export V3RDE_RUNS="${V3RDE_RUNS:-$HOME/V3RDE_runs}"
 export V3RDE_PORT="${V3RDE_PORT:-8080}"
+export V3RDE_I18N="${V3RDE_I18N:-$HOME/V3RDE_i18n}"           # X49b: the published translations (/i18n/)
+export V3RDE_LIF_SEED="${V3RDE_LIF_SEED:-$HOME/V3RDE_lif_seed}" # X49b: the first round's start (the Mac's runs)
 export COOKIE_SECURE="${COOKIE_SECURE:-true}" ANALYZE_RATE_BURST="${ANALYZE_RATE_BURST:-6}"
 PATH="/opt/homebrew/bin:/usr/local/bin:/snap/bin:$PATH"
 SERVICES="analyze auth listings barcode gate touchup rescue fanout voice"   # each writes $V3RDE_RUNS/<name>
@@ -46,11 +49,13 @@ context() {
     TELEMETRY) echo telemetry ;;
     # what inference/Dockerfile and post/Dockerfile COPY from the other modules (":(glob)": not the subfolders)
     ANALYZE) echo "inference server/go.mod :(glob)server/*.go" ;;
-    POST) echo "post server/go.mod :(glob)server/*.go listings/go.mod :(glob)listings/*.go" ;;
+    # X49b: post also builds the inference Go files since X48o (post/Dockerfile COPY inference/...)
+    POST) echo "post server/go.mod :(glob)server/*.go listings/go.mod :(glob)listings/*.go inference/go.mod inference/go.sum :(glob)inference/*.go inference/third_party" ;;
+    LIF) echo "i18n qe/round.Dockerfile qe/round.Dockerfile.dockerignore qe/Dockerfile qe/run_predict.py" ;;   # X49b
     *) die "no build context for $1" ;;
   esac
 }
-IMAGES="AUTH LISTINGS BARCODE GATE TELEMETRY ANALYZE POST"
+IMAGES="AUTH LISTINGS BARCODE GATE TELEMETRY ANALYZE POST LIF"
 stamp() {
   local paths s; paths=$(context "$1")
   # shellcheck disable=SC2086
@@ -98,6 +103,7 @@ preflight() {
   # made here, so Docker does not make them as root; the services run as 65534
   for d in $SERVICES; do mkdir -p "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
   mkdir -p "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
+  mkdir -p "$V3RDE_I18N" "$V3RDE_LIF_SEED"   # X49b: else docker makes them as root-owned empty folders
   if asroot; then
     for d in $SERVICES; do chown 65534:65534 "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
     chown 65534:65534 "$V3RDE_RUNS/telemetry" "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"

@@ -130,6 +130,15 @@
 		}
 	}
 
+	# X49b: the published translations (<lang>.json, index.json), written by the lif job; a new
+	# round must show at once, so the browser asks again each time (no-cache: it may keep a copy
+	# but checks it first)
+	handle_path /i18n/* {
+		root * /srv-i18n
+		header Cache-Control "no-cache"
+		file_server
+	}
+
 	handle /healthz {
 		respond `{"ok":true,"service":"edge"}` 200 {
 			close
