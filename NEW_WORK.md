@@ -994,3 +994,17 @@ T9 chose the words mask for a meal and for packages, and the box mask for piles 
 - The page shows each photo's choice and the reason.
 - Tests: inference 93 -> 94.
 
+## 61. Voice: the clip can be stopped on iOS
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change).
+**Files:** `mobile/src/webvoice.ts`, `mobile/tests/webvoice.test.mts` (new), `mobile/package.json`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48n.md`
+
+On an iPhone, the microphone button started a voice clip but did not stop it. Desktop browsers and Android worked.
+
+- iOS Safari starts audio only from a tap. The app made its audio after the microphone question, outside the tap, so the audio never started and the start never ended. Stop waits for the start, so Stop did nothing.
+- Now the audio is made and started in the tap, before the microphone question.
+- If the audio still does not start, the app stops waiting after 2 s and asks the user to tap again. The button never stays stuck.
+- Tests: mobile 86 -> 89.
+
