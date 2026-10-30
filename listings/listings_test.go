@@ -1042,3 +1042,78 @@ func TestCreateKeepsDetails(t *testing.T) {
 		t.Fatalf("200 emoji: %d %v", w.Code, b)
 	}
 }
+
+// X48t: the owner deletes a listing nobody has grabbed; another user gets
+// 404 (an id cannot be probed); a grabbed listing cannot be deleted (409);
+// the photo file goes, the data file is saved, and fan-out hears "expired".
+func TestDeleteBeforeAGrab(t *testing.T) {
+	f := newFanout(t, 200)
+	h, done := hookFor(f, 3)
+	e := newEnv(t, h)
+	l := e.create(t, "u_donor")
+	del := func(user, id string) (*httptest.ResponseRecorder, map[string]any) {
+		r := httptest.NewRequest(http.MethodDelete, "/api/listings/"+id, nil)
+		if user != "" {
+			r.AddCookie(&http.Cookie{Name: sessionCookie, Value: user})
+		}
+		return call(e.h, r)
+	}
+	if w, _ := del("", l.ID); w.Code != 401 {
+		t.Fatalf("no session: %d", w.Code)
+	}
+	if w, body := del("u_other", l.ID); w.Code != 404 || body["error"] != "listing not found" {
+		t.Fatalf("another user: %d %v", w.Code, body)
+	}
+	photo, _, _ := e.st.Photo(l.ID)
+	if w, _ := del("u_donor", l.ID); w.Code != 204 {
+		t.Fatalf("owner: %d", w.Code)
+	}
+	if _, err := os.Stat(photo); !os.IsNotExist(err) {
+		t.Fatalf("the photo stayed: %v", err)
+	}
+	if _, body := call(e.h, get("u_donor", "/api/listings/mine")); len(body["items"].([]any)) != 0 {
+		t.Fatalf("mine after delete %v", body)
+	}
+	b, _ := os.ReadFile(filepath.Join(e.dir, "listings.json"))
+	if strings.Contains(string(b), l.ID) {
+		t.Fatal("the data file still has the listing")
+	}
+	if o := wait(t, done); o.status != 200 {
+		t.Fatalf("hook %+v", o)
+	}
+	f.mu.Lock()
+	if f.bodies[0] != `{"listing_id":"`+l.ID+`","status":"expired"}` {
+		t.Fatalf("hook body %q", f.bodies[0])
+	}
+	f.mu.Unlock()
+	if w, _ := del("u_donor", l.ID); w.Code != 404 {
+		t.Fatalf("again: %d", w.Code)
+	}
+	g := e.create(t, "u_donor")
+	if w, _ := call(e.h, post("u_r", "/api/listings/"+g.ID+"/grab")); w.Code != 200 {
+		t.Fatalf("grab %d", w.Code)
+	}
+	if w, body := del("u_donor", g.ID); w.Code != 409 || body["error"] != ErrGrabbed.Error() {
+		t.Fatalf("grabbed: %d %v", w.Code, body)
+	}
+}
+
+// X48t review: a photo_file of "." or ".." never removes the photos folder.
+func TestDeleteNeverRemovesThePhotoFolder(t *testing.T) {
+	e := newEnv(t, nil)
+	for _, bad := range []string{".", "..", "/"} {
+		l := e.create(t, "u_donor")
+		e.st.mu.Lock()
+		r := e.st.items[l.ID]
+		os.Remove(filepath.Join(e.st.photos, r.PhotoFile))
+		r.PhotoFile = bad
+		e.st.items[l.ID] = r
+		e.st.mu.Unlock()
+		if _, err := e.st.Delete(l.ID, "u_donor"); err != nil {
+			t.Fatalf("%q: %v", bad, err)
+		}
+		if _, err := os.Stat(e.st.photos); err != nil {
+			t.Fatalf("%q removed the photos folder: %v", bad, err)
+		}
+	}
+}

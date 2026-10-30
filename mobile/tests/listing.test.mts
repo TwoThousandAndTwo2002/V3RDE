@@ -1,7 +1,7 @@
 // Tests of the listing rules (src/listing.ts), written new for V3RDE (NEW_WORK_UI.md, UI 12).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { addPage, cameraFirst, chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText, withChange } from "../src/listing.ts";
+import { addPage, cameraFirst, canDelete, chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText, withChange } from "../src/listing.ts";
 
 const T = Date.parse("2026-10-29T12:00:00Z");
 const at = (s: number) => new Date(T + s * 1000).toISOString();
@@ -80,4 +80,15 @@ test("Give opens the camera first only when nothing of the giver is up", () => {
   assert.equal(cameraFirst([], T), true);
   assert.equal(cameraFirst([L("a", -1), L("b", 9, "collected")], T), true);
   assert.equal(cameraFirst([L("a", 9)], T), false);
+});
+
+// X48t: delete before a grab only; the words of the delete flow.
+test("delete: only before a grab", async () => {
+  assert.equal(canDelete({ status: "active" }), true);
+  assert.equal(canDelete({ status: "collected" }), false);
+  const { GIVE } = await import("../src/words.ts");
+  assert.equal(GIVE.confirm("Ripe bananas"), "Delete \u201cRipe bananas\u201d?");
+  assert.equal(GIVE.removeName("Ripe bananas"), "Delete Ripe bananas");
+  const ui = (await import("node:fs")).readFileSync(new URL("../src/screens/Give.tsx", import.meta.url), "utf8");
+  assert.match(ui, /<Popup testID="delete-confirm" small /); // T9: the small popup class on a phone
 });

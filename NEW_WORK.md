@@ -1068,3 +1068,17 @@ T9 approved the chat bar mockup. The review list now works like a chat with the 
 - A line cannot remove every item; it says so (Start over does that).
 - Tests: post 66 -> 67, mobile 90 -> 92.
 
+## 66. Give: delete a listing before a grab
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change).
+**Files:** `listings/store.go`, `listings/handler.go`, `listings/hook.go`, `listings/listing.go`, `listings/listings_test.go`, `mobile/src/screens/Give.tsx`, `mobile/src/ui.tsx`, `mobile/src/api.ts`, `mobile/src/listing.ts`, `mobile/src/words.ts`, `mobile/tests/listing.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X48t.md`
+
+T9: a donor can delete a listing that is up, but only before someone grabs it.
+
+- New route: `DELETE /api/listings/{id}`. Only the owner can delete. A grabbed listing answers 409 and stays. Another user's listing answers 404.
+- The photo file goes too. Fan-out hears "expired", so a page post says the food is gone.
+- In "Your listings", each free card has "Delete". A small popup asks first. A grabbed card says why it cannot be deleted.
+- Tests: listings 29 -> 31, mobile 92 -> 93.
+

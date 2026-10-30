@@ -149,6 +149,7 @@ func New(c Config) http.Handler {
 	mux.HandleFunc("GET "+p, rt.signedIn(rt.list))
 	mux.HandleFunc("GET "+p+"/mine", rt.signedIn(rt.mine))
 	mux.HandleFunc("POST "+p+"/{id}/grab", rt.signedIn(rt.grab))
+	mux.HandleFunc("DELETE "+p+"/{id}", rt.signedIn(rt.remove)) // X48t
 	mux.HandleFunc("GET "+p+"/{id}/photo", rt.signedIn(rt.photo))
 	return mux
 }
@@ -266,6 +267,23 @@ func (rt routes) grab(w http.ResponseWriter, r *http.Request, u User) {
 		log.Printf("listing %s grabbed by %s", l.ID, u.ID)
 		rt.Claim.Claimed(l.ID) // in the background: the answer does not wait
 		writeJSON(w, http.StatusOK, l)
+	}
+}
+
+// remove is DELETE /api/listings/{id} (X48t): the owner, before a grab.
+func (rt routes) remove(w http.ResponseWriter, r *http.Request, u User) {
+	l, err := rt.Store.Delete(r.PathValue("id"), u.ID)
+	switch {
+	case errors.Is(err, ErrNotFound):
+		fail(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrGrabbed):
+		fail(w, http.StatusConflict, err.Error())
+	case err != nil:
+		fail(w, http.StatusInternalServerError, "could not delete")
+	default:
+		log.Printf("listing %s deleted by its owner %s", l.ID, u.ID)
+		rt.Claim.Ended(l.ID) // fan-out: the post says the food is gone (in the background)
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

@@ -21,6 +21,8 @@
 //	GET  /api/listings/mine          the caller's listings, any status, newest first -> {items}
 //	POST /api/listings/{id}/grab     -> 200 listing | 409 collected or expired | 403 own listing | 404
 //	                                 (then the claim hook tells fan-out, in the background: hook.go)
+//	DELETE /api/listings/{id}        X48t: the owner deletes a listing nobody has grabbed -> 204 |
+//	                                 409 collected | 404 unknown or another's (then the hook tells fan-out "expired")
 //	GET  /api/listings/{id}/photo    the image bytes
 //	GET  /api/listings/healthz
 //
@@ -54,6 +56,8 @@ var (
 	ErrCollected = errors.New("listing already collected")
 	ErrExpired   = errors.New("listing expired")
 	ErrOwn       = errors.New("cannot grab your own listing")
+	// X48t: a grabbed listing is a promise to a receiver: it cannot be deleted
+	ErrGrabbed = errors.New("someone is picking this up: it cannot be deleted")
 )
 
 // photoExt is the file extension of each accepted photo type.

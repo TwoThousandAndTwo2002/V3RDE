@@ -277,6 +277,7 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 - The list of each role scrolls inside the frame (U19: the frame is `flex: 1` with `minHeight: 0`, so it is never taller than the window).
 - "Your listings" in the same `ScreenHead` as Receive (with "+ New listing" at its right on a wide screen) and the same layout as Receive; the listing card has the photo `size.minePhoto` tall and only the title, the servings and the time pill. Empty: "Nothing is listed yet. Take a photo of a meal to share it."
+- X48t: a card nobody has grabbed has the text link "Delete" in its panel. A tap opens a small `Popup` (`small`: on a phone the small sheet, at least `size.sheetSmall`, as high as its content; wide: the small dialog): "Delete “…”?", "People will no longer see it. This cannot be undone.", the pills "Keep" (secondary) and "Delete". Then the toast "Deleted. People no longer see it." A grabbed card says "Someone is picking this up. It cannot be deleted." in `muted`.
 
 ## Capture (`mobile/src/screens/Capture.tsx`, words in `mobile/src/words.ts`, rules in `mobile/src/capture.ts`)
 

@@ -275,6 +275,32 @@ func (s *Store) Grab(id, userID string) (Listing, error) {
 	return r.Listing, nil
 }
 
+// Delete removes listing id of ownerID (X48t, T9 2026-10-30: "the user
+// should be able to delete a post that was made already", only before a
+// grab). Another owner's listing is ErrNotFound (an id cannot be probed); a
+// collected one is ErrGrabbed. The photo file goes after the data file is
+// saved; when the save fails, nothing changes.
+func (s *Store) Delete(id, ownerID string) (Listing, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, ok := s.items[id]
+	switch {
+	case !ok || r.OwnerID != ownerID:
+		return Listing{}, ErrNotFound
+	case r.Status == "collected":
+		return Listing{}, ErrGrabbed
+	}
+	delete(s.items, id)
+	if err := s.saveLocked(); err != nil {
+		s.items[id] = r
+		return Listing{}, err
+	}
+	if name := filepath.Base(r.PhotoFile); r.PhotoFile != "" && name != "." && name != ".." && name != string(filepath.Separator) {
+		_ = os.Remove(filepath.Join(s.photos, name)) // a file of the photos folder only, never the folder
+	}
+	return r.Listing, nil
+}
+
 // Photo is the path and the type of the photo of listing id.
 func (s *Store) Photo(id string) (string, string, error) {
 	s.mu.Lock()

@@ -22,6 +22,11 @@ export function isGone(l: Pick<Listing, "status" | "expires_at">, now = Date.now
   return l.status === "collected" || secondsLeft(l, now) === 0;
 }
 
+/** X48t: the owner can delete a listing until someone grabs it (the service says the same: 409). */
+export function canDelete(l: Pick<Listing, "status">): boolean {
+  return l.status !== "collected";
+}
+
 /** The text of the time pill of a card. */
 export function timeText(l: Pick<Listing, "status" | "expires_at">, words: { collected: string; expired: string }, now = Date.now()): string {
   if (l.status === "collected") return words.collected;

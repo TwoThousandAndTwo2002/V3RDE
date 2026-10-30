@@ -356,9 +356,11 @@ function trapFocus(el: HTMLElement | null): (() => void) | undefined {
  * A sheet over the screen on view (the role sheet). Behind it: `scrimDim` (it fades in in `motion.dimMs`), or no
  * dim with `dim={false}`. Compact width: a bottom sheet with the grab bar, `size.sheetMedium` of the screen height.
  * Wide: a centred dialog, `size.dialogSmall` wide. With `onDismiss`, a tap on the dim layer or Esc (web) closes it.
+ * X48t: `small` (a confirm): on a compact width the sheet is the small sheet (at least `size.sheetSmall`, as high as
+ * its content), not `size.sheetMedium` of the screen.
  */
-export function Popup({ dim = true, onDismiss, dismissName, children, testID }: {
-  dim?: boolean; onDismiss?: () => void; dismissName?: string; children: React.ReactNode; testID?: string;
+export function Popup({ dim = true, onDismiss, dismissName, children, testID, small }: {
+  dim?: boolean; onDismiss?: () => void; dismissName?: string; children: React.ReactNode; testID?: string; small?: boolean;
 }) {
   const { width, height } = useWindowDimensions();
   const dialogs = layoutFor(width).dialogs;
@@ -405,7 +407,7 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID }: 
   return (
     <View testID={testID} style={StyleSheet.absoluteFill}>
       {layer}{tapOut}
-      <Animated.View ref={box} {...MODAL} style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: Math.round(height * size.sheetMedium),
+      <Animated.View ref={box} {...MODAL} style={{ position: "absolute", left: 0, right: 0, bottom: 0, minHeight: small ? size.sheetSmall : Math.round(height * size.sheetMedium),
         maxHeight: Math.round(height * size.sheetLarge), transform: [{ translateY: shift }] }}>
         <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
           style={{ flex: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot + inset.bottom }}>

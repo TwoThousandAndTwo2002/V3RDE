@@ -64,6 +64,15 @@ export const GIVE = {
   loading: "Loading…",
   empty: "Nothing is listed yet. Take a photo of a meal to share it.",
   add: "+ New listing",
+  // X48t: delete a listing before a grab
+  remove: "Delete",
+  removeName: (title: string) => "Delete " + title,
+  confirm: (title: string) => "Delete \u201c" + title + "\u201d?",
+  confirmBody: "People will no longer see it. This cannot be undone.",
+  keep: "Keep",
+  removed: "Deleted. People no longer see it.",
+  grabbed: "Someone is picking this up. It cannot be deleted.",
+  removeFailed: "Could not delete it. Try again.",
 } as const;
 
 /** The toast after a post: one listing or several. */

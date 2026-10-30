@@ -58,7 +58,16 @@ func (h *ClaimHook) Claimed(listingID string) {
 	if h == nil || h.URL == "" {
 		return
 	}
-	go h.run(listingID)
+	go h.run(listingID, "claimed")
+}
+
+// Ended sends {"listing_id", "status":"expired"} in the background (X48t: the
+// owner deleted the listing, so the food is no longer there).
+func (h *ClaimHook) Ended(listingID string) {
+	if h == nil || h.URL == "" {
+		return
+	}
+	go h.run(listingID, "expired")
 }
 
 // again reports whether a try with this result is followed by another one.
@@ -76,7 +85,7 @@ func again(status int, err error) bool {
 	return false
 }
 
-func (h *ClaimHook) run(listingID string) {
+func (h *ClaimHook) run(listingID, status string) {
 	client := h.HTTP
 	if client == nil {
 		client = &http.Client{Timeout: 30 * time.Second}
@@ -85,23 +94,23 @@ func (h *ClaimHook) run(listingID string) {
 	if waits == nil {
 		waits = DefaultBackoff
 	}
-	body, _ := json.Marshal(map[string]string{"listing_id": listingID, "status": "claimed"})
+	body, _ := json.Marshal(map[string]string{"listing_id": listingID, "status": status})
 	// At most len(waits)+1 tries; tries is the number of calls made.
-	var status, tries int
+	var code, tries int
 	var err error
 	for tries = 1; ; tries++ {
-		status, err = h.once(client, body)
-		if !again(status, err) || tries > len(waits) {
+		code, err = h.once(client, body)
+		if !again(code, err) || tries > len(waits) {
 			break
 		}
 		time.Sleep(waits[tries-1])
 	}
-	if err == nil && status != http.StatusOK && status != http.StatusNotFound && status != http.StatusServiceUnavailable {
-		err = fmt.Errorf("fanout answered %d", status)
+	if err == nil && code != http.StatusOK && code != http.StatusNotFound && code != http.StatusServiceUnavailable {
+		err = fmt.Errorf("fanout answered %d", code)
 	}
-	log.Printf("claim hook: listing %s -> fanout %d after %d tries (err=%v)", listingID, status, tries, err)
+	log.Printf("claim hook: listing %s %s -> fanout %d after %d tries (err=%v)", listingID, status, code, tries, err)
 	if h.Done != nil {
-		h.Done(listingID, status, tries, err)
+		h.Done(listingID, code, tries, err)
 	}
 }
 

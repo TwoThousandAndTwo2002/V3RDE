@@ -108,6 +108,8 @@ export const listings = Object.freeze({
   },
   mine: () => request<{ items: Listing[] }>("GET", "/api/listings/mine"),
   grab: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/grab"),
+  /** X48t: the owner deletes a listing nobody has grabbed (204; 409 when it was grabbed). */
+  remove: (id: string) => request<null>("DELETE", "/api/listings/" + encodeURIComponent(id)),
   create(n: NewListing) {
     const form = formOf([["title", n.title], ["number_of_serving", String(n.number_of_serving)],
       ["pickup_text", n.pickup_text]], [["request_id", n.request_id]]);
