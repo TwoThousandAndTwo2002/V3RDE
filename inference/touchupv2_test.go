@@ -195,7 +195,7 @@ func TestCompareX48h(t *testing.T) {
 		t.Fatalf("muse: ssim %v passed %v error %q", m.SSIM, m.Passed, m.Error)
 	}
 	for _, x := range []Variant{s, c} {
-		if x.Error != "" || x.Concept != "fruit + plate" || x.Masks != 2 || len(x.JPEG) == 0 {
+		if x.Error != "" || !strings.HasPrefix(x.Concept, "fruit + plate (SAM kept/found:") || x.Masks != 2 || len(x.JPEG) == 0 {
 			t.Fatalf("%s: error %q concept %q masks %d", x.Name, x.Error, x.Concept, x.Masks)
 		}
 	}
@@ -277,7 +277,7 @@ func TestSubjectMaskTarget(t *testing.T) {
 	v := &V2{API: &Client{URL: srv.URL, Key: "k"}, SAM: DefaultSAM}
 	img, _, _ := image.Decode(bytes.NewReader(itemJPEG(t, 400, 300, 0)))
 	m, label, n, _, err := v.SubjectMask(context.Background(), img, []string{"food"}, nil, image.Rect(50, 50, 210, 250))
-	if err != nil || label != "food" || n != 1 || m[150*400+100] != 1 || m[150*400+300] != 0 {
+	if err != nil || !strings.HasPrefix(label, "food (SAM kept/found: food 1/2)") || n != 1 || m[150*400+100] != 1 || m[150*400+300] != 0 {
 		t.Fatalf("target: err %v label %q masks %d item %d neighbour %d", err, label, n, m[150*400+100], m[150*400+300])
 	}
 	if _, _, n, _, _ := v.SubjectMask(context.Background(), img, []string{"food"}, nil, image.Rectangle{}); n != 2 {
@@ -302,5 +302,42 @@ func TestItemName(t *testing.T) {
 	}
 	if ItemName(dir, "r2", 1) != "" || ItemName(dir, "r9", 1) != "" || ItemName(dir, "", 1) != "" {
 		t.Fatal("a name for no item")
+	}
+}
+
+// X48j, one rule for every kind of item: a pile that SAM gives as many small
+// masks (one per tomato) is the item when the pieces inside the box fill it;
+// a mask that SAM made over two piles is cut to the item's box (+5%).
+func TestSubjectMaskPileAndCut(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		line := "<0f>\n"
+		switch firstText(body) {
+		case "roma tomatoes": // 12 pieces inside the box (x 160-400), none at the left
+			var recs []string
+			for k := 0; k < 12; k++ {
+				x, y := 165+(k%4)*58, 10+(k/4)*95
+				recs = append(recs, fmt.Sprintf("%d<|box;x1=%d;y1=%d;x2=%d;y2=%d;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=20,20,%s;c=0.9|>",
+					k, x, y, x+54, y+90, fullMask(t, 20, 20)))
+			}
+			line = "<0f>" + strings.Join(recs, ",") + "\n"
+		case "food": // one mask over everything (the plantains at the left and the tomatoes)
+			line = fmt.Sprintf("<0f>0<|box;x1=0;y1=0;x2=399;y2=299;w=400;h=300;c=0.9|><|mask;x=0;y=0;data=40,40,%s;c=0.9|>\n", fullMask(t, 40, 40))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(textResp("sam", line))
+	}))
+	defer srv.Close()
+	v := &V2{API: &Client{URL: srv.URL, Key: "k"}, SAM: DefaultSAM}
+	img, _, _ := image.Decode(bytes.NewReader(itemJPEG(t, 400, 300, 0)))
+	target := image.Rect(160, 0, 400, 300)
+	m, label, n, _, err := v.SubjectMask(context.Background(), img, []string{"roma tomatoes", "food"}, nil, target)
+	if err != nil || !strings.HasPrefix(label, "roma tomatoes") || n != 12 || m[150*400+60] != 0 || m[60*400+200] != 1 {
+		t.Fatalf("pile: err %v label %q masks %d left %d piece %d", err, label, n, m[150*400+60], m[60*400+200])
+	}
+	m, label, _, _, err = v.SubjectMask(context.Background(), img, []string{"food"}, nil, target)
+	if err != nil || !strings.HasPrefix(label, "food") || m[150*400+60] != 0 || m[150*400+150] != 1 || m[150*400+300] != 1 {
+		t.Fatalf("cut: err %v label %q far left %d edge (in the 5%%) %d inside %d", err, label, m[150*400+60], m[150*400+150], m[150*400+300])
 	}
 }

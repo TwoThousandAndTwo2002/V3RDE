@@ -306,11 +306,12 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 	}
 	mid := image.Rect(w/4, h/4, w*3/4, h*3/4)
 	area := func(r image.Rectangle) float64 { return float64(r.Dx() * r.Dy()) }
-	// pick is the item's instances of one concept. With a target (the item's
-	// box from the scan, X48i): the instance that matches it best (IoU >= 0.3),
-	// and any other instance whose box is at least 70% inside it (one item in
-	// several masks); a neighbour (the tomatoes next to the bananas, the next
-	// cereal box) is left out. With no target: every instance that touches
+	// pick is the item's instances of one concept: one rule for every kind of
+	// item (X48j, T9: "these rules have to be as general as possible"). With
+	// a target (the item's box from the scan): every instance whose box is at
+	// least 70% inside the target (the pieces of a pile, the parts of a meal),
+	// and the instance that matches the target best when its IoU is at least
+	// 0.3 (one item in one mask). With no target: every instance that touches
 	// the middle (X48g).
 	pick := func(insts []Instance) []Instance {
 		var keep []Instance
@@ -332,30 +333,57 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 			if iou := inter / (area(bx) + area(target) - inter); iou > bestIoU {
 				best, bestIoU = i, iou
 			}
-		}
-		if best < 0 || bestIoU < 0.3 {
-			return nil
-		}
-		keep = append(keep, insts[best])
-		for i, in := range insts {
-			if i == best || in.W <= 0 || in.H <= 0 {
-				continue
-			}
-			if bx := boxOf(in); area(bx) > 0 && area(bx.Intersect(target)) >= 0.7*area(bx) {
+			if area(bx) > 0 && inter >= 0.7*area(bx) {
 				keep = append(keep, in)
 			}
 		}
+		if best >= 0 && bestIoU >= 0.3 && !(area(boxOf(insts[best])) > 0 && area(boxOf(insts[best]).Intersect(target)) >= 0.7*area(boxOf(insts[best]))) {
+			keep = append(keep, insts[best])
+		}
 		return keep
 	}
+	// grow is the target with 5% of its size on each side: the food mask is
+	// cut to it, so a neighbour that SAM put in the same mask is cut away. A
+	// container is not cut (the tray around a meal can be wider than the food).
+	grow := image.Rectangle{}
+	if !target.Empty() {
+		gx, gy := target.Dx()/20, target.Dy()/20
+		grow = image.Rect(target.Min.X-gx, target.Min.Y-gy, target.Max.X+gx, target.Max.Y+gy).Intersect(image.Rect(0, 0, w, h))
+	}
+	var log []string
 	for i := range concepts {
 		keep := pick(got[i].inst)
 		m, n := MaskRaster(keep, w, h)
+		log = append(log, fmt.Sprintf("%s %d/%d", concepts[i], n, len(got[i].inst)))
 		set := 0
-		for _, x := range m {
-			set += int(x)
-		}
-		if n == 0 || float64(set) < 0.03*float64(w*h) || float64(set) > 0.92*float64(w*h) {
-			continue
+		if grow.Empty() {
+			for _, x := range m {
+				set += int(x)
+			}
+			if n == 0 || float64(set) < 0.03*float64(w*h) || float64(set) > 0.92*float64(w*h) {
+				continue
+			}
+		} else {
+			inT := 0
+			for y := 0; y < h; y++ {
+				for x := 0; x < w; x++ {
+					if m[y*w+x] == 0 {
+						continue
+					}
+					if !(image.Point{x, y}).In(grow) {
+						m[y*w+x] = 0
+						continue
+					}
+					set++
+					if (image.Point{x, y}).In(target) {
+						inT++
+					}
+				}
+			}
+			// the item must fill at least 30% of its box (a few stray pieces are not the item)
+			if n == 0 || float64(inT) < 0.3*area(target) {
+				continue
+			}
 		}
 		label := concepts[i]
 		for k, c := range containers {
@@ -383,9 +411,9 @@ func (v *V2) SubjectMask(ctx context.Context, img image.Image, concepts, contain
 				label += " + " + c
 			}
 		}
-		return m, label, n, cost, nil
+		return m, label + " (SAM kept/found: " + strings.Join(log, ", ") + ")", n, cost, nil
 	}
-	return nil, "", 0, cost, errors.New("sam: no mask of the item for " + strings.Join(concepts, ", "))
+	return nil, "", 0, cost, errors.New("sam: no mask of the item (SAM kept/found: " + strings.Join(log, ", ") + ")")
 }
 
 // ItemSource cuts the item again from the uploaded photo (orig) with a

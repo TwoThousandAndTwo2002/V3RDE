@@ -938,3 +938,17 @@ On the last page the cut kept neighbours of the same kind: the tomatoes next to 
 - The scan's name of the item is asked first, then "food", "fruit" and the others.
 - Tests: inference 90 -> 92.
 
+## 57. Touch-up v2: one mask rule for every item
+
+**When:** Oct 30 2026.
+**Meta models:** SAM 3.1 (no change). Only in the comparison tool.
+**Files:** `inference/touchupv2.go`, `inference/touchupv2_test.go`
+**Sources:** `docs/sources/X48j.md`
+
+Piles (tomatoes, plantains) still kept the pile next to them. SAM answers a pile with many small masks, one for each piece, and the old rule needed one mask for the whole item.
+
+- The rule is the same for every kind of item: the masks that are mostly inside the item's box are the item. The item must fill at least 30% of its box.
+- The food mask is cut to the item's box plus 5%, so a neighbour that SAM put in the same mask is cut away. A plate or a tray is not cut.
+- The page shows, for each SAM concept, how many masks SAM found and how many were kept.
+- Tests: inference 92 -> 93.
+
