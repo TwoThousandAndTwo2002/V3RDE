@@ -175,6 +175,48 @@ test("the wait: only for the first byte; an answer cut in the middle ends the br
   }
 });
 
+test("a folder page with the trailing slash (the About page, #78); without it the app, as the edge", async () => {
+  process.env.V3RDE_WEB_QUIET = "1";
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "v3rde-web-"));
+  fs.writeFileSync(path.join(root, "index.html"), "<html>app</html>");
+  fs.mkdirSync(path.join(root, "about"));
+  fs.writeFileSync(path.join(root, "about", "index.html"), "<html>about</html>");
+  fs.mkdirSync(path.join(root, "empty"));
+  const web = createWebServer({ root, api: "" });
+  await new Promise<void>((go) => web.listen(0, "127.0.0.1", () => go()));
+  const base = "http://127.0.0.1:" + (web.address() as AddressInfo).port;
+  try {
+    let r = await fetch(base + "/about/");
+    assert.equal(r.status, 200);
+    assert.equal(await r.text(), "<html>about</html>");
+    assert.match(r.headers.get("content-type") ?? "", /^text\/html/);
+    assert.equal(r.headers.get("cache-control"), "no-store");
+    assert.equal(await (await fetch(base + "/about/?x=1")).text(), "<html>about</html>");
+    assert.equal(await (await fetch(base + "/about/index.html")).text(), "<html>about</html>");
+    assert.equal(await (await fetch(base + "/about")).text(), "<html>app</html>"); // no slash: a file path, the app
+    assert.equal(await (await fetch(base + "/empty/")).text(), "<html>app</html>"); // a folder with no page: the app
+    assert.equal(await (await fetch(base + "/about%2F")).text(), "<html>about</html>"); // the edge decodes the path too
+    // Raw paths (fetch would clean them): a way out of the web build gets the app, never a file outside it.
+    const raw = (p: string) => new Promise<string>((ok, bad) => {
+      http.get({ host: "127.0.0.1", port: (web.address() as AddressInfo).port, path: p }, (r) => {
+        let t = ""; r.on("data", (c) => { t += c; }); r.on("end", () => ok(t));
+      }).on("error", bad);
+    });
+    assert.equal(await raw("/about/../about/"), "<html>app</html>");
+    assert.equal(await raw("/about/%2e%2e/about/"), "<html>app</html>");
+    assert.equal(await raw("/../" + path.basename(root) + "/about/"), "<html>app</html>");
+    // A folder link that points outside the web build is not served.
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), "v3rde-out-"));
+    fs.writeFileSync(path.join(outside, "index.html"), "<html>secret</html>");
+    fs.symlinkSync(outside, path.join(root, "link"));
+    assert.equal(await (await fetch(base + "/link/")).text(), "<html>app</html>");
+    fs.rmSync(outside, { recursive: true, force: true });
+  } finally {
+    web.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("without a services address /api answers 502, the app still loads", async () => {
   process.env.V3RDE_WEB_QUIET = "1";
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "v3rde-web-"));

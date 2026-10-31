@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About V3RDE</title>
+<meta name="description" content="V3RDE gets extra food to people near it before it goes to waste. How it works, who it is for, and how it is built.">
+<link rel="icon" href="/favicon.ico">
+<!--
+  The V3RDE About page (NEW_WORK.md #78, branch about). A static page next to the app: the web build copies
+  mobile/public/ into web-dist, and the edge serves it at /about/. Every value comes from mobile/src/theme.ts and
+  mobile/docs/style_guide.md ("About page"; 1 pt in the app = 1 CSS px here): colours = palette, text = type
+  (display, title, body, button), spacing = space, corners = radius, sizes = size, opacity = opacity, doodles =
+  doodle. tests/about.test.mts checks it. Facts and numbers: NEW_WORK.md (entry numbers in the comments).
+  Fonts: the same Poppins files as the app (font.regular, font.semibold), from the app's web build (content-hashed
+  paths; tests/about.test.mts checks that web-dist has them).
+-->
+<style>
+@font-face { font-family: "Poppins"; font-weight: 400; font-style: normal; font-display: swap; src: url("/assets/node_modules/@expo-google-fonts/poppins/400Regular/Poppins_400Regular.093ee89be9ede30383f39a899c485a82.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-weight: 600; font-style: normal; font-display: swap; src: url("/assets/node_modules/@expo-google-fonts/poppins/600SemiBold/Poppins_600SemiBold.6f1520d107205975713ba09df778f93f.ttf") format("truetype"); }
+
+:root {
+  /* palette.light */
+  --bg: #F6F5F5; --card: #FFFFFF; --fg: #232323; --muted: #6D6D78; --line: #DDDDDD;
+  --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #FFD4D7; --iconFill: #F3F3F3;
+  --link: #BC202C; --doodle: #BC202C; --doodleOpacity: 0.09;
+  /* space */
+  --hair: 4px; --inset: 6px; --gap: 8px; --item: 10px; --group: 12px; --grid: 14px; --gutter: 16px; --foot: 20px; --pad: 24px; --bar: 28px;
+  /* radius */
+  --r-photo: 12px; --r-card: 18px; --r-sheet: 26px; --r-round: 999px;
+  /* size */
+  --control: 48px; --iconBig: 44px; --topBar: 64px; --header: 56px; --border: 1px; --tabPadX: 16px; --pillPadX: 20px;
+  --glyphBox: 20px; --glyphSmall: 12px; --glyphStroke: 1.67; --focus: 2px; --iconSmall: 38px;
+  --maxWidth: 560px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141414; --card: #1E1E20; --fg: #F3F3F3; --muted: #A1A1AA; --line: #3A3A3F;
+    --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #4A1D22; --iconFill: #2A2A2E;
+    --link: #FF727D; --doodle: #FF727D; --doodleOpacity: 0.1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141414; --card: #1E1E20; --fg: #F3F3F3; --muted: #A1A1AA; --line: #3A3A3F;
+  --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #4A1D22; --iconFill: #2A2A2E;
+  --link: #FF727D; --doodle: #FF727D; --doodleOpacity: 0.1; color-scheme: dark;
+}
+/* layoutFor(width): compact < 600, medium 600-839, expanded >= 840 */
+@media (min-width: 600px) { :root { --maxWidth: 900px; } }
+@media (min-width: 840px) { :root { --maxWidth: 1120px; } }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: "Poppins", system-ui, sans-serif; font-weight: 400; font-size: 14px; line-height: 20px; /* type.body */
+}
+a { color: inherit; }
+.display { font-weight: 600; font-size: 22px; line-height: 28px; margin: 0; }     /* type.display (new token, T9 Oct 30: 22) */
+.title { font-weight: 600; font-size: 18px; line-height: 24px; margin: 0; }       /* type.title */
+.label { font-weight: 600; font-size: 14px; line-height: 20px; margin: 0; }       /* type.button */
+.body  { font-weight: 400; font-size: 14px; line-height: 20px; margin: 0; }       /* type.body */
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Frame: phone/tablet header (size.header) and wide top bar (size.topBar) */
+.top { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+/* Phone and tablet: "V3RDE" in muted in the centre (Frame). Wide: the top bar, "V3RDE" in link at the left, and a
+   button in the style of Log out (line border, muted text, size.tabPadX) at the right. */
+.top-in { height: var(--header); max-width: var(--maxWidth); margin: 0 auto; padding: 0 var(--gutter);
+  display: flex; align-items: center; justify-content: center; }
+.brand { color: var(--muted); text-decoration: none; }
+.top .bar-btn { display: none; height: var(--control); padding: 0 var(--tabPadX); border-radius: var(--r-round);
+  border: var(--border) solid var(--line); color: var(--muted); text-decoration: none; align-items: center; }
+.top .bar-btn:hover { background: var(--iconFill); }
+.top .bar-btn:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); }
+@media (min-width: 840px) {
+  .top { border-bottom: var(--border) solid var(--line); }
+  .top-in { height: var(--topBar); padding: 0 var(--pad); justify-content: space-between; }
+  .brand { color: var(--link); }
+  .top .bar-btn { display: inline-flex; }
+}
+
+/* Pill (size.control, radius.round, size.border) */
+.pill { display: inline-flex; align-items: center; justify-content: center; height: var(--control);
+  padding: 0 var(--pillPadX); border-radius: var(--r-round); border: var(--border) solid var(--accent);
+  background: var(--accent); color: var(--onAccent); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.pill.secondary { background: var(--card); color: var(--fg); border-color: var(--line); }
+.pill:hover { opacity: 0.92; }   /* opacity.hover */
+.pill:active { opacity: 0.85; }  /* opacity.pressed */
+.pill:focus-visible, .link:focus-visible, .brand:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); } /* size.focusBorder in link */
+.link { color: var(--link); text-decoration: underline; }
+
+main { max-width: var(--maxWidth); margin: 0 auto; padding: 0 var(--gutter) var(--pad); }
+@media (min-width: 840px) { main { padding: 0 var(--pad) var(--pad); } }
+
+/* Hero: a card over the backdrop */
+/* The backdrop: the doodle wallpaper of the app screens (Doodles), fixed behind the whole page, on bg. */
+svg.backdrop { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: var(--doodleOpacity); pointer-events: none; }
+main, footer { position: relative; z-index: 1; }
+.hero { border-radius: var(--r-card); margin-top: var(--gap); border: var(--border) solid var(--line); background: var(--card); }
+.hero-in { padding: var(--pad); }
+.hero-in .muted { margin-top: var(--inset); }
+.hero .row { margin-top: var(--pad); display: flex; gap: var(--item); flex-wrap: wrap; }
+
+section { margin-top: var(--bar); }
+section > .title + .muted { margin-top: var(--hair); }
+.grid { display: grid; grid-template-columns: 1fr; gap: var(--grid); margin-top: var(--gutter); }
+@media (min-width: 600px) { .grid.two, .grid.three { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 840px) { .grid.three { grid-template-columns: 1fr 1fr 1fr; } }
+
+.card { background: var(--card); border: var(--border) solid var(--line); border-radius: var(--r-card); padding: var(--group); }
+.card .head { display: flex; align-items: center; gap: var(--group); }
+.disc { flex: none; width: var(--iconBig); height: var(--iconBig); border-radius: var(--r-round); background: var(--accentSoft);
+  display: flex; align-items: center; justify-content: center; }
+.disc svg { width: var(--glyphBox); height: var(--glyphBox); stroke: var(--accent); stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.card .lead { margin-top: var(--group); }
+
+/* Steps */
+ol.steps { list-style: none; margin: var(--gutter) 0 0; padding: 0; display: grid; gap: var(--item); }
+@media (min-width: 600px) { ol.steps { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 840px) { ol.steps { grid-template-columns: repeat(5, 1fr); } }
+ol.steps li { display: flex; gap: var(--group); align-items: flex-start; }
+.n { flex: none; width: var(--iconBig); height: var(--iconBig); border-radius: var(--r-round); background: var(--iconFill);
+  display: flex; align-items: center; justify-content: center; }
+ol.steps li .label + .muted { margin-top: var(--hair); }
+
+/* How it is built: flows of stages. A stage is a column of parts (top to bottom, an arrow down between them); the
+   stages go left to right with an arrow between them (size.control wide). Three stages a row (the high-level
+   drawing: five), so a row reads left to right and the rows read top to bottom. A phone: one column, arrows down. */
+.overview { margin-top: var(--gutter); padding: var(--pad); }
+.flow { display: flex; flex-direction: column; }
+.stage { display: flex; flex-direction: column; }
+.stage-name { color: var(--muted); margin-bottom: var(--gap); }
+.node { border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--gap) var(--group); background: var(--bg); }
+.node.ai { border-color: var(--accent); }
+.node .where { color: var(--muted); margin: 0; }
+.node .step { color: var(--link); margin-right: var(--inset); }
+.down, .go { display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.down { height: var(--gutter); }
+.go { height: var(--control); }
+.down svg, .go svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.go svg { transform: rotate(90deg); }
+@media (min-width: 840px) {
+  .flow { flex-direction: row; flex-wrap: wrap; row-gap: var(--pad); }
+  .flow.c3 .stage { flex: 0 0 calc((100% - 2 * var(--control)) / 3); }
+  .flow.c4 .stage { flex: 0 0 calc((100% - 3 * var(--control)) / 4); }
+  .flow.c5 .stage { flex: 0 0 calc((100% - 4 * var(--control)) / 5); }
+  .go { width: var(--control); height: auto; }
+  .go svg { transform: none; }
+  .flow.c3 > .go:nth-child(6n) { display: none; }         /* the end of a row of three: the next row starts left */
+  .stage .node { flex: 0 0 auto; }
+}
+/* More detail: a tap opens it (details and summary, no script) */
+.more { margin-top: var(--gutter); padding: 0; }
+.more summary { display: flex; align-items: center; justify-content: space-between; gap: var(--group); padding: var(--group) var(--pad); cursor: pointer; list-style: none; min-height: var(--control); }
+.more summary::-webkit-details-marker { display: none; }
+.more summary:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); border-radius: var(--r-card); }
+.sum-text { display: flex; flex-direction: column; }
+.toggle { flex: none; width: var(--iconSmall); height: var(--iconSmall); border-radius: var(--r-round); background: var(--iconFill); display: flex; align-items: center; justify-content: center; }
+.toggle svg { width: var(--glyphSmall); height: var(--glyphSmall); stroke: var(--fg); stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; }
+.more .minus, .more[open] .plus { display: none; }
+.more[open] .minus { display: block; }
+.more > .flow { padding: 0 var(--pad) var(--pad); }
+.part ul { margin: var(--gap) 0 0; padding: 0 0 0 var(--gutter); }
+.part li + li { margin-top: var(--hair); }
+.flow.parts .stage { justify-content: stretch; }
+.flow.parts .node { flex: 1 1 auto; }
+.sr { position: absolute; width: var(--border); height: var(--border); overflow: hidden; clip-path: inset(50%); }
+
+/* Numbers */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--grid); margin-top: var(--gutter); }
+@media (min-width: 840px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+.stat .muted { margin-top: var(--hair); }
+
+footer { max-width: var(--maxWidth); margin: 0 auto; padding: var(--pad) var(--gutter); border-top: var(--border) solid var(--line); }
+@media (min-width: 840px) { footer { padding: var(--pad); } }
+footer .muted + .muted { margin-top: var(--hair); }
+[hidden] { display: none !important; }
+.skip { position: absolute; width: var(--border); height: var(--border); overflow: hidden; clip-path: inset(50%); }
+.skip:focus { width: auto; height: var(--control); clip-path: none; left: var(--gutter); top: var(--gap); z-index: 3; }
+</style>
+</head>
+<body>
+<a class="skip pill secondary" href="#main">Skip to the page</a>
+<svg class="backdrop" aria-hidden="true" focusable="false"></svg>
+<header class="top">
+  <div class="top-in">
+    <a class="title brand" href="/">V3RDE</a>
+    <a class="bar-btn label" href="/" data-testid="open-app">Open the app</a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Impact: the problem, who benefits, what a person can do today -->
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="hero-in">
+      <h1 class="display" id="h-hero">Extra food goes to people near it, not to the trash</h1>
+      <p class="body muted">Share a meal with people near you in 30 minutes. Food nobody picks up goes to a food program.</p>
+      <div class="row">
+        <!-- T9 Oct 30: "Watch the demo" shows when the video exists: set DEMO_URL in the script (https only). -->
+        <a class="pill secondary label" href="#" data-testid="demo" hidden>Watch the demo</a>
+        <a class="pill secondary label" href="/">Find food near you</a>
+        <a class="pill label" href="/">Share your food</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact: the problem and what changes (T9, Oct 30) -->
+  <section aria-labelledby="h-problem">
+    <h2 class="title" id="h-problem">Posting food should take seconds</h2>
+    <p class="body muted">Sharing extra food used to mean typing each item, counting servings and taking a good photo. Most people gave up, and the food went to the trash. V3RDE uses Meta's AI models to do that work for you.</p>
+    <div class="grid three">
+      <div class="card"><h3 class="label">One photo, not a form</h3><p class="body muted">Meta's models find, count and name each item, and make the photo look good.</p></div>
+      <div class="card"><h3 class="label">Six languages</h3><p class="body muted">English, Spanish, Portuguese, Chinese, Hindi and Arabic.</p></div>
+      <div class="card"><h3 class="label">Nothing left behind</h3><p class="body muted">Nobody grabbed it in 30 minutes? Rescue finds a food program near it.</p></div>
+    </div>
+  </section>
+
+  <!-- Roles (T9: Give, Receive, and food programs) -->
+  <section aria-labelledby="h-roles">
+    <h2 class="title" id="h-roles">Who uses V3RDE</h2>
+    <div class="grid three">
+      <article class="card">
+        <div class="head">
+          <span class="disc" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z"/></svg></span>
+          <div><h3 class="label">Give</h3><p class="body muted">Share your food</p></div>
+        </div>
+        <p class="body lead">Take one photo. The app lists each item. Post.</p>
+      </article>
+      <article class="card">
+        <div class="head">
+          <span class="disc" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5"/></svg></span>
+          <div><h3 class="label">Receive</h3><p class="body muted">Find food near you</p></div>
+        </div>
+        <p class="body lead">See food near you. Grab it. Pick it up.</p>
+      </article>
+      <article class="card">
+        <div class="head">
+          <span class="disc" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="stroke-width: calc(var(--glyphStroke) * 1.2)"><path d="M5 11.4C2.8 11.4 2.8 7 6 7h12c3.2 0 3.2 4.4 1 4.4V19H5zM9.4 8.8l-1.2 2.2M13 8.8l-1.2 2.2M16.6 8.8l-1.2 2.2"/></svg></span>
+          <div><h3 class="label">Food programs</h3><p class="body muted">Take what nobody grabbed</p></div>
+        </div>
+        <p class="body lead">Food banks, pantries and meal programs near the food.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- How it works (Demo: the flow that the video shows) -->
+  <section aria-labelledby="h-how">
+    <h2 class="title" id="h-how">How it works</h2>
+    <ol class="steps">
+      <li><span class="n label num" aria-hidden="true">1</span><div><p class="label">Snap</p><p class="body muted">One item or a full shelf.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">2</span><div><p class="label">Check</p><p class="body muted">Fix it by voice or text.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">3</span><div><p class="label">Post</p><p class="body muted">Live for 30 minutes.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">4</span><div><p class="label">Grab</p><p class="body muted">A neighbor picks it up.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">5</span><div><p class="label">Rescue</p><p class="body muted">Or a food program does.</p></div></li>
+    </ol>
+  </section>
+
+  <!-- Architecture (Technical depth; Use of Meta AI tooling), read from the code (NEW_WORK.md entries 4, 9, 16, 17,
+       19, 48, 50, 54-64, 65, 69, 73, 74, 75). One drawing is always open; three more open on a tap (details).
+       Every drawing reads left to right, then top to bottom: an arrow points right or down, never back. -->
+  <section aria-labelledby="h-arch">
+    <h2 class="title" id="h-arch">How it is built</h2>
+    <p class="body muted">Three parts work together. Quick checks run on our own server; Meta's AI models do the hard work. Tap a flow below to see it step by step. A red border is a Meta AI model.</p>
+    <div class="card overview">
+      <div class="flow c3 parts">
+        <div class="stage"><div class="node part phone"><p class="label">Your phone or browser</p><p class="body muted">What you see and touch</p><ul class="body"><li>Camera and barcode reader</li><li>Microphone or keyboard</li><li>The app in your language</li></ul></div></div>
+        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+        <div class="stage"><div class="node part server"><p class="label">Our server</p><p class="body muted">Quick checks and your listings</p><ul class="body"><li>Sign-in and fair use</li><li>Food DB and food check (PE-Core)</li><li>Listings, timers and Rescue</li><li>Checks every AI answer</li><li>Logs the time and cost of each call</li></ul></div></div>
+        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+        <div class="stage"><div class="node part ai"><p class="label">Meta's AI models</p><p class="body muted">The hard work</p><ul class="body"><li>SAM 3.1: finds and counts</li><li>Muse Spark 1.3: names, understands, decides</li><li>Muse Image 1.0: better photos</li><li>Muse Voice Transcribe 1.0: speech to text</li><li>Muse Spark Open: translations</li></ul></div></div>
+      </div>
+    </div>
+    <details class="more card" id="m-post">
+      <summary><span class="sum-text"><span class="label">Posting food, step by step</span><span class="body muted">12 steps, from the photo to the listing</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c3">
+          <div class="stage"><p class="label stage-name">Snap</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Camera</p><p class="body muted">Takes the photo and reads the barcode</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Front door</p><p class="body muted">Checks who you are and keeps use fair</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Check</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">3</span>Food DB</p><p class="body muted">A known barcode fills the listing at once</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server ai"><p class="where">Our server, a Meta AI model</p><p class="label"><span class="step">4</span>Food check</p><p class="body muted">PE-Core runs on our server. Not food? It stops here, free</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Find and name</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>SAM 3.1</p><p class="body muted">Finds and counts every item, even a full shelf</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">6</span>Muse Spark 1.3</p><p class="body muted">Names each item; same items are counted</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Better photo</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">7</span>Muse Image 1.0</p><p class="body muted">Makes the photo sharper and cleaner</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">8</span>Photo check</p><p class="body muted">Same food, same items, or the original stays</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Fix by talking</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">9</span>Your words</p><p class="body muted">Say or type: “the salad is gone”</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">10</span>Muse Voice Transcribe 1.0 and Muse Spark 1.3</p><p class="body muted">Understand what you mean</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">11</span>Change check</p><p class="body muted">Only real items, sensible servings</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Post</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">12</span>Listing</p><p class="body muted">Live for 30 minutes for people near you</p></div>
+          </div>
+        </div>
+    </details>
+    <details class="more card" id="m-rescue">
+      <summary><span class="sum-text"><span class="label">Rescue, step by step</span><span class="body muted">Food that nobody grabbed still finds a home</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c4">
+          <div class="stage"><p class="label stage-name">Start</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Rescue button</p><p class="body muted">The timer ended and nobody grabbed it</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Where is the food?</p><p class="body muted">Uses the pickup address on the map, or your location</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Decide</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Muse Spark 1.3</p><p class="body muted">Shelf-stable or perishable?</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Find places</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Food program directory</p><p class="body muted">The nearest food banks, pantries and meal programs</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>Muse Spark 1.3 web search</p><p class="body muted">Only when the directory finds none</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Go</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">6</span>Three places</p><p class="body muted">The nearest that take this kind of food</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">7</span>Directions and a call</p><p class="body muted">A large amount? An email to send first</p></div>
+          </div>
+        </div>
+    </details>
+    <details class="more card" id="m-lang">
+      <summary><span class="sum-text"><span class="label">Six languages, step by step</span><span class="body muted">English, Spanish, Portuguese, Chinese, Hindi and Arabic</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c4">
+          <div class="stage"><p class="label stage-name">Find new text</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">1</span>New text</p><p class="body muted">After each update, finds what changed</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Translate</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">2</span>Muse Spark Open</p><p class="body muted">Translates a whole screen at a time</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Two judges</p><p class="body muted">Muse Spark Open and Muse Spark 1.3 check meaning and tone</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Keep the good ones</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Score check</p><p class="body muted">A weak translation keeps the last good text</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Your language</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">5</span>Your language</p><p class="body muted">The app text, ready in 6 languages</p></div>
+          </div>
+        </div>
+    </details>
+  </section>
+
+  <!-- Technical depth: measured, not estimated (NEW_WORK.md entry 4) -->
+  <section aria-labelledby="h-num">
+    <h2 class="title" id="h-num">Measured, not guessed</h2>
+    <p class="body muted">Live runs on 23 shelf photos, a hand check of 294 boxes.</p>
+    <div class="stats">
+      <div class="card stat"><p class="title num">89.8%</p><p class="body muted">correct product names</p></div>
+      <div class="card stat"><p class="title num">97.4%</p><p class="body muted">correct on items 96 px or larger</p></div>
+      <div class="card stat"><p class="title num">$0.0012</p><p class="body muted">for each named item</p></div>
+      <div class="card stat"><p class="title num">6.1 s</p><p class="body muted">for 24 items (was 14.9 s)</p></div>
+    </div>
+  </section>
+
+  <!-- New work only (rules) -->
+  <section aria-labelledby="h-new">
+    <h2 class="title" id="h-new">Built for the Meta Global AI Developer Hackathon</h2>
+    <p class="body muted">Built Oct 26 to Nov 4, 2026. Parts our earlier app had are written again as new code. NEW_WORK.md in our repository lists each part.</p>
+  </section>
+</main>
+
+<footer>
+  <p class="label">V3RDE by Hungree LLC</p>
+  <p class="body muted">The Hungree red and the Poppins font (SIL Open Font Licence) are Hungree brand assets from before the Hackathon.</p>
+  <p class="body muted">The product photos after a barcode scan are from Open Food Facts (openfoodfacts.org), with the Creative Commons Attribution ShareAlike licence (CC BY-SA).</p>
+</footer>
+
+<script>
+/* The backdrop: the doodle wallpaper of the app (mobile/src/doodles.tsx, mobile/src/automata.ts): the same 20
+   drawings, the same hash and the same rule 30 from the same seed (doodle tokens in T). A drawing in every cell;
+   a dead cell's drawing has doodle.faint of the strength. Every doodle.stepMs a new generation comes in at the
+   bottom and the pattern moves up one row; the drawings stay in their cells. With "reduce motion" on, the pattern
+   stands still. A new column count (a new width) gives a new pattern. Decorative: hidden from screen readers. */
+(function () {
+  var D = [
+    "M12 7.5c-2-1.6-6.2-1.2-6.6 3.4-.4 4.8 2.6 9.2 4.4 9.6 1 .2 1.4-.6 2.2-.6s1.2.8 2.2.6c1.8-.4 4.8-4.8 4.4-9.6C18.2 6.3 14 5.9 12 7.5zM12 7.5c0-1.8.6-3 1.6-3.8M13.6 5.8c1.2-1.4 3-1.8 4.2-1-1 1.4-2.6 1.8-4.2 1z",
+    "M12 5c-1.6 0-2.2 1.4-2.2 3.2 0 1.8-3.8 3.6-3.8 7.6a6 6 0 0 0 12 0c0-4-3.8-5.8-3.8-7.6C14.2 6.4 13.6 5 12 5zM12 5V2.6M12.4 3.6c1.2-1 2.6-1 3.4-.2",
+    "M5 19.5C7 15 11 10.5 14.5 8.4a2.6 2.6 0 0 1 3 3C15.4 14.9 10.9 18.9 6.5 21c-1.3.6-2.1-.2-1.5-1.5zM15.8 8l.4-4.6M16.8 9.2l4.4-1.4M16.4 8.4l3.4-3.4M9.6 15.4l1.6 1.4M12.2 12.6l1.4 1.2",
+    "M5 11.4C2.8 11.4 2.8 7 6 7h12c3.2 0 3.2 4.4 1 4.4V19H5zM9.4 8.8l-1.2 2.2M13 8.8l-1.2 2.2M16.6 8.8l-1.2 2.2",
+    "M3 10.5a9 2.6 0 1 0 18 0 9 2.6 0 1 0-18 0M3 10.5c.6 5.6 4.4 9 9 9s8.4-3.4 9-9M13.5 3l3 6.2M17.5 2.6l1 6.6",
+    "M6 7.5h12l-1.6 13.5H7.6zM5 4.5h14v3H5zM9 2.5h6v2M7.2 12.5h9.6",
+    "M4 5.2c5.2-2 11-1.4 16.4 2.6L12.4 21zM5.6 7.6c4.4-1.4 9-1 13 1.4M10 11.4a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0M12.2 15.6a1 1 0 1 0 2 0 1 1 0 1 0-2 0",
+    "M2.8 12c4.2-6 11-6 14.8 0-3.8 6-10.6 6-14.8 0zM17.6 12l3.6-3.4v6.8zM7 11.2v.1M11 9.4c1 1.6 1 3.6 0 5.2",
+    "M5.6 9.2c.8-4 6-5.4 9.2-3.4s6.4 2.6 5.4 6.6-2.4 7.2-7.4 7.2-9.2-1-8.4-5c.4-2 .6-3.6 1.2-5.4zM10 12.4a2.6 2.6 0 1 0 5.2 0 2.6 2.6 0 1 0-5.2 0",
+    "M3 16.5l13.5-9 4.5 4.5v8.5H3zM3 16.5h18M8.5 18.4a.1.1 0 1 0 .2 0M14.5 14.2a.1.1 0 1 0 .2 0",
+    "M4.6 17.2a3 3 0 1 0 6 0 3 3 0 1 0-6 0M13 18.2a3 3 0 1 0 6 0 3 3 0 1 0-6 0M7.6 14.2C8.8 9 11.6 5.6 15 3.6M16 15.2c0-4.2.2-8.2-1-11.6M15 3.6c1.6-.6 3.4 0 4.4 1.4-1.8.8-3.4.4-4.4-1.4z",
+    "M3.5 12c1.5-4.5 5-7 8.5-7s7 2.5 8.5 7c-1.5 4.5-5 7-8.5 7s-7-2.5-8.5-7zM2.4 12h1.1M20.5 12h1.1M8.6 10c.9-1 2-1.6 3.2-1.8",
+    "M5.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M10.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M15.5 8.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M8 13a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M13 13a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M10.5 17.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0M13 6V3.2c1.2-.8 2.6-.8 3.6 0",
+    "M6 12.4h12l-1.6 8H7.6zM5.4 12.4C4 12.4 4 8.2 7.2 8.2c.4-3 3-4.2 4.8-4.2s4.4 1.2 4.8 4.2c3.2 0 3.2 4.2 1.8 4.2M10 12.4l.4 8M14 12.4l-.4 8",
+    "M14.6 4.6a5.2 5.2 0 0 1 4.8 7.4c-1.2 2.6-4.4 3.4-6.6 4.4L9.4 18a2 2 0 1 1-2.8 2.8 2 2 0 1 1-2.8-2.8 2 2 0 1 1 2.8-2.8L8.2 11.6c1-2.2 1.8-5.4 4.4-6.6.6-.3 1.3-.4 2-.4z",
+    "M12 21c-4-2-7.5-6.5-7-10.5.4-2.6 2.6-3.6 7-3.6s6.6 1 7 3.6c.5 4-3 8.5-7 10.5zM8.4 7l3.6-3.2 3.6 3.2M12 3.8V2.2M9.6 12v.2M14.4 12v.2M12 15.6v.2",
+    "M6.8 10.5l5.2 11 5.2-11zM5.8 10.5a6.2 6.2 0 0 1 12.4 0zM9 13.6l5.6 2.9M10.7 18l3.5-1.8",
+    "M3 8.5h18a9 9 0 0 1-18 0zM5.6 8.5a6.4 6.4 0 0 0 12.8 0M9.4 11.4v.4M12 13.2v.4M14.6 11.4v.4",
+    "M4 10.5a8 5.5 0 0 1 16 0zM3.5 13.5h17M5 16.5h14v1a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17.5zM8.5 7.6v.1M12 6.6v.1M15.5 7.6v.1",
+    "M10 13.6l.5 7.4h3l.5-7.4M8.2 13.6a3.6 3.6 0 0 1-.4-7.1 4.2 4.2 0 0 1 8.4 0 3.6 3.6 0 0 1-.4 7.1z"
+  ];
+  var T = { cell: 38, glyph: 32, units: 24, stroke: 2.2, jitter: 3, turn: 20, steps: 2, seed: 1026, density: 0.5, faint: 0.55, stepMs: 1000 };
+  // ---- pure: start (no page access; tests/about.test.mts runs this part against automata.ts)
+  function lcg(seed) { var s = seed >>> 0; return function () { s = (Math.imul(1664525, s) + 1013904223) >>> 0; return s / 4294967296; }; }
+  function hash() { var h = 2166136261; for (var i = 0; i < arguments.length; i++) h = Math.imul(h ^ (arguments[i] >>> 0), 16777619) >>> 0;
+    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b) >>> 0; h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35) >>> 0; return (h ^ (h >>> 16)) >>> 0; }
+  function nextRow(rule, up) { var n = up.length; return up.map(function (_, i) { return (rule >> ((up[(i + n - 1) % n] << 2) | (up[i] << 1) | up[(i + 1) % n])) & 1; }); }
+  function startGrid(w, h) {   // automata.ts startGrid: the first rule-30 window, one row per cell row
+    var cols = Math.ceil(w / T.cell), rows = Math.ceil(h / T.cell), next = lcg(T.seed);
+    if (cols <= 0 || rows <= 0) return [];
+    var row = []; for (var c = 0; c < cols; c++) row.push(next() < T.density ? 1 : 0);
+    var grid = [row]; for (var y = 1; y < rows; y++) { row = nextRow(30, row); grid.push(row); }
+    return grid;
+  }
+  function stepUp(grid) { return grid.length ? grid.slice(1).concat([nextRow(30, grid[grid.length - 1])]) : grid; }
+  function marks(grid) {       // automata.ts wallpaper: one drawing in each cell, no neighbour the same
+    var span = 2 * T.jitter + 1, turns = 2 * T.steps + 1, picks = [], out = [];
+    grid.forEach(function (line, y) { picks.push([]); line.forEach(function (alive, x) {
+      var left = x > 0 ? picks[y][x - 1] : -1, up = y > 0 ? picks[y - 1][x] : -1, pick = hash(x, y, 4) % D.length;
+      while (pick === left || pick === up) pick = (pick + 1) % D.length; picks[y].push(pick);
+      out.push({ x: x * T.cell + T.cell / 2 + (hash(x, y, 1) % span) - T.jitter, y: y * T.cell + T.cell / 2 + (hash(x, y, 2) % span) - T.jitter,
+        drawing: pick, turn: T.steps > 0 ? ((hash(x, y, 3) % turns) - T.steps) * (T.turn / T.steps) : 0, live: alive === 1 });
+    }); });
+    return out;
+  }
+  // ---- pure: end
+  var svg = document.querySelector("svg.backdrop"), grid = [], paths = [], cols = 0;
+  function draw() {
+    var w = svg.clientWidth, h = svg.clientHeight; if (!w || !h) return;
+    cols = Math.ceil(w / T.cell); grid = startGrid(w, h);
+    var scale = T.glyph / T.units, half = T.glyph / 2;
+    var out = '<g style="stroke: var(--doodle)" stroke-width="' + (T.stroke / scale) + '" fill="none" stroke-linecap="round" stroke-linejoin="round">';
+    marks(grid).forEach(function (m) {
+      out += '<path d="' + D[m.drawing] + '" stroke-opacity="' + (m.live ? 1 : T.faint) + '" transform="translate(' + (m.x - half) + ' ' + (m.y - half) + ') rotate(' + m.turn + ' ' + half + ' ' + half + ') scale(' + scale + ')"/>';
+    });
+    svg.innerHTML = out + "</g>";
+    paths = svg.querySelectorAll("path");
+  }
+  function step() {   // the top row goes, the next generation comes in at the bottom; the drawings stay
+    if (!grid.length) return;
+    grid = stepUp(grid);
+    var i = 0; grid.forEach(function (line) { line.forEach(function (alive) { if (paths[i]) paths[i].setAttribute("stroke-opacity", alive ? 1 : T.faint); i++; }); });
+  }
+  function resize() { if (Math.ceil(svg.clientWidth / T.cell) !== cols || paths.length < Math.ceil(svg.clientHeight / T.cell) * cols) draw(); }
+  draw(); addEventListener("resize", resize);
+  var still = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: true };
+  setInterval(function () { if (!still.matches && !document.hidden) step(); }, T.stepMs);
+
+  /* T9 Oct 30: "Watch the demo" shows only when the video exists. Set DEMO_URL to its https address. */
+  var DEMO_URL = "";
+  var demo = document.querySelector('[data-testid="demo"]');
+  if (demo && /^https:\/\//.test(DEMO_URL)) { demo.href = DEMO_URL; demo.hidden = false; }
+})();
+</script>
+</body>
+</html>

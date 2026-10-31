@@ -25,15 +25,30 @@ function answer(res, status, body, extra = {}) {
   res.end(body);
 }
 
-/** A file of the web build, or index.html for a path that is not a file (the app routes it). */
+/**
+ * A file of the web build, or index.html for a path that is not a file (the app routes it). A path that ends in "/"
+ * and names a folder with an index.html gets that page (#78: the About page at /about/), as the edge does: its
+ * try_files matches a folder only with the trailing slash, and its file_server then serves the folder's index.html.
+ */
 function serveFile(root, req, res) {
-  const want = fileIn(root, req.url.split("?")[0]);
+  const clean = req.url.split("?")[0];
+  const want = fileIn(root, clean);
   let file = want;
   let exists = false;
   try {
-    exists = !!want && fs.statSync(want).isFile();
+    const st = want ? fs.statSync(want) : null;
+    exists = !!st && st.isFile();
+    if (st && st.isDirectory() && decodeURIComponent(clean).endsWith("/")) {
+      const page = path.join(want, "index.html");
+      const top = fs.realpathSync(root);   // the page must be inside the web build, also through a link
+      if (fs.statSync(page).isFile() && fs.realpathSync(page).startsWith(top + path.sep)) {
+        file = page;
+        exists = true;
+      }
+    }
   } catch {
     exists = false;
+    file = want;
   }
   if (!exists) file = path.join(root, "index.html");
   fs.stat(file, (err, st) => {

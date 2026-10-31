@@ -1666,6 +1666,25 @@ T9 approved the Give and review mockup (version 2).
 - The frosted layer now takes the corners of its part (a round button showed a square blur on the web).
 - Tests: mobile 126 -> 127.
 
+## 78. An About page, and an About link on the sign-in screen
+
+**When:** Oct 30 2026.
+**Branch:** `about`, made from `services` at entry 77, like the rescue branch. It joins `services` by a merge later.
+**Meta models:** none (a page that explains how the app uses them).
+**Files:** `mobile/public/about/index.html` (new), `mobile/tests/about.test.mts` (new), `mobile/src/theme.ts`, `mobile/src/signin.ts`, `mobile/src/screens/Login.tsx`, `mobile/tools/web/serve.mjs`, `mobile/tests/web.test.mts`, `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/docs/web.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/A1.md`
+
+T9 asked for a web page about the app: what it is for, who uses it (three roles), and how it is built. T9 approved the mockup ("V3RDE About Page Mockup", version 3) with these choices: the address `icarus.thehungreeapp.com/about/`, one word on the sign-in screen, a 22 pt title, the bread drawing for food programs, no Facebook for now, "Food DB" with no count, and the doodle wallpaper behind the whole page.
+
+- A static page next to the app, not in the app bundle. The web build copies it, and the edge serves it at `/about/`.
+- Sections: what V3RDE does, the three roles (Give, Receive, food programs), how it works in 7 steps, how it is built (the phone or browser, our server, Meta's cloud), measured numbers (entry 4), and what is new in the Hackathon.
+- The page takes every colour, size, text style and doodle value from the app's tokens. The backdrop is the app's doodle wallpaper: the same drawings, rule 30 and seed. It moves one row each second and stands still with "reduce motion". Light and dark mode.
+- A new token: `type.display` (22 / 28), the page title.
+- The sign-in screen has "About" at the right of "Forgot password?". It opens the page in the same tab.
+- The local web server serves a folder page with the trailing slash, as the edge does.
+- "Watch the demo" stays hidden until the video has an address.
+- Tests: mobile 126 -> 135.
+
 ## 79. Review: More holds Touch up and the details; the chat in the third column
 
 **When:** Oct 31 2026.
@@ -1715,6 +1734,23 @@ T9 (testing with users in Nigeria): "nigerian addresses dont work", "lets drop z
 - The chat box hint changes every 4 s while the chat is empty.
 - Open: the services still accept a ZIP from an old app and keep the US ZIP table.
 - Tests: mobile 135 -> 136, post 94 -> 95.
+
+## 81. The About page: the problem, and how it is built in drawings
+
+**When:** Oct 30 2026.
+**Branch:** `about` (after entry 78).
+**Meta models:** none (the page explains how the app uses them).
+**Files:** `mobile/public/about/index.html`, `mobile/tests/about.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/A2.md`
+
+T9 found the page dense and asked for an architecture drawing. Over versions 5 to 8 of the mockup T9 asked for fewer words, the problem, six languages and Rescue, drawings read from the code in plain words, one drawing always open with more on a tap, a left-to-right then top-to-bottom reading order, and a "How it is built" that is not the same as "How it works". T9 approved version 8 ("lock this in").
+
+- A new section: the problem. Posting food was manual work (typing, counting, a good photo); Meta's AI models now do it. Six languages. Rescue, so food nobody grabbed still finds a home.
+- Fewer words: one line for each role, five short steps, short captions.
+- How it is built: one drawing that is always open (the three parts and what each holds) and three that open on a tap: posting food (12 steps), Rescue (7) and six languages (5). Each box says where it runs. A red border marks a Meta AI model.
+- Each drawing reads left to right, then down. No arrow points back.
+- The tests read the page: no arrow points left or up, the steps are in order, each Meta model box has the red border, the six languages are the ones in `i18n/languages.json`, and the models are the ones in this file.
+- Tests: mobile 135 -> 139.
 
 ## 82. "The food scanner is busy": a list answer gives every item; one message for each cause
 
@@ -1861,4 +1897,19 @@ T9 made the Facebook Page "V3RDE" and a Meta app for it, and chose to start the 
 - The token does not expire. An empty token file, or an empty `FANOUT_PAGE_ID`, turns the posts off.
 - The deploy check now says whether fan-out posts to the Page, and checks that the token is not in the container settings.
 - Open: no photo check before a public post; the Meta app is in development mode (the first post shows who can see it).
+
+## 89. The About page joins the services branch
+
+**When:** Oct 31 2026.
+**Meta models:** none (the page describes the models of the other entries).
+**Files:** the about branch (entries 78 and 81 of about: `mobile/public/about/index.html`, the About link, `type.display`, `mobile/tests/about.test.mts`, ...) merged; `NEW_WORK.md`, `mobile/package.json`, `mobile/web-dist/`
+**Sources:** `docs/sources/A4.md`
+
+T9: the About page goes to the branch that is deployed, the same way as the earlier merges.
+
+- A real merge: the about commits keep their history.
+- This file keeps every entry of both branches, in number order. The numbers both took (78, 81) stay on both entries, the services entry first. The test list keeps both sides.
+- Two fixes on the page, from later work: the Rescue drawing now says "Uses the pickup address on the map, or your location" (no ZIP code since entry 81), and the footer names the source of the product photos of a barcode scan (Open Food Facts, CC BY-SA; entry 83 of reach). A page test checks both.
+- The web build is made again from the merged code.
+- Tests: mobile 153 (139 + 12 page tests and 1 web test of the About page + 1 new page test); the Go modules as before.
 

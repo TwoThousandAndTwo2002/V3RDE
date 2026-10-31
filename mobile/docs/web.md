@@ -34,6 +34,7 @@ node tools/web/serve.mjs --api http://127.0.0.1:9000 --port 8792 --root web-dist
 | `/api/listings*` | to the services; 6 MB |
 | `/v1/fanout*`, `/v1/rescue*`, `/v1/voice/*` | 404 `not_found` (internal routes of the services) |
 | `/api/scan`, `/api/inventory`, `/v1/inventory` | 410 `route_removed` |
+| a path that ends in `/` and names a folder with an `index.html` | that page, for example `/about/` (the About page, #78) |
 | any other path | a file of the web build, or `index.html` (the app routes the path) |
 
 - The limits are in units of 1000, as at the edge (7 MB = 7 000 000 bytes). The path matchers do not look at case. The route is chosen from the path after `.` and `..` are removed, which is the path the services get.

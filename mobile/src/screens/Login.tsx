@@ -2,14 +2,21 @@
 // One button: Continue signs in. A 401 shows "No account found. Create one" (the same for an unknown email and
 // a wrong password, so the screen tells nothing about which accounts exist). Phone: the button sits at the
 // bottom. Wide screen: a centred card, which fades and rises away (`leaving`) when the next screen comes in
-// (AuthFrame). "Forgot password?" opens the reset screen (UI 9).
+// (AuthFrame). "Forgot password?" opens the reset screen (UI 9). "About" (#78), at the right of the same row, opens
+// the About page: on the web in the same tab (the page is on the same site), on a phone in the browser.
 import React, { useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { Linking, Platform, TextInput, View } from "react-native";
 import { ApiError, auth, type User } from "../api";
 import { space } from "../theme";
 import { AuthFrame } from "./AuthFrame";
-import { RESET, SIGN_IN, cleanEmail, failure, formProblem } from "../signin";
+import { ABOUT_PATH, ABOUT_URL, RESET, SIGN_IN, cleanEmail, failure, formProblem } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
+
+/** Opens the About page: the same tab on the web, the browser on a phone. */
+function openAbout() {
+  if (Platform.OS === "web") window.location.assign(ABOUT_PATH);
+  else Linking.openURL(ABOUT_URL).catch(() => {});
+}
 
 export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (u: User) => void; onForgot: () => void; leaving?: boolean }) {
   const [email, setEmail] = useState<string>("");
@@ -62,8 +69,9 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
         {unknown ? (
           <ErrorText>{SIGN_IN.noAccount + " "}<TextLink testID="create" onPress={() => submit("signup")}>{SIGN_IN.create}</TextLink></ErrorText>
         ) : null}
-        <View style={{ marginTop: space.gap, marginLeft: space.inset, flexDirection: "row" }}>
-          <TextLink testID="forgot" onPress={() => busy.current || onForgot()}>{RESET.forgot}</TextLink></View>
+        <View style={{ marginTop: space.gap, marginHorizontal: space.inset, flexDirection: "row", justifyContent: "space-between" }}>
+          <TextLink testID="forgot" onPress={() => busy.current || onForgot()}>{RESET.forgot}</TextLink>
+          <TextLink testID="about" onPress={openAbout}>{SIGN_IN.about}</TextLink></View>
       </View>
     </View>
   );
