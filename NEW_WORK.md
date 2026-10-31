@@ -1543,3 +1543,16 @@ T9 asked what happens when a user grabs an item and is not in the area. Before t
 - New routes: `GET /api/listings?lat=&lng=` (or `?zip=`), `GET /api/listings/grabbed`, `POST /api/listings/{id}/release`.
 - A phone build has no location module yet: it asks for the ZIP code.
 - Tests: listings 31 -> 42, post 67 -> 68, mobile 108 -> 118.
+
+## 76. Build fix: the post image copies the ZIP-center table
+
+**When:** Oct 31 2026.
+**Meta models:** none.
+**Files:** `post/Dockerfile`, `post/Dockerfile.dockerignore`, `post/embed_test.go` (new)
+**Sources:** `docs/sources/X49f.md`
+
+The deploy of 75 stopped: the post image builds the listings package, and the package now embeds `listings/zcta.csv`, which the post build context did not have. The old containers started again.
+
+- The post Dockerfile copies `listings/zcta.csv`, and its dockerignore lets it in.
+- A new test checks that every file listings embeds is in the post image.
+- Tests: post 68 -> 69.

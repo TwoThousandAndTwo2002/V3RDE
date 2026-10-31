@@ -5,6 +5,7 @@
 !server/*.go
 !listings/go.mod
 !listings/*.go
+!listings/zcta.csv
 !inference/go.mod
 !inference/go.sum
 !inference/*.go

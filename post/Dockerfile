@@ -12,6 +12,8 @@ COPY server/*.go ./server/
 # X35d: the voice service imports the listing contract (listings/: limits + Validate).
 COPY listings/go.mod ./listings/
 COPY listings/*.go ./listings/
+# X49f: the ZIP-center table that listings/place.go embeds (X49e)
+COPY listings/zcta.csv ./listings/
 # X48o: the touch-up service runs the auto touch-up of the inference module
 # (its Go files only; golang.org/x/image, BSD-3-Clause).
 COPY inference/go.mod inference/go.sum ./inference/
