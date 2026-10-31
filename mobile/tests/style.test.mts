@@ -90,7 +90,8 @@ test("text colours reach 4.5:1 on their backgrounds in both modes", () => {
   const pairs: Array<[string, string]> = [["fg", "card"], ["fg", "bg"], ["muted", "card"], ["muted", "bg"],
     ["danger", "card"], ["danger", "bg"], ["onAccent", "accent"], ["fg", "iconFill"],
     ["link", "card"], ["link", "bg"],
-    ["link", "accentSoft"], ["bg", "fg"], ["muted", "iconFill"]]; // the chosen top-bar tab; a toast; a tab under the mouse
+    ["link", "accentSoft"], ["bg", "fg"], ["muted", "iconFill"], // the chosen top-bar tab; a toast; a tab under the mouse
+    ["link", "iconFill"]]; // X49: a ChipBtn that is on
   for (const m of ["light", "dark"] as const) {
     const c = mode(m);
     for (const [fg, bg] of pairs) {

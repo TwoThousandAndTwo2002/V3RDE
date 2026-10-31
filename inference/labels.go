@@ -16,7 +16,9 @@ import (
 // request_id), so thresholds can be tuned on real corrections. The report
 // never changes a listing; it is bounded (16 KB, 24 items, 120-character
 // titles) and logged as sent after these checks. X48u: 32 KB, and "edits"
-// (at most 64, in order) and "chat" (at most 16 lines of 500 bytes).
+// (at most 64, in order) and "chat" (at most 16 lines of 500 bytes). X49: an
+// edit can also be a change of the item details (condition, diet, portions,
+// weight), with the old and new values.
 //
 //	POST /api/analyze/labels (session) | /v1/analyze/labels (bearer)
 //	{"request_id": "<32 hex>", "outcome": "posted|retake|closed", "locale": "en-US",
@@ -38,7 +40,8 @@ const (
 )
 
 var (
-	labelFields = map[string]bool{"title": true, "servings": true, "remove": true, "pickup": true, "photo": true}
+	labelFields = map[string]bool{"title": true, "servings": true, "remove": true, "pickup": true, "photo": true,
+		"condition": true, "diet": true, "portions": true, "weight": true} // X49: the item details
 	labelHows   = map[string]bool{"hand": true, "voice": true, "text": true, "undo": true}
 	labelPhotos = map[string]bool{"": true, "original": true, "touched_up": true}
 	labelTouch  = map[string]bool{"": true, "done": true, "kept": true, "failed": true}
@@ -101,7 +104,7 @@ func CheckLabels(in *labelsIn) string {
 	for i := range in.Edits {
 		e := &in.Edits[i]
 		if e.Item < 0 || e.Item > 99 || !labelFields[e.Field] || !labelHows[e.How] {
-			return "each edit needs an item (0-99), a field (title, servings, remove, pickup, photo) and how (hand, voice, text, undo)"
+			return "each edit needs an item (0-99), a field (title, servings, remove, pickup, photo, condition, diet, portions, weight) and how (hand, voice, text, undo)"
 		}
 		e.From, e.To = clip(e.From), clip(e.To)
 		if e.Field == "pickup" { // never the pickup text (an address): only that it changed and how

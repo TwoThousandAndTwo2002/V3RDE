@@ -108,6 +108,9 @@ export const size = {
   sheetSmall: 210,   // a small phone sheet: at least this tall (its content starts at the top)
   sheetMedium: 0.44, // a medium phone sheet (the role sheet): this share of the screen height
   dialogWide: 860,   // a dialog with the photo on the left
+  dialogExtraWide: 1140, // X49: the review dialog with the details column at the right (the photo, the list, the details)
+  detailsColumn: 260, // X49: the details column of the wide review
+  scanPhoto: 3 / 4,  // X49: the scan photo of the wide review (width to height); it is as high as the column
   dialogSmall: 440,  // a dialog with a title, a line and two pills
   dialogCamera: 640, // the camera dialog on a wide screen (a 4:3 photo, 608 pt wide)
   dialogMax: 0.869,  // a dialog is at most this share of the window height (782 of 900 pt measured)
@@ -146,6 +149,9 @@ export const glyph = {
   receive: "M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5",
   menu: "M3 5.5 H17 M3 10 H17 M3 14.5 H17",
   mic: "M10 1.5 A3 3 0 0 1 13 4.5 V10 A3 3 0 0 1 7 10 V4.5 A3 3 0 0 1 10 1.5 Z M4 9.5 A6 6 0 0 0 16 9.5 M10 15.5 V18.5 M7 18.5 H13",
+  sparkle: "M10 2 L11.6 8.4 L18 10 L11.6 11.6 L10 18 L8.4 11.6 L2 10 L8.4 8.4 Z", // X49: touch up
+  info: "M10 1.5 A8.5 8.5 0 1 0 10 18.5 A8.5 8.5 0 1 0 10 1.5 Z M10 9 V14 M10 6 V6.2", // X49: details
+  pencil: "M13.5 3 L17 6.5 L7 16.5 H3.5 V13 Z", // X49: change the details
   stop: "M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z",
   upload: "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
 } as const;
@@ -201,6 +207,10 @@ export const motion = {
   handoffMs: 300,   // wide screens: the sign-in card fades out in this time after sign-in
   handoffLift: 40,  // and rises this far (pt)
   dimMs: 250,       // the dim layer behind a sheet over a screen fades in in this time
+  growMs: 220,      // X49: the details box opens in this time; then its text types in
+  growFrom: 0.96,   // X49: the size the details box opens from (a share of its size)
+  letterMs: 14,     // X49: the time of one letter of the text that types in
+  lineMs: 220,      // X49: the pause at the end of a line of the text that types in
 } as const;
 
 /**

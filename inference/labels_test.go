@@ -89,8 +89,20 @@ func TestLabelsKeepEditsAndChat(t *testing.T) {
 		len(l.Chat) != 2 || len(l.Chat[0].Text) != 500 || !l.Chat[1].Undone || l.Chat[1].Text != "" || l.Items[0].Photo != "touched_up" || l.Items[0].Touchup != "done" {
 		t.Fatalf("%+v", l)
 	}
+	// X49: the details the user changed are edits too (condition, diet, portions, weight), kept with their values
+	det := head + `,"edits":[{"item":1,"field":"condition","from":"ready_to_eat","to":"sealed","how":"hand"},` +
+		`{"item":1,"field":"diet","from":"0","to":"1","how":"hand"},{"item":1,"field":"portions","from":"","to":"bulk","how":"hand"},` +
+		`{"item":1,"field":"weight","from":"1.2","to":"2.5","how":"hand"}]}`
+	if w := post(det); w.Code != 204 {
+		t.Fatalf("details edits: %d %s", w.Code, w.Body)
+	}
+	if d := s.events(t)[1].Labels; len(d.Edits) != 4 || d.Edits[0].Field != "condition" || d.Edits[0].To != "sealed" ||
+		d.Edits[2].From != "" || d.Edits[2].To != "bulk" || d.Edits[3].Field != "weight" || d.Edits[3].To != "2.5" {
+		t.Fatalf("%+v", d.Edits)
+	}
 	for _, bad := range []string{
 		head + `,"edits":[{"item":1,"field":"price","how":"hand"}]}`,
+		head + `,"edits":[{"item":1,"field":"meal_cost","from":"4","to":"5","how":"hand"}]}`,
 		head + `,"edits":[{"item":1,"field":"title","how":"magic"}]}`,
 		head + `,"edits":[{"item":100,"field":"title","how":"hand"}]}`,
 		head + `,"chat":[{"how":"mind","text":"x","changes":1}]}`,

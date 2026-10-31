@@ -1,7 +1,7 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, proposalLines, proposalOf, undoTo, voiceError, voiceItems } from "../src/voice.ts";
+import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -108,4 +108,17 @@ test("a line that names the pickup, changed or not, is marked", () => {
   assert.equal(same.pickupMarked, false);
   assert.equal(same.pickupSaid, true);
   assert.equal(chatTurn(ITEMS, "", proposalOf({ changes: [] }), "typed", "hi", W, M).pickupSaid, false);
+});
+
+// X49 review: a change of the details after a chat turn ends Undo (Undo would wipe the new details)
+test("a details change after a chat turn ends Undo; the same details in another key order do not", () => {
+  const withD = ITEMS.map((x) => (x.item === 2 ? { ...x, details: { meal_condition: "sealed" as const, weight: 1.2 } } : x));
+  const t = chatTurn(withD, "Front", proposalOf({ changes: [{ item: 1, number_of_serving: 8 }] }), "typed", "8", W, M);
+  assert.equal(canUndo([t], t.after.items, t.after.pickup), true);
+  const changed = t.after.items.map((x) => (x.item === 2 ? { ...x, details: { meal_condition: "ready_to_eat" as const, weight: 1.2 } } : x));
+  assert.equal(canUndo([t], changed, t.after.pickup), false);
+  const reordered = t.after.items.map((x) => (x.item === 2 ? { ...x, details: { weight: 1.2, meal_condition: "sealed" as const } } : x));
+  assert.equal(canUndo([t], reordered, t.after.pickup), true);
+  assert.equal(stableJson({ b: 1, a: [2, { d: 3, c: undefined }] }), '{"a":[2,{"d":3}],"b":1}');
+  assert.equal(stableJson(undefined), "");
 });

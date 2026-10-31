@@ -1510,3 +1510,20 @@ The first build of the translation image on the box stopped. One test in the bui
 - The image build now skips that one test. Every other test still runs before the build.
 - The SUP scripts still run that test with the whole repo.
 
+## 73. Review: the item details, and a photo column on desktop
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change). The details come from the Muse Spark scan.
+**Files:** `mobile/src/screens/Review.tsx`, `mobile/src/screens/Details.tsx` (new), `mobile/src/screens/TouchUp.tsx`, `mobile/src/details.ts` (new), `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/src/capture.ts`, `mobile/src/logic.ts`, `mobile/src/voice.ts`, `mobile/tests/details.test.mts` (new), `mobile/tests/logic.test.mts`, `mobile/tests/voice.test.mts`, `mobile/tests/style.test.mts`, `mobile/tests/touchup.test.mts`, `mobile/package.json`, `mobile/docs/style_guide.md`, `inference/labels.go`, `inference/events.go`, `inference/labels_test.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49d.md`
+
+T9 approved the review layout mockup. The scan's details are now used, not thrown away.
+
+- Each item has two pills side by side: "Touch up" and "Details", with icons.
+- Details shows one short sentence, for example "Ready to eat, vegetarian, in bulk, about 1.2 kg.", then the description. The text types in. With "reduce motion" on, it shows at once.
+- Phone: Details opens a small bottom sheet. Desktop: a third column.
+- On desktop the scan photo fills the left column.
+- The cost is never shown. Weight is in kg.
+- The user can change the details (condition, food, portions, weight). Each change is recorded for self-improvement.
+- Tests: mobile 96 -> 108; inference 97 (one more case).
+

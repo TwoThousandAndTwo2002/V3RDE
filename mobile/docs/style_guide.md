@@ -105,6 +105,9 @@ Values are font size / line height in pt.
 | `size.sheetSmall` | 210 | X25: the small sheet starts at 634 of 844 pt | a small phone sheet is at least this tall; its content starts at the top |
 | `size.sheetMedium` | 0.44 | the earlier app (the role sheet) | a medium phone sheet (the role sheet): this share of the screen height |
 | `size.dialogWide` | 860 | X32: 860 | a dialog with the photo on the left |
+| `size.dialogExtraWide` | 1140 | X49 (T9, Oct 30: option A, the details column) | the review dialog with the details column at the right (`Sheet` `extraWide`) |
+| `size.detailsColumn` | 260 | X49 (T9, Oct 30) | the details column of the wide review |
+| `size.scanPhoto` | 3 / 4 | X49 (T9, Oct 30: option A) | the scan photo of the wide review (width to height); it is as high as the column |
 | `size.dialogSmall` | 440 | X32: 440 | a dialog with a title, a line and two pills |
 | `size.dialogCamera` | 640 | X25: 640 | the camera dialog on a wide screen (a 4:3 photo, 608 pt wide) |
 | `size.dialogMax` | 0.869 | X32: 782 of 900 pt | a dialog is at most this share of the window height |
@@ -145,6 +148,9 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `glyph.menu` | M3 5.5 H17 M3 10 H17 M3 14.5 H17 | a choice (drawn new) | ☰: opens the role sheet from a screen |
 | `glyph.mic` | M10 1.5 A3 3 0 0 1 13 4.5 V10 A3 3 0 0 1 7 10 V4.5 A3 3 0 0 1 10 1.5 Z M4 9.5 A6 6 0 0 0 16 9.5 M10 15.5 V18.5 M7 18.5 H13 | a choice (drawn new) | the microphone: talk to change the review |
 | `glyph.stop` | M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z | a choice (drawn new) | stop talking |
+| `glyph.sparkle` | M10 2 L11.6 8.4 L18 10 L11.6 11.6 L10 18 L8.4 11.6 L2 10 L8.4 8.4 Z | X49 (T9, Oct 30) | the Touch up pill |
+| `glyph.info` | M10 1.5 A8.5 8.5 0 1 0 10 18.5 A8.5 8.5 0 1 0 10 1.5 Z M10 9 V14 M10 6 V6.2 | X49 (T9, Oct 30) | the Details pill |
+| `glyph.pencil` | M13.5 3 L17 6.5 L7 16.5 H3.5 V13 Z | X49 (T9, Oct 30) | Change (the details column) |
 
 ## Shade (`shade`)
 
@@ -186,6 +192,10 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `motion.handoffMs` | 300 | Ref-login | wide screens: the sign-in card fades out in this time after sign-in |
 | `motion.handoffLift` | 40 | Ref-login | and rises this far (pt) |
 | `motion.dimMs` | 250 | the earlier app | the dim layer behind a sheet over a screen fades in in this time |
+| `motion.growMs` | 220 | X49 (T9, Oct 30) | the details box opens in this time; then its text types in |
+| `motion.growFrom` | 0.96 | a choice | the size the details box opens from (a share of its size) |
+| `motion.letterMs` | 14 | X49 (T9, Oct 30) | the time of one letter of the text that types in |
+| `motion.lineMs` | 220 | X49 (T9, Oct 30) | the pause at the end of a line of the text that types in |
 
 ## Doodles (`doodle`)
 
@@ -223,12 +233,15 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - **Pill:** `size.control` high, fully round, `size.border`. `primary` = `accent` fill with `onAccent` text; `secondary` = `card` fill, `line` border, `fg` text. With `grow`, two pills share a row, `space.item` apart: secondary on the left, primary on the right. While busy: a spinner in place of the text, and `opacity.busy`; a tap does nothing, and the pill keeps the keyboard focus. With the mouse on it (web): `opacity.hover`.
 - **FieldButton:** a text button inside a field (Show, Hide): `type.button` in `link`, `space.item` at the sides and `space.group` above and below (a 44 pt touch area, Platform), `space.gap` from the right border; it has its own name for a screen reader ("Show password").
 - **TextLink:** an action in a line of text ("Create one"): `type.button` in `link`, underlined; a screen reader reads it as a button.
+- **ChipBtn:** a small pill, `size.iconSmall` high (its touch area grows to `size.iconBig`), `radius.round`, `iconFill` fill, `size.border`: a glyph and a short word (`type.button`, `space.inset` apart, `space.group` at the sides). `on` (the part it opens is open, or the chosen choice) = `accent` border, `link` text and glyph (`link` is `accent` in light mode; it stays readable in dark mode). A choice chip (no glyph) has a `line` border when it is off, and a screen reader reads it as a radio button.
+- **Grow:** a part that opens fades in and grows from `motion.growFrom` in `motion.growMs` (at once with "reduce motion").
+- **TypedText:** lines that type in, one letter each `motion.letterMs`, with `motion.lineMs` at the end of a line, after a delay; the first line `fg`, the next ones `muted`. With "reduce motion" on, the text shows at once. A screen reader reads all the text at once.
 - **Doodles:** the doodle wallpaper; it fills its parent under the content and draws for the size of its parent; the rule-30 pattern moves up one row every `doodle.stepMs` (still with 'reduce motion'); no touches; hidden from screen readers.
 - **Row:** controls in a line, `space.item` apart; `tight` = `space.gap` apart (inside a card).
 - **Field:** `size.control` high, fully round, `card` fill, `size.border` `line` border, text `size.fieldPadX` from the sides, `placeholder` for the example text. With the focus: a `size.focusBorder` border in `accent` (no browser focus ring). With `right` (a FieldButton): text `size.fieldSlot` from the right border. The label is also the name of the input for a screen reader. With several lines: `size.controlTall`, `radius.card`, text `size.fieldPadTop` from the top. A label is `Muted`, `space.inset` in, `space.item` above it, `space.hair` to the field.
 - **ReviewCard:** one found item: `card` fill, `size.border` `line`, `radius.card`, `space.inset` padding, `space.item` above it. The `size.thumb` photo (`radius.photo`), `space.item` to two `tight` rows `space.gap` apart: the title field with ✕ (remove), and − servings +, with `size.iconSmall` buttons. An error line goes under the rows.
 - **Rise:** each row of a sheet fades in and rises `motion.rowRise`, `motion.rowStepMs` after the row before it, in `motion.rowMs`.
-- **Sheet:** the photo behind it with the shade over it (`shadeTop`, `shadeMid` at `shade.mid`, `shadeEnd`), then a frosted layer (the blur of the photo, `size.blur`, `blurTint`, with `sheetTint` over it). Compact width: a bottom sheet, `radius.sheet` top corners, the grab bar (`size.handleW` × `size.handleH`, `handle`, `size.handleTop` from the top, `space.gutter` to the content), `space.gutter` sides, `space.foot` under the last pill. `large` = as tall as its content, at most `size.sheetLarge` of the screen height; `small` = at least `size.sheetSmall`. Medium and expanded width: a centred dialog, `radius.sheet` corners, `space.pad` padding, at most `size.dialogMax` of the window height; `wide` = `size.dialogWide` with the photo on the left (`space.foot` to the list), else `size.dialogSmall`. It rises with a spring (`motion.sheetSpeed`, `motion.sheetBounce`, from `motion.sheetShift` of the window height).
+- **Sheet:** the photo behind it with the shade over it (`shadeTop`, `shadeMid` at `shade.mid`, `shadeEnd`), then a frosted layer (the blur of the photo, `size.blur`, `blurTint`, with `sheetTint` over it). Compact width: a bottom sheet, `radius.sheet` top corners, the grab bar (`size.handleW` × `size.handleH`, `handle`, `size.handleTop` from the top, `space.gutter` to the content), `space.gutter` sides, `space.foot` under the last pill. `large` = as tall as its content, at most `size.sheetLarge` of the screen height; `small` = at least `size.sheetSmall`. Medium and expanded width: a centred dialog, `radius.sheet` corners, `space.pad` padding, at most `size.dialogMax` of the window height; `wide` = `size.dialogWide` with the photo on the left (`space.foot` to the list), `extraWide` = `size.dialogExtraWide` (the review with the details column), else `size.dialogSmall`. It rises with a spring (`motion.sheetSpeed`, `motion.sheetBounce`, from `motion.sheetShift` of the window height).
 - **SheetBody:** the scrolling body of a large sheet; it ends `space.gap` under its content.
 - **SheetPills:** the pill row of a large sheet, `space.gutter` under the body (a line such as "Posting 3 of 6…" goes between them, `space.gap` under the body).
 - **Progress:** `size.progressH` high, fully round, `accent` over `accentSoft`; `space.bar` under the sheet title.
@@ -291,12 +304,15 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - A large `Sheet` over the photo (wide: the photo at the left, `space.foot` to the fields). One item: "Your listing", the field "Title", the source line (`space.inset` under it: "From the barcode …" or "The scanner says: …"), "Servings" with − and + (`size.iconBig`), the field "Pickup details". Several items: "n items found", "Check each item. Remove what you do not want to share.", a `ReviewCard` for each item with the item photo of the server, and "Pickup details (for all items)".
 - The pills "Start over" and "Post listing" / "Post n listings" (busy: "Posting…"); while several post, "Posting i of n…" shows over them. A failed item stays with "This item did not post. It stays here."; the title says "n items not posted".
 - The form checks come before any request (`capture.ts`: title 1 to 80, servings 1 to 99, pickup 1 to 200). After the post, a toast: "Listed. It stays up for 30 minutes." or "n listings are posted. They stay up for 30 minutes."
+- X49 (T9, Oct 30, option A): wide screens: the scan photo fills the height of the left column (`size.scanPhoto`, `radius.card`). A window of at least `size.dialogExtraWide` + 2 × `space.gutter`: a third column (`size.detailsColumn`, `card`, `radius.card`, `space.group` padding) shows the details of the item whose Details pill is on, with a Change pill (glyph pencil); with no item: "Tap Details on an item to see what the scan found." The dialog is then `size.dialogExtraWide`. Phone (and a narrower wide window): Details opens a small `Popup`: the item title, the details, and the pills "Change" and "Close".
+- The details (rules in `mobile/src/details.ts`): one short sentence, then the description: "Ready to eat, vegetarian, in bulk, about 1.2 kg." A part that is missing is left out. The cost is never shown. The box opens in `motion.growMs`, then the text types in (`TypedText`).
+- Change: the choices Condition (Ready to eat, Needs cooking, Sealed), Food (Vegetarian, Meat or fish) and Portions (Bulk, Single) as choice chips (a tap on the chosen chip clears it), the field "Weight (kg)" (0 to 1000), and the pills Cancel and Done. Change and Done are locked while the listings post. If the user clears all the details the scanner gave, the Details pill stays ("No details now. Tap Change to add them."). Done writes the item details (they post with the listing); each change goes in the label report (fields condition, diet, portions, weight).
 
 ## Touch-up (`mobile/src/screens/TouchUp.tsx`, rules in `mobile/src/touchup.ts`)
 
-- In each review card with an item photo of the server (and under the source line of the one-item form): one text link, "Touch up photo" (X48r: one touch-up, the auto one). A tap starts a touch-up job; "Touching up the photo…" with a spinner shows while it runs (the app asks every 2 s, at most 2 minutes).
+- In each review card with an item photo of the server (and under the source line of the one-item form): the `ChipBtn` "Touch up" (glyph sparkle; X48r: one touch-up, the auto one), with the `ChipBtn` "Details" (glyph info) next to it when the item has details. Details shows in every touch-up state; an item with no photo has Details only. A tap starts a touch-up job; "Touching up the photo…" with a spinner shows while it runs (the app asks every 2 s, at most 2 minutes).
 - When the edit passed the food check: "Choose the photo to post:" and two photos side by side (`size.choiceThumb`, `radius.photo`), "Original" and "Touched up"; the chosen one has a `size.focusBorder` `accent` border. The original is chosen until the user taps the edit (a radio group).
-- When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the link stays, so the user can try again.
+- When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the Touch up pill stays, so the user can try again.
 - Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
 
 ## Chat bar (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`; X48s, the approved "V3RDE Chat Bar Mockup")

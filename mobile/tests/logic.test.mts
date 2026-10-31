@@ -4,7 +4,7 @@ import { strict as assert } from "node:assert";
 import {
   answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
-  scanStep, scanPoll, itemDetails, SCAN_HOLD_MS, SCAN_POLL_MS,
+  scanStep, scanPoll, itemDetails, notPostedItems, stillOpen, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
 
 const ID = "0123456789abcdef0123456789abcdef";
@@ -209,4 +209,37 @@ test("edits review fixes: typed back is no edit; bytes; pickup lines; the size l
   assert.ok(new TextEncoder().encode(JSON.stringify(fit)).length <= 8 * 1024);
   assert.equal(fit.items.length, 1); // the item labels always stay
   assert.ok((fit.chat?.length ?? 0) < 16);
+});
+
+test("edits (X49): a change of the details gives condition, diet, portions and weight edits; the report sends them", () => {
+  const it = (details?: object) => ({ item: 1, title: "Bananas", servings: "2", photo_id: "", description: "", err: "", details });
+  const a = [it({ meal_condition: "ready_to_eat", is_non_veg: 0, weight: 1.2, meal_cost: 4, description: "Ripe" })];
+  const b = [it({ meal_condition: "cooking_required", is_non_veg: 1, serving_type: "bulk", meal_cost: 4, description: "Ripe" })];
+  const got = diffEdits(a, b, "", "", "hand");
+  assert.deepEqual(got, [
+    { item: 1, field: "condition", from: "ready_to_eat", to: "cooking_required", how: "hand" },
+    { item: 1, field: "diet", from: "0", to: "1", how: "hand" },
+    { item: 1, field: "portions", from: "", to: "bulk", how: "hand" },
+    { item: 1, field: "weight", from: "1.2", to: "", how: "hand" }]);
+  assert.deepEqual(diffEdits([it()], [it({ weight: 3 })], "", "", "hand"), [{ item: 1, field: "weight", from: "", to: "3", how: "hand" }]);
+  assert.deepEqual(diffEdits(a, a, "", "", "hand"), []); // the same details: no edit (the cost and the description are not edits)
+  const r = labelReport("r", a, b, "posted", "", { edits: got });
+  assert.deepEqual(r.edits?.map((e) => e.field), ["condition", "diet", "portions", "weight"]);
+});
+
+test("X49 review: the details close when their item is gone; a failed post keeps the edits made while it ran", () => {
+  const it = (item: number, title: string, details?: object) => ({ item, title, servings: "1", photo_id: "", description: "", err: "", details });
+  const list = [it(1, "A"), it(2, "B")];
+  assert.equal(stillOpen(2, list), 2);
+  assert.equal(stillOpen(3, list), null);
+  assert.equal(stillOpen(null, list), null);
+  const failed = [it(2, "B", { weight: 1 })];
+  const now = [it(1, "A"), it(2, "B", { weight: 5 })]; // changed while the post ran
+  assert.deepEqual(notPostedItems(failed, now, "E"), [{ ...now[1], err: "E" }]);
+  assert.deepEqual(notPostedItems(failed, [it(1, "A")], "E"), []); // removed by the user during the post: it stays removed
+});
+
+test("an item removed during the post does not come back when its post fails", () => {
+  const it = (item: number) => ({ item, title: "T" + item, servings: "1", photo_id: "", description: "", err: "" });
+  assert.deepEqual(notPostedItems([it(1), it(2)], [it(1)], "not posted").map((x) => x.item), [1]);
 });

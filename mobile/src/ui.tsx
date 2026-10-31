@@ -11,6 +11,7 @@ import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
 import { photoUrl as photoUri } from "./api";
 import { LIMITS } from "./capture";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
+import { typeDelay } from "./details";
 
 // ---------------------------------------------------------------- text
 
@@ -53,12 +54,12 @@ export function ErrorText({ children, center, lines, style }: {
 
 // ---------------------------------------------------------------- icons and buttons
 
-export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop";
+export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil";
 
 /** The square box of each glyph (pt). */
 const GLYPH_BOX: Record<Glyph, number> = {
   close: glyph.box, minus: glyph.box, plus: glyph.box, upload: glyph.uploadBox, give: glyph.iconBox, receive: glyph.iconBox, menu: glyph.iconBox,
-  mic: glyph.iconBox, stop: glyph.iconBox,
+  mic: glyph.iconBox, stop: glyph.iconBox, sparkle: glyph.iconBox, info: glyph.iconBox, pencil: glyph.iconBox,
 };
 
 /** A line glyph (close ✕, minus −, plus +, upload, give, receive, menu ☰): one SVG path with round ends, in its own square box. */
@@ -101,6 +102,31 @@ export function Pill({ title, name, onPress, kind = "primary", busy, busyName, g
         opacity: busy ? opacity.busy : state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1,
       }, grow ? { flex: 1 } : null]}>
       {busy ? <ActivityIndicator color={fg} /> : <Text numberOfLines={1} style={[type.button, { color: fg }]}>{title}</Text>}</Pressable>
+  );
+}
+
+/**
+ * X49: a small pill (`size.iconSmall` high, on `iconFill`) with a glyph and a short word: Touch up, Details, Change.
+ * `on` (the part it opens is open) = an `accent` border, and the word and glyph in `link` (`accent` in light mode).
+ * With no glyph it is a choice chip (a radio for a screen reader): a `line` border when it is off.
+ */
+export function ChipBtn({ glyph: g, title, name, on, onPress, testID }: {
+  glyph?: Glyph; title?: string; name: string; on?: boolean; onPress: () => void; testID?: string;
+}) {
+  const col = useColors();
+  const fg = on ? col.link : col.fg;
+  const choice = !g;
+  return (
+    <Pressable testID={testID} accessibilityRole={choice ? "radio" : "button"} accessibilityLabel={name}
+      accessibilityState={choice ? { checked: !!on } : { expanded: on }} aria-checked={choice ? !!on : undefined}
+      aria-expanded={choice ? undefined : on} onPress={onPress} hitSlop={(size.iconBig - size.iconSmall) / 2}
+      style={(state) => ({ height: size.iconSmall, minWidth: size.iconSmall, paddingHorizontal: title ? space.group : 0, borderRadius: radius.round,
+        flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.inset, backgroundColor: col.iconFill,
+        borderWidth: size.border, borderColor: on ? col.accent : choice ? col.line : col.iconFill,
+        opacity: state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1 })}>
+      {g ? <GlyphIcon name={g} color={fg} /> : null}
+      {title ? <Text numberOfLines={1} style={[type.button, { color: fg }]}>{title}</Text> : null}
+    </Pressable>
   );
 }
 
@@ -247,6 +273,59 @@ export function Rise({ i, children }: { i: number; children: React.ReactNode }) 
   return <Animated.View style={{ opacity: t, transform: [{ translateY }] }}>{children}</Animated.View>;
 }
 
+/** True while the device asks for less motion ("reduce motion"); false when it is not known. */
+export function useStill(): boolean {
+  const [still, setStill] = useState(false);
+  useEffect(function askMotion() {
+    let live = true;
+    RN.AccessibilityInfo.isReduceMotionEnabled().then((on) => { if (live) setStill(on); }).catch(() => undefined);
+    const sub = RN.AccessibilityInfo.addEventListener("reduceMotionChanged", (on) => setStill(on));
+    return () => { live = false; sub.remove(); };
+  }, []);
+  return still;
+}
+
+/**
+ * X49: lines that type in, one letter each `motion.letterMs` and a `motion.lineMs` pause at the end of a line,
+ * `delay` ms after the part shows. The first line is `fg`, the next ones `muted`. With "reduce motion" on, all of
+ * it shows at once. A screen reader reads all the text at once.
+ */
+export function TypedText({ lines, delay }: { lines: string[]; delay: number }) {
+  const col = useColors();
+  const still = useStill();
+  const all = lines.join("\n");
+  const [n, setN] = useState(0);
+  useEffect(function typeIn() {
+    if (still) return;
+    let k = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    setN(0);
+    const step = () => {
+      k++;
+      setN(k);
+      const next = typeDelay(all, k, motion.letterMs, motion.lineMs);
+      if (next >= 0) timer = setTimeout(step, next);
+    };
+    timer = setTimeout(step, delay);
+    return () => clearTimeout(timer);
+  }, [all, delay, still]);
+  const shown = (still ? all : all.slice(0, n)).split("\n");
+  return (
+    <View accessible accessibilityLabel={lines.join(" ")} style={{ gap: space.hair }}>
+      {shown.map((l, k) => <Text key={k} style={[type.body, { color: k === 0 ? col.fg : col.muted }]}>{l}</Text>)}
+    </View>
+  );
+}
+
+/** X49: a part that opens: it fades in and grows in `motion.growMs` (at once with "reduce motion"). */
+export function Grow({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+  const still = useStill();
+  const [t] = useState(() => new Animated.Value(0));
+  useEffect(() => Animated.timing(t, { toValue: 1, duration: still ? 0 : motion.growMs, useNativeDriver: true }).start(), [t, still]);
+  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [motion.growFrom, 1] });
+  return <Animated.View style={[{ opacity: t, transform: [{ scale }] }, style]}>{children}</Animated.View>;
+}
+
 // ---------------------------------------------------------------- sheets and dialogs
 
 /** The frosted layer of a sheet or dialog: the blur of what is behind it, with a tint over it. */
@@ -276,10 +355,10 @@ function Backdrop({ photo }: { photo: string }) {
 /**
  * A sheet over a photo. Compact width: a bottom sheet with a grab bar ("large" = as tall as its content, at most
  * 85 % of the screen height; "small" = at least 210 pt). Medium and expanded width: a centred dialog ("wide" =
- * 860 pt with the photo on the left, else 440 pt).
+ * 860 pt with the photo on the left; X49 "extraWide" = 1140 pt, the review with the details column; else 440 pt).
  */
-export function Sheet({ kind, wide, photo, children, testID, onClose, closeName }: {
-  kind: "large" | "small"; wide?: boolean; photo?: string; children: React.ReactNode; testID?: string;
+export function Sheet({ kind, wide, extraWide, photo, children, testID, onClose, closeName }: {
+  kind: "large" | "small"; wide?: boolean; extraWide?: boolean; photo?: string; children: React.ReactNode; testID?: string;
   onClose?: () => void; closeName?: string;
 }) {
   const { width, height } = useWindowDimensions();
@@ -297,7 +376,7 @@ export function Sheet({ kind, wide, photo, children, testID, onClose, closeName 
       <IconBtn testID="sheet-close" glyph="close" label={closeName ?? ""} onPress={onClose} /></View>
   ) : null;
   if (dialogs) {
-    const w = wide ? size.dialogWide : size.dialogSmall;
+    const w = extraWide ? size.dialogExtraWide : wide ? size.dialogWide : size.dialogSmall;
     return (
       <View testID={testID} style={{ flex: 1, backgroundColor: col.bg }}>
         {back}{tapOut}

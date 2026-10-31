@@ -135,6 +135,7 @@ export const REVIEW = {
 /** The photo touch-up on the review (the original stays the default). */
 export const TOUCH = {
   start: "Touch up photo", // X48r: one touch-up (the auto one)
+  short: "Touch up", // X49: the word on the Touch up pill (the name stays `start`)
   working: "Touching up the photo…",
   original: "Original",
   edit: "Touched up",
@@ -145,6 +146,37 @@ export const TOUCH = {
   paused: "Touch-up is paused for today.",
   wait: "Wait for the touch-up to end, then post.",
   ofItem: (n: number) => "of item " + n,
+} as const;
+
+/** X49: the details of an item on the review (what the scan found; the cost is never shown). */
+export const DETAILS = {
+  pill: "Details",
+  name: (n: number) => "Details of item " + n,
+  empty: "Tap Details on an item to see what the scan found.",
+  none: "No details now. Tap Change to add them.", // X49 review: the user cleared them all
+  change: "Change",
+  changeName: "Change the details",
+  close: "Close",
+  closeName: "Close the details",
+  cancel: "Cancel",
+  done: "Done",
+  ready: "Ready to eat",
+  cooking: "Needs cooking",
+  sealedLine: "A sealed package",
+  veg: "vegetarian",
+  meat: "has meat or fish",
+  bulk: "in bulk",
+  single: "in single portions",
+  about: (kg: string) => "about " + kg + " kg",
+  condition: "Condition",
+  food: "Food",
+  portions: "Portions",
+  sealed: "Sealed",
+  vegChoice: "Vegetarian",
+  meatChoice: "Meat or fish",
+  bulkChoice: "Bulk",
+  singleChoice: "Single",
+  weight: "Weight (kg)",
 } as const;
 
 /** The chat bar on the review (X48s: talk or type; tap to talk, tap to stop). */

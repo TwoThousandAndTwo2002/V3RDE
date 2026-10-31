@@ -145,9 +145,20 @@ export function chatTurn(items: ItemForm[], pickup: string, p: Proposal, how: Ho
     before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false, pickupSaid: p.pickup_text !== undefined };
 }
 
+/** JSON with the keys in order (two details with the same values in another order are the same). */
+export function stableJson(v: unknown): string {
+  if (v === undefined) return "";
+  if (v === null || typeof v !== "object") return JSON.stringify(v);
+  if (Array.isArray(v)) return "[" + v.map(stableJson).join(",") + "]";
+  const o = v as Record<string, unknown>;
+  return "{" + Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => JSON.stringify(k) + ":" + stableJson(o[k])).join(",") + "}";
+}
+
+// X49 review: the details too (a change of the details after a chat turn ends its Undo)
 const sameList = (a: { items: ItemForm[]; pickup: string }, items: ItemForm[], pickup: string) =>
   a.pickup === pickup && a.items.length === items.length &&
-  a.items.every((x, k) => x.item === items[k].item && x.title === items[k].title && x.servings === items[k].servings);
+  a.items.every((x, k) => x.item === items[k].item && x.title === items[k].title && x.servings === items[k].servings &&
+    stableJson(x.details) === stableJson(items[k].details));
 
 /** Undo is on the last turn only, and only while the list is as that turn left it (a later hand edit ends it). */
 export function canUndo(turns: Turn[], items: ItemForm[], pickup: string): boolean {

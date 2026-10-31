@@ -33,16 +33,19 @@ test("U18: a queued job is still working; the limit of one user pauses the touch
   assert.equal(touchError(429, "rate_limited", w), "B");
 });
 
-// X48r (T9 2026-10-30: "we want one button"): one touch-up link, and the app asks for the auto touch-up.
-test("one touch-up link, the auto touch-up", async () => {
+// X48r (T9 2026-10-30: "we want one button"): one touch-up button, and the app asks for the auto touch-up.
+// X49: the button is a ChipBtn ("Touch up", glyph sparkle), not a text link.
+test("one touch-up button, the auto touch-up", async () => {
   const { readFileSync } = await import("node:fs");
   const screen = readFileSync(new URL("../src/screens/TouchUp.tsx", import.meta.url), "utf8");
-  assert.equal((screen.match(/<TextLink /g) ?? []).length, 1);
+  assert.equal((screen.match(/<ChipBtn testID=\{"touchup-"/g) ?? []).length, 1);
+  assert.doesNotMatch(screen, /<TextLink /);
   assert.match(screen, /TOUCH\.start/);
   assert.doesNotMatch(screen, /TOUCH\.(light|background)/);
   const api = readFileSync(new URL("../src/api.ts", import.meta.url), "utf8");
   assert.match(api, /"\/api\/touchup\?mode=background&photo_id="/);
   const { TOUCH } = await import("../src/words.ts");
   assert.equal(TOUCH.start, "Touch up photo");
+  assert.equal(TOUCH.short, "Touch up");
   assert.ok(!("light" in TOUCH) && !("background" in TOUCH));
 });

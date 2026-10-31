@@ -104,9 +104,11 @@ type LabelSet struct {
 }
 
 // LabelEdit is one change of the review, in order. Field: title | servings |
-// remove | pickup | photo. How: hand | voice | text | undo. From and To are
-// the values (titles, servings, the photo choice); the pickup text is never
-// sent (an address), only that it changed and how.
+// remove | pickup | photo | condition | diet | portions | weight (X49: the
+// details the user changed: meal_condition, is_non_veg 0/1, serving_type,
+// weight in kg). How: hand | voice | text | undo. From and To are the values
+// (titles, servings, the photo choice, the details; "" = none); the pickup
+// text is never sent (an address), only that it changed and how.
 type LabelEdit struct {
 	Item  int    `json:"item"` // 0 = the pickup
 	Field string `json:"field"`

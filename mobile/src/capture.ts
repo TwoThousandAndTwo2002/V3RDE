@@ -27,13 +27,14 @@ export function barcodeOf(data: unknown): string {
 }
 
 /** The limits of a listing (the listings service checks the same: listings.Input.Validate on branch services). */
-export const LIMITS = { title: 80, servingsMax: 99, pickup: 200 } as const;
+export const LIMITS = { title: 80, servingsMax: 99, pickup: 200, weightMax: 1000 } as const; // X49: weight in kg (listings/details.go)
 
 /** The words of the form checks. */
 export const FORM_WORDS = {
   title: "Give a title of 1 to 80 characters",
   servings: "Give servings from 1 to 99",
   pickup: "Give pickup details of 1 to 200 characters",
+  weight: "Give a weight from 0 to 1000 kg",
 } as const;
 
 /** The first problem of a listing before it goes to the services, or "". */
@@ -61,4 +62,19 @@ export function sourceNote(barcode: string, description: string): string {
   if (barcode) return "From the barcode " + barcode;
   if (description) return "The scanner says: " + description;
   return "";
+}
+
+/** X49: the weight field (kg) keeps digits and one decimal point (7 characters at most). */
+export function weightInput(text: string): string {
+  const t = text.replace(",", ".").replace(/[^0-9.]/g, "");
+  const dot = t.indexOf(".");
+  return (dot < 0 ? t : t.slice(0, dot + 1) + t.slice(dot + 1).replace(/\./g, "")).slice(0, 7);
+}
+
+/** X49: the problem of a weight (kg) the user typed, or "". An empty field is no weight (no problem). */
+export function weightProblem(text: string): string {
+  const t = text.trim();
+  if (t === "") return "";
+  const n = Number(t);
+  return /^\d*\.?\d*$/.test(t) && t !== "." && Number.isFinite(n) && n >= 0 && n <= LIMITS.weightMax ? "" : FORM_WORDS.weight;
 }
