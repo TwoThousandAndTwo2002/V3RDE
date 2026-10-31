@@ -89,7 +89,7 @@ func form(t *testing.T, user string, fields map[string]string, photo []byte, pho
 
 func okFields() map[string]string {
 	return map[string]string{"title": " Lasagna tray ", "number_of_serving": "6", "pickup_text": "Side door, ring twice",
-		"request_id": "0123456789abcdef0123456789abcdef"}
+		"request_id": "0123456789abcdef0123456789abcdef", "lat": "40.7506", "lng": "-73.9973"}
 }
 
 func get(user, path string) *http.Request {

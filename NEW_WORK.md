@@ -1527,3 +1527,19 @@ T9 approved the review layout mockup. The scan's details are now used, not throw
 - The user can change the details (condition, food, portions, weight). Each change is recorded for self-improvement.
 - Tests: mobile 96 -> 108; inference 97 (one more case).
 
+## 75. Distance on Receive, far items in gray, release a grab, and the pickup place
+
+**When:** Oct 30 2026.
+**Meta models:** none (no model change).
+**Files:** `listings/place.go` (new), `listings/zcta.csv` (new), `listings/cmd/zctatable/main.go` (new), `listings/cmd/zctatable/main_test.go` (new), `listings/place_test.go` (new), `listings/store.go`, `listings/handler.go`, `listings/hook.go`, `listings/listing.go`, `listings/Dockerfile`, `listings/listings_test.go`, `post/fanout.go`, `post/fanout_test.go`, `mobile/src/place.ts` (new), `mobile/src/screens/Receive.tsx`, `mobile/src/screens/Review.tsx`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/tests/place.test.mts` (new), `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49e.md`
+
+T9 asked what happens when a user grabs an item and is not in the area. Before this change, the list showed all food from all places, and a grab could not be given back. T9 approved the distance mockup (version 2).
+
+- The giver's pickup place is the phone location, or a ZIP code when location is off. The server keeps it rounded to 0.01 mi and never sends it. The app gets only the distance, to 0.1 mi.
+- The receiver uses the phone location, or a ZIP code. The receiver picks 1, 5 or 10 mi. Each card shows the distance.
+- Food farther than the pick shows in gray, up to 25 mi. A grab of a gray item asks first, with the distance and the time left.
+- "Your pickup" keeps the user's grabs. "Release it" gives a grab back until the timer ends. Fan-out removes "[CLAIMED]".
+- New routes: `GET /api/listings?lat=&lng=` (or `?zip=`), `GET /api/listings/grabbed`, `POST /api/listings/{id}/release`.
+- A phone build has no location module yet: it asks for the ZIP code.
+- Tests: listings 31 -> 42, post 67 -> 68, mobile 108 -> 118.

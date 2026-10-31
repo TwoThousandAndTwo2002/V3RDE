@@ -12,7 +12,8 @@ package post
 //	GET  /api/fanout/{listing_id}      session cookie, owner only -> 200 Post
 //	POST /v1/fanout/status             internal only (no Caddy route); its own token
 //	                                   (-status-token-file), sent by the listings service on a grab
-//	     {"listing_id","status":"claimed"|"expired"} -> 200 Post
+//	     {"listing_id","status":"claimed"|"expired"|"released"} -> 200 Post
+//	     (X49e: "released" = the receiver gave the grab back: [CLAIMED] goes)
 //	GET  /healthz
 //
 // The post never has the pickup text (it is public): the claim goes through
@@ -64,6 +65,9 @@ const (
 	PostPosted  = "posted"
 	PostClaimed = "claimed"
 	PostExpired = "expired"
+	// PostReleased (X49e) is a status request only: a claimed post goes back
+	// to PostPosted, without the banner.
+	PostReleased = "released"
 )
 
 // Post is one Facebook post of a listing (stored; the GET answer).
@@ -504,8 +508,10 @@ func (c *FanoutConfig) get(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusOK, p)
 }
 
-// SetStatus edits the post of listing lid to status (claimed | expired).
-// The same status again changes nothing; a claimed post stays claimed.
+// SetStatus edits the post of listing lid to status (claimed | expired |
+// released). The same status again changes nothing; a claimed post stays
+// claimed, unless the grab is released (X49e): then the post is posted again,
+// without a banner. A release of a post that is not claimed changes nothing.
 func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post, bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -516,13 +522,19 @@ func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post,
 	if !ok {
 		return Post{}, false, ErrNotOwned
 	}
-	if p.Status == status || p.Status == PostClaimed {
+	next := status
+	if status == PostReleased {
+		if p.Status != PostClaimed {
+			return p, false, nil
+		}
+		next = PostPosted
+	} else if p.Status == status || p.Status == PostClaimed {
 		return p, false, nil
 	}
-	if err := c.Page.UpdateMessage(ctx, p.PostID, Banner(status)+c.PostText(p.Text, lid)); err != nil {
+	if err := c.Page.UpdateMessage(ctx, p.PostID, Banner(next)+c.PostText(p.Text, lid)); err != nil {
 		return p, false, err
 	}
-	p.Status, p.UpdatedAt = status, c.now().UTC().Format(time.RFC3339Nano)
+	p.Status, p.UpdatedAt = next, c.now().UTC().Format(time.RFC3339Nano)
 	if err := c.Store.Put(p); err != nil {
 		return p, true, fmt.Errorf("%w: %v", errNotRecorded, err)
 	}
@@ -563,8 +575,8 @@ func (c *FanoutConfig) status(w http.ResponseWriter, r *http.Request) {
 		Status    string `json:"status"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 1024)).Decode(&in); err != nil ||
-		!ValidListingID(in.ListingID) || (in.Status != PostClaimed && in.Status != PostExpired) {
-		fail(http.StatusBadRequest, CodeBadRequest, `send {"listing_id":"l_…","status":"claimed"|"expired"}`)
+		!ValidListingID(in.ListingID) || (in.Status != PostClaimed && in.Status != PostExpired && in.Status != PostReleased) {
+		fail(http.StatusBadRequest, CodeBadRequest, `send {"listing_id":"l_…","status":"claimed"|"expired"|"released"}`)
 		return
 	}
 	ev.ListingID = in.ListingID

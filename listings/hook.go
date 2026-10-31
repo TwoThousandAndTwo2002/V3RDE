@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -31,6 +32,12 @@ type ClaimHook struct {
 	Backoff []time.Duration
 	// Done, when set, gets the result of each claim (tests, logs).
 	Done func(listingID string, status int, tries int, err error)
+
+	// X49e: the calls for one listing go one after the other, in the order
+	// of the requests (a release right after a grab must not reach fan-out
+	// before the claim). tail is the end of each listing's queue.
+	mu   sync.Mutex
+	tail map[string]chan struct{}
 }
 
 // DefaultBackoff waits 137 s in all: longer than the longest share in
@@ -55,19 +62,47 @@ func ReadToken(path string) (string, error) {
 // Claimed sends {"listing_id", "status":"claimed"} in the background. A nil
 // hook or a hook with no URL does nothing.
 func (h *ClaimHook) Claimed(listingID string) {
+	h.start(listingID, "claimed")
+}
+
+// Released sends {"listing_id", "status":"released"} in the background (X49e:
+// the receiver gave the grab back; fan-out removes [CLAIMED]).
+func (h *ClaimHook) Released(listingID string) {
+	h.start(listingID, "released")
+}
+
+// start queues the call before it returns (the answer to the app does not
+// wait), so the calls of one listing keep the order of the requests.
+func (h *ClaimHook) start(listingID, status string) {
 	if h == nil || h.URL == "" {
 		return
 	}
-	go h.run(listingID, "claimed")
+	mine := make(chan struct{})
+	h.mu.Lock()
+	if h.tail == nil {
+		h.tail = map[string]chan struct{}{}
+	}
+	prev := h.tail[listingID]
+	h.tail[listingID] = mine
+	h.mu.Unlock()
+	go func() {
+		if prev != nil {
+			<-prev
+		}
+		h.run(listingID, status)
+		close(mine)
+		h.mu.Lock()
+		if h.tail[listingID] == mine {
+			delete(h.tail, listingID)
+		}
+		h.mu.Unlock()
+	}()
 }
 
 // Ended sends {"listing_id", "status":"expired"} in the background (X48t: the
 // owner deleted the listing, so the food is no longer there).
 func (h *ClaimHook) Ended(listingID string) {
-	if h == nil || h.URL == "" {
-		return
-	}
-	go h.run(listingID, "expired")
+	h.start(listingID, "expired")
 }
 
 // again reports whether a try with this result is followed by another one.

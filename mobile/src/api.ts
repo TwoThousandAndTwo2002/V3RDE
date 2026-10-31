@@ -9,6 +9,7 @@
 // mobile/.env keeps React Native's fetch as the global fetch for them (U2 D5).
 import { Platform as RN } from "react-native";
 import { SCAN_WAIT_MS, errorMessage, joinUrl, scanPoll, scanStep } from "./logic";
+import { placeFields, placeQuery, type Place } from "./place";
 
 export const API_BASE: string = RN.OS === "web" ? "" : (process.env.EXPO_PUBLIC_API_BASE ?? "");
 
@@ -35,11 +36,14 @@ export interface User { id: string; email: string }
 export type Listing = {
   id: string; title: string; number_of_serving: number; pickup_text: string; status: string;
   expires_at: string; photo_url: string; owner_id?: string; collected_by?: string;
+  /** X49e: miles from the place of the request (only when the request had a place). */
+  distance_mi?: number;
 };
 /** A new listing: the photo is an item photo of the analyze route (photo_id) or the photo itself. */
 export type NewListing = {
   title: string; number_of_serving: number; pickup_text: string; request_id?: string; photo?: Upload; photo_id?: string;
   details?: object; // X48d: the scanner's fields (logic.itemDetails), kept with the listing
+  place: Place; // X49e: the pickup place (the server keeps it rounded to 0.01 mi and never sends it)
 };
 /** One item of the review list, in the listing contract (voice posting). */
 export type VoiceItem = { item: number; title: string; number_of_serving: number };
@@ -106,13 +110,19 @@ export const listings = Object.freeze({
     const query = after ? "?after=" + encodeURIComponent(after) : "";
     return request<{ items: Listing[]; next: string }>("GET", "/api/listings" + query);
   },
+  /** X49e: the live listings within 25 mi of the place, nearest first, with distance_mi. */
+  near: (place: Place, after = "") => request<{ items: Listing[]; next: string }>("GET", "/api/listings" + placeQuery(place, after)),
   mine: () => request<{ items: Listing[] }>("GET", "/api/listings/mine"),
+  /** X49e: the user's grabs whose timer still runs ("Your pickup"). */
+  grabbed: (place: Place | null) => request<{ items: Listing[] }>("GET", "/api/listings/grabbed" + (place ? placeQuery(place) : "")),
   grab: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/grab"),
+  /** X49e: gives the grab back while the timer runs (409 when it ended). */
+  release: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/release"),
   /** X48t: the owner deletes a listing nobody has grabbed (204; 409 when it was grabbed). */
   remove: (id: string) => request<null>("DELETE", "/api/listings/" + encodeURIComponent(id)),
   create(n: NewListing) {
     const form = formOf([["title", n.title], ["number_of_serving", String(n.number_of_serving)],
-      ["pickup_text", n.pickup_text]], [["request_id", n.request_id]]);
+      ["pickup_text", n.pickup_text], ...placeFields(n.place)], [["request_id", n.request_id]]);
     if (n.details && Object.keys(n.details).length > 0) form.append("details", JSON.stringify(n.details));
     if (n.photo_id) form.append("photo_id", n.photo_id);
     else if (n.photo) addFile(form, "photo", n.photo);

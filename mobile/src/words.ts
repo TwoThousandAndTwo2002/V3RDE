@@ -132,6 +132,51 @@ export const REVIEW = {
   nonePosted: "No item posted. Try again.",
 } as const;
 
+/** X49e: the place and the distance (Receive and the review). T9 2026-10-30, the approved "distance" mockup v2. */
+export const PLACE = {
+  askTitle: "Find food near you",
+  askLine: "Your place shows only the food within the distance you pick. Nobody else sees your place.",
+  useLocation: "Use my location",
+  typeZip: "Type a ZIP",
+  zipTitle: "Your ZIP code",
+  zipLine: "Location is off. The distance is from the center of your ZIP code.",
+  back: "Back",
+  show: "Show food",
+  zipBad: "Type a 5-digit ZIP code.",
+  locating: "Finding your location…",
+  nearLocation: "Near your location",
+  change: "Change",
+  changeName: "Change your place",
+  close: "Close",
+  yourPickup: "Your pickup",
+  moreNear: "More near you",
+  release: "Release it",
+  keep: "Keep it",
+  releaseYes: "Release",
+  releaseLine: "Other people near it can grab it again, while its timer runs.",
+  released: "Released. Other people can grab it now.",
+  releaseEnded: "The timer ended. The grab is final.",
+  cancel: "Cancel",
+  // the review (the giver)
+  pickupPlace: "Pickup place",
+  hereNow: "Your location now",
+  hereLine: "Receivers see how far away it is. They do not see this place on a map.",
+  useZip: "Use a ZIP code",
+  pickupZip: "Pickup ZIP code",
+  zipOffLine: "Location is off. People near this ZIP see the food.",
+  needZip: "Type the 5-digit pickup ZIP code.",
+  nearZip: (zip: string) => "Near ZIP " + zip,
+  reach: (d: number) => d + " mi",
+  reachName: (d: number) => "Within " + d + " miles",
+  farther: (d: number) => "Farther than " + d + " mi",
+  emptyNear: (d: number) => "Nothing within " + d + " mi now. Look again in a few minutes.",
+  releaseName: (title: string) => "Release " + title,
+  releaseTitle: (title: string) => "Release " + title + "?",
+  farTitle: (miles: string) => "This food is " + miles + " away",
+  farLine: (reach: number, minutes: number) =>
+    "It is farther than your " + reach + " mi. The timer ends in " + minutes + " min. Grab it only if you can get there in time.",
+} as const;
+
 /** The photo touch-up on the review (the original stays the default). */
 export const TOUCH = {
   start: "Touch up photo", // X48r: one touch-up (the auto one)

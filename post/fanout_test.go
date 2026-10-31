@@ -416,3 +416,35 @@ func TestFanoutStatusNeedsItsOwnToken(t *testing.T) {
 		t.Fatalf("own token: %d", w.Code)
 	}
 }
+
+// X49e: a released grab removes [CLAIMED]; the sweep can then mark it expired.
+func TestFanoutReleaseRemovesClaimed(t *testing.T) {
+	e := newFO(t, goodText)
+	defer e.stop()
+	if w := do(e.h, jsonReq("POST", "/api/fanout/l_00000000000000f1", "", "u1")); w.Code != 201 {
+		t.Fatalf("publish %d", w.Code)
+	}
+	wantMsg := "Free apples from a neighbor! 8 servings, claim them in the app 🍎\n\nClaim it in the app: https://icarus.example.org/l/l_00000000000000f1"
+	if w := do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"released"}`, "tok")); w.Code != 200 || len(e.graph.reqs) != 1 {
+		t.Fatalf("release of a post that is not claimed: %d (%d calls)", w.Code, len(e.graph.reqs))
+	}
+	do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"claimed"}`, "tok"))
+	if w := do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"released"}`, "tok")); w.Code != 200 {
+		t.Fatalf("release %d %s", w.Code, w.Body)
+	}
+	if last := e.graph.reqs[len(e.graph.reqs)-1]; len(e.graph.reqs) != 3 || last.form["message"] != wantMsg {
+		t.Fatalf("edit %+v (%d calls)", last, len(e.graph.reqs))
+	}
+	if got, _ := e.cfg.Store.Get("l_00000000000000f1"); got.Status != PostPosted {
+		t.Fatalf("stored %+v", got)
+	}
+	do(e.h, statusReq(`{"listing_id":"l_00000000000000f1","status":"released"}`, "tok"))
+	if len(e.graph.reqs) != 3 {
+		t.Fatalf("a second release edited again: %d", len(e.graph.reqs))
+	}
+	later := e.now.Add(time.Hour)
+	e.cfg.now = func() time.Time { return later }
+	if n := e.cfg.Sweep(t.Context()); n != 1 {
+		t.Fatalf("sweep after release %d", n)
+	}
+}

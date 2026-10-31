@@ -58,6 +58,8 @@ var (
 	ErrOwn       = errors.New("cannot grab your own listing")
 	// X48t: a grabbed listing is a promise to a receiver: it cannot be deleted
 	ErrGrabbed = errors.New("someone is picking this up: it cannot be deleted")
+	// X49e: a release of a listing that the caller did not grab
+	ErrNotGrabbed = errors.New("you did not grab this listing")
 )
 
 // photoExt is the file extension of each accepted photo type.
@@ -82,6 +84,9 @@ type Listing struct {
 	RequestID       string  `json:"request_id"`
 	// Details (X48d): the scanner's fields of the item; left out when none.
 	Details *Details `json:"details,omitempty"`
+	// DistanceMi (X49e): miles from the caller's place, 2 decimals; only in
+	// an answer to a request with a place, never in the data file.
+	DistanceMi *float64 `json:"distance_mi,omitempty"`
 }
 
 // Input is one create request before and after Validate.
@@ -97,6 +102,8 @@ type Input struct {
 	TTL time.Duration
 	// Details (X48d): the handler parsed and checked them (details.go).
 	Details *Details
+	// Place (X49e): the pickup place; the store keeps it snapped (place.go).
+	Place *Place
 }
 
 // MinTestTTL is the shortest timer a test account can ask for (X44h, T9

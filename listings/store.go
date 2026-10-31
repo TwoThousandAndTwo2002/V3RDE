@@ -7,9 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,6 +23,9 @@ import (
 type stored struct {
 	Listing
 	PhotoFile string `json:"photo_file"`
+	// Place (X49e): the pickup place, snapped to GridMiles; only in the data
+	// file (the app gets distance_mi). Records before X49e have none.
+	Place *Place `json:"place,omitempty"`
 }
 
 // Store keeps the listings in memory and in <dir>/listings.json (written
@@ -147,7 +153,12 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 	if err := writeAtomic(photo, in.Photo, 0o640); err != nil {
 		return Listing{}, err
 	}
-	r := stored{PhotoFile: file, Listing: Listing{
+	var place *Place
+	if in.Place != nil {
+		p := Snap(*in.Place)
+		place = &p
+	}
+	r := stored{PhotoFile: file, Place: place, Listing: Listing{
 		ID: id, OwnerID: ownerID, Title: in.Title, NumberOfServing: in.NumberOfServing,
 		PhotoURL: "/api/listings/" + id + "/photo", PickupText: in.PickupText, Status: "active",
 		CreatedAt: now.Format(time.RFC3339Nano), ExpiresAt: now.Add(ttl).Format(time.RFC3339Nano),
@@ -233,6 +244,200 @@ func (s *Store) Active(after string, limit int) ([]Listing, string) {
 	return page, ""
 }
 
+// withDistance is the listing of r with distance_mi from `from`, and the
+// exact distance; ok is false when r has no place or is farther than
+// MaxMiles. distance_mi is rounded to ShownMiles (X49e review: with 0.01 mi,
+// three made-up places would find the giver's point; the app shows 0.1 mi).
+func withDistance(r stored, from Place) (Listing, float64, bool) {
+	if r.Place == nil {
+		return Listing{}, 0, false
+	}
+	d := Miles(from, *r.Place)
+	if d > MaxMiles {
+		return Listing{}, 0, false
+	}
+	l := r.Listing
+	m := roundMiles(d)
+	l.DistanceMi = &m
+	return l, d, true
+}
+
+// nearKey is the order of a place list: nearest first by the distance the
+// app gets (ShownMiles steps: the cursor must not hold the exact distance,
+// the X49e re-check), then newest first, then the id.
+type nearKey struct {
+	d  float64 // the rounded distance (distance_mi)
+	at int64   // created_at, unix nanoseconds
+	id string
+}
+
+// before reports whether a comes before b in the list.
+func (a nearKey) before(b nearKey) bool {
+	if a.d != b.d {
+		return a.d < b.d
+	}
+	if a.at != b.at {
+		return a.at > b.at
+	}
+	return a.id > b.id
+}
+
+// cursor is the key as text: <distance_mi>~<nanoseconds>~<id>.
+func (a nearKey) cursor() string {
+	return strconv.FormatFloat(a.d, 'f', -1, 64) + "~" + strconv.FormatInt(a.at, 10) + "~" + a.id
+}
+
+var errCursor = errors.New("after is not a cursor of a list with a place")
+
+func parseNearCursor(c string) (nearKey, error) {
+	f := strings.Split(c, "~")
+	if len(f) != 3 || f[2] == "" {
+		return nearKey{}, errCursor
+	}
+	d, err1 := strconv.ParseFloat(f[0], 64)
+	at, err2 := strconv.ParseInt(f[1], 10, 64)
+	if err1 != nil || err2 != nil || math.IsNaN(d) || d < 0 {
+		return nearKey{}, errCursor
+	}
+	return nearKey{d, at, f[2]}, nil
+}
+
+// Near is one page of the active listings within MaxMiles of from, nearest
+// first (then newest first), each with distance_mi (X49e). The cursor is the
+// key of the last listing of the page before ("" = the start), so a grab,
+// a release or a new listing between two pages does not make the next page
+// skip a listing (X49e review); next is "" at the end. The app splits near
+// and far by the distance the user picked.
+func (s *Store) Near(from Place, after string, limit int) ([]Listing, string, error) {
+	if limit <= 0 || limit > PageSize {
+		limit = PageSize
+	}
+	var start *nearKey
+	if after != "" {
+		k, err := parseNearCursor(after)
+		if err != nil {
+			return nil, "", err
+		}
+		start = &k
+	}
+	now := s.now().UTC()
+	type near struct {
+		l Listing
+		k nearKey
+	}
+	var all []near
+	s.mu.Lock()
+	for _, r := range s.items {
+		if !active(r, now) {
+			continue
+		}
+		l, _, ok := withDistance(r, from)
+		if !ok {
+			continue
+		}
+		at, _ := time.Parse(time.RFC3339Nano, r.CreatedAt)
+		k := nearKey{*l.DistanceMi, at.UnixNano(), r.ID}
+		if start != nil && !start.before(k) {
+			continue
+		}
+		all = append(all, near{l, k})
+	}
+	s.mu.Unlock()
+	slices.SortFunc(all, func(a, b near) int {
+		switch {
+		case a.k.before(b.k):
+			return -1
+		case b.k.before(a.k):
+			return 1
+		}
+		return 0
+	})
+	if len(all) <= limit {
+		page := make([]Listing, len(all))
+		for i, n := range all {
+			page[i] = n.l
+		}
+		return page, "", nil
+	}
+	page := make([]Listing, limit)
+	for i, n := range all[:limit] {
+		page[i] = n.l
+	}
+	return page, all[limit-1].k.cursor(), nil
+}
+
+// Grabbed is the listings userID grabbed whose timer still runs, newest grab
+// first (X49e "Your pickup"; a grab can be released until the timer ends).
+// With from, each has distance_mi (no MaxMiles limit: the user's own grab).
+func (s *Store) Grabbed(userID string, from *Place) []Listing {
+	now := s.now().UTC()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var out []Listing
+	for _, r := range s.newestFirstLocked() {
+		if r.Status != "collected" || r.CollectedBy == nil || *r.CollectedBy != userID || !running(r, now) {
+			continue
+		}
+		l := r.Listing
+		if from != nil && r.Place != nil {
+			m := roundMiles(Miles(*from, *r.Place))
+			l.DistanceMi = &m
+		}
+		out = append(out, l)
+	}
+	// newest grab first, by the time (RFC 3339 text with nanoseconds does not sort as the time: X38b)
+	slices.SortStableFunc(out, func(a, b Listing) int { return grabTime(b).Compare(grabTime(a)) })
+	return out
+}
+
+func grabTime(l Listing) time.Time {
+	if l.CollectedAt == nil {
+		return time.Time{}
+	}
+	t, _ := time.Parse(time.RFC3339Nano, *l.CollectedAt)
+	return t
+}
+
+// running: the timer of r has not ended at now (any status).
+func running(r stored, now time.Time) bool {
+	exp, err := time.Parse(time.RFC3339Nano, r.ExpiresAt)
+	return err == nil && now.Before(exp)
+}
+
+// Release gives a grab back (X49e, T9 2026-10-30: "until the timer ends"):
+// the listing is active again for everyone, with the same timer. Only the
+// user who grabbed it can. The checks are in this order: unknown
+// (ErrNotFound), not grabbed by userID (ErrNotGrabbed), timer ended
+// (ErrExpired).
+func (s *Store) Release(id, userID string) (Listing, error) { return s.ReleaseThen(id, userID, nil) }
+
+// ReleaseThen is Release; after runs as in GrabThen.
+func (s *Store) ReleaseThen(id, userID string, after func(Listing)) (Listing, error) {
+	now := s.now().UTC()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, ok := s.items[id]
+	switch {
+	case !ok:
+		return Listing{}, ErrNotFound
+	case r.Status != "collected" || r.CollectedBy == nil || *r.CollectedBy != userID:
+		return Listing{}, ErrNotGrabbed
+	case !running(r, now):
+		return Listing{}, ErrExpired
+	}
+	before := r
+	r.Status, r.CollectedBy, r.CollectedAt = "active", nil, nil
+	s.items[id] = r
+	if err := s.saveLocked(); err != nil {
+		s.items[id] = before
+		return Listing{}, err
+	}
+	if after != nil {
+		after(r.Listing)
+	}
+	return r.Listing, nil
+}
+
 // Mine is the listings of ownerID, any status, newest first.
 func (s *Store) Mine(ownerID string) []Listing {
 	s.mu.Lock()
@@ -248,7 +453,12 @@ func (s *Store) Mine(ownerID string) []Listing {
 
 // Grab marks the listing collected by userID. The checks are in this
 // order: unknown, own listing, already collected, expired.
-func (s *Store) Grab(id, userID string) (Listing, error) {
+func (s *Store) Grab(id, userID string) (Listing, error) { return s.GrabThen(id, userID, nil) }
+
+// GrabThen is Grab; after (when not nil) runs with the grabbed listing while
+// the store is still locked (X49e review: the claim hook queues its fan-out
+// call in the order of the store changes). after must not block.
+func (s *Store) GrabThen(id, userID string, after func(Listing)) (Listing, error) {
 	now := s.now().UTC()
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -271,6 +481,9 @@ func (s *Store) Grab(id, userID string) (Listing, error) {
 	if err := s.saveLocked(); err != nil {
 		s.items[id] = before // the file did not change: the memory does not either
 		return Listing{}, err
+	}
+	if after != nil {
+		after(r.Listing)
 	}
 	return r.Listing, nil
 }

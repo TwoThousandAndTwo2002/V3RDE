@@ -143,13 +143,15 @@ func New(c Config) http.Handler {
 	p := c.Prefix
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET "+p+"/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "service": "listings"})
+		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "service": "listings", "zips": ZipCount()})
 	})
 	mux.HandleFunc("POST "+p, rt.signedIn(rt.create))
 	mux.HandleFunc("GET "+p, rt.signedIn(rt.list))
 	mux.HandleFunc("GET "+p+"/mine", rt.signedIn(rt.mine))
+	mux.HandleFunc("GET "+p+"/grabbed", rt.signedIn(rt.grabbed)) // X49e
 	mux.HandleFunc("POST "+p+"/{id}/grab", rt.signedIn(rt.grab))
-	mux.HandleFunc("DELETE "+p+"/{id}", rt.signedIn(rt.remove)) // X48t
+	mux.HandleFunc("POST "+p+"/{id}/release", rt.signedIn(rt.release)) // X49e
+	mux.HandleFunc("DELETE "+p+"/{id}", rt.signedIn(rt.remove))        // X48t
 	mux.HandleFunc("GET "+p+"/{id}/photo", rt.signedIn(rt.photo))
 	return mux
 }
@@ -194,6 +196,16 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 		return
 	}
 	in.Details = d
+	// X49e: the pickup place is needed (the phone location, or a zip)
+	place, err := ParsePlace(r.FormValue("lat"), r.FormValue("lng"), r.FormValue("zip"))
+	if err == nil && place == nil {
+		err = ErrPlace
+	}
+	if err != nil {
+		fail(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	in.Place = place
 	photoID := strings.TrimSpace(r.FormValue("photo_id"))
 	if f, hdr, err := r.FormFile("photo"); err == nil {
 		defer f.Close()
@@ -232,10 +244,28 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 	writeJSON(w, http.StatusCreated, l)
 }
 
-// list is GET /api/listings?after=&limit=.
+// list is GET /api/listings?after=&limit=, and with a place (X49e:
+// &lat=&lng= or &zip=) the listings within MaxMiles, nearest first, with
+// distance_mi.
 func (rt routes) list(w http.ResponseWriter, r *http.Request, _ User) {
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	items, next := rt.Store.Active(r.URL.Query().Get("after"), limit)
+	q := r.URL.Query()
+	limit, _ := strconv.Atoi(q.Get("limit"))
+	from, err := ParsePlace(q.Get("lat"), q.Get("lng"), q.Get("zip"))
+	if err != nil {
+		fail(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	var items []Listing
+	var next string
+	if from != nil {
+		items, next, err = rt.Store.Near(*from, q.Get("after"), limit)
+		if err != nil {
+			fail(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	} else {
+		items, next = rt.Store.Active(q.Get("after"), limit)
+	}
 	if items == nil {
 		items = []Listing{}
 	}
@@ -251,9 +281,43 @@ func (rt routes) mine(w http.ResponseWriter, _ *http.Request, u User) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
+// grabbed is GET /api/listings/grabbed[?lat=&lng=|?zip=] (X49e): the
+// caller's grabs whose timer still runs ("Your pickup").
+func (rt routes) grabbed(w http.ResponseWriter, r *http.Request, u User) {
+	q := r.URL.Query()
+	from, err := ParsePlace(q.Get("lat"), q.Get("lng"), q.Get("zip"))
+	if err != nil {
+		fail(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	items := rt.Store.Grabbed(u.ID, from)
+	if items == nil {
+		items = []Listing{}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+// release is POST /api/listings/{id}/release (X49e): the receiver gives the
+// grab back while the timer runs; fan-out removes [CLAIMED] in the background.
+func (rt routes) release(w http.ResponseWriter, r *http.Request, u User) {
+	l, err := rt.Store.ReleaseThen(r.PathValue("id"), u.ID, func(l Listing) { rt.Claim.Released(l.ID) }) // queued in store order
+	switch {
+	case errors.Is(err, ErrNotFound):
+		fail(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrNotGrabbed), errors.Is(err, ErrExpired):
+		fail(w, http.StatusConflict, err.Error())
+	case err != nil:
+		fail(w, http.StatusInternalServerError, "could not release")
+	default:
+		log.Printf("listing %s released by %s", l.ID, u.ID)
+		writeJSON(w, http.StatusOK, l)
+	}
+}
+
 // grab is POST /api/listings/{id}/grab.
 func (rt routes) grab(w http.ResponseWriter, r *http.Request, u User) {
-	l, err := rt.Store.Grab(r.PathValue("id"), u.ID)
+	// the claim is queued while the store is locked: its fan-out call keeps the order of the grabs and releases
+	l, err := rt.Store.GrabThen(r.PathValue("id"), u.ID, func(l Listing) { rt.Claim.Claimed(l.ID) })
 	switch {
 	case errors.Is(err, ErrNotFound):
 		fail(w, http.StatusNotFound, err.Error())
@@ -265,7 +329,6 @@ func (rt routes) grab(w http.ResponseWriter, r *http.Request, u User) {
 		fail(w, http.StatusInternalServerError, "could not grab")
 	default:
 		log.Printf("listing %s grabbed by %s", l.ID, u.ID)
-		rt.Claim.Claimed(l.ID) // in the background: the answer does not wait
 		writeJSON(w, http.StatusOK, l)
 	}
 }

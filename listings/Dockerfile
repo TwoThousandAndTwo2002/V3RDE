@@ -3,6 +3,8 @@ FROM golang:1.26-alpine AS build
 WORKDIR /src
 COPY go.mod ./
 COPY *.go ./
+# X49e: the ZIP-center table (go:embed in place.go; tools: cmd/zctatable)
+COPY zcta.csv ./
 COPY cmd ./cmd
 # The commit the image is built from; the events log has it. It is the last
 # input before the build, so a new commit does not run the steps above again
