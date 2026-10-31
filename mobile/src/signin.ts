@@ -87,3 +87,15 @@ export function resetToken(url: string | null | undefined): string {
   const m = /^\/reset\/?(?:\?[^#]*)?#(?:[^#]*&)?token=([A-Za-z0-9_-]+)(?:&|$)/.exec(path);
   return m ? m[1] : "";
 }
+
+/**
+ * N4 (T9 2026-10-31): the listing of a claim link (web /l/<listing_id>, app v3rde://l/<listing_id>), or "" when the
+ * link is not one. The Facebook post of a listing (fan-out) ends with this link; after sign-in or sign-up the app
+ * opens Receive and skips the role sheet. The id has the listings service's form (l_ and 16 hex characters).
+ */
+export function claimListing(url: string | null | undefined): string {
+  if (!url) return "";
+  const path = url.startsWith("v3rde://") ? "/" + url.slice("v3rde://".length) : url.replace(/^https?:\/\/[^/?#]+/, "");
+  const m = /^\/l\/(l_[0-9a-f]{16})\/?(?:[?#].*)?$/.exec(path);
+  return m ? m[1] : "";
+}

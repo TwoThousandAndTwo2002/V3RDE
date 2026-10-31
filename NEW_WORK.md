@@ -1747,3 +1747,19 @@ T9 asked for a Facebook post of each food item, with a link to the app ("Link in
 - No answer, 429 or a server error: it tries again (3 more times in 85 s). Fan-out never makes a second post.
 - Open before the Page is set: the giver's photo goes to the public Page with no photo check (fan-out checks only the text); a grab in the moment before the post starts leaves the post open until the timer sweep.
 - Tests: listings 46 -> 48.
+
+## 85. A claim link opens Receive after sign-in
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none.
+**Files:** `mobile/App.tsx`, `mobile/src/signin.ts`, `mobile/tests/reset.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/N4.md`
+
+T9: a person who taps the link in the Facebook post goes to the app, and after sign-up or sign-in the app skips the role sheet ("Yes, skip to Receive").
+
+- The link is `icarus.thehungreeapp.com/l/<listing_id>` (on a phone, `v3rde://l/<listing_id>`).
+- After sign-in or sign-up, or at once with an open session, the app opens Receive. The listing shows in the list as today. The address goes back to `/`.
+- Any other link starts the app as before. No new screen. Log out clears a claim that waits.
+- On a phone the https link opens the browser (the web app), because the phone app has no associated domains yet.
+- Tests: mobile 135 -> 136.
