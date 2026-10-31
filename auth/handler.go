@@ -91,10 +91,13 @@ func clientIP(r *http.Request) string {
 
 // Config is everything the routes need; cmd/auth fills it from flags.
 type Config struct {
-	Store        *Store
-	Limiter      *Limiter // signup + login, per address; nil = no limit
-	CookieSecure bool
-	Prefix       string // "" = /api/auth
+	Store          *Store
+	Limiter        *Limiter // signup + login + reset, per address; nil = no limit
+	ResetLimiter   *Limiter // X49o: reset requests per email; nil = no limit
+	ResetIPLimiter *Limiter // X49o review: reset requests per address; nil = no limit
+	Mailer         *Mailer  // X49o: the reset mail; nil = reset is off (503)
+	CookieSecure   bool
+	Prefix         string // "" = /api/auth
 }
 
 type creds struct {
@@ -170,6 +173,8 @@ func New(c Config) http.Handler {
 	mux.HandleFunc("POST "+p+"/login", c.limited(c.login))
 	mux.HandleFunc("POST "+p+"/logout", c.logout)
 	mux.HandleFunc("GET "+p+"/me", c.me)
+	mux.HandleFunc("POST "+p+"/reset", c.limited(c.resetRequest))         // X49o
+	mux.HandleFunc("POST "+p+"/reset/confirm", c.limited(c.resetConfirm)) // X49o
 	return mux
 }
 

@@ -12,7 +12,8 @@
 # Folders (set them from outside; the box uses /opt/v3rde/...):
 #   V3RDE_CFG     secrets: meta_model_api_key (made by hand, 0600), analyze_token and
 #                 fanout_status_token (made here when missing, 0600), google_maps_api_key (X49j: an
-#                 empty file when missing: no map)
+#                 empty file when missing: no map), smtp_user and smtp_pass (X49o: empty files when
+#                 missing: no reset mail)
 #   V3RDE_ASSETS  products.sqlite, gate_pe_s16_f16w_384.tflite, gate_head_pe_s16_384_deploy.json
 #   V3RDE_PHOTOS  the photo store (items/, touchups/)
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
@@ -99,6 +100,15 @@ preflight() {
   [ -e "$maps" ] || { ( umask 077; : > "$maps" ); echo "   made $maps (empty: no map in the app)"; }
   chmod 600 "$maps"
   asroot && chown 65534:65534 "$maps"
+  # X49o: the reset mail relay user and app password (x49p on the Mac and the box). Missing: empty files, so the
+  # bind mounts are files; the auth service then answers 503 to a reset request.
+  local sf
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass"; do
+    [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail)"; }
+    chmod 600 "$sf"
+    asroot && chown 65534:65534 "$sf"
+  done
   # an edge of another project (for example an old stack) on our port would
   # answer our checks: stop here instead
   local other
@@ -187,7 +197,8 @@ up() {
   local ids n f
   ids=$(dc ps -q) || die "docker compose ps failed"
   [ -n "$ids" ] || die "no containers"
-  for f in meta_model_api_key fanout_status_token analyze_token; do
+  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass; do
+    [ -s "$V3RDE_CFG/$f" ] || continue # an empty file matches every line (X49o: smtp_pass is empty until x49p)
     # shellcheck disable=SC2086
     n=$(docker inspect $ids | grep -cFf "$V3RDE_CFG/$f" || true)
     printf '   %-30s %s times (want 0)%s\n' "$f in docker inspect" "${n:-0}" "$([ "${n:-0}" = 0 ] || echo '  <-- CHECK')"

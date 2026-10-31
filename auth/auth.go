@@ -16,12 +16,14 @@
 //	POST /api/auth/logout                     -> 204, the session is deleted, the cookie cleared
 //	GET  /api/auth/me                         -> 200 user | 401
 //	GET  /api/auth/healthz                    -> 200
+//	POST /api/auth/reset   {email}            -> 202 {} (also for an unknown email) | 400 | 429 | 503 (X49o, reset.go)
+//	POST /api/auth/reset/confirm {token, password} -> 200 user + Set-Cookie | 400 "reset link expired"
 //
 // Passwords: PBKDF2-HMAC-SHA256, 600,000 iterations, at least 8 characters,
 // no other rules. Sessions: 32 random bytes in the cookie; the data file has
 // only their SHA-256, so a copied file cannot be used to sign in. 7 days,
 // HttpOnly, SameSite=Lax, Secure unless -cookie-secure=false (plain http).
-// Signup and login are rate limited per address. Logs have user ids, never
+// Signup, login and reset are rate limited per address; a reset request also per email. Logs have user ids, never
 // emails or passwords.
 package auth
 

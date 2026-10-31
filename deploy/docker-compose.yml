@@ -38,10 +38,16 @@ services:
     image: v3rde-auth
     restart: unless-stopped
     command: ["-listen", "0.0.0.0:8081", "-db", "/data/auth.json",
-              "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events"]
+              "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events",
+              # X49o: the reset mail (Google Workspace SMTP, an app password); empty files = reset answers 503
+              "-smtp-addr", "smtp.gmail.com:465",
+              "-smtp-user-file", "/run/secrets/smtp_user", "-smtp-pass-file", "/run/secrets/smtp_pass",
+              "-reset-link-base", "${V3RDE_PUBLIC_URL:-https://icarus.thehungreeapp.com}"]
     volumes:
       - v3rde_auth:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events
+      - ${V3RDE_CFG:-~/.config/v3rde}/smtp_user:/run/secrets/smtp_user:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/smtp_pass:/run/secrets/smtp_pass:ro
 
   listings:
     build: {context: ./listings, args: {BUILD: "${V3RDE_BUILD_LISTINGS:-dev}"}}

@@ -1731,3 +1731,21 @@ T9 (testing with users in Nigeria): a tester's scans, and T9's own, showed "The 
 - An upload that finds no connection is sent again (at most 3 tries, 2 s apart, inside 75 s). A slow upload is not sent again. The service gives a photo it already scans for the same user (or scanned well in the last 10 s) the same job, so a second try is not a second paid scan.
 - Limit: when SAM finds no box, each item of a list answer uses the whole photo.
 - Tests: server 36 -> 38, inference 97 -> 101, mobile 136 -> 138.
+
+## 83. Password reset by email link
+
+**When:** Oct 31 2026.
+**Meta models:** none. Google Workspace SMTP (`smtp.gmail.com:465`, TLS from the first byte, an app password of the sender mailbox).
+**Files:** `auth/reset.go` (new), `auth/reset_test.go` (new), `auth/store.go`, `auth/handler.go`, `auth/auth.go`, `auth/cmd/auth/main.go`, `auth/Dockerfile`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/X49o.md`
+
+T9: "reset password does not work". The app had the reset screens (UI 9), but the auth service had no reset routes and no mail sender.
+
+- `POST /api/auth/reset` answers 202 for every valid email. When an account has the email, a link `<app>/reset#token=...` goes to it. The link works for 30 minutes, one time, and a new request replaces it.
+- `POST /api/auth/reset/confirm` sets the new password, ends every other session of the user and signs the user in.
+- The mail goes out after the answer, through the Google Workspace mailbox (x49p puts its address and app password on the box). Without them the reset routes answer 503.
+- Limits: 5 reset requests an hour per address, 3 mails in 15 minutes per email, and 300 mails a day in all (the mailbox may send about 2,000).
+- The account lookup, the token and the mail happen after the answer, so the answer time is the same for every email.
+- The data file has only the hash of the token. The logs have only the user id.
+- The relay port is 465: the network of the setup Mac gives no answer on 587.
+- Tests: auth 22 -> 32.

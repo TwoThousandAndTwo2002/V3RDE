@@ -16,6 +16,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
 
 FROM scratch
 COPY --from=build /auth /auth
+# X49o: the CA roots, for TLS to the mail relay (smtp.gmail.com, STARTTLS); scratch has none
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 # /data and /events are in the image, owned by the service user, so Docker
 # fills a new named volume with that owner ("these files or directories are
 # propagated (copied) into the volume by default":
