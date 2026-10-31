@@ -109,7 +109,7 @@ export const size = {
   sheetMedium: 0.44, // a medium phone sheet (the role sheet): this share of the screen height
   dialogWide: 860,   // a dialog with the photo on the left
   dialogExtraWide: 1140, // X49: the review dialog with the details column at the right (the photo, the list, the details)
-  detailsColumn: 260, // X49: the details column of the wide review
+  chatColumn: 320,   // X49i: the chat column of the wide review (T9: wider than the X49 details column, 260)
   scanPhoto: 3 / 4,  // X49: the scan photo of the wide review (width to height); it is as high as the column
   dialogSmall: 440,  // a dialog with a title, a line and two pills
   dialogCamera: 640, // the camera dialog on a wide screen (a 4:3 photo, 608 pt wide)

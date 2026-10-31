@@ -110,8 +110,10 @@ export function Pill({ title, name, onPress, kind = "primary", busy, busyName, g
  * `on` (the part it opens is open) = an `accent` border, and the word and glyph in `link` (`accent` in light mode).
  * With no glyph it is a choice chip (a radio for a screen reader): a `line` border when it is off.
  */
-export function ChipBtn({ glyph: g, title, name, on, onPress, testID }: {
+export function ChipBtn({ glyph: g, title, name, on, onPress, testID, wide }: {
   glyph?: Glyph; title?: string; name: string; on?: boolean; onPress: () => void; testID?: string;
+  /** X49i: as wide as its row (More). */
+  wide?: boolean;
 }) {
   const col = useColors();
   const fg = on ? col.link : col.fg;
@@ -121,6 +123,7 @@ export function ChipBtn({ glyph: g, title, name, on, onPress, testID }: {
       accessibilityState={choice ? { checked: !!on } : { expanded: on }} aria-checked={choice ? !!on : undefined}
       aria-expanded={choice ? undefined : on} onPress={onPress} hitSlop={(size.iconBig - size.iconSmall) / 2}
       style={(state) => ({ height: size.iconSmall, minWidth: size.iconSmall, paddingHorizontal: title ? space.group : 0, borderRadius: radius.round,
+        alignSelf: wide ? "stretch" : undefined,
         flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.inset, backgroundColor: col.iconFill,
         borderWidth: size.border, borderColor: on ? col.accent : choice ? col.line : col.iconFill,
         opacity: state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1 })}>
@@ -332,7 +335,7 @@ export function Grow({ children, style }: { children: React.ReactNode; style?: S
 // ---------------------------------------------------------------- sheets and dialogs
 
 /** The frosted layer of a sheet or dialog: the blur of what is behind it, with a tint over it. */
-function Frost({ round, children, style }: { round: ViewStyle; children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+export function Frost({ round, children, style }: { round: ViewStyle; children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   const col = useColors();
   return (
     <View style={[round, { overflow: "hidden" }, style]}>
@@ -632,7 +635,8 @@ export function FrostBtn({ glyph: g, label, onPress, testID }: { glyph: Glyph; l
   const col = useColors();
   return (
     <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={(size.iconBig - size.iconSmall) / 2}
-      style={({ pressed }) => ({ width: size.iconSmall, height: size.iconSmall, borderRadius: radius.round, opacity: pressed ? opacity.pressed : 1 })}>
+      style={(state) => ({ width: size.iconSmall, height: size.iconSmall, borderRadius: radius.round,
+        opacity: state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1 })}>
       <Frost round={{ borderRadius: radius.round }} style={{ width: size.iconSmall, height: size.iconSmall, alignItems: "center", justifyContent: "center" }}>
         {/* a View: the glyph paints over the two layers of the frost (they are positioned) */}
         <View><GlyphIcon name={g} color={col.fg} /></View></Frost>
@@ -646,8 +650,8 @@ export function SmallPill({ title, name, onPress, testID }: { title: string; nam
   const col = useColors();
   return (
     <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={name ?? title} onPress={onPress} hitSlop={space.group}
-      style={({ pressed }) => ({ width: size.timeW, paddingVertical: size.timePadY, borderRadius: radius.round, alignItems: "center",
-        backgroundColor: col.accent, opacity: pressed ? opacity.pressed : 1 })}>
+      style={(state) => ({ width: size.timeW, paddingVertical: size.timePadY, borderRadius: radius.round, alignItems: "center",
+        backgroundColor: col.accent, opacity: state.pressed ? opacity.pressed : hovered(state) ? opacity.hover : 1 })}>
       <Text numberOfLines={1} style={[type.button, { color: col.onAccent }]}>{title}</Text></Pressable>
   );
 }

@@ -29,11 +29,9 @@ export function PillRow({ children }: { children: React.ReactNode }) {
   return <Row style={{ flexWrap: "wrap", columnGap: space.gap, rowGap: space.hair }}>{children}</Row>;
 }
 
-export function TouchUp({ n, photoId, state, locked, onStart, onChoose, side }: {
+export function TouchUp({ n, photoId, state, locked, onStart, onChoose }: {
   n: number; photoId: string; state: TouchState; locked: boolean;
   onStart: () => void; onChoose: (c: "original" | "edit") => void;
-  /** X49: the Details pill of the item, next to Touch up (it shows in every state). */
-  side?: React.ReactNode;
 }) {
   const of = " " + TOUCH.ofItem(n); // the item number in every name: a list has several of these
   const original = usePhoto(itemPhotoPath(photoId) || undefined);
@@ -44,7 +42,6 @@ export function TouchUp({ n, photoId, state, locked, onStart, onChoose, side }: 
       <View style={{ gap: space.hair }}>
         <View accessibilityLiveRegion="polite" aria-live="polite">
           <Row tight style={{ marginTop: space.hair }}><ActivityIndicator color={col.accent} /><Muted>{TOUCH.working}</Muted></Row></View>
-        {side ? <PillRow>{side}</PillRow> : null}
       </View>
     );
   }
@@ -61,7 +58,6 @@ export function TouchUp({ n, photoId, state, locked, onStart, onChoose, side }: 
               onPress={locked ? undefined : () => onChoose("edit")} />
           </Row>
         </View>
-        {side ? <PillRow>{side}</PillRow> : null}
       </View>
     );
   }
@@ -71,10 +67,9 @@ export function TouchUp({ n, photoId, state, locked, onStart, onChoose, side }: 
   return (
     <View style={{ marginTop: space.hair, gap: space.hair }}>
       <View accessibilityLiveRegion="polite" aria-live="polite">{line}</View>
-      {locked && !side ? null : (
+      {locked ? null : (
         <PillRow>
-          {locked ? null : <ChipBtn testID={"touchup-" + n} glyph="sparkle" title={TOUCH.short} name={TOUCH.start + of} onPress={onStart} />}
-          {side}
+          <ChipBtn testID={"touchup-" + n} glyph="sparkle" title={TOUCH.short} name={TOUCH.start + of} onPress={onStart} />
         </PillRow>
       )}
     </View>

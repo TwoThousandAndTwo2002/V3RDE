@@ -6,6 +6,9 @@
 // (UI 16, TouchUp.tsx); the photo the user chose is the one that posts. The chat bar (microphone or text) changes
 // the list at once (UI 17, X48s, Voice.tsx). X49: a Details pill next to Touch up shows what the scan found (phone: a
 // small Popup; expanded width: a third column); Change edits the details, and the edit is recorded (Details.tsx).
+// X49i (T9 2026-10-31, the approved "V3RDE Give And Review Mockup" v2): Touch up and the details are under one wide
+// "More" button on each item (no Details button: the details show at once); a dialog opens it in the card, a phone
+// in the bottom sheet. The third column of the widest dialog holds the chat, frosted.
 import { useEffect, useRef, useState } from "react";
 import { Image, KeyboardAvoidingView, ScrollView, TextInput, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
@@ -16,16 +19,16 @@ import {
 } from "../logic";
 import { LIMITS, listingProblem, servingsInput, sourceNote, stepServings } from "../capture";
 import { layoutFor, radius, size, space, useColors } from "../theme";
-import { Body, ChipBtn, ErrorText, Field, Grow, IconBtn, Muted, Pill, Popup, ReviewCard, Rise, Row, Sheet, SheetBody, SheetPills, TextLink, Title,
+import { Body, ChipBtn, ErrorText, Field, Frost, Grow, IconBtn, Muted, Pill, Popup, ReviewCard, Rise, Row, Sheet, SheetBody, SheetPills, TextLink, Title,
   usePhoto } from "../ui";
 import { useSession } from "../session";
 import { REVIEW } from "../words";
 import type { Answer } from "./Capture";
-import { PillRow, TouchUp } from "./TouchUp";
+import { TouchUp } from "./TouchUp";
 import { DetailsView, hasDetails } from "./Details";
 import { useChat } from "./Voice";
 import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
-import { DETAILS, PLACE, TOUCH, VOICE } from "../words";
+import { MORE, PLACE, TOUCH, VOICE } from "../words";
 import { currentPosition, zipOf, type Place } from "../place";
 
 /** One card of the review list, with the item photo of the server (or the touched-up photo the user chose). */
@@ -52,7 +55,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const col = useColors();
   const width = useWindowDimensions().width;
   const wide = layoutFor(width).dialogs;
-  // X49: the details column, only when the dialog is its full width (narrower: the details show in a Popup)
+  // X49i: the chat column, only when the dialog is its full width (narrower: the chat stays under the list)
   const column = wide && width >= size.dialogExtraWide + 2 * space.gutter;
   const [items, setItems] = useState<ItemForm[]>(answer.items);
   const [pickup, setPickup] = useState("");
@@ -65,7 +68,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const [partial, setPartial] = useState(false);
   const busy = useRef(false);
   const [touch, setTouch] = useState<Record<number, TouchState>>({}); // by item number
-  const [openItem, setOpenItem] = useState<number | null>(null); // X49: the item whose Details pill is on
+  const [moreOpen, setMoreOpen] = useState<number | null>(null); // X49i: the item whose More is open
   const [editItem, setEditItem] = useState<number | null>(null); // X49: the item whose details are being changed
   // X48u: every change in order and how it was made, for the label report (refs: the report also goes at unmount)
   const edits = useRef<Edit[]>([]);
@@ -81,7 +84,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     const end = edits.current[edits.current.length - 1];
     if (how === "hand" && place === pickupStart.current && end?.how === "hand" && end.field === "pickup") edits.current = edits.current.slice(0, -1);
     now.current = { items: next, pickup: place };
-    setOpenItem((o) => stillOpen(o, next)); // X49 review: a removed item (by hand or in the chat) closes its details
+    setMoreOpen((o) => stillOpen(o, next)); // X49 review: a removed item (by hand or in the chat) closes its More
     setEditItem((o) => stillOpen(o, next));
     setItems(next);
     setPickup(place);
@@ -110,22 +113,18 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     }
   };
   const scanned = (it: ItemForm) => answer.items.find((a) => a.item === it.item); // X49 review: the scanner's details
-  const detailsPill = (it: ItemForm, n: number) => (hasDetails(it, scanned(it)) ? (
-    <ChipBtn testID={"details-" + n} glyph="info" title={DETAILS.pill} name={DETAILS.name(n)} on={openItem === it.item}
-      onPress={() => { setEditItem(null); setOpenItem(openItem === it.item ? null : it.item); }} />
-  ) : null);
-  useEffect(function closeGone() { // X49 review: the opened item is not in the list (posted, removed): no details
-    setOpenItem((o) => stillOpen(o, items));
+  useEffect(function closeGone() { // X49 review: the opened item is not in the list (posted, removed): no More
+    setMoreOpen((o) => stillOpen(o, items));
     setEditItem((o) => stillOpen(o, items));
   }, [items]);
-  const closeDetails = () => { setOpenItem(null); setEditItem(null); };
+  const closeMore = () => { setMoreOpen(null); setEditItem(null); };
   const setDetails = (item: number, d: ItemForm["details"]) => {
     if (busy.current) return; // X49 review: not while the listings post (the post would bring the old copy back)
     change(now.current.items.map((x) => (x.item === item ? { ...x, details: d } : x)), now.current.pickup, "hand"); // X49: recorded
     setEditItem(null);
   };
-  const touchFor = (it: ItemForm, n: number) => (!it.photo_id ? (hasDetails(it, scanned(it)) ? <PillRow>{detailsPill(it, n)}</PillRow> : null) : (
-    <TouchUp n={n} photoId={it.photo_id} state={touch[it.item] ?? { kind: "idle" }} locked={sending} side={detailsPill(it, n)}
+  const touchFor = (it: ItemForm, n: number) => (!it.photo_id ? null : (
+    <TouchUp n={n} photoId={it.photo_id} state={touch[it.item] ?? { kind: "idle" }} locked={sending}
       onStart={() => startTouch(it.item, it.photo_id)}
       onChoose={(c) => {
         const t = touch[it.item];
@@ -135,6 +134,29 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         setOne(it.item, { ...t, chosen: c });
       }} />
   ));
+  // X49i: what More holds: Touch up, then the details at once (Change edits them in place)
+  // X49i review: while the listings post, an item with no details has nothing in More (Touch up is locked)
+  const hasMore = (it: ItemForm) => (!!it.photo_id && !sending) || hasDetails(it, scanned(it));
+  const moreInner = (it: ItemForm, n: number) => (
+    <View testID={"more-menu-" + n} style={{ gap: space.gap }}>
+      {touchFor(it, n)}
+      {hasDetails(it, scanned(it)) ? (
+        <DetailsView it={it} noTitle editing={editItem === it.item} locked={sending} onEdit={() => setEditItem(it.item)}
+          onCancel={() => setEditItem(null)} onDone={(d) => setDetails(it.item, d)} />
+      ) : null}
+    </View>
+  );
+  const moreFor = (it: ItemForm, n: number) => {
+    if (!hasMore(it)) return null;
+    const open = moreOpen === it.item;
+    return (
+      <View>
+        <ChipBtn testID={"more-" + n} wide glyph="menu" title={MORE.title} name={MORE.name(n)} on={open}
+          onPress={() => { setEditItem(null); setMoreOpen(open ? null : it.item); }} />
+        {open && wide ? <Grow key={it.item}><View style={{ marginTop: space.gap }}>{moreInner(it, n)}</View></Grow> : null}
+      </View>
+    );
+  };
   const working = items.some((it) => touch[it.item]?.kind === "working"); // only items still in the list
   const editOf = (it: ItemForm) => { const t = touch[it.item]; return t?.kind === "offer" && t.chosen === "edit" ? t.id : undefined; };
   const postedSoFar = useRef(0); // the listings of this answer that are up (a second Post after a partial one adds to it)
@@ -271,7 +293,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
           onSubmitEditing={() => pickupBox.current?.focus()}
           onChangeText={(t) => set({ title: t })} /></Rise>
         {note ? <Rise i={3}><Muted style={{ marginTop: space.inset, marginLeft: space.inset }}>{note}</Muted></Rise> : null}
-        {it.photo_id || hasDetails(it, scanned(it)) ? <Rise i={3}><View style={{ marginLeft: space.inset }}>{touchFor(it, 1)}</View></Rise> : null}
+        {hasMore(it) ? <Rise i={3}><View style={{ marginTop: space.inset }}>{moreFor(it, 1)}</View></Rise> : null}
         <Rise i={4}>
           <Muted style={{ marginTop: space.group, marginLeft: space.inset, marginBottom: space.hair }}>{REVIEW.servings}</Muted>
           <Row>
@@ -291,7 +313,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       <View style={{ flex: 1, minWidth: 0 }}>
         {items.map((it, k) => (
           <Rise key={it.item} i={2 + k}>
-            <ItemCard it={it} n={k + 1} touch={touchFor(it, k + 1)} mark={chat.marks[it.item]} editId={editOf(it)}
+            <ItemCard it={it} n={k + 1} touch={moreFor(it, k + 1)} mark={chat.marks[it.item]} editId={editOf(it)}
               onChange={(f) => change(now.current.items.map((x) => (x.item === it.item ? f : x)), now.current.pickup, "hand")}
               onRemove={() => { removed.current.add(it.item); change(now.current.items.filter((x) => x.item !== it.item), now.current.pickup, "hand"); }} /></Rise>
         ))}
@@ -302,14 +324,10 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   }
   const title = one ? REVIEW.one : partial ? notPostedTitle(items.length) : foundTitle(items.length);
   const last = one ? 6 : 3 + items.length;
-  const opened = items.find((x) => x.item === openItem && hasDetails(x, scanned(x))); // X49: gone when the item is removed
-  const details = (it: ItemForm, onClose?: () => void) => (
-    <DetailsView it={it} editing={editItem === it.item} locked={sending} onEdit={() => setEditItem(it.item)} onCancel={() => setEditItem(null)}
-      onDone={(d) => setDetails(it.item, d)} onClose={onClose} />
-  );
+  const sheetItem = !wide ? items.find((x) => x.item === moreOpen && hasMore(x)) : undefined; // X49i: a phone opens More in a sheet
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={RN.Platform.OS === "ios" ? "padding" : undefined}>
-      <Sheet testID={one ? "your-listing" : "review-list"} kind="large" wide extraWide={column} photo={shot.uri}>
+      <Sheet testID={one ? "your-listing" : "review-list"} kind="large" wide extraWide={column && items.length > 0} photo={shot.uri}>
         <View style={{ flexShrink: 1, flexGrow: 1 }}>
           <Rise i={0}><Title style={{ marginBottom: space.hair }}>{title}</Title></Rise>
           {one ? null : <Rise i={1}><Muted>{REVIEW.check}</Muted></Rise>}
@@ -321,16 +339,18 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
                 <Image source={{ uri: shot.uri }} resizeMode="cover"
                   style={{ height: "100%", aspectRatio: size.scanPhoto, maxWidth: "100%", borderRadius: radius.card }} /></View>
               <View style={{ flex: 1, minWidth: 0, alignSelf: "stretch" }}>
-                <SheetBody>{fields}{items.length > 0 ? chat.thread : null}</SheetBody>
-                {items.length > 0 && !sending ? chat.bar : null}
+                <SheetBody>{fields}{items.length > 0 && !column ? chat.thread : null}</SheetBody>
+                {items.length > 0 && !sending && !column ? chat.bar : null}
               </View>
-              {column ? (
-                // X49: the details of the item whose Details pill is on
-                <View testID="details-column" style={{ width: size.detailsColumn, alignSelf: "stretch", borderRadius: radius.card, backgroundColor: col.card }}>
-                  <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ padding: space.group }}>
-                    {opened ? <Grow key={opened.item}>{details(opened)}</Grow> : <Muted>{DETAILS.empty}</Muted>}
-                  </ScrollView>
-                </View>
+              {column && items.length > 0 ? (
+                // X49i: the chat (talk or type) in the third column, frosted
+                <Frost round={{ borderRadius: radius.card }} style={{ width: size.chatColumn, alignSelf: "stretch", padding: space.group }}>
+                  <View testID="chat-column" style={{ flex: 1, minHeight: 0 }}>
+                    <Muted>{MORE.chat}</Muted>
+                    <ScrollView style={{ flexShrink: 1, flexGrow: 1 }}>{chat.thread}</ScrollView>
+                    {!sending ? chat.bar : null}
+                  </View>
+                </Frost>
               ) : null}
             </View>
           ) : (
@@ -350,10 +370,11 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
           </Rise>
         </View>
       </Sheet>
-      {!column && opened ? (
-        // X49 (T9: "Bottom sheet instead"): the details of one item in a small sheet; the card does not grow
-        <Popup key={opened.item} testID="details-sheet" small onDismiss={closeDetails} dismissName={DETAILS.closeName}>
-          {details(opened, closeDetails)}
+      {sheetItem ? (
+        // X49i: on a phone More opens the bottom sheet (the card does not grow): the item name, Touch up, the details
+        <Popup key={sheetItem.item} testID="more-sheet" small onDismiss={closeMore} dismissName={MORE.close}>
+          <Title style={{ marginBottom: space.gap }}>{sheetItem.title.trim() || MORE.title}</Title>
+          {moreInner(sheetItem, items.indexOf(sheetItem) + 1)}
         </Popup>
       ) : null}
     </KeyboardAvoidingView>

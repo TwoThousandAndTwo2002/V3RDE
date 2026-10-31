@@ -202,6 +202,14 @@ export const PLACE = {
     "It is farther than your " + reach + " mi. The timer ends in " + minutes + " min. Grab it only if you can get there in time.",
 } as const;
 
+/** X49i: the More button of a review item (Touch up and the details), and the chat column. */
+export const MORE = {
+  title: "More",
+  close: "Close",
+  chat: "Talk or type a change",
+  name: (n: number) => "More for item " + n,
+} as const;
+
 /** The photo touch-up on the review (the original stays the default). */
 export const TOUCH = {
   start: "Touch up photo", // X48r: one touch-up (the auto one)
@@ -221,13 +229,9 @@ export const TOUCH = {
 /** X49: the details of an item on the review (what the scan found; the cost is never shown). */
 export const DETAILS = {
   pill: "Details",
-  name: (n: number) => "Details of item " + n,
-  empty: "Tap Details on an item to see what the scan found.",
   none: "No details now. Tap Change to add them.", // X49 review: the user cleared them all
   change: "Change",
   changeName: "Change the details",
-  close: "Close",
-  closeName: "Close the details",
   cancel: "Cancel",
   done: "Done",
   ready: "Ready to eat",

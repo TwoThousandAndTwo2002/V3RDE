@@ -69,3 +69,28 @@ test("the Details pill stays when the user cleared the scanner's details", () =>
   assert.equal(detailsPillShows(undefined, undefined, DETAILS), false);
   assert.equal(detailsPillShows({ meal_cost: 3 }, { meal_cost: 3 }, DETAILS), false); // the cost alone is not shown
 });
+
+// X49i (T9 2026-10-31): Touch up and the details under one wide More button; the chat in the third column.
+test("review: More holds Touch up and the details; the chat column", async () => {
+  const fs = await import("node:fs");
+  const review = fs.readFileSync(new URL("../src/screens/Review.tsx", import.meta.url), "utf8");
+  const theme = fs.readFileSync(new URL("../src/theme.ts", import.meta.url), "utf8");
+  const { MORE } = await import("../src/words.ts");
+  assert.equal(MORE.title, "More");
+  assert.equal(MORE.name(2), "More for item 2");
+  assert.match(review, /<ChipBtn testID=\{"more-" \+ n\} wide glyph="menu"/);
+  assert.doesNotMatch(review, /testID=\{"details-" \+ n\}/); // no Details button
+  assert.doesNotMatch(review, /details-column/); // the details column is gone
+  assert.match(review, /<DetailsView it=\{it\} noTitle /); // the details show at once in More
+  assert.match(review, /<Popup key=\{sheetItem\.item\} testID="more-sheet" small /); // a phone: the bottom sheet
+  assert.match(review, /width: size\.chatColumn/);
+  assert.match(review, /<Frost round=\{\{ borderRadius: radius\.card \}\}/); // the chat column is frosted
+  assert.match(theme, /chatColumn: 320,/);
+  // the review of 79: the expanded state follows More also on a phone; the dialog is wide only with the chat column
+  assert.match(review, /name=\{MORE\.name\(n\)\} on=\{open\}/);
+  assert.match(review, /extraWide=\{column && items\.length > 0\}/);
+  assert.match(review, /\(!!it\.photo_id && !sending\) \|\| hasDetails/);
+  const details = fs.readFileSync(new URL("../src/screens/Details.tsx", import.meta.url), "utf8");
+  assert.match(details, /\{locked \? null : \(/); // no Change while the listings post
+  assert.doesNotMatch(details, /onClose/);
+});

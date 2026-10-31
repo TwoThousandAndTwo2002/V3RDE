@@ -1,7 +1,7 @@
 // X49 (T9, 2026-10-30): the details of one item on the review (what the scan found), written new for V3RDE
-// (mobile/docs/style_guide.md "Review"; rules in src/details.ts). Phone: in a small Popup with the pills Change and
-// Close. Wide screen: in the third column of the review, with a Change ChipBtn. Change opens the choices and the
-// weight field; Done gives the new details to the review (it records the edit). The cost is never shown.
+// (mobile/docs/style_guide.md "Review"; rules in src/details.ts). X49i: in the More part of a review item (the card
+// on a dialog, the bottom sheet on a phone), with a Change ChipBtn. Change opens the choices and the weight field;
+// Done gives the new details to the review (it records the edit). The cost is never shown.
 import { useState } from "react";
 import { View } from "react-native";
 import { weightInput, weightProblem } from "../capture";
@@ -62,27 +62,24 @@ function EditDetails({ d, locked, onCancel, onDone }: {
 }
 
 /**
- * The details of one item: its title, then the details typing in (or the Change form). `onClose` (phone): the pills
- * Change and Close; without it (the column of a wide screen): a Change ChipBtn with the pencil.
+ * The details of one item: its title (not with `noTitle`), then the details typing in (or the Change form), and a
+ * Change ChipBtn with the pencil (not while the listings post).
  */
-export function DetailsView({ it, editing, locked, onEdit, onCancel, onDone, onClose }: {
-  it: ItemForm; editing: boolean; onEdit: () => void; onCancel: () => void; onDone: (d: ItemDetails | undefined) => void; onClose?: () => void;
+export function DetailsView({ it, editing, locked, onEdit, onCancel, onDone, noTitle }: {
+  /** X49i: in More the item name is already on view (the card or the sheet title). */
+  noTitle?: boolean;
+  it: ItemForm; editing: boolean; onEdit: () => void; onCancel: () => void; onDone: (d: ItemDetails | undefined) => void;
   /** X49 review: the listings post: no Change and no Done. */
   locked: boolean;
 }) {
   const lines = detailLines(it.details, DETAILS);
   return (
     <View testID="details" style={{ gap: space.gap }}>
-      <Title>{it.title.trim() || DETAILS.pill}</Title>
+      {noTitle ? null : <Title>{it.title.trim() || DETAILS.pill}</Title>}
       {editing ? <EditDetails d={it.details} locked={locked} onCancel={onCancel} onDone={onDone} /> : (
         <>
           {lines.length > 0 ? <TypedText lines={lines} delay={motion.growMs} /> : <Muted>{DETAILS.none}</Muted>}
-          {onClose ? (
-            <Row style={{ marginTop: space.gap }}>
-              <Pill testID="details-change" kind="secondary" title={DETAILS.change} name={DETAILS.changeName} grow onPress={locked ? undefined : onEdit} />
-              <Pill testID="details-close" title={DETAILS.close} name={DETAILS.closeName} grow onPress={onClose} />
-            </Row>
-          ) : locked ? null : (
+          {locked ? null : ( // X49i review: no Change while the listings post
             <Row style={{ justifyContent: "flex-end" }}>
               <ChipBtn testID="details-change" glyph="pencil" title={DETAILS.change} name={DETAILS.changeName} onPress={onEdit} />
             </Row>

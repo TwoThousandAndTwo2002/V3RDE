@@ -1665,3 +1665,18 @@ T9 approved the Give and review mockup (version 2).
 - Rescue is a red pill with the size and the text of the time pill, under it.
 - The frosted layer now takes the corners of its part (a round button showed a square blur on the web).
 - Tests: mobile 126 -> 127.
+
+## 79. Review: More holds Touch up and the details; the chat in the third column
+
+**When:** Oct 31 2026.
+**Meta models:** none (the details come from the Muse Spark scan).
+**Files:** `mobile/src/screens/Review.tsx`, `mobile/src/screens/Details.tsx`, `mobile/src/screens/TouchUp.tsx`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/words.ts`, `mobile/tests/details.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49i.md`
+
+T9 approved the Give and review mockup (version 2).
+
+- Each item has one wide "More" button. More holds Touch up, and the details show at once under it. There is no Details button. Change edits the details in place.
+- Desktop: More opens in the card. Phone: More opens the bottom sheet.
+- Desktop (widest dialog): the third column holds the talk-or-type chat, frosted, 320 pt wide (token `size.chatColumn`, before `size.detailsColumn` 260).
+- The frosted X and the small Rescue pill (78) get the hover state of the other buttons.
+- Tests: mobile 127 -> 128.
