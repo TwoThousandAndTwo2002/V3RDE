@@ -54,6 +54,7 @@ const (
 	CodeUpstream        = "upstream_error"           // 502
 	CodeGateUnavailable = "gate_unavailable"         // 503: the gate could not check (fails closed)
 	CodeBusy            = "busy"                     // 503
+	CodeSameScan        = "same_scan"                // 202: X49r, the job of the same photo (not an error)
 	CodeDailyCap        = "daily_cap_reached"        // 503: production-halting (T9)
 	CodeCallerCap       = "caller_daily_cap_reached" // 429: X44a, this caller's share of the day is used
 	CodeTimeout         = "timeout"                  // 504
@@ -563,7 +564,16 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 	}
 	// X44b: ?async=1 answers 202 now and runs the rest as a job (scanjob.go)
 	if r.URL.Query().Get("async") == "1" {
-		job = c.scans.start(newPhotoID(), id, kind, user.ID)
+		sum := sha256.Sum256(img)
+		sha := hex.EncodeToString(sum[:])
+		same := sha + "|" + strings.TrimSpace(r.FormValue("barcode")) // a new barcode read is a new scan
+		if prev := c.scans.same(kind, user.ID, same); prev != nil {   // X49r: the app sent the photo again (network)
+			ev.Async, ev.ImageSHA256, ev.Code = true, sha, CodeSameScan
+			finish(http.StatusAccepted, "same_scan")
+			writeJSONResp(w, http.StatusAccepted, map[string]any{"request_id": prev.RequestID, "scan_id": prev.ScanID, "status": ScanRunning})
+			return
+		}
+		job = c.scans.startFor(newPhotoID(), id, kind, user.ID, same)
 		if job == nil {
 			fail(http.StatusServiceUnavailable, CodeBusy, "too many scans are running; try again in a few seconds")
 			return

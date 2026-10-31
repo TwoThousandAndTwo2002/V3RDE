@@ -16,6 +16,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"unicode/utf8"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
@@ -410,6 +411,86 @@ func TestEveryRunReportsItsCost(t *testing.T) {
 }
 
 func analyzePrompt() string { return analyze.Prompt }
+
+// X49r (T6 2026-10-31): SAM found 0 boxes on a photo of 3 products and the
+// whole-photo answer was a JSON list of 3 objects; it failed the contract
+// ("the food scanner is busy" in the app). Now each valid object is an item.
+// A broken answer is still ErrNoItem, and its reason keeps the model's text.
+func TestWholeListAnswerGivesEveryItem(t *testing.T) {
+	list := func(names ...string) string {
+		var objs []string
+		for _, n := range names {
+			b, _ := json.Marshal(contract(n))
+			objs = append(objs, string(b))
+		}
+		return "[" + strings.Join(objs, ", ") + "]"
+	}
+	for _, c := range []struct {
+		name, answer, items string
+		fail                string
+	}{
+		{"list of 3", list("Sosa Mixed Berries Fruit Drink", "Sunripe Red Kidney Beans", "Beanies Irish Coffee"),
+			"Sosa Mixed Berries Fruit Drink,Sunripe Red Kidney Beans,Beanies Irish Coffee", ""},
+		{"list of 1", list("Rice bowl"), "Rice bowl", ""},
+		{"same name", list("Sunripe Beans", "Rice bowl", "sunripe  beans"), "Sunripe Beans,Rice bowl", ""},
+		{"one object", list("Rice bowl")[1 : len(list("Rice bowl"))-1], "Rice bowl", ""},
+		{"broken", `[{"name": "Rice bowl"}]`, "", `contract: missing description`},
+		{"words", "I cannot see any food.", "", `model text: "I cannot see any food."`},
+	} {
+		answer := c.answer
+		f := &fakeAPI{sam: func(string) (int, string) { return 200, "<0f>\n" }, muse: func(p string, _ map[string]any) map[string]any {
+			return textResp("m", answer)
+		}}
+		e, done := engine(t, f)
+		e.EarlyWhole = true
+		inv, err := e.Run(context.Background(), testPhoto(t), "image/jpeg", ModeAuto)
+		done()
+		if c.fail != "" {
+			if !errors.Is(err, ErrNoItem) || len(inv.Rejected) != 1 || !strings.Contains(inv.Rejected[0].Reason, c.fail) {
+				t.Fatalf("%s: err %v, rejected %+v", c.name, err, inv.Rejected)
+			}
+			var ev Event
+			ev.fromInventory(inv)
+			if len(ev.Rejected) != 1 || !strings.HasPrefix(ev.Rejected[0], "box 0: contract:") || !strings.Contains(ev.Rejected[0], c.fail) {
+				t.Fatalf("%s: event rejected %q", c.name, ev.Rejected)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatal(c.name, err)
+		}
+		var names []string
+		for _, it := range inv.Items {
+			names = append(names, it.Name)
+			want := 1
+			if c.name == "same name" && it.Name == "Sunripe Beans" {
+				want = 2
+			}
+			if it.Source != "whole" || it.Count != want || it.NumberOfServing != 1 || len(it.Boxes) != 0 {
+				t.Fatalf("%s: %+v", c.name, it)
+			}
+		}
+		if strings.Join(names, ",") != c.items {
+			t.Fatal(c.name, names)
+		}
+	}
+}
+
+// X49r: the event keeps at most RejectLogMax reasons, each cut.
+func TestEventRejectedIsCut(t *testing.T) {
+	inv := &Inventory{}
+	for i := 0; i < RejectLogMax+2; i++ {
+		inv.Rejected = append(inv.Rejected, Rejection{Box: i + 1, Reason: strings.Repeat("é", 400)})
+	}
+	var ev Event
+	ev.fromInventory(inv)
+	if len(ev.Rejected) != RejectLogMax+1 || ev.Rejected[RejectLogMax] != "... 2 more" {
+		t.Fatalf("%d lines, last %q", len(ev.Rejected), ev.Rejected[len(ev.Rejected)-1])
+	}
+	if l := len(ev.Rejected[0]); l > RejectTextMax+200+20 || !utf8.ValidString(ev.Rejected[0]) {
+		t.Fatalf("line of %d bytes, valid %v", l, utf8.ValidString(ev.Rejected[0]))
+	}
+}
 
 // X32c: with EarlyWhole the whole-photo call starts with SAM. 0 boxes and
 // SAM failure: its answer, no agent. 1 box: its answer with the box. Boxes

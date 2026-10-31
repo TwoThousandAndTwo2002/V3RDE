@@ -200,6 +200,81 @@ func TestExtractJSON(t *testing.T) {
 	}
 }
 
+// TestExtractResultsList: the T6 answer shape (2026-10-31, a list of 3 objects
+// on the Sosa drink + beans + coffee photo) gives 3 results in order.
+func TestExtractResultsList(t *testing.T) {
+	obj := func(name string) string {
+		return `{"name": "` + name + `", "description": "Sealed can of red kidney beans.", "is_non_veg": 0, "number_of_serving": 2, "serving_type": "individual", "meal_condition": "sealed", "weight": 0.4, "meal_cost": 3}`
+	}
+	text := "[" + obj("Sosa Mixed Berries Fruit Drink") + ", " + obj("Sunripe Red Kidney Beans") + ", " + obj("Beanies Irish Coffee") + "]"
+	if _, err := ExtractJSON(text); err == nil {
+		t.Fatal("the old reader accepted the list; the test does not show the bug")
+	}
+	rs, err := ExtractResults("```json\n" + text + "\n```")
+	if err != nil || len(rs) != 3 {
+		t.Fatalf("got %d results, err %v", len(rs), err)
+	}
+	if rs[0].Name != "Sosa Mixed Berries Fruit Drink" || rs[2].Name != "Beanies Irish Coffee" || rs[1].MealCondition != "sealed" {
+		t.Fatalf("results %+v", rs)
+	}
+	// one bad object is dropped, the good ones stay
+	rs, err = ExtractResults("[" + obj("A") + `, {"name": "B"}, 7]`)
+	if err != nil || len(rs) != 1 || rs[0].Name != "A" {
+		t.Fatalf("mixed list: %d results, err %v", len(rs), err)
+	}
+	// no valid object: the first object's reason
+	if _, err = ExtractResults(`[{"name": "B"}]`); err == nil || !strings.Contains(err.Error(), "missing") {
+		t.Fatalf("all bad: err %v", err)
+	}
+	// X49r review: words with brackets around the list, a second value after it, an "items" wrapper
+	two := "[" + obj("A") + ", " + obj("B") + "]"
+	for _, in := range []string{
+		"Here are the 2 items [see below]:\n" + two,
+		two + "\nNote: weights are estimates [approx].",
+		"```json\n" + two + "\n```\n```json\n" + two + "\n```",
+		`{"items": ` + two + `}`,
+	} {
+		if rs, err := ExtractResults(in); err != nil || len(rs) != 2 || rs[0].Name != "A" || rs[1].Name != "B" {
+			t.Errorf("%.40q: %d results, err %v", in, len(rs), err)
+		}
+	}
+	for _, in := range []string{"[]", "[1, 2]", "[ not json ]", "[ no end", `{"items": []}`, `{"items": [{"name": "B"}]}`} {
+		if _, err := ExtractResults(in); err == nil {
+			t.Errorf("%q: no error", in)
+		}
+	}
+	// at most MaxListItems
+	many := make([]string, MaxListItems+3)
+	for i := range many {
+		many[i] = obj("x")
+	}
+	if rs, _ := ExtractResults("[" + strings.Join(many, ",") + "]"); len(rs) != MaxListItems {
+		t.Fatalf("%d results, want %d", len(rs), MaxListItems)
+	}
+}
+
+// TestExtractResultsObject: one object (also with a '[' inside a string after
+// the first '{') reads as before.
+func TestExtractResultsObject(t *testing.T) {
+	rs, err := ExtractResults(answer)
+	if err != nil || len(rs) != 1 || rs[0].Name != "Vegetable Lasagna" {
+		t.Fatalf("got %+v, err %v", rs, err)
+	}
+	in := `{"name": "Rice [brown]", "description": "d", "is_non_veg": 0, "number_of_serving": 1, "serving_type": "bulk", "meal_condition": "sealed", "weight": 1, "meal_cost": 2}`
+	if rs, err := ExtractResults(in); err != nil || rs[0].Name != "Rice [brown]" {
+		t.Fatalf("bracket in a string: %+v, err %v", rs, err)
+	}
+	if rs, err := ExtractResults("Item [1]: " + in); err != nil || len(rs) != 1 {
+		t.Fatalf("a '[' before the object: %+v, err %v", rs, err)
+	}
+	if _, err := ExtractResults(`{"name": "a"}`); err == nil {
+		t.Fatal("a half object passed")
+	}
+	if _, err := ExtractResults("no json"); err == nil {
+		t.Fatal("no JSON passed")
+	}
+}
+
 func good() map[string]any {
 	m, _ := ExtractJSON(answer)
 	return m

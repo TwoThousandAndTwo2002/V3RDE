@@ -1715,3 +1715,19 @@ T9 (testing with users in Nigeria): "nigerian addresses dont work", "lets drop z
 - The chat box hint changes every 4 s while the chat is empty.
 - Open: the services still accept a ZIP from an old app and keep the US ZIP table.
 - Tests: mobile 135 -> 136, post 94 -> 95.
+
+## 82. "The food scanner is busy": a list answer gives every item; one message for each cause
+
+**When:** Oct 31 2026.
+**Meta models:** Muse Spark (muse-spark-1.3), the whole-photo call; no new call.
+**Files:** `server/contract.go`, `server/server_test.go`, `inference/engine.go`, `inference/events.go`, `inference/scanjob.go`, `inference/service.go`, `inference/engine_test.go`, `inference/scanjob_test.go`, `mobile/src/logic.ts`, `mobile/src/api.ts`, `mobile/src/screens/Capture.tsx`, `mobile/tests/logic.test.mts`, `mobile/docs/web.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49r.md`
+
+T9 (testing with users in Nigeria): a tester's scans, and T9's own, showed "The food scanner is busy". The event log showed 3 × 502 "no item passed the contract" on one photo of 3 products. A test with the stored photo (5 calls) showed why: in 4 of 5 answers the model gave a JSON list of the 3 items, and the server read only one JSON object. T9 approved the "V3RDE Scan Errors Mockup".
+
+- A list answer gives one item for each valid object (at most 12); the same name twice is one item. Words around the list and an `{"items": [...]}` answer are read too. One object reads as before. The prompt does not change.
+- When an answer fails the check, the event keeps the reason and the first 300 characters of the model's text (at most 5 reasons).
+- The app shows one message for each cause: the scanner could not read the photo, no connection, no answer in time, the scan stopped, a server error, no items. "Busy" shows only for a real busy answer.
+- An upload that finds no connection is sent again (at most 3 tries, 2 s apart, inside 75 s). A slow upload is not sent again. The service gives a photo it already scans for the same user (or scanned well in the last 10 s) the same job, so a second try is not a second paid scan.
+- Limit: when SAM finds no box, each item of a list answer uses the whole photo.
+- Tests: server 36 -> 38, inference 97 -> 101, mobile 136 -> 138.

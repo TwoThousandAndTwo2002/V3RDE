@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, plural, foundTitle, postTitle, postingText,
+  answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, NO_ITEMS_TEXT, CLIENT, sendAgain, SEND_TRIES, SEND_AGAIN_MS, plural, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
   scanStep, scanPoll, itemDetails, notPostedItems, stillOpen, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
@@ -97,9 +97,40 @@ test("retryText: the photo is always kept", () => {
   assert.match(retryText(503, { code: "busy" }), /^The scanner is busy\./);
   assert.match(retryText(429, {}), /^Too many photos this minute\./);
   assert.match(retryText(504, { code: "timeout" }), /^This photo took too long\./);
-  assert.match(retryText(0, null), /^The food scanner is busy/);
   assert.equal(retryText(400, { error: "bad photo" }), "bad photo — your photo is kept.");
   assert.equal(retryText(418, null), "Request failed (418) — your photo is kept.");
+});
+
+// X49r (T9 2026-10-31, a tester's scans): "the food scanner is busy" was the text of every failure.
+test("retryText: one cause, one sentence", () => {
+  const kept = / — your photo is kept\.$/;
+  const cases: Array<[number, any, RegExp]> = [
+    [502, { code: "upstream_error" }, /^The scanner could not read this photo\. Try again, or retake it closer/],
+    [0, { code: CLIENT.offline }, /^No connection\. Check your internet, then try again/],
+    [0, { code: CLIENT.timeout }, /^No answer in time\. Check your internet, then try again/],
+    [0, { code: CLIENT.lost }, /^The scan stopped\. Try again/],
+    [0, null, /^The scan stopped\. Try again/],
+    [500, { code: "internal" }, /^Something went wrong on our side\. Try again/],
+    [503, null, /^Something went wrong on our side\./],
+  ];
+  for (const [status, body, want] of cases) {
+    assert.match(retryText(status, body), want);
+    assert.match(retryText(status, body), kept);
+    assert.doesNotMatch(retryText(status, body), /busy/);
+  }
+  assert.doesNotMatch(NO_ITEMS_TEXT, /busy/);
+  assert.match(NO_ITEMS_TEXT, /^The scanner found no items in this photo\./);
+});
+
+test("sendAgain: only a lost connection, with time left", () => {
+  const now = 1_000_000, until = now + 60_000;
+  assert.equal(sendAgain(CLIENT.offline, 1, now, until, false), true);
+  assert.equal(sendAgain(CLIENT.offline, SEND_TRIES - 1, now, until, false), true);
+  assert.equal(sendAgain(CLIENT.offline, SEND_TRIES, now, until, false), false); // the last try
+  assert.equal(sendAgain(CLIENT.timeout, 1, now, until, false), false); // a slow upload is not sent twice
+  assert.equal(sendAgain("upstream_error", 1, now, until, false), false);
+  assert.equal(sendAgain(CLIENT.offline, 1, until - SEND_AGAIN_MS, until, false), false); // no time left
+  assert.equal(sendAgain(CLIENT.offline, 1, now, until, true), false); // the user went back
 });
 
 test("the words of the review list", () => {

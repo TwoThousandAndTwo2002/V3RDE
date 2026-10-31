@@ -71,6 +71,7 @@ type ScanJob struct {
 	changed chan struct{} // closed at each change (X48c)
 	kind    string
 	userID  string
+	sha     string // X49r: the photo's sha256 and the barcode (same())
 	started time.Time
 	ended   time.Time
 	named   map[int]string
@@ -83,8 +84,45 @@ type scanJobs struct {
 	now  func() time.Time
 }
 
+// ScanSameAfter is how long after a good end the same photo of the same user
+// gets that job again (X49r): the app's tries are 2 s apart (3 at most), so a
+// scan of the same photo later is a new scan (with the already-listed check).
+const ScanSameAfter = 10 * time.Second
+
+// same is the job of this user for the same photo (X49r): one that runs, or
+// one that ended well less than ScanSameAfter ago. The same kind of caller
+// (the scan route answers only the kind that started the job). The app sends a photo again
+// when the network failed, and the first request can have reached the service;
+// then the scan runs and is paid once. A failed job is not given again, so
+// "Try again" after a failure starts a new scan. "" user or photo: none.
+func (s *scanJobs) same(kind, userID, sha string) *ScanJob {
+	if userID == "" || sha == "" {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.now()
+	var best *ScanJob
+	for _, j := range s.jobs {
+		if j.kind != kind || j.userID != userID || j.sha != sha {
+			continue
+		}
+		if j.Status == ScanRunning || (j.Status == ScanDone && now.Sub(j.ended) < ScanSameAfter) {
+			if best == nil || j.started.After(best.started) {
+				best = j
+			}
+		}
+	}
+	return best
+}
+
 // start adds a job; nil when ScanMaxJobs jobs are still running or kept.
 func (s *scanJobs) start(id, requestID, kind, userID string) *ScanJob {
+	return s.startFor(id, requestID, kind, userID, "")
+}
+
+// startFor is start with the photo's sha256 (X49r: same()).
+func (s *scanJobs) startFor(id, requestID, kind, userID, sha string) *ScanJob {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.jobs == nil {
@@ -114,7 +152,7 @@ func (s *scanJobs) start(id, requestID, kind, userID string) *ScanJob {
 		}
 	}
 	j := &ScanJob{ScanID: id, RequestID: requestID, Status: ScanRunning, Stage: "checking", Boxes: []Norm{},
-		Named: []NamedBox{}, kind: kind, userID: userID, started: now, named: map[int]string{},
+		Named: []NamedBox{}, kind: kind, userID: userID, sha: sha, started: now, named: map[int]string{},
 		changed: make(chan struct{})}
 	s.jobs[id] = j
 	return j

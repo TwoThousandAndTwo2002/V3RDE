@@ -8,7 +8,7 @@
 // Photo uploads from a phone are React Native FormData parts ({uri, name, type});
 // mobile/.env keeps React Native's fetch as the global fetch for them (U2 D5).
 import { Platform as RN } from "react-native";
-import { SCAN_WAIT_MS, errorMessage, joinUrl, scanPoll, scanStep } from "./logic";
+import { CLIENT, SCAN_WAIT_MS, SEND_AGAIN_MS, errorMessage, joinUrl, scanPoll, scanStep, sendAgain } from "./logic";
 import { placeFields, placeQuery, type Place } from "./place";
 import { RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "./rescue";
 
@@ -71,7 +71,8 @@ async function request<T>(method: string, path: string, opt: Options = {}): Prom
     res = await fetch(joinUrl(API_BASE, path), { method, headers, body: payload, credentials: "include", signal: abort.signal });
   } catch (err) {
     const timedOut = (err as { name?: string } | null)?.name === "AbortError";
-    throw new ApiError(0, timedOut ? "Timed out, try again" : "Network error, check the connection");
+    throw new ApiError(0, timedOut ? "Timed out, try again" : "Network error, check the connection",
+      { code: timedOut ? CLIENT.timeout : CLIENT.offline });
   } finally {
     clearTimeout(timer);
   }
@@ -149,8 +150,20 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
   addFile(form, "image", photo);
   if (capture && Object.keys(capture).length > 0) form.append("capture", JSON.stringify(capture).slice(0, 512));
   const until = Date.now() + SCAN_WAIT_MS;
-  // the upload is inside the 75 s; a service with no job route answers here, with the whole scan
-  const started = await request<any>("POST", "/api/analyze?async=1", { form, timeoutMs: SCAN_WAIT_MS });
+  // the upload is inside the 75 s; a service with no job route answers here, with the whole scan.
+  // X49r: an upload that found no connection is sent again (SEND_TRIES in all); one that timed out is not.
+  // The service gives a photo it already has (same user, same bytes) its running job: no second paid scan.
+  let started: any;
+  for (let n = 1; ; n++) {
+    try {
+      started = await request<any>("POST", "/api/analyze?async=1", { form, timeoutMs: Math.max(1_000, until - Date.now()) });
+      break;
+    } catch (err) {
+      if (!(err instanceof ApiError && sendAgain(err.body?.code, n, Date.now(), until, stop()))) throw err;
+      await new Promise((go) => setTimeout(go, SEND_AGAIN_MS));
+      if (stop()) throw new ApiError(0, "Stopped"); // the user went back while it waited
+    }
+  }
   if (typeof started?.scan_id !== "string") return started; // a service without the job route answers at once
   const path = "/api/analyze/scan/" + encodeURIComponent(started.scan_id);
   let job: unknown = null;
@@ -158,7 +171,7 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
     const next = scanPoll(path, job, first);
     if (next.sleepMs > 0) await new Promise((go) => setTimeout(go, next.sleepMs));
     if (stop()) throw new ApiError(0, "Stopped");
-    if (Date.now() > until) throw new ApiError(0, "Timed out, try again");
+    if (Date.now() > until) throw new ApiError(0, "Timed out, try again", { code: CLIENT.timeout });
     try {
       job = await request<unknown>("GET", next.path, { timeoutMs: next.timeoutMs });
     } catch (err) {
@@ -167,7 +180,7 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
         continue;
       }
       // 404: the job is gone (the service started again); the user tries again with the photo that is kept
-      if (err instanceof ApiError && err.status === 404) throw new ApiError(0, "Try again");
+      if (err instanceof ApiError && err.status === 404) throw new ApiError(0, "Try again", { code: CLIENT.lost });
       throw err; // 401: signed out
     }
     const step = scanStep(job);

@@ -3,6 +3,7 @@ package inference
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,6 +47,7 @@ type Event struct {
 	Counted       int         `json:"counted,omitempty"`
 	NotListed     int         `json:"not_listed,omitempty"`
 	NotFood       bool        `json:"not_food,omitempty"`
+	Rejected      []string    `json:"rejected,omitempty"` // X49r: why answers failed the contract (box: reason), at most RejectLogMax
 	Calls         []EventCall `json:"calls,omitempty"`
 	CostUSD       float64     `json:"cost_usd"`          // what this request paid
 	CapKey        string      `json:"cap_key,omitempty"` // X44a: the caller's daily-cap key (the rate-limit key)
@@ -179,6 +181,9 @@ type EventCall struct {
 	Error        string  `json:"error,omitempty"`
 }
 
+// RejectLogMax is how many rejections one event keeps.
+const RejectLogMax = 5
+
 func (ev *Event) fromInventory(inv *Inventory) {
 	if inv == nil {
 		return
@@ -187,6 +192,13 @@ func (ev *Event) fromInventory(inv *Inventory) {
 	ev.Instances, ev.Kept, ev.Named, ev.Small, ev.Trays = inv.Instances, inv.Kept, inv.Named, inv.Small, inv.Trays
 	ev.Listings, ev.Units, ev.Counted, ev.NotListed, ev.NotFood = inv.Listings(), inv.Units(), inv.Counted(), len(inv.NotListed), inv.NotFood
 	ev.CostUSD, ev.EngineMS = inv.SpentUSD(), inv.MS
+	for i, rj := range inv.Rejected {
+		if i == RejectLogMax {
+			ev.Rejected = append(ev.Rejected, fmt.Sprintf("... %d more", len(inv.Rejected)-i))
+			break
+		}
+		ev.Rejected = append(ev.Rejected, fmt.Sprintf("box %d: %s", rj.Box, cutText(rj.Reason, RejectTextMax+200)))
+	}
 	for _, c := range inv.Calls {
 		ev.Calls = append(ev.Calls, EventCall{Purpose: c.Purpose, Model: c.Model, Status: c.Status, MS: c.MS, AtMS: c.AtMS, WaitMS: c.WaitMS,
 			InputTokens: c.Usage.InputTokens, OutputTokens: c.Usage.OutputTokens, CostUSD: c.Cost(), Error: c.Error})

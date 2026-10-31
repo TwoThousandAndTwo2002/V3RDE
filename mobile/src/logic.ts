@@ -229,13 +229,33 @@ export function scanStep(job: any): ScanStep {
 }
 
 // The ErrorText under "Try again?" for the retry answers; the photo is kept.
+// X49r: the app's own codes for an answer that never came (api.ts puts them in ApiError.body).
+export const CLIENT = Object.freeze({ offline: "offline", timeout: "client_timeout", lost: "job_lost" });
+
+// X49r (T9 2026-10-31: "the food scanner is busy" was shown for every failure): one sentence for each cause.
 export function retryText(status: number, body: any): string {
-  if (body?.code === "busy") return "The scanner is busy. Wait a few seconds — your photo is kept.";
-  if (body?.code === "rate_limited" || status === 429) return "Too many photos this minute. Wait a minute — your photo is kept.";
-  if (body?.code === "gate_unavailable") return "The food check is not available right now — your photo is kept.";
-  if (body?.code === "timeout") return "This photo took too long. Try a closer photo of fewer items — your photo is kept.";
-  if (status === 0 || status >= 500) return "The food scanner is busy, try again — your photo is kept.";
-  return (typeof body?.error === "string" && body.error ? body.error : `Request failed (${status})`) + " — your photo is kept.";
+  const kept = " — your photo is kept.";
+  if (body?.code === "busy") return "The scanner is busy. Wait a few seconds" + kept;
+  if (body?.code === "rate_limited" || status === 429) return "Too many photos this minute. Wait a minute" + kept;
+  if (body?.code === "gate_unavailable") return "The food check is not available right now" + kept;
+  if (body?.code === "timeout") return "This photo took too long. Try a closer photo of fewer items" + kept;
+  if (body?.code === "upstream_error") return "The scanner could not read this photo. Try again, or retake it closer" + kept;
+  if (body?.code === CLIENT.offline) return "No connection. Check your internet, then try again" + kept;
+  if (body?.code === CLIENT.timeout) return "No answer in time. Check your internet, then try again" + kept;
+  if (status === 0) return "The scan stopped. Try again" + kept;
+  if (status >= 500) return "Something went wrong on our side. Try again" + kept;
+  return (typeof body?.error === "string" && body.error ? body.error : `Request failed (${status})`) + kept;
+}
+
+// X49r: a scan that answered with no items (Capture showed "busy" for it before).
+export const NO_ITEMS_TEXT = "The scanner found no items in this photo. Retake it closer to the food.";
+
+// X49r: a lost upload is sent again: at most SEND_TRIES in all, SEND_AGAIN_MS apart (inside SCAN_WAIT_MS).
+export const SEND_TRIES = 3;
+export const SEND_AGAIN_MS = 2_000;
+// sendAgain: try the upload n + 1 only after "no connection", with time left and the user still on the screen.
+export function sendAgain(code: unknown, n: number, now: number, until: number, stopped: boolean): boolean {
+  return code === CLIENT.offline && n < SEND_TRIES && now + SEND_AGAIN_MS < until && !stopped;
 }
 
 // The words of the review list (approved mockup).

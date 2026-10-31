@@ -38,6 +38,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
@@ -675,18 +676,40 @@ func (e *Engine) keep(all []Instance) []Instance {
 
 // ---- Muse --------------------------------------------------------------------
 
-func (e *Engine) contractCall(ctx context.Context, inv *Inventory, purpose string, img []byte, mime string) (analyze.Result, error) {
+// contractCall is analyze's call: one or more results (X49r: a list answer
+// gives one result per valid object). A failed check keeps the start of the
+// model's text in the error, so the event log shows why (X49r: the reason was
+// lost before).
+func (e *Engine) contractCall(ctx context.Context, inv *Inventory, purpose string, img []byte, mime string) ([]analyze.Result, error) {
 	c, err := e.API.Do(ctx, purpose, map[string]any{
 		"model": e.Muse, "input": UserMessage(TextPart(analyze.Prompt), ImagePart(img, mime))})
 	inv.add(c)
 	if err != nil {
-		return analyze.Result{}, err
+		return nil, err
 	}
-	m, err := analyze.ExtractJSON(c.Text())
+	rs, err := analyze.ExtractResults(c.Text())
 	if err != nil {
-		return analyze.Result{}, fmt.Errorf("contract: %w", err)
+		msg := err.Error()
+		if !strings.HasPrefix(msg, "contract:") {
+			msg = "contract: " + msg
+		}
+		return nil, fmt.Errorf("%s; model text: %q", msg, cutText(c.Text(), RejectTextMax))
 	}
-	return analyze.Validate(m)
+	return rs, nil
+}
+
+// RejectTextMax is how much of a rejected answer the log keeps.
+const RejectTextMax = 300
+
+// cutText is the first n bytes of s, cut on a rune start.
+func cutText(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	for n > 0 && !utf8.RuneStart(s[n]) {
+		n--
+	}
+	return s[:n] + "..."
 }
 
 // whole is analyze, unchanged: the same prompt on the original bytes.
@@ -697,17 +720,37 @@ func (e *Engine) whole(ctx context.Context, inv *Inventory, ph *photo, boxes []I
 
 // wholeAnswer is one whole-photo call's result (X32c: it can start early).
 type wholeAnswer struct {
-	r   analyze.Result
+	r   []analyze.Result
 	err error
 }
 
-// wholeFrom makes the one item of a whole-photo answer.
+// wholeFrom makes the item(s) of a whole-photo answer: one item, or (X49r)
+// one item per object of a list answer. List items have no box: the boxes
+// are not matched to them.
 func (e *Engine) wholeFrom(inv *Inventory, ph *photo, boxes []Instance, a wholeAnswer) error {
-	r, err := a.r, a.err
-	if err != nil {
-		inv.Rejected = append(inv.Rejected, Rejection{Box: 0, Reason: err.Error()})
+	if a.err != nil || len(a.r) == 0 {
+		reason := "no result"
+		if a.err != nil {
+			reason = a.err.Error()
+		}
+		inv.Rejected = append(inv.Rejected, Rejection{Box: 0, Reason: reason})
 		return ErrNoItem
 	}
+	if len(a.r) > 1 {
+		inv.Items = nil
+		at := map[string]int{} // X49r review: the same name is one item (as group() does for boxes)
+		for _, r := range a.r {
+			if k, ok := at[normName(r.Name)]; ok {
+				inv.Items[k].Count++
+				continue
+			}
+			at[normName(r.Name)] = len(inv.Items)
+			r.NumberOfServing = analyze.DefaultServings
+			inv.Items = append(inv.Items, Item{Result: r, Count: 1, Source: "whole", Boxes: [][4]int{}, Norm: []Norm{}, Seen: []Seen{}, Members: []int{}})
+		}
+		return nil
+	}
+	r := a.r[0]
 	r.NumberOfServing = analyze.DefaultServings
 	it := Item{Result: r, Count: 1, Source: "whole", Boxes: [][4]int{}, Norm: []Norm{}, Seen: []Seen{}, Members: []int{}}
 	if len(boxes) == 1 {

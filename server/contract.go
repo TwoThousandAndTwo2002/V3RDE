@@ -147,3 +147,102 @@ func Validate(data map[string]any) (Result, error) {
 	}
 	return r, nil
 }
+
+// MaxListItems bounds how many objects of one list answer are kept;
+// listTries bounds how many '[' are tried as the start of the list.
+const (
+	MaxListItems = 12
+	listTries    = 8
+)
+
+// ExtractResults reads a whole-photo answer as one or more contract results
+// (X49r, T6 2026-10-31: on a photo of 3 products the model answered a JSON
+// list of 3 objects in 4 of 5 calls, and ExtractJSON, which takes the text
+// from the first '{' to the last '}', failed with "extra data").
+//   - A list: the first JSON value that starts at a '[' (tried from the first
+//     '[' on, words around it ignored) is decoded; each object is checked by
+//     Validate; the valid ones are kept, in order, at most MaxListItems.
+//   - An object {"items": [...]} (the shape of the multi-item prompt): the same.
+//   - Any other answer: ExtractJSON + Validate, unchanged.
+//
+// No valid object is an error (the first reason). A list that cannot be read
+// falls back to one object (words such as "[1]" before the object).
+func ExtractResults(text string) ([]Result, error) {
+	one := func() ([]Result, error) {
+		m, err := ExtractJSON(text)
+		if err != nil {
+			return nil, err
+		}
+		if items, ok := m["items"].([]any); ok {
+			if _, named := m["name"]; !named {
+				return validList(items)
+			}
+		}
+		r, err := Validate(m)
+		if err != nil {
+			return nil, err
+		}
+		return []Result{r}, nil
+	}
+	i, j := strings.IndexByte(text, '['), strings.IndexByte(text, '{')
+	if i < 0 || (j >= 0 && j < i) {
+		return one()
+	}
+	var first error
+	for n, k := 0, i; n < listTries; n++ {
+		var list []any
+		err := json.NewDecoder(strings.NewReader(text[k:])).Decode(&list)
+		if err == nil {
+			var rs []Result
+			if rs, err = validList(list); err == nil {
+				return rs, nil
+			}
+		}
+		if first == nil {
+			first = err
+		}
+		next := strings.IndexByte(text[k+1:], '[')
+		if next < 0 {
+			break
+		}
+		k += 1 + next
+	}
+	if rs, err := one(); err == nil {
+		return rs, nil
+	}
+	return nil, first
+}
+
+// validList keeps the objects of list that pass Validate (at most MaxListItems).
+func validList(list []any) ([]Result, error) {
+	var out []Result
+	var first error
+	for _, v := range list {
+		m, ok := v.(map[string]any)
+		if !ok {
+			if first == nil {
+				first = errNoObject
+			}
+			continue
+		}
+		r, err := Validate(m)
+		if err != nil {
+			if first == nil {
+				first = err
+			}
+			continue
+		}
+		if len(out) < MaxListItems {
+			out = append(out, r)
+		}
+	}
+	if len(out) == 0 {
+		if first == nil {
+			first = errNoList
+		}
+		return nil, first
+	}
+	return out, nil
+}
+
+var errNoList = errors.New("contract: an empty or broken JSON list")

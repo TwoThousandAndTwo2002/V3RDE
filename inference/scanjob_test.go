@@ -104,6 +104,59 @@ func TestAnalyzeAsyncOwnerOnly(t *testing.T) {
 	}
 }
 
+// X49r: the app sends a photo again when the network failed. The same user and
+// the same photo get the job that runs or that ended well (no second paid
+// scan); another user, or a job that failed, gets a new scan.
+func TestAnalyzeAsyncSamePhoto(t *testing.T) {
+	s := newSvc(t, threeBoxes(t), "FOOD", 0, nil)
+	id := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), ""))
+	if w, j := s.poll(t, "/api/analyze/scan/"+id, "u1"); w.Code != 200 || j.Status != ScanDone {
+		t.Fatalf("first: %d %s", w.Code, w.Body)
+	}
+	if again := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again != id {
+		t.Fatalf("the same photo started a new scan: %s, want %s", again, id)
+	}
+	if other := startScan(t, s, req(t, "/api/analyze?async=1", "u2", testPhoto(t), "")); other == id {
+		t.Fatal("another user got the job")
+	}
+	if code := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "078742370026")); code == id {
+		t.Fatal("a new barcode read got the old job")
+	}
+	f := newSvc(t, threeBoxes(t), "NOT_FOOD", 0, nil)
+	bad := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), ""))
+	if w, j := f.poll(t, "/api/analyze/scan/"+bad, "u1"); w.Code != 200 || j.Status != ScanFailed {
+		t.Fatalf("failed job: %d %s", w.Code, w.Body)
+	}
+	if again := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again == bad {
+		t.Fatal("Try again after a failure got the failed job")
+	}
+}
+
+// same(): a running job, or one that ended well less than ScanSameAfter ago.
+func TestScanJobsSame(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	s := &scanJobs{now: func() time.Time { return now }}
+	j := s.startFor(newPhotoID(), "r", "session", "u1", "abc")
+	if s.same("session", "u1", "abc") != j || s.same("session", "u2", "abc") != nil || s.same("session", "u1", "abd") != nil ||
+		s.same("bearer", "u1", "abc") != nil || s.same("session", "", "") != nil {
+		t.Fatal("running job")
+	}
+	s.finish(j, 200, []byte(`{"ok":true}`))
+	now = now.Add(ScanSameAfter - time.Second)
+	if s.same("session", "u1", "abc") != j {
+		t.Fatal("a good end inside ScanSameAfter")
+	}
+	now = now.Add(2 * time.Second)
+	if s.same("session", "u1", "abc") != nil {
+		t.Fatal("a good end after ScanSameAfter")
+	}
+	k := s.startFor(newPhotoID(), "r", "session", "u1", "abc")
+	s.finish(k, 502, []byte(`{"code":"upstream_error"}`))
+	if s.same("session", "u1", "abc") != nil {
+		t.Fatal("a failed job is given again")
+	}
+}
+
 // A refusal after the 202 is the job's answer (failed + the error body); a
 // refusal before the photo is read stays a plain answer, with no job.
 func TestAnalyzeAsyncRefusals(t *testing.T) {
