@@ -52,6 +52,9 @@ services:
               "-fanout", "http://fanout:8090/v1/fanout/status",
               "-fanout-token-file", "/run/secrets/fanout_status_token",
               "-maps-key-file", "/run/secrets/google_maps_api_key",   # X49j: the Maps browser key for the app
+              # N3 (T9): every new listing goes to the Facebook Page; fan-out answers 503 (no cost) until
+              # FANOUT_PAGE_ID is set; FANOUT_SHARE_URL= (empty) turns it off
+              "-share", "${FANOUT_SHARE_URL-http://fanout:8090/api/fanout/}",
               # X44h: the test accounts that may set a short timer (ttl_seconds) for tests
               "-test-ttl-emails", "${LISTINGS_TEST_TTL_EMAILS:-x42-touchup-test@example.org,x44-receiver-test@example.org,x44-stress-1@example.org,x44-stress-2@example.org,x44-stress-3@example.org}"]
     volumes:
@@ -161,7 +164,7 @@ services:
     entrypoint: ["/fanout"]
     command: ["-listen", "0.0.0.0:8090", "-key-file", "/run/secrets/meta_key",
               "-status-token-file", "/run/secrets/fanout_status_token",
-              "-page-id", "${FANOUT_PAGE_ID:-}", "-link-base", "${FANOUT_LINK_BASE:-}",
+              "-page-id", "${FANOUT_PAGE_ID:-}", "-link-base", "${FANOUT_LINK_BASE-https://icarus.thehungreeapp.com/l/}",
               "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
               "-cap-usd", "${FANOUT_CAP_USD:-1}", "-caller-cap-usd", "${FANOUT_CALLER_CAP_USD:-0.25}", "-sweep", "1m", "-trust-forwarded"]
     mem_limit: 224m

@@ -139,6 +139,8 @@ type Config struct {
 	TouchupPhotos string
 	// Claim tells fan-out after a grab; nil = off.
 	Claim *ClaimHook
+	// Share (N3) asks fan-out to post each new listing; nil = off.
+	Share *ShareHook
 	// TestTTLEmails (X44h): the test accounts (lower case) that may send
 	// ttl_seconds on create; nil = nobody. Every other caller gets 403.
 	TestTTLEmails map[string]bool
@@ -290,6 +292,11 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 	}
 	log.Printf("listing %s created by %s request_id=%s details=%t", l.ID, u.ID, l.RequestID, l.Details != nil)
 	writeJSON(w, http.StatusCreated, l)
+	// N3: every new listing goes to the Facebook Page (fan-out), never a test account's (X44h)
+	if !rt.TestTTLEmails[strings.ToLower(strings.TrimSpace(u.Email))] {
+		ck, _ := r.Cookie(sessionCookie)
+		rt.Share.Share(l.ID, ck)
+	}
 }
 
 // list is GET /api/listings?after=&limit=, and with a place (X49e:

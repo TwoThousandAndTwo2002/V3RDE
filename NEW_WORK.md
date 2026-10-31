@@ -1729,3 +1729,21 @@ T9 asked for a stock photo when a user scans a barcode ("Stock photo only"). The
 - The photos are a read-only folder on the box (`/opt/v3rde/assets/stock`), mounted into analyze. An empty folder gives the camera shot.
 - A touch-up of a stock photo keeps the credit.
 - Tests: inference 97 -> 100, listings 44 -> 46.
+
+## 84. Every new listing goes to the Facebook Page
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** Muse Spark 1.3 (no change: fan-out, entry 20, writes the post).
+**Files:** `listings/share.go` (new), `listings/share_test.go` (new), `listings/handler.go`, `listings/cmd/listings/main.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N3.md`
+
+T9 asked for a Facebook post of each food item, with a link to the app ("Link in the post only"), started by the server for every new listing.
+
+- After a new listing, the listings service asks fan-out to post it, with the giver's own session. Fan-out keeps its owner check, rate limit and daily caps.
+- The post ends with the claim link `https://icarus.thehungreeapp.com/l/<listing_id>` (entry 85 opens it in the app).
+- Test accounts are never posted.
+- Until the Facebook Page is set (`FANOUT_PAGE_ID` and its token), fan-out answers "disabled" before any model call: no cost.
+- No answer, 429 or a server error: it tries again (3 more times in 85 s). Fan-out never makes a second post.
+- Open before the Page is set: the giver's photo goes to the public Page with no photo check (fan-out checks only the text); a grab in the moment before the post starts leaves the post open until the timer sweep.
+- Tests: listings 46 -> 48.
