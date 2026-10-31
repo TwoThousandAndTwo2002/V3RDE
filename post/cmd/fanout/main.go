@@ -1,6 +1,6 @@
 // Command fanout runs the Facebook Page fan-out service (X35c): Muse Spark
 // 1.3 writes the post, the Pages API publishes it with the listing photo,
-// and a claim (or the timer) edits it to [CLAIMED] / [EXPIRED]. Secrets are
+// and a claim (or the timer) edits it to [CLAIMED] / [UNAVAILABLE]. Secrets are
 // files (read-only mounts):
 //
 //	fanout -listen 0.0.0.0:8090 -key-file /run/secrets/meta_key \
@@ -46,7 +46,7 @@ func main() {
 	burst := flag.Int("rate-burst", 6, "requests per window per user")
 	window := flag.Duration("rate-window", time.Minute, "rate-limit window")
 	timeout := flag.Duration("timeout", 25*time.Second, "per request, every call included (under the 30 s gateway)")
-	sweep := flag.Duration("sweep", 0, "how often to mark expired posts [EXPIRED]; 0 = off (needs the claim hook first)")
+	sweep := flag.Duration("sweep", 0, "how often to mark expired posts [UNAVAILABLE]; 0 = off (needs the claim hook first)")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
 	flag.Parse()
 	post.TrustForwarded = *trustFwd

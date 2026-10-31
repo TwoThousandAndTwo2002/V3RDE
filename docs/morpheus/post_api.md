@@ -125,7 +125,7 @@ Not confirmed: the directory's result field names (the public docs show `results
 
 Muse Spark 1.3 writes a short public post from the listing photo, title and
 servings; the Pages API posts it with the photo to the Icarus Page. A claim
-edits the post to start with `[CLAIMED]`; the timer to `[EXPIRED]`.
+edits the post to start with `[CLAIMED]`; the timer to `[UNAVAILABLE]` (X49v; was `[EXPIRED]`).
 
 ```
 POST /api/fanout/{listing_id}   session cookie, the caller's own active listing  -> 201 post
@@ -146,7 +146,7 @@ Post:
 - A second Muse Spark call checks the text; a refusal is 422 `post_rejected` (nothing is posted). The title goes to the model as JSON data.
 - The public text never has the pickup text or a link from the model; the service adds `Claim it in the app: <link-base><listing_id>` when `-link-base` is set.
 - **Integration hook:** the listings service calls `POST http://fanout:8090/v1/fanout/status` with `claimed` after a grab, with the internal token `/run/secrets/fanout_status_token` (a new secret; never the analyze token, which is public). The same status again changes nothing; a claimed post stays claimed. While the listing is being posted, the answer is 409 `pending`: the hook must retry (a 404 means no post).
-- `-sweep 1m` marks posts `[EXPIRED]` when the listing timer ran out. Keep it off until the claim hook exists (else a claimed listing could show `[EXPIRED]`).
+- `-sweep 1m` marks posts `[UNAVAILABLE]` when the listing timer ran out. Keep it off until the claim hook exists (else a claimed listing could show `[UNAVAILABLE]`).
 - Refusals: 400, 401, 404, 409 `not_active` / `already_posted` / `conflict` / `pending`, 422 `post_rejected`, 429, 500 (Facebook took it but the record failed: the events line has the `post_id`), 502 (the text broke a rule, or Facebook refused: the events line has `graph_error`), 503 `disabled` (no Page) / `daily_cap_reached`.
 
 Flags: `-status-token-file /run/secrets/fanout_status_token`, `-page-id`, `-page-token-file /run/secrets/fb_page_token` (a Page access token with `pages_manage_posts`, `pages_read_engagement`, `pages_show_list`), `-graph https://graph.facebook.com`, `-graph-version v25.0`, `-link-base`, `-sweep 0`, `-cap-usd 1`, `-reserve-usd 0.02`, `-timeout 25s`, `-listings`, `-auth`, `-data`, `-events`. No Page id or token = posting off (503), so it can be deployed first.

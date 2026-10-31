@@ -259,7 +259,7 @@ func TestFanoutSweepMarksExpiredOnce(t *testing.T) {
 		t.Fatalf("second sweep %d", n)
 	}
 	last := e.graph.reqs[len(e.graph.reqs)-1]
-	if !strings.HasPrefix(last.form["message"], "[EXPIRED] Free apples") || len(e.graph.reqs) != 2 {
+	if !strings.HasPrefix(last.form["message"], "[UNAVAILABLE] Free apples") || len(e.graph.reqs) != 2 {
 		t.Fatalf("edit %+v (%d calls)", last, len(e.graph.reqs))
 	}
 }
@@ -446,5 +446,20 @@ func TestFanoutReleaseRemovesClaimed(t *testing.T) {
 	e.cfg.now = func() time.Time { return later }
 	if n := e.cfg.Sweep(t.Context()); n != 1 {
 		t.Fatalf("sweep after release %d", n)
+	}
+}
+
+// X49v (T9 2026-10-31): the banner of a listing whose time ended must not sound like the food went bad.
+func TestBannerWords(t *testing.T) {
+	if got := Banner(PostExpired); got != "[UNAVAILABLE] " {
+		t.Fatalf("expired banner %q", got)
+	}
+	if got := Banner(PostClaimed); got != "[CLAIMED] " {
+		t.Fatalf("claimed banner %q", got)
+	}
+	for _, st := range []string{PostExpired, PostClaimed, "released", ""} {
+		if b := strings.ToUpper(Banner(st)); strings.Contains(b, "EXPIRED") || strings.Contains(b, "BAD") || strings.Contains(b, "SPOIL") {
+			t.Fatalf("%q banner %q", st, Banner(st))
+		}
 	}
 }

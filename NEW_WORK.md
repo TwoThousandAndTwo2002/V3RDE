@@ -1913,3 +1913,15 @@ T9: the About page goes to the branch that is deployed, the same way as the earl
 - The web build is made again from the merged code.
 - Tests: mobile 153 (139 + 12 page tests and 1 web test of the About page + 1 new page test); the Go modules as before.
 
+## 90. The Facebook post of an ended listing says "[UNAVAILABLE]"
+
+**When:** Oct 31 2026.
+**Meta models:** none new (fan-out edits the post text).
+**Files:** `post/fanout.go`, `post/cmd/fanout/main.go`, `post/fanout_test.go`
+**Sources:** `docs/sources/X49v.md`
+
+T9: "[EXPIRED]" sounds like the food went bad.
+
+- When the listing's time ends, fan-out now puts "[UNAVAILABLE]" in front of the Facebook post (it was "[EXPIRED]"). "[CLAIMED]" stays for a grab.
+- Tests: post 96 -> 97.
+

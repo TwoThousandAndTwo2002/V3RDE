@@ -4,7 +4,7 @@ package post
 // a short public post from the listing photo, title and servings, and the
 // service posts it with the photo to the Icarus Facebook Page (Pages API).
 // When the listing is claimed or its timer runs out, the post is edited to
-// start with [CLAIMED] or [EXPIRED], so nobody makes a wasted trip.
+// start with [CLAIMED] or [UNAVAILABLE], so nobody makes a wasted trip.
 // Facebook only (T9 2026-10-28: "we can limit the regular fan out for items
 // to facebook only"): Groups cannot be posted to by apps since Graph API v19.
 //
@@ -17,7 +17,7 @@ package post
 //	GET  /healthz
 //
 // The post never has the pickup text (it is public): the claim goes through
-// the app. -sweep marks posts [EXPIRED] when their listing's timer ran out.
+// the app. -sweep marks posts [UNAVAILABLE] when their listing's timer ran out.
 
 import (
 	"bytes"
@@ -90,8 +90,8 @@ func Banner(status string) string {
 	switch status {
 	case PostClaimed:
 		return "[CLAIMED] "
-	case PostExpired:
-		return "[EXPIRED] "
+	case PostExpired: // X49v (T9 2026-10-31): not "[EXPIRED]", which sounds like the food went bad
+		return "[UNAVAILABLE] "
 	}
 	return ""
 }
@@ -618,7 +618,7 @@ func (c *FanoutConfig) FlushStore() {
 	}
 }
 
-// Sweep marks every due post [EXPIRED] once; it returns how many changed.
+// Sweep marks every due post [UNAVAILABLE] once; it returns how many changed.
 func (c *FanoutConfig) Sweep(ctx context.Context) int {
 	if c.Page == nil {
 		return 0
