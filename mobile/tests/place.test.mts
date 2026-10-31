@@ -2,7 +2,7 @@
 import test from "node:test";
 import { strict as assert } from "node:assert";
 import { FIRST_REACH, NoLocation, REACHES, canRelease, currentPosition, isFar, milesText, minutesLeft, parseSaved, placeFields,
-  placeQuery, splitByReach, zipOf } from "../src/place.ts";
+  placeQuery, splitByReach } from "../src/place.ts";
 import { PLACE } from "../src/words.ts";
 
 const T = Date.parse("2026-10-30T18:00:00Z");
@@ -13,16 +13,10 @@ test("the distances T9 approved: 1, 5 and 10 mi, 5 first", () => {
   assert.equal(FIRST_REACH, 5);
 });
 
-test("a ZIP code is 5 digits (spaces go)", () => {
-  assert.equal(zipOf(" 10001 "), "10001");
-  assert.equal(zipOf("100 01"), "10001");
-  for (const bad of ["", "1000", "100011", "10001-1234", "abcde"]) assert.equal(zipOf(bad), null, bad);
-});
-
-test("the place goes as lat and lng, or as zip", () => {
-  assert.deepEqual(placeFields({ zip: "10001" }), [["zip", "10001"]]);
+test("the place goes as lat and lng; no place (X49q: location off) gives only the cursor", () => {
   assert.deepEqual(placeFields({ lat: 40.7506489, lng: -73.99 }), [["lat", "40.750649"], ["lng", "-73.990000"]]);
-  assert.equal(placeQuery({ zip: "10001" }), "?zip=10001");
+  assert.equal(placeQuery(null), "");
+  assert.equal(placeQuery(null, "c1"), "?after=c1");
   assert.equal(placeQuery({ lat: 1, lng: 2 }, "20"), "?lat=1.000000&lng=2.000000&after=20");
 });
 
@@ -64,7 +58,7 @@ test("the saved choice: a bad or old value is no choice", () => {
   assert.deepEqual(parseSaved(null), { choice: null, reach: 5 });
   assert.deepEqual(parseSaved("{x"), { choice: null, reach: 5 });
   assert.deepEqual(parseSaved('{"how":"location","reach":1}'), { choice: { how: "location" }, reach: 1 });
-  assert.deepEqual(parseSaved('{"how":"zip","zip":"10001","reach":10}'), { choice: { how: "zip", zip: "10001" }, reach: 10 });
+  assert.deepEqual(parseSaved('{"how":"zip","zip":"10001","reach":10}'), { choice: null, reach: 10 }); // X49q: an old ZIP choice
   assert.deepEqual(parseSaved('{"how":"zip","zip":"1","reach":3}'), { choice: null, reach: 5 });
   assert.deepEqual(parseSaved('{"how":"gps","reach":10}'), { choice: null, reach: 10 });
 });

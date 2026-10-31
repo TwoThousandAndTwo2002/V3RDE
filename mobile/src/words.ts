@@ -98,11 +98,10 @@ export const RESCUE = {
   none: "No place was found near the pickup address.",
   failed: "Could not find places. Try again.",
   retry: "Try again",
-  zipAsk: "The pickup address has no ZIP code. Enter the ZIP code where the food is.",
-  zip: "ZIP code",
-  zipHint: "For example 80219",
-  zipBad: "Enter 5 digits, for example 80219",
-  search: "Search",
+  // X49q: no ZIP code; a listing with no pickup place uses the giver's location
+  whereAsk: "This listing has no pickup place. Search near your location now?",
+  useLocation: "Use my location",
+  locationOff: "Location is off. Turn it on for this site in your settings, then try again.",
   close: "Close",
 } as const;
 
@@ -155,7 +154,7 @@ export const REVIEW = {
   more: "More servings",
   pickup: "Pickup address and instructions", // R5 (T9 2026-10-31)
   pickupAll: "Pickup address and instructions (for all items)",
-  pickupHint: "12 Main St, Denver, CO 80219. Front desk",
+  pickupHint: "5 Broad St, Lagos. Front desk", // X49q: an example with no ZIP code
   startOver: "Start over",
   post: "Post listing",
   posting: "Posting…",
@@ -168,12 +167,13 @@ export const PLACE = {
   askTitle: "Find food near you",
   askLine: "Your place shows only the food within the distance you pick. Nobody else sees your place.",
   useLocation: "Use my location",
-  typeZip: "Type a ZIP",
-  zipTitle: "Your ZIP code",
-  zipLine: "Location is off. The distance is from the center of your ZIP code.",
-  back: "Back",
-  show: "Show food",
-  zipBad: "Type a 5-digit ZIP code.",
+  // X49q: no ZIP code; location off = all food, with no distance
+  notNow: "Not now",
+  offTitle: "Location is off",
+  offLine: "Turn on location for this site in your settings, then try again. Or see all food, with no distance.",
+  tryAgain: "Try again",
+  noDistance: "Location is off. No distance.",
+  offPost: "Location is off. Turn it on for this site in your settings, then post again.",
   locating: "Finding your location…",
   nearLocation: "Near your location",
   change: "Change",
@@ -189,14 +189,6 @@ export const PLACE = {
   releaseEnded: "The timer ended. The grab is final.",
   cancel: "Cancel",
   // the review (the giver)
-  pickupPlace: "Pickup place",
-  hereNow: "Your location now",
-  hereLine: "Receivers see how far away it is. They do not see this place on a map.",
-  useZip: "Use a ZIP code",
-  pickupZip: "Pickup ZIP code",
-  zipOffLine: "Location is off. People near this ZIP see the food.",
-  needZip: "Type the 5-digit pickup ZIP code.",
-  nearZip: (zip: string) => "Near ZIP " + zip,
   reach: (d: number) => d + " mi",
   reachName: (d: number) => "Within " + d + " miles",
   farther: (d: number) => "Farther than " + d + " mi",
@@ -221,11 +213,16 @@ export const PICKUP = {
   address: "Pickup address",
   hint: "Type the street address",
   choose: "Tap the address to choose it. Then the map shows the pickup place.",
-  change: "Change the address",
+  changeName: (address: string) => "Change the address, " + address, // X49q: the address box is the button
+  editHint: "Type a new address, or move the map. Tap outside to close.",
+  naming: "Finding the address…", // X49q review: Post waits for it
   none: "No address found. Check the street and the town.",
   failed: "The address search did not answer. Try again.",
   need: "Choose the pickup address from the list.",
-  useLocation: "Use my location instead",
+  here: "Use my current location", // X49q
+  finding: "Finding your location…",
+  hereOff: "Location is off. Turn it on for this site in your settings, or type the address.",
+  moveHint: "Move the map to put the pin on the pickup spot. The address follows the pin.",
   safety: "Receivers see only how far it is. They see the address and the instructions after they grab.",
   notes: "Instructions at the door",
   notesHint: "For example: front desk, ask for Sam",
@@ -299,7 +296,8 @@ export const VOICE = {
   hint: "Talk or type a change",
   typeName: "Type a change to the list",
   send: "Send",
-  examples: "Try: \u201c6 servings\u201d, \u201cremove item 2\u201d.",
+  // X49q: the hints that take turns in the empty chat box (short: the desktop box is narrow)
+  hints: ["Talk or type a change", "Try \u201c6 servings\u201d", "Try \u201cremove item 2\u201d"],
   said: "You said",
   typed: "You typed",
   made: (n: number) => (n === 1 ? "1 change made" : n + " changes made"),

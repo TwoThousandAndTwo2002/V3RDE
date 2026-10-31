@@ -1,7 +1,7 @@
 // R5 tests: the rescue rules of the app (src/rescue.ts) and the words of the popup and the pickup field.
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { canRescue, needsZip, placeLine, rescueView, safeLink, zipOf, RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "../src/rescue.ts";
+import { canRescue, needsPlace, placeLine, rescueView, safeLink, RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "../src/rescue.ts";
 import { RESCUE, REVIEW } from "../src/words.ts";
 
 const T = Date.parse("2026-10-31T12:00:00Z");
@@ -42,13 +42,11 @@ test("safeLink: only the service's own link kinds open (no javascript:, no other
   assert.equal(safeLink(undefined, "mailto"), "");
 });
 
-test("needsZip and zipOf: the service's no-ZIP answer asks for a ZIP; only 5 digits (+4) pass", () => {
-  assert.equal(needsZip(400, "the pickup address has no ZIP: send zip, or lat and lng"), true);
-  assert.equal(needsZip(400, "zip must be a US ZIP code"), false);
-  assert.equal(needsZip(502, "no ZIP"), false);
-  assert.equal(zipOf(" 80219 "), "80219");
-  assert.equal(zipOf("80219-1234"), "80219-1234");
-  for (const bad of ["802", "8021a", "802190", "", "80 219"]) assert.equal(zipOf(bad), "");
+test("needsPlace: the service's no-place answer offers the giver's location (X49q: never a ZIP)", () => {
+  assert.equal(needsPlace(400, "the pickup address has no ZIP: send zip, or lat and lng"), true);
+  assert.equal(needsPlace(400, "send zip, or lat and lng"), true);
+  assert.equal(needsPlace(400, "the listing timer has not run out"), false);
+  assert.equal(needsPlace(502, "no ZIP"), false);
 });
 
 test("the poll waits longer than the service job (90 s), once a second", () => {
@@ -56,10 +54,10 @@ test("the poll waits longer than the service job (90 s), once a second", () => {
   assert.ok(RESCUE_WAIT_MS > 90_000);
 });
 
-test("words: the one-word pill, the pickup field shows a ZIP after a state code (the service reads it there)", () => {
+test("words: the one-word pill; the pickup example has no ZIP (X49q)", () => {
   assert.equal(RESCUE.pill, "Rescue");
   assert.match(RESCUE.pillName("Bagels"), /^Rescue Bagels/);
   assert.equal(REVIEW.pickup, "Pickup address and instructions");
-  assert.match(REVIEW.pickupHint, /, [A-Z]{2} \d{5}/);
+  assert.doesNotMatch(REVIEW.pickupHint, /\d{5}/);
   for (const w of Object.values(RESCUE)) if (typeof w === "string") assert.ok(w.length > 0 && w.length <= 120, w);
 });

@@ -360,3 +360,16 @@ func TestRescueSyncRouteShapeAndRunningJob(t *testing.T) {
 		t.Fatalf("sync shape: %d %s", w.Code, w.Body)
 	}
 }
+
+// X49q review: the pickup address can be in any country, so the web search names no country and asks for the
+// postal address of the place's own country.
+func TestSearchPromptNamesNoCountry(t *testing.T) {
+	for _, us := range []string{"United States", "state ZIP", " US "} {
+		if strings.Contains(SearchPrompt, us) {
+			t.Fatalf("the search prompt still has %q", us)
+		}
+	}
+	if !strings.Contains(SearchPrompt, "full postal address") {
+		t.Fatal("the address form is missing")
+	}
+}

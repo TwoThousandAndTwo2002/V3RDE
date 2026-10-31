@@ -1,8 +1,8 @@
 // Tests of the pickup address rules (src/maps.ts) and its words, X49j (#80).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { MAPS_LOAD_MS, MAP_ZOOM, SUGGEST_MIN, addressLines, firstPrediction, linesOf, scriptUrl, zipOf } from "../src/maps.ts";
-import { PICKUP, grabMessage, pickupLine } from "../src/words.ts";
+import { ADDRESS_FOLLOW_M, MAPS_LOAD_MS, NAME_LIMIT_MS, NAME_WAIT_MS, MAP_ZOOM, SUGGEST_MIN, addressLines, firstPrediction, linesOf, metersBetween, scriptUrl } from "../src/maps.ts";
+import { PICKUP, VOICE, grabMessage, pickupLine } from "../src/words.ts";
 import { listingProblem } from "../src/capture.ts";
 
 test("the Maps script URL: the key, the weekly channel, async loading, the callback", () => {
@@ -11,12 +11,16 @@ test("the Maps script URL: the key, the weekly channel, async loading, the callb
   assert.equal(SUGGEST_MIN, 4);
 });
 
-test("the ZIP of the address components: postal_code, 5 digits", () => {
-  const comps = [{ longText: "Denver", types: ["locality"] }, { longText: "80219", shortText: "80219", types: ["postal_code"] }];
-  assert.equal(zipOf(comps), "80219");
-  assert.equal(zipOf([{ longText: "80219-1234", types: ["postal_code"] }]), "");
-  assert.equal(zipOf([{ longText: "SW1A 1AA", types: ["postal_code"] }]), "");
-  assert.equal(zipOf(undefined), "");
+test("X49q: no ZIP anywhere: the address search has no country limit and asks for no address components", async () => {
+  const fs = await import("node:fs");
+  const maps = fs.readFileSync(new URL("../src/maps.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(maps, /includedRegionCodes/);
+  assert.match(maps, /fetchFields\(\{ fields: \["formattedAddress", "location"\] \}\)/);
+  for (const f of ["../src/maps.ts", "../src/place.ts", "../src/rescue.ts", "../src/api.ts", "../src/screens/Review.tsx",
+    "../src/screens/Receive.tsx", "../src/screens/Rescue.tsx"]) {
+    const src = fs.readFileSync(new URL(f, import.meta.url), "utf8").split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*\*)/.test(l)).map((l) => l.replace(/\s\/\/ .*$/, "")).join("\n");
+    assert.doesNotMatch(src, /zipOf|address_zip|"zip"|\{ zip|PLACE\.\w*[zZ]ip|RESCUE\.zip/, f);
+  }
 });
 
 test("one suggestion only (T9): the first place prediction, in two lines", () => {
@@ -55,8 +59,8 @@ test("the screens: the review asks the config, the address comes first; a card b
   const receive = fs.readFileSync(new URL("../src/screens/Receive.tsx", import.meta.url), "utf8");
   const api = fs.readFileSync(new URL("../src/api.ts", import.meta.url), "utf8");
   assert.match(review, /listings\.config\(\)/);
-  assert.match(review, /if \(byAddress && !picked\) return setProblem\(PICKUP\.need\)/);
-  assert.match(review, /address: byAddress && picked \? \{ text: picked\.text, zip: picked\.zip \} : undefined/);
+  assert.match(review, /if \(byAddress && !picked\) \{ setProblem\(""\); return setNeedAddress\(true\); \}/);
+  assert.match(review, /address: byAddress && picked \? \{ text: picked\.text \} : undefined/);
   assert.match(api, /form\.append\("address", n\.address\.text\)/);
   // the feed card: the instructions only; the address only in "Your pickup" and the grab sheet
   assert.match(receive, /\{l\.pickup_text \? <Muted lines=\{1\}/);
@@ -64,15 +68,67 @@ test("the screens: the review asks the config, the address comes first; a card b
 });
 
 // X49j review: Maps can fail (no script, a refused key, the search fails): the review goes back to the place row.
-test("a Maps failure gives the place row back; a ZIP error with an address is not the ZIP row", async () => {
+test("a Maps failure: the location at Post; X49q: the map moves, the current location, the error under the field", async () => {
   const fs = await import("node:fs");
   const review = fs.readFileSync(new URL("../src/screens/Review.tsx", import.meta.url), "utf8");
   const pickup = fs.readFileSync(new URL("../src/screens/Pickup.tsx", import.meta.url), "utf8");
   assert.equal(MAPS_LOAD_MS, 10_000);
   assert.match(review, /onFail=\{\(\) => \{ setMapsKey\(""\); setPicked\(null\); \}\}/);
-  assert.match(review, /if \(!byAddress && err instanceof ApiError && err\.status === 400 && \/zip\/i/);
+  assert.match(review, /return setProblem\(PLACE\.offPost\)/);
   assert.match(pickup, /loadMaps\(mapsKey\)\.catch\(\(\) => \{ if \(on\) onFail\(\); \}\)/);
-  assert.match(pickup, /testID="pickup-use-location" onPress=\{onFail\}/);
-  assert.match(pickup, /height: size\.mapH \}\} \/>/); // the map element has its own size
-  assert.equal(PICKUP.useLocation, "Use my location instead");
+  assert.match(pickup, /height: h \}\} \/>/); // the map element has its own size
+  assert.match(pickup, /const h = tall \? size\.mapTall : size\.mapH;/);
+  assert.match(pickup, /testID="pickup-here" onPress=\{here\}/);
+  assert.match(pickup, /need \? <ErrorText>\{PICKUP\.need\}<\/ErrorText>/);
+  assert.match(review, /setNeedAddress\(true\)/);
+  assert.doesNotMatch(review, /PLACE\.hereNow/);
+  const maps = fs.readFileSync(new URL("../src/maps.ts", import.meta.url), "utf8");
+  assert.match(maps, /gestureHandling: "greedy"/);
+  assert.match(maps, /importLibrary\("geocoding"\)/);
+  assert.equal(PICKUP.here, "Use my current location");
+});
+
+// X49q (T9 2026-10-31): the hints take turns in the empty chat box; each fits the narrow desktop box.
+test("the chat box hints: three, short, the first is the old hint; they turn every 4 s while the chat is empty", async () => {
+  const fs = await import("node:fs");
+  const voice = fs.readFileSync(new URL("../src/screens/Voice.tsx", import.meta.url), "utf8");
+  assert.equal(VOICE.hints.length, 3);
+  assert.equal(VOICE.hints[0], VOICE.hint);
+  for (const h of VOICE.hints) assert.ok(h.length <= 22, h);
+  assert.match(voice, /HINT_SWAP_MS = 4000/);
+  assert.match(voice, /placeholder=\{turns\.length === 0 \? VOICE\.hints\[tip\] : VOICE\.hint\}/);
+  assert.doesNotMatch(voice, /VOICE\.examples/);
+  assert.match(voice, /if \(turns\.length > 0 \|\| !empty\) return;/); // no turns while the user types
+});
+
+// X49q (T9 2026-10-31): the address follows the pin when it moved more than 20 m; a tap on the address box changes it.
+test("the address follows the pin: metres between two points, the 20 m rule, the box is the change button", async () => {
+  assert.equal(ADDRESS_FOLLOW_M, 20);
+  assert.equal(NAME_WAIT_MS, 500);
+  assert.equal(NAME_LIMIT_MS, 8000);
+  assert.equal(metersBetween({ lat: 6.455, lng: 3.3941 }, { lat: 6.455, lng: 3.3941 }), 0);
+  const d = metersBetween({ lat: 0, lng: 0 }, { lat: 0.001, lng: 0 }); // 0.001 degree of latitude
+  assert.ok(d > 111 && d < 112, String(d));
+  assert.ok(metersBetween({ lat: 6.4550, lng: 3.3941 }, { lat: 6.45515, lng: 3.3941 }) < ADDRESS_FOLLOW_M); // 16.7 m
+  const fs = await import("node:fs");
+  const pickup = fs.readFileSync(new URL("../src/screens/Pickup.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(pickup, /pickup-address-change/);
+  assert.match(pickup, /testID="pickup-address-box"/);
+  assert.match(pickup, /metersBetween\(named\.current, p\) <= ADDRESS_FOLLOW_M\) \{ name\(false\); return; \}/);
+  assert.match(pickup, /document\.addEventListener\("click", outside, true\)/); // a scroll is no tap
+  // X49q review: one map for both modes; it holds still while posting; every move cancels a lookup; Post waits
+  assert.equal((pickup.match(/<MapBox /g) ?? []).length, 1);
+  assert.match(pickup, /tall=\{editing\} still=\{locked\}/);
+  assert.match(pickup, /const r = \+\+geoRound\.current;\n    if \(named\.current && metersBetween/);
+  assert.match(pickup, /if \(typed\.current === was\) setText\(t\)/);
+  assert.match(pickup, /found \|\| p\.lat\.toFixed\(5\)/);
+  assert.match(pickup, /Promise\.race\(\[addressAt\(mapsKey, p\)\.catch\(\(\) => ""\), late\]\)/);
+  assert.match(pickup, /useEffect\(\(\) => \(\) => \{ geoRound\.current\+\+; \}, \[\]\)/);
+  const review = fs.readFileSync(new URL("../src/screens/Review.tsx", import.meta.url), "utf8");
+  assert.match(review, /if \(byAddress && naming\) return setProblem\(PICKUP\.naming\)/);
+  assert.match(review, /onPicked=\{\(a\) => \{ setPicked\(a\); setNeedAddress\(false\); \}\}/);
+  const maps = fs.readFileSync(new URL("../src/maps.ts", import.meta.url), "utf8");
+  assert.match(maps, /gestureHandling: still \? "none" : "greedy"/);
+  assert.match(pickup, /scrollIntoView\?\.\(\{ block: "start"/);
+  assert.match(pickup, /onPicked\(\{ text: t, lat: p\.lat, lng: p\.lng \}\)/); // the found address keeps the point of its move
 });

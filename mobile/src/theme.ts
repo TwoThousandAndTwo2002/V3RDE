@@ -110,6 +110,7 @@ export const size = {
   dialogWide: 860,   // a dialog with the photo on the left
   dialogExtraWide: 1140, // X49: the review dialog with the details column at the right (the photo, the list, the details)
   mapH: 160,         // X49j: the map of the pickup address on the review
+  mapTall: 320,      // X49q: the same map while the giver changes the address (2 x mapH)
   chatColumn: 320,   // X49i: the chat column of the wide review (T9: wider than the X49 details column, 260)
   scanPhoto: 3 / 4,  // X49: the scan photo of the wide review (width to height); it is as high as the column
   dialogSmall: 440,  // a dialog with a title, a line and two pills

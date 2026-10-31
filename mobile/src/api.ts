@@ -48,7 +48,7 @@ export type NewListing = {
   details?: object; // X48d: the scanner's fields (logic.itemDetails), kept with the listing
   place: Place; // X49e: the pickup place (the server keeps it rounded to 0.01 mi and never sends it)
   /** X49j: the address the giver chose (its point is `place`); then pickup_text is only the instructions. */
-  address?: { text: string; zip: string };
+  address?: { text: string };
 };
 /** One item of the review list, in the listing contract (voice posting). */
 export type VoiceItem = { item: number; title: string; number_of_serving: number };
@@ -116,12 +116,12 @@ export const listings = Object.freeze({
     return request<{ items: Listing[]; next: string }>("GET", "/api/listings" + query);
   },
   /** X49e: the live listings within 25 mi of the place, nearest first, with distance_mi. */
-  near: (place: Place, after = "") => request<{ items: Listing[]; next: string }>("GET", "/api/listings" + placeQuery(place, after)),
+  near: (place: Place | null, after = "") => request<{ items: Listing[]; next: string }>("GET", "/api/listings" + placeQuery(place, after)),
   mine: () => request<{ items: Listing[] }>("GET", "/api/listings/mine"),
   /** X49j: the app config (the Maps browser key; "" = no map). */
   config: () => request<{ maps_key?: string }>("GET", "/api/listings/config"),
   /** X49e: the user's grabs whose timer still runs ("Your pickup"). */
-  grabbed: (place: Place | null) => request<{ items: Listing[] }>("GET", "/api/listings/grabbed" + (place ? placeQuery(place) : "")),
+  grabbed: (place: Place | null) => request<{ items: Listing[] }>("GET", "/api/listings/grabbed" + placeQuery(place)),
   grab: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/grab"),
   /** X49e: gives the grab back while the timer runs (409 when it ended). */
   release: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/release"),
@@ -131,7 +131,7 @@ export const listings = Object.freeze({
     const form = formOf([["title", n.title], ["number_of_serving", String(n.number_of_serving)],
       ["pickup_text", n.pickup_text], ...placeFields(n.place)], [["request_id", n.request_id]]);
     if (n.details && Object.keys(n.details).length > 0) form.append("details", JSON.stringify(n.details));
-    if (n.address) { form.append("address", n.address.text); if (n.address.zip) form.append("address_zip", n.address.zip); } // X49j
+    if (n.address) form.append("address", n.address.text); // X49j; X49q: no ZIP
     if (n.photo_id) form.append("photo_id", n.photo_id);
     else if (n.photo) addFile(form, "photo", n.photo);
     return request<Listing>("POST", "/api/listings", { form, timeoutMs: 30_000 });
@@ -178,10 +178,10 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
 
 /** R5: the rescue of an expired listing (post/rescue.go). start() answers 202 with the job (or 200 with the
  *  rescue the listing already has); wait() asks once a second until the job is done or failed. A body with a
- *  ZIP only when the pickup address has none (the service answers 400 "no ZIP"). */
+ *  place (the giver's location) only when the listing has no pickup place (X49q: no ZIP; the service answers 400). */
 export const rescue = Object.freeze({
-  start: (listingId: string, zip = "") => request<Rescue>("POST", "/api/rescue/" + encodeURIComponent(listingId) + "?async=1",
-    zip ? { json: { zip } } : {}),
+  start: (listingId: string, at: Place | null = null) => request<Rescue>("POST", "/api/rescue/" + encodeURIComponent(listingId) + "?async=1",
+    at ? { json: { lat: at.lat, lng: at.lng } } : {}),
   get: (id: string) => request<Rescue>("GET", "/api/rescue/" + encodeURIComponent(id)),
   async wait(first: Rescue, stop: () => boolean = () => false): Promise<Rescue> {
     const until = Date.now() + RESCUE_WAIT_MS;

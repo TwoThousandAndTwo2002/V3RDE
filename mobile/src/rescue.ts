@@ -42,15 +42,10 @@ export function rescueView(r: Rescue | null): RescueView {
   return r.places.length > 0 ? "places" : "none";
 }
 
-/** The service's 400 when the pickup address has no ZIP: the app then asks for one. */
-export function needsZip(status: number, message: string): boolean {
-  return status === 400 && message.includes("no ZIP");
-}
-
-/** A US ZIP the user typed (5 digits, optional +4); "" when it is not one. */
-export function zipOf(text: string): string {
-  const t = text.trim();
-  return /^\d{5}(-\d{4})?$/.test(t) ? t : "";
+/** The service's 400 when the listing has no pickup place (its words still say "no ZIP"): X49q: the app then offers
+ *  the giver's location, never a ZIP. */
+export function needsPlace(status: number, message: string): boolean {
+  return status === 400 && (message.includes("no ZIP") || message.includes("lat and lng"));
 }
 
 /** R5: an expired listing nobody grabbed can be rescued. */

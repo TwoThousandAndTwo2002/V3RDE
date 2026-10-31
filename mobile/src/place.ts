@@ -1,7 +1,8 @@
 // The place and the distance rules of Receive and Give, written new for V3RDE (X49e, #74; T9 2026-10-30, the
 // approved "distance" mockup v2). The receiver picks 1, 5 or 10 mi; food farther than that shows in gray (up to
-// 25 mi, the server's limit), and a grab of a gray item asks first. The place is the phone location, or a ZIP code
-// when location is off. Pure functions, except `readPlaceChoice`, `savePlaceChoice` and `currentPosition`.
+// 25 mi, the server's limit), and a grab of a gray item asks first. The place is the phone location. X49q (T9
+// 2026-10-31: "lets drop zip code", "Everywhere"): no ZIP code; with location off the list has no distance.
+// Pure functions, except `readPlaceChoice`, `savePlaceChoice` and `currentPosition`.
 import type { Listing } from "./api";
 
 /** Whole seconds until expires_at (0 after it, or when it does not parse); the rule of listing.secondsLeft. Here again
@@ -16,29 +17,23 @@ export const REACHES = [1, 5, 10] as const;
 export type Reach = (typeof REACHES)[number];
 export const FIRST_REACH: Reach = 5;
 
-/** A place for a request: a point, or a ZIP code (the server takes the center of the ZIP). */
-export type Place = { lat: number; lng: number } | { zip: string };
+/** A place for a request: a point (the phone location, or the point of the chosen pickup address). */
+export type Place = { lat: number; lng: number };
 
-/** What the user chose, kept on this device: the location or a ZIP, and the distance. */
-export type PlaceChoice = { how: "location" } | { how: "zip"; zip: string };
+/** What the user chose, kept on this device: the location, and the distance. */
+export type PlaceChoice = { how: "location" };
 export type Saved = { choice: PlaceChoice | null; reach: Reach };
 
-/** A 5-digit US ZIP code from what the user typed (spaces are removed), or null. */
-export function zipOf(text: string): string | null {
-  const t = text.replace(/\s+/g, "");
-  return /^\d{5}$/.test(t) ? t : null;
-}
-
-/** The query or form fields of a place: lat and lng, or zip. */
+/** The query or form fields of a place: lat and lng. */
 export function placeFields(p: Place): Array<[string, string]> {
-  return "zip" in p ? [["zip", p.zip]] : [["lat", p.lat.toFixed(6)], ["lng", p.lng.toFixed(6)]];
+  return [["lat", p.lat.toFixed(6)], ["lng", p.lng.toFixed(6)]];
 }
 
-/** "?lat=..&lng=.." or "?zip=..", with the cursor when there is one. */
-export function placeQuery(p: Place, after = ""): string {
-  const fields = placeFields(p);
+/** "?lat=..&lng=..", with the cursor when there is one; no place: only the cursor (the list has no distance). */
+export function placeQuery(p: Place | null, after = ""): string {
+  const fields = p ? placeFields(p) : [];
   if (after) fields.push(["after", after]);
-  return "?" + fields.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
+  return fields.length ? "?" + fields.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&") : "";
 }
 
 /** The distance on a card: one decimal ("0.4 mi"); under 0.05 mi it is "0.1 mi or less". */
@@ -74,12 +69,10 @@ export function parseSaved(text: string | null): Saved {
   const none: Saved = { choice: null, reach: FIRST_REACH };
   if (!text) return none;
   try {
-    const v = JSON.parse(text) as { how?: unknown; zip?: unknown; reach?: unknown };
+    const v = JSON.parse(text) as { how?: unknown; reach?: unknown };
     const reach = (REACHES as readonly number[]).includes(v.reach as number) ? (v.reach as Reach) : FIRST_REACH;
     if (v.how === "location") return { choice: { how: "location" }, reach };
-    const zip = typeof v.zip === "string" ? zipOf(v.zip) : null;
-    if (v.how === "zip" && zip) return { choice: { how: "zip", zip }, reach };
-    return { choice: null, reach };
+    return { choice: null, reach }; // X49q: an old "zip" choice is no choice: the app asks for the location again
   } catch {
     return none;
   }

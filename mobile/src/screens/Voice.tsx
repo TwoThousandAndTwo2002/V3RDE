@@ -36,6 +36,9 @@ export type Chat = {
   log: ChatLine[];
 };
 
+/** X49q: how long each hint of the chat box shows. */
+export const HINT_SWAP_MS = 4000;
+
 export function useChat({ items, pickup, onApply, onOpen }: {
   items: ItemForm[]; pickup: string;
   /** X48u: how says what made the change (a voice line, a typed line, Undo), for the label report. */
@@ -49,6 +52,15 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [text, setText] = useState("");
+  // X49q (T9 2026-10-31): the hint in the box changes between "Talk or type a change" and two examples, every
+  // HINT_SWAP_MS, while the chat is empty (the examples line under the box is gone)
+  const [tip, setTip] = useState(0);
+  const empty = text === ""; // X49q review: no turns while the user types (the hint is not on view)
+  useEffect(() => {
+    if (turns.length > 0 || !empty) return;
+    const id = setInterval(() => setTip((t) => (t + 1) % VOICE.hints.length), HINT_SWAP_MS);
+    return () => clearInterval(id);
+  }, [turns.length, empty]);
   const [since, setSince] = useState(0); // when the clip started (for the time and the bar)
   const [starting, setStarting] = useState(false); // the microphone is opening (a permission prompt may wait)
   const [now, setNow] = useState(0);
@@ -149,7 +161,6 @@ export function useChat({ items, pickup, onApply, onOpen }: {
         </View>
       ))}
       {error ? <ErrorText>{error}</ErrorText> : null}
-      {turns.length === 0 ? <Muted lines={2}>{VOICE.examples}</Muted> : null}
     </View>
   );
   const limit = VOICE_MAX_MS - 500;
@@ -170,7 +181,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
     <Row style={{ marginTop: space.gap }}>
       <IconBtn testID="mic" big glyph="mic" label={VOICE.start} onPress={tap} />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Field testID="chat-text" accessibilityLabel={VOICE.typeName} placeholder={VOICE.hint} value={text} maxLength={500}
+        <Field testID="chat-text" accessibilityLabel={VOICE.typeName} placeholder={turns.length === 0 ? VOICE.hints[tip] : VOICE.hint} value={text} maxLength={500}
           returnKeyType="send" onSubmitEditing={typed} onChangeText={setText}
           right={text.trim() ? <FieldButton title={VOICE.send} onPress={typed} /> : undefined} />
       </View>

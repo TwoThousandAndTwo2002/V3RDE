@@ -1697,3 +1697,21 @@ T9 asked why the review asked for a ZIP and an address with a ZIP, and for a map
 - The key is not in the app files: the listings service reads it on the box (x49n) and gives it to the app. Without a key the review shows the place row of 75.
 - If Maps does not work, the review shows the place row of 75 again.
 - Tests: listings 42 -> 44, post 92 -> 94, mobile 128 -> 135.
+
+## 81. No ZIP code; the pickup address in any country; a map that moves
+
+**When:** Oct 31 2026.
+**Meta models:** none. Google Places Autocomplete (New), Maps JavaScript and Geocoding (the browser key of 80).
+**Files:** `mobile/src/maps.ts`, `mobile/src/place.ts`, `mobile/src/api.ts`, `mobile/src/rescue.ts`, `mobile/src/words.ts`, `mobile/src/theme.ts`, `mobile/src/screens/Pickup.tsx`, `mobile/src/screens/Review.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/screens/Rescue.tsx`, `mobile/src/screens/Voice.tsx`, `mobile/docs/style_guide.md`, `mobile/tests/maps.test.mts`, `mobile/tests/place.test.mts`, `mobile/tests/rescue.test.mts`, `post/rescue_search.go`, `post/rescue_job_test.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49q.md`
+
+T9 (testing with users in Nigeria): "nigerian addresses dont work", "lets drop zip code" (everywhere), and the tester feedback on the map. T9 approved the "V3RDE No-ZIP Mockup" v2 and v3.
+
+- The address search has no country limit. Google puts addresses near the user first.
+- No screen asks for a ZIP code. The listing keeps the address text and its point.
+- Receive: "Not now", or location off, shows all food with no distance. The review without the address search takes the location at Post. Rescue of a listing with no point asks for the giver's location. Rescue's web search names no country.
+- The pickup address: "Use my current location" fills it from the phone location. The map moves; the pin stays in its centre. When the pin moves more than 20 m, the address follows it ("Finding the address…"; Post waits for it). While the listing posts, the map holds still.
+- A tap on the chosen address opens the change: the block moves up and the map grows to 320. A tap outside closes it. The "choose" error is under the field.
+- The chat box hint changes every 4 s while the chat is empty.
+- Open: the services still accept a ZIP from an old app and keep the US ZIP table.
+- Tests: mobile 135 -> 136, post 94 -> 95.

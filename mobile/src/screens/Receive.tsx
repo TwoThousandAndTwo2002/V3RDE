@@ -2,18 +2,20 @@
 // "Available now": the listings that are up, photo first, in 1, 2 or 3 columns; more come as the list scrolls
 // (pull down to load again on a phone). Grab takes one; then a small sheet over its photo gives the pickup with
 // Maps and WhatsApp links. The user's own listings are not in this list (U19: they are under Give).
-// X49e (#74, the approved "distance" mockup v2): the list is for a place (the location, or a ZIP code) and a
+// X49e (#74, the approved "distance" mockup v2): the list is for a place (the location) and a
 // distance the user picks (1, 5 or 10 mi). Food farther than that shows in gray under "Farther than N mi" (up to
 // 25 mi), and its grab asks first. "Your pickup" keeps the user's grabs, with "Release it" until the timer ends.
+// X49q (T9 2026-10-31: "lets drop zip code", "Everywhere"): no ZIP code. With location off ("Not now", or the phone
+// says no) the list shows all food with no distance, and a link asks for the location again.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking, Modal, RefreshControl, ScrollView, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
 import { ApiError, listings, type Listing } from "../api";
 import { chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText } from "../listing";
 import { REACHES, canRelease, currentPosition, isFar, milesText, minutesLeft, readPlaceChoice, savePlaceChoice,
-  splitByReach, zipOf, type Place, type Reach, type Saved } from "../place";
+  splitByReach, type Place, type Reach, type Saved } from "../place";
 import { layoutFor, opacity, size, space, useColors } from "../theme";
-import { ChipBtn, Field, Grid, ListingCard, Muted, Pill, Popup, Rise, Row, ScreenHead, Sheet, TextLink, Title, useNow,
+import { ChipBtn, Grid, ListingCard, Muted, Pill, Popup, Rise, Row, ScreenHead, Sheet, TextLink, Title, useNow,
   usePhoto } from "../ui";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
@@ -49,10 +51,9 @@ export default function ReceiveScreen() {
   const page = layoutFor(useWindowDimensions().width);
   const now = useNow(1000);
   const [saved, setSaved] = useState<Saved>(() => readPlaceChoice());
-  const [place, setPlace] = useState<Place | null>(() => (saved.choice?.how === "zip" ? { zip: saved.choice.zip } : null));
-  const [asking, setAsking] = useState<"" | "ask" | "zip">(() => (saved.choice ? "" : "ask"));
-  const [zipText, setZipText] = useState(() => (saved.choice?.how === "zip" ? saved.choice.zip : ""));
-  const [zipProblem, setZipProblem] = useState("");
+  const [place, setPlace] = useState<Place | null>(null);
+  const [asking, setAsking] = useState<"" | "ask" | "off">(() => (saved.choice ? "" : "ask"));
+  const [noPlace, setNoPlace] = useState(false); // X49q: no location: all food, with no distance
   const [locating, setLocating] = useState(false);
   const [shown, setShown] = useState<Listing[]>([]);
   const [pickups, setPickups] = useState<Listing[]>([]);
@@ -76,23 +77,17 @@ export default function ReceiveScreen() {
     try {
       const at = await currentPosition();
       setPlace(at);
+      setNoPlace(false);
       keep({ choice: { how: "location" }, reach: s.reach });
       setAsking("");
     } catch {
-      setZipProblem("");
-      setAsking("zip"); // location is off, or this device has none: a ZIP code
+      setAsking("off"); // location is off, or this device has none
     } finally {
       setLocating(false);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- keep only sets state and storage
   useEffect(() => { if (saved.choice?.how === "location") locate(saved); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- at the start
-  const chooseZip = () => {
-    const zip = zipOf(zipText);
-    if (!zip) return setZipProblem(PLACE.zipBad);
-    setPlace({ zip });
-    keep({ choice: { how: "zip", zip }, reach });
-    setAsking("");
-  };
+  const notNow = () => { setAsking(""); if (!place) setNoPlace(true); };
 
   const pickupRound = useRef(0); // X49e review: only the answer of the last "Your pickup" load is shown
   const loadPickups = useCallback(async () => {
@@ -107,7 +102,7 @@ export default function ReceiveScreen() {
 
   const more = useCallback(async (again = false) => {
     const f = feed.current; // the feed state, outside React
-    if (!place || (!again && (f.busy || f.end))) return;
+    if ((!place && !noPlace) || (!again && (f.busy || f.end))) return;
     const round = again ? ++f.round : f.round; // a refresh makes the answers of earlier loads stale
     f.busy = true;
     try {
@@ -120,11 +115,6 @@ export default function ReceiveScreen() {
     } catch (err) {
       if (round !== f.round) return;
       if (err instanceof ApiError && err.status === 401) return ended();
-      if (err instanceof ApiError && err.status === 400 && "zip" in place) { // a ZIP code the server does not know
-        setZipProblem(PLACE.zipBad);
-        setAsking("zip");
-        return;
-      }
       say(err instanceof Error ? err.message : String(err)); // a failed refresh keeps the list on view
     } finally {
       if (round === f.round) {
@@ -133,8 +123,8 @@ export default function ReceiveScreen() {
         setPulling(false);
       }
     }
-  }, [ended, say, who.id, place]);
-  useEffect(() => { if (place) { setFirst(true); more(true); loadPickups(); } }, [more, loadPickups, place]);
+  }, [ended, say, who.id, place, noPlace]);
+  useEffect(() => { if (place || noPlace) { setFirst(true); more(true); loadPickups(); } }, [more, loadPickups, place, noPlace]);
 
   const grab = async (l: Listing) => {
     if (grabbing.current) return;
@@ -232,19 +222,23 @@ export default function ReceiveScreen() {
         )} />
     );
   };
-  const placeLine = place ? ("zip" in place ? PLACE.nearZip(place.zip) : PLACE.nearLocation) : "";
   const head = place ? (
     <View style={{ marginBottom: space.gutter, gap: space.gap }}>
       <Row tight>
         {REACHES.map((d) => <ChipBtn key={d} testID={"reach-" + d} title={PLACE.reach(d)} name={PLACE.reachName(d)} on={d === reach}
           onPress={() => keep({ ...saved, reach: d as Reach })} />)}
       </Row>
-      <Row tight><Muted>{placeLine}</Muted>
-        <TextLink testID="place-change" name={PLACE.changeName} onPress={() => { setZipProblem(""); setAsking("ask"); }}>{PLACE.change}</TextLink></Row>
+      <Row tight><Muted>{PLACE.nearLocation}</Muted>
+        <TextLink testID="place-change" name={PLACE.changeName} onPress={() => setAsking("ask")}>{PLACE.change}</TextLink></Row>
+    </View>
+  ) : noPlace ? ( // X49q: location off: all food, no distance
+    <View style={{ marginBottom: space.gutter }}>
+      <Row tight><Muted>{PLACE.noDistance}</Muted>
+        <TextLink testID="place-use" onPress={() => locate(saved)}>{PLACE.useLocation}</TextLink></Row>
     </View>
   ) : null;
   let body: React.ReactNode;
-  if (!place || first) body = <Muted>{locating ? PLACE.locating : RECEIVE.loading}</Muted>;
+  if ((!place && !noPlace) || first) body = <Muted>{locating ? PLACE.locating : RECEIVE.loading}</Muted>;
   else {
     const empty = near.length === 0 && far.length === 0;
     body = (
@@ -253,7 +247,7 @@ export default function ReceiveScreen() {
           <View testID="your-pickup" style={{ marginBottom: space.gutter }}>
             <Muted style={{ marginBottom: space.gap }}>{PLACE.yourPickup}</Muted>
             <Grid columns={page.columns}>{pickups.map(pickupCard)}</Grid>
-            {near.length > 0 ? <Muted style={{ marginTop: space.gutter }}>{PLACE.moreNear}</Muted> : null}
+            {near.length > 0 ? <Muted style={{ marginTop: space.gutter }}>{place ? PLACE.moreNear : RECEIVE.title}</Muted> : null}
           </View>
         ) : null}
         {empty && !feed.current.end ? <Muted>{RECEIVE.loading}</Muted>
@@ -299,15 +293,12 @@ export default function ReceiveScreen() {
         ) : null}
       </Modal>
       {asking === "ask" ? (
-        <Ask testID="place-ask" title={PLACE.askTitle} line={PLACE.askLine} no={PLACE.typeZip} yes={PLACE.useLocation} busy={locating}
-          onNo={() => { setZipProblem(""); setAsking("zip"); }} onYes={() => locate(saved)}
-          onDismiss={place && !locating ? () => setAsking("") : undefined} />
+        <Ask testID="place-ask" title={PLACE.askTitle} line={PLACE.askLine} no={PLACE.notNow} yes={PLACE.useLocation} busy={locating}
+          onNo={notNow} onYes={() => locate(saved)} onDismiss={locating ? undefined : notNow} />
       ) : null}
-      {asking === "zip" ? (
-        <Ask testID="place-zip" title={PLACE.zipTitle} line={zipProblem || PLACE.zipLine} no={PLACE.back} yes={PLACE.show}
-          onNo={() => setAsking("ask")} onYes={chooseZip} onDismiss={place ? () => setAsking("") : undefined}
-          field={<Field testID="zip" accessibilityLabel={PLACE.zipTitle} value={zipText} keyboardType="number-pad" inputMode="numeric"
-            maxLength={10} returnKeyType="done" onSubmitEditing={chooseZip} onChangeText={(t) => { setZipText(t); setZipProblem(""); }} />} />
+      {asking === "off" ? ( // X49q: location is off, or the phone has none: no ZIP; all food, with no distance
+        <Ask testID="place-off" title={PLACE.offTitle} line={PLACE.offLine} no={PLACE.notNow} yes={PLACE.tryAgain} busy={locating}
+          onNo={notNow} onYes={() => locate(saved)} onDismiss={locating ? undefined : notNow} />
       ) : null}
       {farAsk ? (
         <Ask testID="far-ask" title={PLACE.farTitle(milesText(farAsk.distance_mi))} line={PLACE.farLine(reach, minutesLeft(farAsk, now))}

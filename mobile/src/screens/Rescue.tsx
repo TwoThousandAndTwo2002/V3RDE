@@ -5,9 +5,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Linking, Platform, ScrollView, Text, View } from "react-native";
 import { ApiError, rescue as api, type Listing } from "../api";
-import { needsZip, placeLine, rescueView, safeLink, zipOf, type Rescue, type RescuePlace } from "../rescue";
+import { needsPlace, placeLine, rescueView, safeLink, type Rescue, type RescuePlace } from "../rescue";
+import { currentPosition, type Place } from "../place";
 import { useColors, radius, size, space, type } from "../theme";
-import { Body, ErrorText, Field, Muted, Pill, Popup, Row, TextLink, Title } from "../ui";
+import { Body, ErrorText, Muted, Pill, Popup, Row, TextLink, Title } from "../ui";
 import { RESCUE } from "../words";
 import { useSession } from "../session";
 
@@ -39,22 +40,22 @@ function PlaceRow({ p, bulk }: { p: RescuePlace; bulk: boolean }) {
 export default function RescueScreen({ listing, onClose }: { listing: Listing; onClose: () => void }) {
   const [res, setRes] = useState<Rescue | null>(null);
   const [problem, setProblem] = useState(""); // a failure of the request itself
-  const [askZip, setAskZip] = useState(false);
-  const [zip, setZip] = useState("");
-  const [zipError, setZipError] = useState(false);
+  const [askPlace, setAskPlace] = useState(false); // X49q: the listing has no pickup place: the giver's location
+  const [at, setAt] = useState<Place | null>(null);
+  const [placeError, setPlaceError] = useState(false);
   const { ended } = useSession();
   const closed = useRef(false);
   const current = useRef(0); // R5 review: only the newest run may change the popup
   const [busy, setBusy] = useState(false); // a run is active: Search and Try again wait
-  const run = async (z = "") => {
+  const run = async (where: Place | null = null) => {
     if (current.current > 0 && busy) return;
     const mine = ++current.current;
     const stale = () => closed.current || mine !== current.current;
     setProblem(""); setRes(null); setBusy(true);
     try {
-      const first = await api.start(listing.id, z);
+      const first = await api.start(listing.id, where);
       if (stale()) return;
-      setAskZip(false);
+      setAskPlace(false);
       setRes(first);
       const last = await api.wait(first, stale);
       if (stale()) return;
@@ -63,7 +64,7 @@ export default function RescueScreen({ listing, onClose }: { listing: Listing; o
       if (stale()) return;
       const status = err instanceof ApiError ? err.status : 0, msg = err instanceof Error ? err.message : String(err);
       if (status === 401) { closed.current = true; onClose(); ended(); return; } // R5 review: signed out
-      if (needsZip(status, msg)) { setAskZip(true); return; }
+      if (needsPlace(status, msg)) { setAskPlace(true); return; }
       setProblem(RESCUE.failed);
     } finally {
       if (!stale()) setBusy(false);
@@ -71,26 +72,29 @@ export default function RescueScreen({ listing, onClose }: { listing: Listing; o
   };
   useEffect(() => { run(); return () => { closed.current = true; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const close = () => { closed.current = true; onClose(); };
-  const search = () => {
+  const search = async () => {
     if (busy) return;
-    const z = zipOf(zip);
-    setZipError(!z);
-    if (z) run(z);
+    setPlaceError(false);
+    try {
+      const here = await currentPosition();
+      setAt(here);
+      run(here);
+    } catch {
+      setPlaceError(true); // location is off
+    }
   };
-  const view = problem ? "failed" : askZip ? "zip" : rescueView(res);
+  const view = problem ? "failed" : askPlace ? "where" : rescueView(res);
   const bulk = res?.mode === "email";
   return (
     <Popup testID="rescue" small onDismiss={close} dismissName={RESCUE.close}>
       <Title style={{ marginBottom: space.hair }}>{view !== "places" ? RESCUE.find : bulk ? RESCUE.titleBulk : RESCUE.title}</Title>
       <Muted lines={2} style={{ marginBottom: space.gutter }}>{listing.title}</Muted>
       {view === "looking" ? <Muted>{RESCUE.looking}</Muted> : null}
-      {view === "zip" ? (
+      {view === "where" ? (
         <View style={{ gap: space.gap }}>
-          <Muted>{RESCUE.zipAsk}</Muted>
-          <Field testID="rescue-zip" label={RESCUE.zip} placeholder={RESCUE.zipHint} value={zip} onChangeText={setZip}
-            keyboardType="number-pad" maxLength={10} onSubmitEditing={search} />
-          {zipError ? <ErrorText>{RESCUE.zipBad}</ErrorText> : null}
-          <Pill testID="rescue-search" title={RESCUE.search} busy={busy} onPress={search} />
+          <Muted>{RESCUE.whereAsk}</Muted>
+          {placeError ? <ErrorText>{RESCUE.locationOff}</ErrorText> : null}
+          <Pill testID="rescue-search" title={RESCUE.useLocation} busy={busy} onPress={search} />
         </View>
       ) : null}
       {view === "places" && res ? (
@@ -104,7 +108,7 @@ export default function RescueScreen({ listing, onClose }: { listing: Listing; o
       {view === "failed" ? (
         <View style={{ gap: space.gap }}>
           <ErrorText>{problem || RESCUE.failed}</ErrorText>
-          <Pill testID="rescue-retry" title={RESCUE.retry} busy={busy} onPress={() => run(zipOf(zip))} />
+          <Pill testID="rescue-retry" title={RESCUE.retry} busy={busy} onPress={() => run(at)} />
         </View>
       ) : null}
       <Row style={{ marginTop: space.gutter }}>

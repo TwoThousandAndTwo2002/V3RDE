@@ -29,7 +29,7 @@ import { DetailsView, hasDetails } from "./Details";
 import { useChat } from "./Voice";
 import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
 import { MORE, PICKUP, PLACE, TOUCH, VOICE } from "../words";
-import { currentPosition, zipOf, type Place } from "../place";
+import { currentPosition, type Place } from "../place";
 import type { PickedAddress } from "../maps";
 import { PickupAddress } from "./Pickup";
 
@@ -62,12 +62,13 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const [items, setItems] = useState<ItemForm[]>(answer.items);
   const [pickup, setPickup] = useState("");
   const [problem, setProblem] = useState("");
-  // X49e: the pickup place: the location now (asked at Post), or a ZIP code when location is off
-  const [placeHow, setPlaceHow] = useState<"location" | "zip">("location");
-  const [placeZip, setPlaceZip] = useState("");
+  // X49e: the pickup place when there is no address search (a phone build, or Maps did not load): the location now,
+  // asked at Post. X49q (T9: "lets drop zip code"): no ZIP code; location off = the giver turns it on and posts again.
   // X49j: the pickup address (Places autocomplete, then the map) when the server gives a Maps key (web); else the X49e row
   const [mapsKey, setMapsKey] = useState("");
   const [picked, setPicked] = useState<PickedAddress | null>(null);
+  const [needAddress, setNeedAddress] = useState(false); // X49q: the error shows under the address field
+  const [naming, setNaming] = useState(false); // X49q review: the address of a moved pin is being found: Post waits
   useEffect(function mapsConfig() {
     if (RN.Platform.OS !== "web") return; // the Maps JavaScript API is a browser script
     let on = true;
@@ -204,38 +205,35 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     if (busy.current || items.length === 0) return;
     if (working) return setProblem(TOUCH.wait); // a touch-up that still runs decides the photo
     if (talking.current) return setProblem(VOICE.first); // a chat line is still being read
-    if (byAddress && !picked) return setProblem(PICKUP.need); // X49j: the address comes first
+    if (byAddress && !picked) { setProblem(""); return setNeedAddress(true); } // X49j: the address comes first (X49q: the error under the field)
+    if (byAddress && naming) return setProblem(PICKUP.naming); // X49q review: the text must match the pin
     const pickupWrong = listingProblem("-", 1, pickup, byAddress); // the pickup is for all items: no item name with it
     if (pickupWrong) return setProblem(pickupWrong);
     for (const it of items) {
       const wrong = listingProblem(it.title, it.servings, pickup, byAddress);
       if (wrong) return setProblem(one || !it.title.trim() ? wrong : it.title.trim() + ": " + wrong);
     }
-    if (!byAddress && placeHow === "zip" && !zipOf(placeZip)) return setProblem(PLACE.needZip);
     setProblem("");
     busy.current = true;
     onBusy(true);
     setSending(true);
     let place: Place;
     try {
-      place = byAddress && picked ? { lat: picked.lat, lng: picked.lng }
-        : placeHow === "zip" ? { zip: zipOf(placeZip) as string } : await currentPosition();
-    } catch { // location is off, or this device has none: the giver types the ZIP code
+      place = byAddress && picked ? { lat: picked.lat, lng: picked.lng } : await currentPosition();
+    } catch { // location is off, or this device has none
       busy.current = false;
       onBusy(false);
       setSending(false);
-      setPlaceHow("zip");
-      return setProblem(PLACE.zipOffLine + " " + PLACE.needZip);
+      return setProblem(PLACE.offPost);
     }
     const sent: ItemForm[] = []; // X48u review: the items that posted, as the user left them, for the label report
     const left: ItemForm[] = [];
     let done = 0;
-    let zipBad = false;
     for (let k = 0; k < items.length; k++) {
       const it = items[k];
       if (!one) setProgress(postingText(k + 1, items.length));
       const base = { title: it.title.trim(), number_of_serving: Number(it.servings), pickup_text: pickup.trim(), request_id: answer.requestId,
-        details: it.details, place, address: byAddress && picked ? { text: picked.text, zip: picked.zip } : undefined };
+        details: it.details, place, address: byAddress && picked ? { text: picked.text } : undefined };
       try {
         const photoId = photoToPost(it.photo_id, touch[it.item] ?? { kind: "idle" });
         await listings.create(photoId ? { ...base, photo_id: photoId } : { ...base, photo: shot });
@@ -243,12 +241,6 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         sent.push(it);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) { busy.current = false; onBusy(false); return ended(); }
-        if (!byAddress && err instanceof ApiError && err.status === 400 && /zip/i.test(err.message)) { // X49e: a ZIP code the server does not know
-          for (const rest of items.slice(k)) left.push(rest);
-          zipBad = true;
-          setPlaceHow("zip");
-          break;
-        }
         if (one) setProblem(err instanceof Error ? err.message : String(err));
         left.push(it);
       }
@@ -268,7 +260,6 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       setPartial(true);
       setProblem(postedSoFar.current > 0 ? postedSummary(postedSoFar.current, left.length) : REVIEW.nonePosted);
     }
-    if (zipBad) setProblem(PLACE.needZip); // X49e: the reason, after the summary
   };
 
   const pickupField = (
@@ -279,32 +270,15 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const pickupMark = chat.pickupMarked ? (
     <Muted style={{ color: col.link, marginTop: space.hair, marginLeft: space.inset }}>{VOICE.markPickup}</Muted>
   ) : null;
-  const placeRow = placeHow === "zip" ? ( // X49e: the pickup place, once for all items
-    <View style={{ marginTop: space.group }}>
-      <Field testID="pickup-zip" label={PLACE.pickupZip} value={placeZip} keyboardType="number-pad" inputMode="numeric" maxLength={10}
-        onChangeText={setPlaceZip} />
-      <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PLACE.zipOffLine}</Muted>
-      <View style={{ marginTop: space.hair, marginLeft: space.inset, alignSelf: "flex-start" }}>
-        <TextLink testID="place-location" onPress={() => setPlaceHow("location")}>{PLACE.useLocation}</TextLink></View>
-    </View>
-  ) : (
-    <View style={{ marginTop: space.group, marginLeft: space.inset }}>
-      <Muted style={{ marginBottom: space.hair }}>{PLACE.pickupPlace}</Muted>
-      <Body>{PLACE.hereNow}</Body>
-      <Muted lines={2}>{PLACE.hereLine}</Muted>
-      <View style={{ marginTop: space.hair, alignSelf: "flex-start" }}>
-        <TextLink testID="place-zip" onPress={() => setPlaceHow("zip")}>{PLACE.useZip}</TextLink></View>
-    </View>
-  );
   // X49j: the pickup part: the address (then the map), the safety line, then the instructions; or the X49e row
   const pickupPart = byAddress ? (
     <>
-      <PickupAddress mapsKey={mapsKey} picked={picked} onPicked={(a) => { setPicked(a); setProblem(""); }} locked={sending}
-        onFail={() => { setMapsKey(""); setPicked(null); }} />
+      <PickupAddress mapsKey={mapsKey} picked={picked} onPicked={(a) => { setPicked(a); setNeedAddress(false); }} locked={sending} onNaming={setNaming}
+        onFail={() => { setMapsKey(""); setPicked(null); }} need={needAddress} />
       <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.safety}</Muted>
       <View style={{ marginTop: space.group }}>{pickupField}</View>{pickupMark}
     </>
-  ) : <>{pickupField}{pickupMark}{placeRow}</>;
+  ) : <>{pickupField}{pickupMark}</>; // X49q: no "Pickup place" row: the location is taken at Post
   let fields: React.ReactNode;
   if (one) {
     const it = items[0];
