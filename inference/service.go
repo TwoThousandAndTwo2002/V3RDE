@@ -79,7 +79,8 @@ type ServiceConfig struct {
 	Budget      *Budget
 	Events      *Events
 	Photos      *PhotoStore
-	GateURL     string // http://gate:8084
+	Stock       *StockPhotos // N1: the product photos for a barcode hit (session callers); nil = off
+	GateURL     string       // http://gate:8084
 	GateHTTP    *http.Client
 	BarcodeURL  string // http://barcode:8083; "" = no barcode step
 	ListingsURL string // http://listings:8082; "" = no dedup
@@ -99,6 +100,8 @@ type AnswerItem struct {
 	Item    int            `json:"item"`
 	Fields  analyze.Result `json:"fields"`
 	PhotoID string         `json:"photo_id"`
+	// PhotoCredit (N1): set when the photo is a stock photo (StockCredit).
+	PhotoCredit string `json:"photo_credit,omitempty"`
 }
 
 // Answer is the 200 body (the same shape for 1 item and for many).
@@ -351,13 +354,32 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				}
-				pid, err := full(1)
+				// N1: a session caller's listing gets the product's stock photo when
+				// there is one; the camera shot stays stored (SaveOriginal above).
+				// Bearer callers (/v1/analyze) keep the camera shot.
+				var pid, credit string
+				var err error
+				if kind == "session" && c.Stock != nil {
+					jpg, sk := c.Stock.Find(bc.GTIN14)
+					ev.StockPhoto = sk
+					if jpg != nil {
+						pid, err = c.Photos.SaveItem(jpg, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
+							Item: 1, Kind: "stock", Stock: sk, GTIN14: bc.GTIN14, TS: t0.UTC().Format(time.RFC3339)})
+						credit = StockCredit
+						if err != nil { // N1 review: the camera shot, as before
+							ev.Error, pid, credit, err = "stock photo: "+err.Error(), "", "", nil
+						}
+					}
+				}
+				if pid == "" && err == nil {
+					pid, err = full(1)
+				}
 				if err != nil {
 					fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
 					return
 				}
 				ans.Source, ans.Model = SourceBarcode, "catalog"
-				ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid})
+				ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid, PhotoCredit: credit})
 				done()
 				return
 			}

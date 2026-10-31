@@ -99,6 +99,8 @@ services:
               "-token-file", "/run/secrets/analyze_token", "-gate", "http://gate:8084", "-events", "/events",
               "-auth", "http://auth:8081", "-barcode", "http://barcode:8083", "-listings", "http://listings:8082",
               "-photos", "/photos", "-max-image-bytes", "5242880",
+              # N1: the Open Food Facts product photo of a barcode hit (b/ cutouts, a/ as is); an empty folder = the camera shot
+              "-stock", "/stock",
               "-cap-usd", "${ANALYZE_CAP_USD:-20}", "-caller-cap-usd", "${ANALYZE_CALLER_CAP_USD:-5}",
               "-max-in-flight", "${ANALYZE_IN_FLIGHT:-3}",
               "-rate-burst", "${ANALYZE_RATE_BURST:-6}"]
@@ -107,6 +109,7 @@ services:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}:/photos
+      - ${V3RDE_ASSETS:-/opt/v3rde/assets}/stock:/stock:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/events
     depends_on: [gate, auth, barcode, listings]
 

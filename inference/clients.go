@@ -79,6 +79,7 @@ type CatalogProduct struct {
 
 type barcodeAnswer struct {
 	Outcome    string          `json:"outcome"`
+	GTIN14     string          `json:"gtin14"` // N1: the key of the stock photo
 	Admissible bool            `json:"admissible"`
 	Product    *CatalogProduct `json:"product"`
 }

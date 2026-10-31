@@ -44,6 +44,7 @@ func main() {
 	barcodeURL := flag.String("barcode", "", "barcode catalog base URL; empty = no barcode step")
 	listingsURL := flag.String("listings", "", "listings base URL (dedup); empty = no dedup")
 	photos := flag.String("photos", "/photos", "photo store: uploads + item photos (a volume)")
+	stock := flag.String("stock", "", "N1: the stock photo folder (b/<gtin14>.jpg cutouts, a/<gtin14>.jpg as is); empty = off")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	upstream := flag.String("upstream", inference.DefaultUpstream, "Meta responses endpoint")
 	effort := flag.String("reasoning-effort", "low", "Muse reasoning effort (X30: low)")
@@ -94,10 +95,18 @@ func main() {
 	h := inference.NewService(inference.ServiceConfig{Engine: eng, Auth: analyze.NewBearer(token), Session: session,
 		Limiter: analyze.NewLimiter(*burst, *window), Budget: budget, Events: ev, GateURL: *gate,
 		BarcodeURL: *barcodeURL, ListingsURL: *listingsURL, Photos: &inference.PhotoStore{Dir: *photos},
-		MaxImage: *maxImage, MaxInFlight: *inFlight, Timeout: *timeout, Origin: *origin, Build: build})
+		Stock: stockOf(*stock), MaxImage: *maxImage, MaxInFlight: *inFlight, Timeout: *timeout, Origin: *origin, Build: build})
 	srv := &http.Server{Addr: *listen, Handler: h, ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 60 * time.Second, WriteTimeout: *timeout + 10*time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("icarus-analyze listening on %s gate=%s auth=%s barcode=%s listings=%s photos=%s cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
-		*listen, *gate, *authURL, *barcodeURL, *listingsURL, *photos, *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
+	log.Printf("icarus-analyze listening on %s gate=%s auth=%s barcode=%s listings=%s photos=%s stock=%q cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
+		*listen, *gate, *authURL, *barcodeURL, *listingsURL, *photos, *stock, *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
 	log.Fatal(srv.ListenAndServe())
+}
+
+// stockOf is nil for an empty folder flag (N1: the stock photos are off).
+func stockOf(dir string) *inference.StockPhotos {
+	if dir == "" {
+		return nil
+	}
+	return &inference.StockPhotos{Dir: dir}
 }

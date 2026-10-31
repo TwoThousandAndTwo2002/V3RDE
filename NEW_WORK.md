@@ -1712,3 +1712,20 @@ A post test failed now and then (1 run in 6). When a rescue job ended, the listi
 - A failed save still marks the job failed in memory, as before.
 - Three job tests wait for the events line (at most 5 s): under load they read the file before the job wrote it.
 - Tests: post 94 -> 95.
+
+## 83. A barcode scan gets the product photo
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none (no model call on the barcode route).
+**Files:** `inference/stock.go` (new), `inference/stock_test.go` (new), `inference/service.go`, `inference/clients.go`, `inference/photos.go`, `inference/events.go`, `inference/cmd/inventory/main.go`, `inference/service_test.go`, `listings/handler.go`, `listings/listing.go`, `listings/store.go`, `listings/listings_test.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N2.md`
+
+T9 asked for a stock photo when a user scans a barcode ("Stock photo only"). The photos are the Open Food Facts front photos made in the Hackathon (22,322 products, 800 px).
+
+- After a barcode hit, the listing photo is the product's white cutout, else the photo as Open Food Facts has it. No photo for the product: the camera shot, as before. The camera shot is still stored.
+- Only the app's route (`/api/analyze`, session). `/v1/analyze` does not change.
+- Open Food Facts photos are CC BY-SA. The answer item and the listing carry `photo_credit` ("Open Food Facts, CC BY-SA"). The app interface does not change in this entry (T9).
+- The photos are a read-only folder on the box (`/opt/v3rde/assets/stock`), mounted into analyze. An empty folder gives the camera shot.
+- A touch-up of a stock photo keeps the credit.
+- Tests: inference 97 -> 100, listings 44 -> 46.
