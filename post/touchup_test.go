@@ -229,7 +229,7 @@ func TestTouchupDoneStoresItemPhotoAndOwnerOnly(t *testing.T) {
 		t.Fatalf("other user GET: %d", w.Code)
 	}
 	// one event line for the job, with both calls
-	b, _ := os.ReadFile(e.cfg.Events.Path(time.Now()))
+	b := eventsWith(t, e.cfg.Events.Path(time.Now()), `"route":"touchup.job"`) // N1: written after the job's end
 	if !strings.Contains(string(b), `"route":"touchup.job"`) || !strings.Contains(string(b), `"purpose":"touchup:check"`) ||
 		!strings.Contains(string(b), `"remote_ip":"192.0.2.1"`) {
 		t.Fatalf("events %s", b)

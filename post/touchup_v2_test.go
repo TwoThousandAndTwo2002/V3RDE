@@ -161,7 +161,7 @@ func TestTouchupV2Background(t *testing.T) {
 	if _, err := ReadItemPhoto(e.cfg.Dir, j.PhotoID, "u2"); err == nil {
 		t.Fatal("another user read the edit")
 	}
-	ev, _ := os.ReadFile(e.cfg.Events.Path(time.Now()))
+	ev := eventsWith(t, e.cfg.Events.Path(time.Now()), `"v2":true`) // N1: written after the job's end
 	if !strings.Contains(string(ev), `"v2":true`) || !strings.Contains(string(ev), `"muse":true`) ||
 		!strings.Contains(string(ev), "Ripe Plantains") { // the scan's name, in the note
 		t.Fatalf("events %s", ev)

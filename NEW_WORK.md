@@ -1697,3 +1697,18 @@ T9 asked why the review asked for a ZIP and an address with a ZIP, and for a map
 - The key is not in the app files: the listings service reads it on the box (x49n) and gives it to the app. Without a key the review shows the place row of 75.
 - If Maps does not work, the review shows the place row of 75 again.
 - Tests: listings 42 -> 44, post 92 -> 94, mobile 128 -> 135.
+
+## 82. Rescue: the end of a job frees the listing at once
+
+**When:** Oct 31 2026.
+**Branch:** `reach`, made from `services` at entry 80, like the rescue branch. It joins `services` by a merge later.
+**Meta models:** none (no model change).
+**Files:** `post/rescue.go`, `post/rescue_job_test.go`, `post/wait_events_test.go` (new), `post/touchup_test.go`, `post/touchup_v2_test.go`
+**Sources:** `docs/sources/N1.md`
+
+A post test failed now and then (1 run in 6). When a rescue job ended, the listing stayed marked "busy" for a short time after the result was visible. A new rescue in that moment got 409.
+
+- The job's last state and the free listing are now one step (one lock).
+- A failed save still marks the job failed in memory, as before.
+- Three job tests wait for the events line (at most 5 s): under load they read the file before the job wrote it.
+- Tests: post 94 -> 95.
