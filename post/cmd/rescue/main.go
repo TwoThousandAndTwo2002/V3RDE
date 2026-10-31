@@ -46,6 +46,7 @@ func main() {
 	smtpPassFile := flag.String("smtp-pass-file", "/run/secrets/smtp_pass", "file holding the mail relay password")
 	from := flag.String("from", "", "sender address for the relay")
 	smtpTimeout := flag.Duration("smtp-timeout", 20*time.Second, "the whole SMTP exchange (dial, TLS, auth, data)")
+	analyzeEvents := flag.String("analyze-events", "", "R1: the analyze events folder, read-only (the scan's route for the scanner hint); empty = no hint")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
 	flag.Parse()
 	post.TrustForwarded = *trustFwd
@@ -75,6 +76,8 @@ func main() {
 		SendPerDay:  *sendPerDay,
 		Timeout:     *timeout,
 		Build:       build,
+		// R1: the scan's route for the scanner hint
+		AnalyzeEvents: *analyzeEvents,
 	}
 	if *smtpAddr != "" {
 		if *from == "" {
@@ -90,7 +93,7 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: post.NewRescue(cfg), ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 30 * time.Second, WriteTimeout: *timeout + 10*time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("icarus-rescue listening on %s model=%s directory=%s listings=%s relay=%v min_servings=%d cap=$%.2f spent_today=$%.4f build=%s (key %d bytes)",
-		*listen, *model, *directory, *listingsURL, cfg.Mailer != nil, *minServings, *capUSD, budget.Spent(), build, len(key))
+	log.Printf("icarus-rescue listening on %s model=%s directory=%s listings=%s relay=%v min_servings=%d cap=$%.2f spent_today=$%.4f analyze-events=%q build=%s (key %d bytes)",
+		*listen, *model, *directory, *listingsURL, cfg.Mailer != nil, *minServings, *capUSD, budget.Spent(), *analyzeEvents, build, len(key))
 	log.Fatal(srv.ListenAndServe())
 }

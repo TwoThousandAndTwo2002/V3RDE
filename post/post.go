@@ -225,7 +225,8 @@ func ForwardCookie(from, to *http.Request) {
 
 // ---- the listings service --------------------------------------------------
 
-// Listing is the listings service's shape (listings/listings.go, frozen W0).
+// Listing is the listings service's shape (listings/listing.go, frozen W0;
+// R1 adds the optional details of X48d).
 type Listing struct {
 	ID              string  `json:"id"`
 	OwnerID         string  `json:"owner_id"`
@@ -239,6 +240,16 @@ type Listing struct {
 	CollectedBy     *string `json:"collected_by"`
 	CollectedAt     *string `json:"collected_at"`
 	RequestID       string  `json:"request_id"`
+	// Details (R1): the scanner's fields that the listings service keeps with
+	// the listing (X48d); absent for a listing posted without them.
+	Details *ListingDetails `json:"details,omitempty"`
+}
+
+// ListingDetails (R1) are the two scanner fields of a listing (listings/details.go)
+// that rescue reads; the other four are not decoded here.
+type ListingDetails struct {
+	Description   string `json:"description,omitempty"`
+	MealCondition string `json:"meal_condition,omitempty"`
 }
 
 // Expired is true when the listing is still "active" but its timer ran out

@@ -1510,3 +1510,20 @@ The first build of the translation image on the box stopped. One test in the bui
 - The image build now skips that one test. Every other test still runs before the build.
 - The SUP scripts still run that test with the whole repo.
 
+## 71. Rescue: the food scanner's note helps choose the place
+
+**When:** Oct 30 2026. Branch `rescue` (made from `services` at #70).
+**Meta models:** Muse Spark 1.3 (the rescue draft; no new call).
+**Files:** `post/post.go`, `post/rescue.go`, `post/rescue_source.go`, `post/rescue_test.go`, `post/rescue_hint_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R1.md`
+
+T9: the food scan already says how the food is packed (`meal_condition`), but the rescue did not use it. Option A: give it to Muse Spark as a hint.
+
+- The listing keeps the scanner's details since entry 51 ("A listing keeps what the scanner found"). Rescue now reads `meal_condition` and the description.
+- Muse Spark gets one more line in the prompt: a scanner note. It says the note can be wrong and the photo decides.
+- Muse still makes the decision. A sealed package is not always shelf-stable (some canned ham and seafood must stay cold).
+- The hint is used only for a photo scan. Each scan's events line already records its route (barcode or vision) and the user. The listing keeps the scan's request id, so rescue reads that line. A barcode scan gives a fixed "ready to eat", so it gets no hint, also for listings posted before this change.
+- No events line, another user's line, or no field: the same prompt as before, byte for byte.
+- The events line records the hint and the route, so the self-improvement step can compare the scanner with Muse.
+- Tests: post 67 -> 73.
+

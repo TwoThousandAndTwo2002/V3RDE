@@ -41,6 +41,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
@@ -67,6 +68,72 @@ shelf_stable is true only for sealed food that keeps without a refrigerator (can
 The email asks a local food program whether it can accept this donation, says what the food is and how much,
 and asks when the donor can drop it off. Do not say the food is safe, do not give dates or temperatures,
 do not invent facts about the food. Do not add a greeting name or a signature.`
+
+// R1 (T9 2026-10-30, option A): the food scanner already says how the food
+// was packed when it was listed (the contract field meal_condition, kept with
+// the listing as details, X48d). Rescue gives it to Muse Spark as a hint, with
+// the scanner's description; Muse still decides shelf_stable from the photo,
+// because "sealed" is not the same as "keeps without a refrigerator" (sealed
+// yogurt). A listing without the field gets the prompt of X35b, byte for byte.
+// A barcode answer's meal_condition is a fixed value (barcode/product.go), not
+// something the scanner saw, so the hint is used only when the scan's own
+// events line (the analyze events, read-only) says the route was "vision" for
+// the same user: see scanSource. Any other case gives no hint.
+
+// RescueHint is the line rescuePrompt puts after "Servings:". %s are the
+// condition words and the description part.
+const RescueHint = "Scanner note, made when the food was listed (it can be wrong; the photo decides): %s%s.\n"
+
+// hintWords are the words of each meal_condition value (server/contract.go).
+var hintWords = map[string]string{
+	"sealed":           "the food is in a sealed package",
+	"ready_to_eat":     "the food is ready to eat",
+	"cooking_required": "the food needs cooking",
+}
+
+// MaxHintDescription is the most characters (runes) of the description in the
+// note: the listings service keeps at most 200 (listings/details.go).
+const MaxHintDescription = 200
+
+// rescuePrompt is the Muse instruction for listing l, whose scan took route
+// source (scanSource), and the meal_condition value it used as a hint (""
+// when it used none: no field, a value not in the contract, or a route that
+// is not "vision").
+func rescuePrompt(l Listing, source string) (string, string) {
+	note, cond := "", ""
+	if l.Details != nil && source == ScanVision {
+		if words, ok := hintWords[l.Details.MealCondition]; ok {
+			cond = l.Details.MealCondition
+			desc := ""
+			if d := oneLine(l.Details.Description, MaxHintDescription); d != "" {
+				desc = "; the scanner described it as: " + d
+			}
+			note = fmt.Sprintf(RescueHint, words, desc)
+		}
+	}
+	if note == "" {
+		return fmt.Sprintf(RescuePrompt, l.Title, l.NumberOfServing), ""
+	}
+	// the note goes in as an argument, so a "%" in the description stays text
+	tmpl := strings.Replace(RescuePrompt, "Servings: %d\n", "Servings: %d\n%s", 1)
+	return fmt.Sprintf(tmpl, l.Title, l.NumberOfServing, note), cond
+}
+
+// oneLine is s with control and format characters (new lines, and bidi or
+// zero-width marks too) as spaces, runs of spaces as one, trimmed, and at
+// most n runes.
+func oneLine(s string, n int) string {
+	s = strings.Join(strings.Fields(strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) {
+			return ' '
+		}
+		return r
+	}, s)), " ")
+	if r := []rune(s); len(r) > n {
+		s = strings.TrimSpace(string(r[:n]))
+	}
+	return s
+}
 
 // Place is one directory result as the app shows it.
 type Place struct {
@@ -553,8 +620,11 @@ type RescueConfig struct {
 	SendPerDay  int     // emails per donor per UTC day (3)
 	Timeout     time.Duration
 	Build       string
-	now         func() time.Time
-	sendMu      sync.Mutex // one /send at a time: the checks, the email and the record are one step
+	// AnalyzeEvents (R1) is the analyze service's events folder, read-only:
+	// the scan's route (barcode | vision) for the hint. "" = no hint ever.
+	AnalyzeEvents string
+	now           func() time.Time
+	sendMu        sync.Mutex // one /send at a time: the checks, the email and the record are one step
 }
 
 // zipRe is a US ZIP (5 digits, optional +4).
@@ -692,7 +762,10 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	if perr == nil {
 		images = append(images, Image{Bytes: photo, Mime: mime})
 	}
-	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", fmt.Sprintf(RescuePrompt, l.Title, l.NumberOfServing), images...)
+	source := scanSource(c.AnalyzeEvents, l) // R1: the scan's route, from its own events line
+	prompt, hint := rescuePrompt(l, source)
+	ev.Detail = map[string]any{"hint": hint, "scan_source": source} // R1 review: every exit after this keeps them
+	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", prompt, images...)
 	calls = append(calls, call)
 	d := <-dirc
 	hold.Settle(Sum(calls))
@@ -707,7 +780,8 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		return
 	case d.err != nil:
 		// X44l: the reason goes into the events line (the answer stays short)
-		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms}
+		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms, "hint": hint,
+			"scan_source": source}
 		fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
 		return
 	}
@@ -737,7 +811,8 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	}
 	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
 	ev.Detail = map[string]any{"rescue_id": res.RescueID, "kind": kind, "shelf_stable": stable,
-		"places": len(places), "directory_results": len(d.places), "directory_ms": d.ms, "photo": perr == nil}
+		"places": len(places), "directory_results": len(d.places), "directory_ms": d.ms, "photo": perr == nil,
+		"hint": hint, "scan_source": source} // R1: the hint Muse got ("" none) and the scan's route, for F6
 	WriteJSON(w, http.StatusOK, res)
 	c.record(ev)
 }
