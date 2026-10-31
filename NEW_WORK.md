@@ -1848,3 +1848,17 @@ T9: the reach work (the barcode product photo, the Facebook post and the claim l
 - The web build is made again from the merged code.
 - No other change. Tests: inference 104, listings 48, post 96, auth 32, mobile 139; the other modules as before.
 
+## 88. The new listings go to the V3RDE Facebook Page
+
+**When:** Oct 31 2026.
+**Meta models:** Muse Spark 1.3 writes the post (fan-out, no change); the Facebook Pages API publishes it.
+**Files:** `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/X49t.md`
+
+T9 made the Facebook Page "V3RDE" and a Meta app for it, and chose to start the posts with this change.
+
+- Fan-out gets the Page token (a file on the box, made by the fb2 script) and the ID of the V3RDE Page. Every new listing of a real account now goes to the Page (entry 84 of reach).
+- The token does not expire. An empty token file, or an empty `FANOUT_PAGE_ID`, turns the posts off.
+- The deploy check now says whether fan-out posts to the Page, and checks that the token is not in the container settings.
+- Open: no photo check before a public post; the Meta app is in development mode (the first post shows who can see it).
+

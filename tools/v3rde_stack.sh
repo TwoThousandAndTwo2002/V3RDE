@@ -103,9 +103,10 @@ preflight() {
   # X49o: the reset mail relay user and app password (x49p on the Mac and the box). Missing: empty files, so the
   # bind mounts are files; the auth service then answers 503 to a reset request.
   local sf
-  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass"; do
+  # FB: the Facebook Page token (fb2 on the Mac and the box). Missing: an empty file; fan-out then does not post.
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token"; do
     [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
-    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail)"; }
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts)"; }
     chmod 600 "$sf"
     asroot && chown 65534:65534 "$sf"
   done
@@ -193,11 +194,16 @@ up() {
     h=$(dc exec -T caddy wget -qO- -T 5 "http://$s/healthz" </dev/null 2>/dev/null | cut -c1-150 || true)
     [ -n "$h" ] || { h="did not answer  <-- CHECK"; BAD=$((BAD+1)); }
     printf '   %-30s %s\n' "${s%%:*} (internal)" "$h"
+    # FB: with a Page token on the box, fan-out must say it posts ("page":true)
+    if [ "${s%%:*}" = fanout ] && [ -s "$V3RDE_CFG/fb_page_token" ] && [ "${FANOUT_PAGE_ID-x}" != "" ]; then
+      case "$h" in *'"page":true'*) echo "   fanout posts to the Page        yes (want yes)";;
+        *) echo "   fanout posts to the Page        no (want yes)  <-- CHECK"; BAD=$((BAD+1));; esac
+    fi
   done
   local ids n f
   ids=$(dc ps -q) || die "docker compose ps failed"
   [ -n "$ids" ] || die "no containers"
-  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass; do
+  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass fb_page_token; do
     [ -s "$V3RDE_CFG/$f" ] || continue # an empty file matches every line (X49o: smtp_pass is empty until x49p)
     # shellcheck disable=SC2086
     n=$(docker inspect $ids | grep -cFf "$V3RDE_CFG/$f" || true)

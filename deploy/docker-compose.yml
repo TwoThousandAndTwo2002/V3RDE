@@ -170,13 +170,17 @@ services:
     entrypoint: ["/fanout"]
     command: ["-listen", "0.0.0.0:8090", "-key-file", "/run/secrets/meta_key",
               "-status-token-file", "/run/secrets/fanout_status_token",
-              "-page-id", "${FANOUT_PAGE_ID:-}", "-link-base", "${FANOUT_LINK_BASE-https://icarus.thehungreeapp.com/l/}",
+              # FB (T9 2026-10-31): the V3RDE Page; the token file comes from fb2 (empty file = posting off).
+              # FANOUT_PAGE_ID= (empty) also turns posting off.
+              "-page-id", "${FANOUT_PAGE_ID-1415609644973410}", "-page-token-file", "/run/secrets/fb_page_token",
+              "-link-base", "${FANOUT_LINK_BASE-https://icarus.thehungreeapp.com/l/}",
               "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
               "-cap-usd", "${FANOUT_CAP_USD:-1}", "-caller-cap-usd", "${FANOUT_CALLER_CAP_USD:-0.25}", "-sweep", "1m", "-trust-forwarded"]
     mem_limit: 224m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/fanout_status_token:/run/secrets/fanout_status_token:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/fb_page_token:/run/secrets/fb_page_token:ro
       - v3rde_fanout:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/fanout:/events
     depends_on: [auth, listings]
