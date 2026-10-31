@@ -190,7 +190,19 @@ type Place struct {
 	Tel           string  `json:"tel,omitempty"`        // tel: link
 	Mailto        string  `json:"mailto,omitempty"`     // R3: bulk (mode email) only
 	Directions    string  `json:"directions,omitempty"` // R3: a Google Maps directions link to the place
+	SourceURL     string  `json:"source_url,omitempty"` // R4: the web page that shows a place the web search found
 }
+
+// SourceWebSearch is Place.Source for a place the web search agent found (R4).
+const SourceWebSearch = "web_search"
+
+// The states of a rescue (R4). A rescue made without ?async=1, or stored
+// before R4, has no status: it is done.
+const (
+	StatusRunning = "running"
+	StatusDone    = "done"
+	StatusFailed  = "failed"
+)
 
 // Draft is the inquiry Muse wrote.
 type Draft struct {
@@ -216,6 +228,11 @@ type Rescue struct {
 	CreatedAt   string  `json:"created_at"`
 	CostUSD     float64 `json:"cost_usd"`
 	Sent        []Sent  `json:"sent"`
+	// R4: the job. Status running | done | failed; Code and Error tell why it failed.
+	Status  string `json:"status,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Error   string `json:"error,omitempty"`
+	FoundBy string `json:"found_by,omitempty"` // directory | web_search | none
 }
 
 // Sent is one email the relay sent for the donor.
@@ -561,6 +578,19 @@ func OpenRescues(dir string) (*RescueStore, error) {
 			return nil, fmt.Errorf("%s: %w", s.path, err)
 		}
 	}
+	// R4: a job that was running when the service stopped does not run now
+	stopped := false
+	for id, r := range s.items {
+		if r.Status == StatusRunning {
+			r.Status, r.Code, r.Error = StatusFailed, "interrupted", "the service restarted: start the rescue again"
+			s.items[id], stopped = r, true
+		}
+	}
+	if stopped {
+		if err := s.flushLocked(); err != nil {
+			return nil, err
+		}
+	}
 	return s, nil
 }
 
@@ -589,6 +619,15 @@ func (s *RescueStore) Put(r Rescue) error {
 	return nil
 }
 
+// Set (R4 review) stores r in memory even when the file write fails (it
+// returns that error): a job's end must never leave it "running".
+func (s *RescueStore) Set(r Rescue) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.items[r.RescueID] = r
+	return s.flushLocked()
+}
+
 // Get returns rescue id if owner owns it (one error for both cases).
 func (s *RescueStore) Get(id, owner string) (Rescue, bool) {
 	s.mu.Lock()
@@ -607,7 +646,7 @@ func (s *RescueStore) Begin(lid, owner string) (existing Rescue, found, busy boo
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, r := range s.items {
-		if r.ListingID == lid && r.OwnerID == owner {
+		if r.ListingID == lid && r.OwnerID == owner && r.Status != StatusFailed { // R4: a failed job can be run again
 			return r, true, false
 		}
 	}
@@ -666,8 +705,12 @@ type RescueConfig struct {
 	// AnalyzeEvents (R1) is the analyze service's events folder, read-only:
 	// the scan's route (barcode | vision) for the hint. "" = no hint ever.
 	AnalyzeEvents string
-	now           func() time.Time
-	sendMu        sync.Mutex // one /send at a time: the checks, the email and the record are one step
+	// R4: Search is the web search agent (nil = no fallback; only a job uses
+	// it); JobTimeout is the limit of one job (?async=1), default 90 s.
+	Search     *PlaceSearch
+	JobTimeout time.Duration
+	now        func() time.Time
+	sendMu     sync.Mutex // one /send at a time: the checks, the email and the record are one step
 }
 
 // zipRe is a US ZIP (5 digits, optional +4).
@@ -686,6 +729,9 @@ func NewRescue(c *RescueConfig) http.Handler {
 	}
 	if c.Timeout == 0 {
 		c.Timeout = 25 * time.Second
+	}
+	if c.JobTimeout == 0 {
+		c.JobTimeout = 90 * time.Second
 	}
 	if c.now == nil {
 		c.now = time.Now
@@ -783,6 +829,10 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	// one rescue per listing: a second request gets the first one (no new call)
 	prev, found, busy := c.Store.Begin(lid, who.User.ID)
 	switch {
+	case found && prev.Status == StatusRunning && r.URL.Query().Get("async") != "1":
+		// R4 review: the one-request route does not answer a job that still runs
+		fail(http.StatusConflict, CodeConflict, "a rescue for this listing is being made")
+		return
 	case found:
 		ev.Status, ev.LatencyMS = 200, time.Since(t0).Milliseconds()
 		ev.Detail = map[string]any{"rescue_id": prev.RescueID, "existing": true}
@@ -793,24 +843,18 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusConflict, CodeConflict, "a rescue for this listing is being made")
 		return
 	}
-	defer c.Store.End(lid)
+	handoff := false // R4: a job ends the mark itself, when it is done
+	defer func() {
+		if !handoff {
+			c.Store.End(lid)
+		}
+	}()
 	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
 	if hold == nil {
 		fail(CapRefusal(why))
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
-	defer cancel()
-	type dirOut struct {
-		places []Place
-		ms     int64
-		err    error
-	}
-	dirc := make(chan dirOut, 1)
-	go func() { // the directory and Muse do not depend on each other
-		p, ms, err := c.Directory.Near(ctx, zip, in.Lat, in.Lng)
-		dirc <- dirOut{p, ms, err}
-	}()
+	// The photo is read now, with the caller's cookie (R4: a job runs after the answer).
 	photo, mime, perr := c.Listings.Photo(r, lid)
 	var images []Image
 	if perr == nil {
@@ -825,39 +869,179 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	if mode == ModeEmail {
 		prompt, hint = rescuePrompt(l, source)
 	}
-	ev.Detail = map[string]any{"hint": hint, "scan_source": source, "mode": mode, "location_from": from} // R1 review: every exit after this keeps them
-	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", prompt, images...)
+	base := map[string]any{"hint": hint, "scan_source": source, "mode": mode, "location_from": from, "photo": perr == nil} // never the pickup text
+	ev.Detail = base
+	j := rescueJob{id: id, lid: lid, owner: who.User.ID, l: l, zip: zip, lat: in.Lat, lng: in.Lng, addr: addr,
+		mode: mode, prompt: prompt, images: images, base: base}
+	if r.URL.Query().Get("async") != "1" { // the X35b route: one request, no web search (the 30 s gateway)
+		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
+		defer cancel()
+		res, calls_, status, code, msg := c.runRescue(ctx, j, nil)
+		calls = calls_
+		hold.Settle(Sum(calls))
+		if status != http.StatusOK {
+			fail(status, code, msg)
+			return
+		}
+		res.Status, res.FoundBy = "", "" // the X35b answer shape (R4 review)
+		if err := c.Store.Put(res); err != nil {
+			fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
+			return
+		}
+		ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
+		WriteJSON(w, http.StatusOK, res)
+		c.record(ev)
+		return
+	}
+	// R4: the job. The answer is 202 with the rescue (status running); the app
+	// polls GET /api/rescue/{rescue_id} until the status is done or failed.
+	run := Rescue{RescueID: newHex(16), RequestID: id, ListingID: lid, OwnerID: who.User.ID, Title: l.Title,
+		Servings: l.NumberOfServing, Mode: mode, Places: []Place{}, Sent: []Sent{}, Status: StatusRunning,
+		CreatedAt: c.now().UTC().Format(time.RFC3339Nano)}
+	if err := c.Store.Put(run); err != nil {
+		hold.Settle(0)
+		fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
+		return
+	}
+	handoff = true
+	WriteJSON(w, http.StatusAccepted, run)
+	go func() {
+		defer c.Store.End(lid)
+		ctx, cancel := context.WithTimeout(context.Background(), c.JobTimeout)
+		defer cancel()
+		res, calls, status, code, msg := c.runRescue(ctx, j, c.Search)
+		hold.Settle(Sum(calls))
+		res.RescueID, res.CreatedAt, res.Status = run.RescueID, run.CreatedAt, StatusDone
+		if status != http.StatusOK {
+			res = run
+			res.Status, res.Code, res.Error, res.CostUSD = StatusFailed, code, msg, Sum(calls)
+		}
+		if err := c.Store.Put(res); err != nil {
+			status, code, msg = http.StatusInternalServerError, CodeInternal, "could not store the rescue"
+			bad := run // R4 review: never stays "running"; a new POST may run again
+			bad.Status, bad.Code, bad.Error, bad.CostUSD = StatusFailed, code, msg, Sum(calls)
+			_ = c.Store.Set(bad)
+		}
+		ev.Status, ev.Code, ev.Error = status, "", ""
+		if status != http.StatusOK {
+			ev.Code, ev.Error = code, msg
+		}
+		ev.LatencyMS, ev.Calls, ev.CostUSD = time.Since(t0).Milliseconds(), calls, Sum(calls)
+		ev.Detail = j.detail(res)
+		ev.Detail["async"] = true
+		c.record(ev)
+	}()
+}
+
+// rescueJob (R4) is what a rescue needs once the request checks passed.
+type rescueJob struct {
+	id, lid, owner string
+	l              Listing
+	zip            string
+	lat, lng       *float64
+	addr           string // the address part of the pickup text (directions only; never logged)
+	mode, prompt   string
+	images         []Image
+	base           map[string]any // the events detail so far
+	dir            dirOut
+}
+
+// dirOut is the directory's answer, and the web search's when it ran.
+type dirOut struct {
+	places    []Place
+	ms        int64
+	err       error
+	searched  bool
+	searchErr error
+	call      *Call
+	foundBy   string
+}
+
+// detail is the events detail of a finished job.
+func (j rescueJob) detail(res Rescue) map[string]any {
+	d := map[string]any{}
+	for k, v := range j.base {
+		d[k] = v
+	}
+	d["rescue_id"], d["kind"], d["shelf_stable"], d["places"] = res.RescueID, res.Kind, res.ShelfStable, len(res.Places)
+	d["directory_results"], d["directory_ms"], d["found_by"] = len(j.dir.places), j.dir.ms, res.FoundBy
+	if j.dir.err != nil {
+		d["directory_error"] = clip(j.dir.err.Error(), 300)
+	}
+	if j.dir.searched {
+		d["web_search"] = true
+		if j.dir.searchErr != nil {
+			d["web_search_error"] = clip(j.dir.searchErr.Error(), 300)
+		}
+	}
+	return d
+}
+
+// runRescue makes the rescue: the directory (and, with search, the web search
+// when the directory finds nothing or fails) at the same time as the Muse
+// decision. status is 200, or the refusal with its code and words.
+func (c *RescueConfig) runRescue(ctx context.Context, j rescueJob, search *PlaceSearch) (Rescue, []Call, int, string, string) {
+	var calls []Call
+	dirc := make(chan dirOut, 1)
+	go func() { // the directory and Muse do not depend on each other
+		p, ms, err := c.Directory.Near(ctx, j.zip, j.lat, j.lng)
+		out := dirOut{places: p, ms: ms, err: err, foundBy: "directory"}
+		if search != nil && (err != nil || len(p) == 0) && ctx.Err() == nil { // R4
+			why := "the food directory found no places near this location."
+			if err != nil {
+				why = "the food directory did not answer (" + clip(err.Error(), 120) + ")."
+			}
+			sp, call, serr := search.Find(ctx, j.zip, j.lat, j.lng, why)
+			out.searched, out.searchErr, out.call = true, serr, &call
+			if serr == nil && len(sp) > 0 {
+				out.places, out.foundBy = sp, SourceWebSearch
+			}
+		}
+		if len(out.places) == 0 {
+			out.foundBy = "none"
+		}
+		dirc <- out
+	}()
+	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", j.prompt, j.images...)
 	calls = append(calls, call)
 	d := <-dirc
-	hold.Settle(Sum(calls))
+	if d.call != nil {
+		calls = append(calls, *d.call)
+	}
+	j.dir = d
+	res := Rescue{}
 	stable, isBool := obj["shelf_stable"].(bool)
 	draft := Draft{Subject: clip(Str(obj, "subject"), 120), Body: clip(Str(obj, "body"), 2000)}
+	fail := func(status int, code, msg string) (Rescue, []Call, int, string, string) {
+		for k, v := range j.detail(res) {
+			j.base[k] = v // the failure's events line keeps what is known
+		}
+		return res, calls, status, code, msg
+	}
 	switch {
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
-		fail(http.StatusGatewayTimeout, CodeTimeout, "took too long")
-		return
-	case merr != nil || !isBool || (mode == ModeEmail && (draft.Subject == "" || draft.Body == "")):
-		fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
-		return
-	case d.err != nil:
+		return fail(http.StatusGatewayTimeout, CodeTimeout, "took too long")
+	case merr != nil || !isBool || (j.mode == ModeEmail && (draft.Subject == "" || draft.Body == "")):
+		return fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
+	case d.err != nil && !(d.searched && d.searchErr == nil):
 		// X44l: the reason goes into the events line (the answer stays short)
-		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms, "hint": hint,
-			"scan_source": source, "mode": mode, "location_from": from}
-		fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
-		return
+		if d.searched {
+			return fail(http.StatusBadGateway, CodeUpstream, "the directory and the web search are unavailable")
+		}
+		return fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
 	}
 	kind := KindMealProgram
 	if stable {
 		kind = KindFoodBank
 	}
 	places := PickPlaces(d.places, kind, c.Places)
-	if mode == ModeDropoff {
+	if j.mode == ModeDropoff {
 		draft = Draft{} // R3: no email for a drop-off
 	}
 	for i := range places {
 		places[i].Tel = telLink(places[i].Phone)
-		places[i].Directions = directionsLink(addr, places[i]) // R3
-		if mode == ModeDropoff {
+		places[i].Directions = directionsLink(j.addr, places[i]) // R3
+		if j.mode == ModeDropoff {
 			continue
 		}
 		if places[i].Email != "" {
@@ -869,20 +1053,18 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	if places == nil {
 		places = []Place{}
 	}
-	res := Rescue{RescueID: newHex(16), RequestID: id, ListingID: lid, OwnerID: who.User.ID, Title: l.Title,
-		Servings: l.NumberOfServing, Kind: kind, Mode: mode, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
-		Draft: draft, Places: places, Attribution: DirectoryAttribution,
-		CreatedAt: c.now().UTC().Format(time.RFC3339Nano), CostUSD: Sum(calls), Sent: []Sent{}}
-	if err := c.Store.Put(res); err != nil {
-		fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
-		return
+	attr := DirectoryAttribution
+	if d.foundBy == SourceWebSearch {
+		attr = WebAttribution
 	}
-	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
-	ev.Detail = map[string]any{"rescue_id": res.RescueID, "kind": kind, "shelf_stable": stable,
-		"places": len(places), "directory_results": len(d.places), "directory_ms": d.ms, "photo": perr == nil,
-		"hint": hint, "scan_source": source, "mode": mode, "location_from": from} // R1/R3: for F6; never the pickup text
-	WriteJSON(w, http.StatusOK, res)
-	c.record(ev)
+	res = Rescue{RescueID: newHex(16), RequestID: j.id, ListingID: j.lid, OwnerID: j.owner, Title: j.l.Title,
+		Servings: j.l.NumberOfServing, Kind: kind, Mode: j.mode, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
+		Draft: draft, Places: places, Attribution: attr, FoundBy: d.foundBy,
+		CreatedAt: c.now().UTC().Format(time.RFC3339Nano), CostUSD: Sum(calls), Sent: []Sent{}}
+	for k, v := range j.detail(res) {
+		j.base[k] = v
+	}
+	return res, calls, http.StatusOK, "", ""
 }
 
 // isBulk (R3) is the bulk rule: min or more servings, or the scanner said

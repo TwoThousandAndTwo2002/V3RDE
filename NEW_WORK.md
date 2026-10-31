@@ -1556,3 +1556,19 @@ T9: instead of an email, the app suggests that the donor takes the food to one o
 - A small listing is no longer refused. The pickup address never goes into the events log.
 - Tests: post 73 -> 79.
 
+## 74. Rescue runs as a job, and a web search agent finds places when the directory cannot
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** Muse Spark 1.3 with the built-in `web_search` tool (the agent); Muse Spark 1.3 (the decision).
+**Files:** `post/rescue.go`, `post/rescue_search.go`, `post/post.go`, `post/rescue_job_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R4.md`
+
+T9: when the food directory finds nothing, a web search with an agent looks for places; a directory failure seeds that search. The rescue is a job that the app polls.
+
+- The app starts the rescue and gets an answer at once. It then asks for the result each second or so, until the rescue is done or failed. A slow search no longer hits the 30-second gateway limit.
+- When the directory finds no place, or does not answer, Muse Spark searches the web near the same ZIP. Its prompt says why the search runs.
+- Each place from the web must have a name, an address and the web page that shows it. The answer says that a web search found the places, and asks the donor to check before going.
+- If the directory and the search both fail, the rescue fails, and the donor can start it again.
+- Each web search is counted in the cost.
+- Tests: post 79 -> 90.
+

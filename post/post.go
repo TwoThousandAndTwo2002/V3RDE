@@ -362,6 +362,9 @@ const (
 const (
 	PriceMuseInputPerM  = 1.25
 	PriceMuseOutputPerM = 4.25
+	// PriceWebSearch (R4) is one web_search tool call: $2.50 per 1,000
+	// queries (promptfoo's Meta Model API page; Meta's own page gives no price).
+	PriceWebSearch      = 2.50 / 1000
 	PriceMuseCachedPerM = 0.15
 	PriceImagePerImage  = 0.01
 )
@@ -376,7 +379,8 @@ type Call struct {
 	OutputTokens int     `json:"output_tokens,omitempty"`
 	CachedTokens int     `json:"cached_tokens,omitempty"`
 	Images       int     `json:"images,omitempty"`
-	AudioMS      int     `json:"audio_ms,omitempty"` // speech: billed per whole second
+	AudioMS      int     `json:"audio_ms,omitempty"`     // speech: billed per whole second
+	WebSearches  int     `json:"web_searches,omitempty"` // R4: web_search tool calls in the answer
 	CostUSD      float64 `json:"cost_usd"`
 	UpstreamID   string  `json:"upstream_id,omitempty"`
 	Error        string  `json:"error,omitempty"`
@@ -402,8 +406,8 @@ func (c *Call) Price() {
 	if fresh < 0 {
 		fresh = 0
 	}
-	c.CostUSD = (float64(fresh)*PriceMuseInputPerM + float64(c.CachedTokens)*PriceMuseCachedPerM +
-		float64(c.OutputTokens)*PriceMuseOutputPerM) / 1e6
+	c.CostUSD = (float64(fresh)*PriceMuseInputPerM+float64(c.CachedTokens)*PriceMuseCachedPerM+
+		float64(c.OutputTokens)*PriceMuseOutputPerM)/1e6 + float64(c.WebSearches)*PriceWebSearch
 }
 
 // Muse calls POST <Base>/responses (dev.meta.ai/docs/protocols/responses).
@@ -424,6 +428,13 @@ type Image struct {
 // AskJSON sends prompt (and images, in order) and returns the first JSON
 // object of the answer. The call is always returned, for the events line.
 func (m *Muse) AskJSON(ctx context.Context, purpose, prompt string, images ...Image) (map[string]any, Call, error) {
+	return m.AskJSONWith(ctx, purpose, prompt, nil, images...)
+}
+
+// AskJSONWith (R4) is AskJSON with Responses API tools (for example
+// {"type": "web_search"}); the web_search_call items of the answer are counted
+// in Call.WebSearches and priced.
+func (m *Muse) AskJSONWith(ctx context.Context, purpose, prompt string, tools []map[string]any, images ...Image) (map[string]any, Call, error) {
 	model := m.Model
 	if model == "" {
 		model = DefaultModel
@@ -438,6 +449,9 @@ func (m *Muse) AskJSON(ctx context.Context, purpose, prompt string, images ...Im
 		"input": []any{map[string]any{"type": "message", "role": "user", "content": content}}}
 	if m.Effort != "" {
 		body["reasoning"] = map[string]any{"effort": m.Effort}
+	}
+	if len(tools) > 0 {
+		body["tools"] = tools
 	}
 	b, _ := json.Marshal(body)
 	base := m.Base
@@ -478,6 +492,13 @@ func (m *Muse) AskJSON(ctx context.Context, purpose, prompt string, images ...Im
 	}
 	call.UpstreamID, _ = out["id"].(string)
 	usage(out, &call)
+	if items, ok := out["output"].([]any); ok { // R4
+		for _, it := range items {
+			if m, _ := it.(map[string]any); m["type"] == "web_search_call" {
+				call.WebSearches++
+			}
+		}
+	}
 	call.Price()
 	obj, err := analyze.ExtractJSON(analyze.ResponseText(out))
 	if err != nil {
