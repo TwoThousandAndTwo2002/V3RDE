@@ -1763,3 +1763,19 @@ T9: a person who taps the link in the Facebook post goes to the app, and after s
 - Any other link starts the app as before. No new screen. Log out clears a claim that waits.
 - On a phone the https link opens the browser (the web app), because the phone app has no associated domains yet.
 - Tests: mobile 135 -> 136.
+
+## 86. Password reset by an email link: the server part
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none.
+**Files:** `auth/reset.go` (new), `auth/reset_test.go` (new), `auth/handler.go`, `auth/store.go`, `auth/auth.go`, `auth/cmd/auth/main.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N5.md`
+
+The app already has "Forgot password?" (UI 9), but the server had no reset routes. T9: "we need to wire in the email link to work".
+
+- `POST /api/auth/reset`: always 202, also when no account has the email. For an account: a one-time link that works for 30 minutes; a new request replaces the earlier link.
+- `POST /api/auth/reset/confirm`: the new password, then the user is signed in. All other sessions of the user end.
+- No email sender is set up yet (T9). The emails go to a folder on the auth volume, readable only by the server's root user, and are removed after 30 minutes. Amazon SES is the next step.
+- The logs have the user id only, never the email, the token or the password.
+- Tests: auth 22 -> 27.

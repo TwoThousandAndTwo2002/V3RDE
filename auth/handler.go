@@ -95,6 +95,11 @@ type Config struct {
 	Limiter      *Limiter // signup + login, per address; nil = no limit
 	CookieSecure bool
 	Prefix       string // "" = /api/auth
+	// N5: the reset email. Mailer nil or ResetLinkBase "" = the route answers 202 and sends nothing.
+	Mailer        Mailer
+	ResetLinkBase string   // the public web address of the app, for example https://icarus.thehungreeapp.com
+	ResetLimiter  *Limiter // per email (the address limit is Limiter); nil = none
+	resetDone     func()   // tests: called after the background work of a reset request
 }
 
 type creds struct {
@@ -170,6 +175,8 @@ func New(c Config) http.Handler {
 	mux.HandleFunc("POST "+p+"/login", c.limited(c.login))
 	mux.HandleFunc("POST "+p+"/logout", c.logout)
 	mux.HandleFunc("GET "+p+"/me", c.me)
+	mux.HandleFunc("POST "+p+"/reset", c.limited(c.resetAsk))             // N5
+	mux.HandleFunc("POST "+p+"/reset/confirm", c.limited(c.resetConfirm)) // N5
 	return mux
 }
 

@@ -38,7 +38,9 @@ services:
     image: v3rde-auth
     restart: unless-stopped
     command: ["-listen", "0.0.0.0:8081", "-db", "/data/auth.json",
-              "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events"]
+              "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events",
+              # N5: the reset link; no sender is set up yet, so the emails go to a 0600 folder on the auth volume
+              "-reset-link-base", "${RESET_LINK_BASE-https://icarus.thehungreeapp.com}", "-reset-outbox", "/data/outbox"]
     volumes:
       - v3rde_auth:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events

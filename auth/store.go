@@ -30,9 +30,10 @@ type sessionRec struct {
 }
 
 type fileData struct {
-	Users    map[string]userRec    `json:"users"`    // by id
-	Emails   map[string]string     `json:"emails"`   // normalized email -> id
-	Sessions map[string]sessionRec `json:"sessions"` // by id_hash
+	Users    map[string]userRec    `json:"users"`            // by id
+	Emails   map[string]string     `json:"emails"`           // normalized email -> id
+	Sessions map[string]sessionRec `json:"sessions"`         // by id_hash
+	Resets   map[string]resetRec   `json:"resets,omitempty"` // N5: by token_hash (reset.go)
 }
 
 // Store keeps the users and the sessions in memory and in one JSON file,
@@ -83,6 +84,9 @@ func (s *Store) fill() {
 	}
 	if s.data.Sessions == nil {
 		s.data.Sessions = map[string]sessionRec{}
+	}
+	if s.data.Resets == nil {
+		s.data.Resets = map[string]resetRec{}
 	}
 }
 

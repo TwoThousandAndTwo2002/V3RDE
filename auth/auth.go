@@ -15,6 +15,8 @@
 //	POST /api/auth/login   {email, password}  -> 200 user + Set-Cookie | 401
 //	POST /api/auth/logout                     -> 204, the session is deleted, the cookie cleared
 //	GET  /api/auth/me                         -> 200 user | 401
+//	POST /api/auth/reset   {email}            -> 202 {} (N5, reset.go: an email link, also 202 for no account)
+//	POST /api/auth/reset/confirm {token, password} -> 200 user + Set-Cookie | 400
 //	GET  /api/auth/healthz                    -> 200
 //
 // Passwords: PBKDF2-HMAC-SHA256, 600,000 iterations, at least 8 characters,
