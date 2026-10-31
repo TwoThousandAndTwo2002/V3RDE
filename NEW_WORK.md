@@ -1732,6 +1732,21 @@ T9 (testing with users in Nigeria): a tester's scans, and T9's own, showed "The 
 - Limit: when SAM finds no box, each item of a list answer uses the whole photo.
 - Tests: server 36 -> 38, inference 97 -> 101, mobile 136 -> 138.
 
+## 82. Rescue: the end of a job frees the listing at once
+
+**When:** Oct 31 2026.
+**Branch:** `reach`, made from `services` at entry 80, like the rescue branch. It joins `services` by a merge later.
+**Meta models:** none (no model change).
+**Files:** `post/rescue.go`, `post/rescue_job_test.go`, `post/wait_events_test.go` (new), `post/touchup_test.go`, `post/touchup_v2_test.go`
+**Sources:** `docs/sources/N1.md`
+
+A post test failed now and then (1 run in 6). When a rescue job ended, the listing stayed marked "busy" for a short time after the result was visible. A new rescue in that moment got 409.
+
+- The job's last state and the free listing are now one step (one lock).
+- A failed save still marks the job failed in memory, as before.
+- Three job tests wait for the events line (at most 5 s): under load they read the file before the job wrote it.
+- Tests: post 94 -> 95.
+
 ## 83. Password reset by email link
 
 **When:** Oct 31 2026.
@@ -1749,3 +1764,87 @@ T9: "reset password does not work". The app had the reset screens (UI 9), but th
 - The data file has only the hash of the token. The logs have only the user id.
 - The relay port is 465: the network of the setup Mac gives no answer on 587.
 - Tests: auth 22 -> 32.
+
+## 83. A barcode scan gets the product photo
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none (no model call on the barcode route).
+**Files:** `inference/stock.go` (new), `inference/stock_test.go` (new), `inference/service.go`, `inference/clients.go`, `inference/photos.go`, `inference/events.go`, `inference/cmd/inventory/main.go`, `inference/service_test.go`, `listings/handler.go`, `listings/listing.go`, `listings/store.go`, `listings/listings_test.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N2.md`
+
+T9 asked for a stock photo when a user scans a barcode ("Stock photo only"). The photos are the Open Food Facts front photos made in the Hackathon (22,322 products, 800 px).
+
+- After a barcode hit, the listing photo is the product's white cutout, else the photo as Open Food Facts has it. No photo for the product: the camera shot, as before. The camera shot is still stored.
+- Only the app's route (`/api/analyze`, session). `/v1/analyze` does not change.
+- Open Food Facts photos are CC BY-SA. The answer item and the listing carry `photo_credit` ("Open Food Facts, CC BY-SA"). The app interface does not change in this entry (T9).
+- The photos are a read-only folder on the box (`/opt/v3rde/assets/stock`), mounted into analyze. An empty folder gives the camera shot.
+- A touch-up of a stock photo keeps the credit.
+- Tests: inference 97 -> 100, listings 44 -> 46.
+
+## 84. Every new listing goes to the Facebook Page
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** Muse Spark 1.3 (no change: fan-out, entry 20, writes the post).
+**Files:** `listings/share.go` (new), `listings/share_test.go` (new), `listings/handler.go`, `listings/cmd/listings/main.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N3.md`
+
+T9 asked for a Facebook post of each food item, with a link to the app ("Link in the post only"), started by the server for every new listing.
+
+- After a new listing, the listings service asks fan-out to post it, with the giver's own session. Fan-out keeps its owner check, rate limit and daily caps.
+- The post ends with the claim link `https://icarus.thehungreeapp.com/l/<listing_id>` (entry 85 opens it in the app).
+- Test accounts are never posted.
+- Until the Facebook Page is set (`FANOUT_PAGE_ID` and its token), fan-out answers "disabled" before any model call: no cost.
+- No answer, 429 or a server error: it tries again (3 more times in 85 s). Fan-out never makes a second post.
+- Open before the Page is set: the giver's photo goes to the public Page with no photo check (fan-out checks only the text); a grab in the moment before the post starts leaves the post open until the timer sweep.
+- Tests: listings 46 -> 48.
+
+## 85. A claim link opens Receive after sign-in
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none.
+**Files:** `mobile/App.tsx`, `mobile/src/signin.ts`, `mobile/tests/reset.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/N4.md`
+
+T9: a person who taps the link in the Facebook post goes to the app, and after sign-up or sign-in the app skips the role sheet ("Yes, skip to Receive").
+
+- The link is `icarus.thehungreeapp.com/l/<listing_id>` (on a phone, `v3rde://l/<listing_id>`).
+- After sign-in or sign-up, or at once with an open session, the app opens Receive. The listing shows in the list as today. The address goes back to `/`.
+- Any other link starts the app as before. No new screen. Log out clears a claim that waits.
+- On a phone the https link opens the browser (the web app), because the phone app has no associated domains yet.
+- Tests: mobile 135 -> 136.
+
+## 86. Password reset by an email link: the server part
+
+**When:** Oct 31 2026.
+**Branch:** `reach`.
+**Meta models:** none.
+**Files:** `auth/reset.go` (new), `auth/reset_test.go` (new), `auth/handler.go`, `auth/store.go`, `auth/auth.go`, `auth/cmd/auth/main.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/N5.md`
+
+The app already has "Forgot password?" (UI 9), but the server had no reset routes. T9: "we need to wire in the email link to work".
+
+- `POST /api/auth/reset`: always 202, also when no account has the email. For an account: a one-time link that works for 30 minutes; a new request replaces the earlier link.
+- `POST /api/auth/reset/confirm`: the new password, then the user is signed in. All other sessions of the user end.
+- No email sender is set up yet (T9). The emails go to a folder on the auth volume, readable only by the server's root user, and are removed after 30 minutes. Amazon SES is the next step.
+- The logs have the user id only, never the email, the token or the password.
+- Tests: auth 22 -> 27.
+
+## 87. The reach work joins the services branch
+
+**When:** Oct 31 2026.
+**Meta models:** none new (entries 82-86 of reach say what they use).
+**Files:** the reach branch (entries 82-86 of reach: `post/rescue.go`, `inference/stock.go`, `listings/share.go`, `mobile/App.tsx`, `mobile/src/signin.ts`, ...) merged; `NEW_WORK.md`, `deploy/docker-compose.yml`, `post/rescue_job_test.go`, `auth/` (kept as entry 83 of services), `mobile/web-dist/`
+**Sources:** `docs/sources/N6.md`
+
+T9: the reach work (the barcode product photo, the Facebook post and the claim link, the rescue lock) joins the branch that is deployed, the same way as the earlier merges.
+
+- A real merge: the reach commits keep their history.
+- This file keeps every entry of both branches, in number order. The numbers both took (82, 83) stay on both entries, the services entry first.
+- Password reset: both branches added it. The auth code of services (entry 83: it sends the mail, and it is tested on the box) stays; none of the code of reach entry 86 is taken. Entry 86 stays here as history.
+- The compose file keeps the auth lines of services and the new lines of reach (the stock photos for analyze, the share hook of listings, the claim link base of fan-out). The rescue test file keeps the new tests of both branches.
+- The web build is made again from the merged code.
+- No other change. Tests: inference 104, listings 48, post 96, auth 32, mobile 139; the other modules as before.
+

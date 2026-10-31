@@ -78,27 +78,51 @@ var errNoItemPhoto = errors.New("photo_id not found")
 
 // itemPhoto reads <dir>/<id>.jpg when <dir>/<id>.json says that it belongs
 // to userID: {"photo_id": id, "user_id": userID, ...}.
-func itemPhoto(dir, id, userID string) ([]byte, error) {
+func itemPhoto(dir, id, userID string) ([]byte, photoMeta, error) {
+	var m photoMeta
 	if dir == "" || !hex32.MatchString(id) {
-		return nil, errNoItemPhoto
+		return nil, m, errNoItemPhoto
 	}
 	meta, err := os.ReadFile(filepath.Join(dir, id+".json"))
 	if err != nil {
-		return nil, errNoItemPhoto
-	}
-	var m struct {
-		PhotoID string `json:"photo_id"`
-		UserID  string `json:"user_id"`
+		return nil, m, errNoItemPhoto
 	}
 	if json.Unmarshal(meta, &m) != nil || m.PhotoID != id || m.UserID == "" || m.UserID != userID {
-		return nil, errNoItemPhoto
+		return nil, photoMeta{}, errNoItemPhoto
 	}
 	b, err := os.ReadFile(filepath.Join(dir, id+".jpg"))
 	if err != nil || len(b) == 0 || len(b) > MaxPhotoBytes {
-		return nil, errNoItemPhoto
+		return nil, photoMeta{}, errNoItemPhoto
 	}
-	return b, nil
+	return b, m, nil
 }
+
+// photoMeta is the part of an item photo's record that listings reads.
+type photoMeta struct {
+	PhotoID string `json:"photo_id"`
+	UserID  string `json:"user_id"`
+	Kind    string `json:"kind"` // N1: "stock" = an Open Food Facts product photo; "touchup" = an edit
+	// SourcePhotoID: the item photo a touch-up started from (post/touchup.go).
+	SourcePhotoID string `json:"source_photo_id"`
+}
+
+// stockPhoto (N1 review): the photo is a stock photo, or a touch-up of the
+// caller's own stock item photo (an edit of a CC BY-SA photo keeps the credit).
+func stockPhoto(itemDir string, m photoMeta, userID string) bool {
+	if m.Kind == "stock" {
+		return true
+	}
+	if m.Kind != "touchup" || m.SourcePhotoID == "" {
+		return false
+	}
+	_, src, err := itemPhoto(itemDir, m.SourcePhotoID, userID)
+	return err == nil && src.Kind == "stock"
+}
+
+// StockCredit (N1) is the credit of a stock photo. Open Food Facts photos are
+// CC BY-SA (https://world.openfoodfacts.org/terms-of-use): the listing keeps
+// the credit (listing photo_credit), so a client can show it with the photo.
+const StockCredit = "Open Food Facts, CC BY-SA"
 
 // ---- HTTP -----------------------------------------------------------------
 
@@ -115,6 +139,8 @@ type Config struct {
 	TouchupPhotos string
 	// Claim tells fan-out after a grab; nil = off.
 	Claim *ClaimHook
+	// Share (N3) asks fan-out to post each new listing; nil = off.
+	Share *ShareHook
 	// TestTTLEmails (X44h): the test accounts (lower case) that may send
 	// ttl_seconds on create; nil = nobody. Every other caller gets 403.
 	TestTTLEmails map[string]bool
@@ -241,15 +267,18 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 			in.Mime = http.DetectContentType(in.Photo)
 		}
 	} else if photoID != "" {
-		b, err := itemPhoto(rt.ItemPhotos, photoID, u.ID)
+		b, meta, err := itemPhoto(rt.ItemPhotos, photoID, u.ID)
 		if err != nil && rt.TouchupPhotos != "" {
-			b, err = itemPhoto(rt.TouchupPhotos, photoID, u.ID) // an edited photo
+			b, meta, err = itemPhoto(rt.TouchupPhotos, photoID, u.ID) // an edited photo
 		}
 		if err != nil {
 			fail(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		in.Photo, in.Mime = b, "image/jpeg"
+		if stockPhoto(rt.ItemPhotos, meta, u.ID) {
+			in.PhotoCredit = StockCredit
+		}
 	}
 	l, err := rt.Store.Create(u.ID, in)
 	if err != nil {
@@ -263,6 +292,11 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 	}
 	log.Printf("listing %s created by %s request_id=%s details=%t", l.ID, u.ID, l.RequestID, l.Details != nil)
 	writeJSON(w, http.StatusCreated, l)
+	// N3: every new listing goes to the Facebook Page (fan-out), never a test account's (X44h)
+	if !rt.TestTTLEmails[strings.ToLower(strings.TrimSpace(u.Email))] {
+		ck, _ := r.Cookie(sessionCookie)
+		rt.Share.Share(l.ID, ck)
+	}
 }
 
 // list is GET /api/listings?after=&limit=, and with a place (X49e:

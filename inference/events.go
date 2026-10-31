@@ -68,6 +68,7 @@ type Event struct {
 	BarcodeStatus   int        `json:"barcode_status,omitempty"`
 	BarcodeMS       int64      `json:"barcode_ms,omitempty"`
 	CatalogServings float64    `json:"catalog_servings,omitempty"`
+	StockPhoto      string     `json:"stock_photo,omitempty"`           // N1: cutout | as_is | none; "" = not looked up
 	Items           int        `json:"items"`                           // items in the answer
 	DroppedNoFood   int        `json:"dropped_model_no_food,omitempty"` // the model's answer said no food
 	DroppedListed   int        `json:"dropped_already_listed,omitempty"`

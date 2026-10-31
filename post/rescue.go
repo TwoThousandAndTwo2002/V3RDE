@@ -619,13 +619,22 @@ func (s *RescueStore) Put(r Rescue) error {
 	return nil
 }
 
-// Set (R4 review) stores r in memory even when the file write fails (it
-// returns that error): a job's end must never leave it "running".
-func (s *RescueStore) Set(r Rescue) error {
+// Done (N1) is the end of a job, under one lock: it stores r and clears the
+// mark of Begin, so a client that sees the end can start a new rescue at once
+// (before, the mark was cleared after the events line, and a POST in that
+// moment got 409 busy). When the file write fails it keeps failed in memory
+// (R4 review: a job never stays "running") and returns the error.
+func (s *RescueStore) Done(r, failed Rescue) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	delete(s.pending, r.ListingID)
 	s.items[r.RescueID] = r
-	return s.flushLocked()
+	err := s.flushLocked()
+	if err != nil {
+		s.items[failed.RescueID] = failed
+		_ = s.flushLocked()
+	}
+	return err
 }
 
 // Get returns rescue id if owner owns it (one error for both cases).
@@ -931,11 +940,10 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 			res = run
 			res.Status, res.Code, res.Error, res.CostUSD = StatusFailed, code, msg, Sum(calls)
 		}
-		if err := c.Store.Put(res); err != nil {
+		bad := run // R4 review: never stays "running"; a new POST may run again
+		bad.Status, bad.Code, bad.Error, bad.CostUSD = StatusFailed, CodeInternal, "could not store the rescue", Sum(calls)
+		if err := c.Store.Done(res, bad); err != nil { // N1: the end and the free listing in one step
 			status, code, msg = http.StatusInternalServerError, CodeInternal, "could not store the rescue"
-			bad := run // R4 review: never stays "running"; a new POST may run again
-			bad.Status, bad.Code, bad.Error, bad.CostUSD = StatusFailed, code, msg, Sum(calls)
-			_ = c.Store.Set(bad)
 		}
 		ev.Status, ev.Code, ev.Error = status, "", ""
 		if status != http.StatusOK {

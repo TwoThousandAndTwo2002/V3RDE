@@ -15,7 +15,7 @@ import { auth, type User as Account } from "./src/api";
 import { font, layoutFor, motion, useColors } from "./src/theme";
 import { Toast } from "./src/ui";
 import { Doodles as Wallpaper } from "./src/doodles";
-import { resetToken } from "./src/signin";
+import { claimListing, resetToken } from "./src/signin";
 import { FRAME, type RoleName } from "./src/words";
 import { SessionContext, type Session } from "./src/session";
 import SignIn from "./src/screens/Login";
@@ -45,6 +45,16 @@ async function openingToken(): Promise<string> {
   return resetToken(await Linking.getInitialURL());
 }
 
+/** N4: the listing of the claim link that opened the app ("" when none); on the web the link leaves the address bar. */
+async function openingClaim(): Promise<string> {
+  if (RN.Platform.OS === "web") {
+    const id = claimListing(window.location.pathname + window.location.search);
+    if (id) window.history.replaceState(null, "", "/");
+    return id;
+  }
+  return claimListing(await Linking.getInitialURL());
+}
+
 /** The screen of a role. */
 const RoleScreen = ({ role }: { role: RoleName }) => (role === "receive" ? <ReceiveScreen /> : <GiveScreen />);
 
@@ -57,6 +67,13 @@ const Shell = () => {
   const stageNow = useRef(stage);
   stageNow.current = stage;
   const [note, setNote] = useState("");
+  // N4 (T9): a claim link (the Facebook post) skips the role sheet once: the next sign-in opens Receive
+  const claim = useRef("");
+  const afterSignIn = (who: Account, role: Stage): Stage => {
+    if (!claim.current) return role;
+    claim.current = "";
+    return { kind: "in", who, role: "receive", menu: false };
+  };
   const noteTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const say = useCallback((text: string, ms = 2600) => {
     setNote(text);
@@ -67,27 +84,36 @@ const Shell = () => {
   useEffect(function openStart() {
     // a link that comes while the app starts wins: the start answers change only the "start" stage
     const fromStart = (next: Stage) => setStage((now) => (now.kind === "start" ? next : now));
-    openingToken().catch(() => "").then((token) => {
+    // N4 review: a claim link that came while the app starts stays (only a found claim is written)
+    openingClaim().catch(() => "").then((id) => { if (id) claim.current = id; return openingToken(); }).catch(() => "").then((token) => {
       if (token) return fromStart({ kind: "newpass", token });
-      auth.me().then((who) => fromStart({ kind: "role", who, under: "doodles" })).catch(() => fromStart({ kind: "signin" }));
+      auth.me().then((who) => fromStart(afterSignIn(who, { kind: "role", who, under: "doodles" }))).catch(() => fromStart({ kind: "signin" }));
     });
     const sub = Linking.addEventListener("url", ({ url }) => {
       const token = resetToken(url);
       if (token) setStage({ kind: "newpass", token });
+      const id = claimListing(url); // N4: a claim link while the app runs: Receive now, or after the sign-in
+      if (id) { // N4 review: signed in (the role sheet, the handoff, a screen): Receive now; else after the sign-in
+        const now = stageNow.current;
+        if (now.kind === "in") setStage({ ...now, role: "receive", menu: false });
+        else if (now.kind === "role" || now.kind === "leaving") setStage({ kind: "in", who: now.who, role: "receive", menu: false });
+        else claim.current = id;
+      }
     });
     return () => sub.remove();
   }, []);
   // wide screens: after sign-in (or a new password) the card fades out, then the role dialog rises
   useEffect(function handOff() {
     if (stage.kind !== "leaving") return;
-    const timer = setTimeout(() => setStage({ kind: "role", who: stage.who, under: "handoff" }), motion.handoffMs);
+    const timer = setTimeout(() => setStage(afterSignIn(stage.who, { kind: "role", who: stage.who, under: "handoff" })), motion.handoffMs);
     return () => clearTimeout(timer);
   }, [stage]);
   const signedIn = (from: From["from"], token?: string) => (who: Account) => {
     RN.Keyboard.dismiss(); // the keyboard of the sign-in screen does not stay over the role sheet
-    setStage(wide ? { kind: "leaving", who, from, token } : { kind: "role", who, under: "auth", from, token });
+    setStage(wide ? { kind: "leaving", who, from, token } : afterSignIn(who, { kind: "role", who, under: "auth", from, token }));
   };
   const logout = useCallback(() => {
+    claim.current = ""; // N4 review: a claim never waits for the next account
     auth.logout().catch(() => undefined); // the services end the session; the app leaves at once
     setStage({ kind: "signin" });
   }, []);

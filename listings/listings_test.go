@@ -1117,3 +1117,94 @@ func TestDeleteNeverRemovesThePhotoFolder(t *testing.T) {
 		}
 	}
 }
+
+// N1: a stock item photo (kind "stock") gives the listing the credit, in the
+// answer, in browse, after a reopen of the store; the donor's own photo, a
+// touch-up and an upload have none (the key is left out).
+func TestStockPhotoCredit(t *testing.T) {
+	e := newEnv(t, nil)
+	const stock, own = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "ffffffffffffffffffffffffffffffff"
+	meta, _ := json.Marshal(map[string]string{"photo_id": stock, "user_id": "u_donor", "kind": "stock", "stock": "cutout"})
+	os.WriteFile(filepath.Join(e.items, stock+".json"), meta, 0o600)
+	os.WriteFile(filepath.Join(e.items, stock+".jpg"), jpeg, 0o600)
+	itemPhotoFiles(t, e.items, own, "u_donor", jpeg)
+	itemPhotoFiles(t, e.touch, "cccccccccccccccccccccccccccccccc", "u_donor", jpeg)
+	f := okFields()
+	f["photo_id"] = stock
+	w, body := call(e.h, form(t, "u_donor", f, nil, ""))
+	if w.Code != 201 || body["photo_credit"] != StockCredit {
+		t.Fatalf("stock: %d %v", w.Code, body)
+	}
+	id := body["id"].(string)
+	for _, pid := range []string{own, "cccccccccccccccccccccccccccccccc", ""} {
+		g := okFields()
+		var img []byte
+		if pid == "" {
+			img = jpeg
+		} else {
+			g["photo_id"] = pid
+		}
+		w, body := call(e.h, form(t, "u_donor", g, img, "image/jpeg"))
+		if _, has := body["photo_credit"]; w.Code != 201 || has {
+			t.Fatalf("%q: %d %v", pid, w.Code, body)
+		}
+	}
+	_, list := call(e.h, get("u_x", "/api/listings"))
+	found := 0
+	for _, x := range list["items"].([]any) {
+		m := x.(map[string]any)
+		if m["id"] == id {
+			found++
+			if m["photo_credit"] != StockCredit {
+				t.Fatalf("browse: %v", m)
+			}
+		} else if _, has := m["photo_credit"]; has {
+			t.Fatalf("browse, own photo: %v", m)
+		}
+	}
+	if found != 1 {
+		t.Fatalf("browse: the stock listing shows %d times", found)
+	}
+	st2, err := Open(e.dir, time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var kept *Listing
+	for _, l := range st2.Mine("u_donor") {
+		if l.ID == id {
+			l := l
+			kept = &l
+		}
+	}
+	if kept == nil || kept.PhotoCredit != StockCredit {
+		t.Fatalf("after a reopen: %+v", kept)
+	}
+}
+
+// N1 review: a touch-up of the caller's own stock item photo keeps the credit;
+// a touch-up of an own photo, or one that names another user's stock photo, has none.
+func TestStockCreditAfterTouchup(t *testing.T) {
+	e := newEnv(t, nil)
+	const stock, own, other = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "ffffffffffffffffffffffffffffffff", "abababababababababababababababab"
+	write := func(dir, id string, m map[string]string) {
+		b, _ := json.Marshal(m)
+		os.WriteFile(filepath.Join(dir, id+".json"), b, 0o600)
+		os.WriteFile(filepath.Join(dir, id+".jpg"), jpeg, 0o600)
+	}
+	write(e.items, stock, map[string]string{"photo_id": stock, "user_id": "u_donor", "kind": "stock"})
+	write(e.items, own, map[string]string{"photo_id": own, "user_id": "u_donor", "kind": "full"})
+	write(e.items, other, map[string]string{"photo_id": other, "user_id": "u_other", "kind": "stock"})
+	for _, c := range []struct {
+		edit, src string
+		credit    bool
+	}{{"c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1", stock, true}, {"c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2", own, false},
+		{"c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3", other, false}, {"c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4", "../" + stock, false}} {
+		write(e.touch, c.edit, map[string]string{"photo_id": c.edit, "user_id": "u_donor", "kind": "touchup", "source_photo_id": c.src})
+		f := okFields()
+		f["photo_id"] = c.edit
+		w, body := call(e.h, form(t, "u_donor", f, nil, ""))
+		if _, has := body["photo_credit"]; w.Code != 201 || has != c.credit {
+			t.Fatalf("%s: %d %v", c.src, w.Code, body)
+		}
+	}
+}

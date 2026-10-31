@@ -124,8 +124,7 @@ func startRescue(t *testing.T, e *rsEnv, lid string) Rescue {
 }
 
 func rescueEvents(t *testing.T, e *rsEnv) string {
-	b, _ := os.ReadFile(e.cfg.Events.Path(e.now))
-	return string(b)
+	return eventsWith(t, e.cfg.Events.Path(e.now), `"async":true`) // N1: the job's line comes after its end
 }
 
 // The directory finds places: the job ends done with them; no web search.
@@ -371,5 +370,41 @@ func TestSearchPromptNamesNoCountry(t *testing.T) {
 	}
 	if !strings.Contains(SearchPrompt, "full postal address") {
 		t.Fatal("the address form is missing")
+	}
+}
+
+// N1: the end of a job frees the listing in the same step: right after Done, a
+// new Begin is not busy (a failed job), or finds the done job.
+func TestRescueDoneFreesTheListing(t *testing.T) {
+	st, err := OpenRescues(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, found, busy := st.Begin("l_0000000000000021", "u1"); found || busy {
+		t.Fatal("first Begin")
+	}
+	run := Rescue{RescueID: "r1", ListingID: "l_0000000000000021", OwnerID: "u1", Status: StatusRunning}
+	if err := st.Put(run); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, busy := st.Begin("l_0000000000000021", "u2"); !busy {
+		t.Fatal("a running job does not mark the listing")
+	}
+	failed := run
+	failed.Status, failed.Code = StatusFailed, CodeInternal
+	if err := st.Done(failed, failed); err != nil {
+		t.Fatal(err)
+	}
+	if _, found, busy := st.Begin("l_0000000000000021", "u1"); found || busy {
+		t.Fatalf("after a failed end: found %v busy %v", found, busy)
+	}
+	st.End("l_0000000000000021")
+	done := run
+	done.Status = StatusDone
+	if err := st.Done(done, failed); err != nil {
+		t.Fatal(err)
+	}
+	if r, found, busy := st.Begin("l_0000000000000021", "u1"); !found || busy || r.Status != StatusDone {
+		t.Fatalf("after a done end: %+v %v %v", r, found, busy)
 	}
 }

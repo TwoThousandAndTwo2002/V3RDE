@@ -82,6 +82,8 @@ type Listing struct {
 	CollectedBy     *string `json:"collected_by"`
 	CollectedAt     *string `json:"collected_at"`
 	RequestID       string  `json:"request_id"`
+	// PhotoCredit (N1): the credit of a stock photo; left out for the donor's own photo.
+	PhotoCredit string `json:"photo_credit,omitempty"`
 	// Details (X48d): the scanner's fields of the item; left out when none.
 	Details *Details `json:"details,omitempty"`
 	// DistanceMi (X49e): miles from the caller's place, 2 decimals; only in
@@ -124,6 +126,8 @@ type Input struct {
 	// Address (X49j): the chosen pickup address (the handler checked it);
 	// with it, the pickup text holds only the instructions and may be empty.
 	Address *PickupAddress
+	// PhotoCredit (N1): only the handler sets it (a stock item photo).
+	PhotoCredit string
 }
 
 // MinTestTTL is the shortest timer a test account can ask for (X44h, T9

@@ -103,7 +103,7 @@ func newSvc(t *testing.T, f *fakeAPI, verdict string, gateStatus int, mod func(*
 	s.budget = NewBudget(20, 0.10, ev)
 	barcode := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/v1/barcode/078742370026" {
-			_, _ = w.Write([]byte(`{"outcome":"HIT","admissible":true,"product":{"barcode":"00078742370026","title":"Great Value Marinara Pasta Sauce","description":"","is_non_veg":0,"number_of_serving":13,"serving_type":"bulk","meal_condition":"sealed","weight":0.68,"meal_cost":2}}`))
+			_, _ = w.Write([]byte(`{"outcome":"HIT","gtin14":"00078742370026","admissible":true,"product":{"barcode":"00078742370026","title":"Great Value Marinara Pasta Sauce","description":"","is_non_veg":0,"number_of_serving":13,"serving_type":"bulk","meal_condition":"sealed","weight":0.68,"meal_cost":2}}`))
 			return
 		}
 		_, _ = w.Write([]byte(`{"outcome":"MISS"}`))

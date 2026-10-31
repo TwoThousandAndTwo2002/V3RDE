@@ -28,8 +28,10 @@ type ItemPhotoMeta struct {
 	RequestID   string `json:"request_id"`
 	ImageSHA256 string `json:"image_sha256"` // the uploaded photo it came from
 	Item        int    `json:"item"`
-	Kind        string `json:"kind"`          // crop | full
-	Box         []int  `json:"box,omitempty"` // [left, top, right, bottom], SAM pixels
+	Kind        string `json:"kind"`             // crop | full | stock (N1)
+	Stock       string `json:"stock,omitempty"`  // N1: cutout | as_is (Kind stock)
+	GTIN14      string `json:"gtin14,omitempty"` // N1: the product of a stock photo
+	Box         []int  `json:"box,omitempty"`    // [left, top, right, bottom], SAM pixels
 	FrameW      int    `json:"frame_w,omitempty"`
 	FrameH      int    `json:"frame_h,omitempty"`
 	Bytes       int    `json:"bytes"`
