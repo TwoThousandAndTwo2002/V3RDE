@@ -58,6 +58,7 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 | `type.title` | 18 / 24 | X32: 17.8 pt ("6 items found"), 18.1 pt ("Your listing") | sheet titles (SemiBold) |
 | `type.body` | 14 / 20 | X32: 14.0 pt, line 20.3 pt (muted text, 2 lines) | fields, labels (`muted`), notes, errors (`danger`) (Regular) |
 | `type.button` | 14 / 20 | X32: 14.0 pt ("Start over"), 13.8 pt ("Post 6 listings") | pill text (SemiBold) |
+| `type.display` | 22 / 28 | T9, Oct 30 (size 22); line height 28: Choice (4 pt grid, near the 18/24 ratio) | the title of the About page (SemiBold) |
 
 Values are font size / line height in pt.
 
@@ -258,6 +259,7 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - The email has no spaces at the ends and must have the form name@domain.end (the same check as the auth service), else "Enter an email like you@email.com". The password field has no auto-capital, auto-correct or spell check; after "No account found" it asks the browser for a new password.
 - While it waits, a screen reader reads the pill as "Signing in…".
 - "Forgot password?" (a TextLink, `space.gap` under the rule line and the error lines, `space.inset` in) opens the reset screen.
+- "About" (#78, T9 Oct 30: one word) is a second TextLink at the right end of the same row (`space.inset` in from the right). It opens the About page: on the web in the same tab (`ABOUT_PATH`, `/about/`), on a phone build in the browser (`ABOUT_URL`).
 - The phone and wide-screen frame is `AuthFrame` (`mobile/src/screens/AuthFrame.tsx`), shared with the reset screens.
 
 ## Reset password (`mobile/src/screens/Reset.tsx`, words in `mobile/src/signin.ts`)
@@ -337,6 +339,18 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - On a wide screen the scan photo stays in place; only the list column scrolls, and the chat bar is under it.
 - The changes go into the list at once. The chat is in the scroll body under the list: the user's line on `iconFill` ("You said" / "You typed"), the app's answer on a `card` with a `line` border ("3 changes made", one line for each change), `radius.card`, `space.item` padding. Undo (a text link) is on the last change only, while the list is as that change left it. A changed card and the pickup show "Changed in the chat: …" in `link`.
 - Before the first line: "Try: “6 servings”, “remove item 2”." The chat is cleared after a post. Post waits while a line is being read.
+
+## About page (`mobile/public/about/index.html`; #78, the approved "V3RDE About Page Mockup")
+
+A static page next to the app (not in the app bundle): the web build copies `mobile/public/` into `web-dist`, and the edge serves it at `/about/` (with the trailing slash; `/about` is the app). It follows this guide with CSS custom properties that carry the tokens (1 pt = 1 CSS px); `mobile/tests/about.test.mts` checks every value against `theme.ts`.
+- Backdrop: the doodle wallpaper of the app screens (`Doodles`: the same drawings, rule 30, seed and `doodle` tokens), fixed behind the whole page on `bg`; it moves up one row every `doodle.stepMs` and stands still with "reduce motion" (T9, Oct 30).
+- Header: phone and tablet as the Frame ("V3RDE" in `muted`, centred, `size.header`); wide: the top bar (`size.topBar`, `line` under it): "V3RDE" in `link` at the left, "Open the app" at the right in the style of Log out.
+- Content at most `maxWidth` of `layoutFor`, `space.gutter` sides (wide: `space.pad`). Cards: `card`, `size.border` `line`, `radius.card`, `space.group` padding (the hero: `space.pad`). Sections `space.bar` apart; a section title (`type.title`) with a `muted` line `space.hair` under it.
+- Hero: the title in `type.display`, a `muted` line, then pills `space.pad` under it: "Watch the demo" (secondary; hidden until the video exists), "Find food near you" (secondary), "Share your food" (primary).
+- Role cards as the role sheet's (a `size.iconBig` disc in `accentSoft`, the glyph in `accent`): Give (camera), Receive (bowl), Food programs (the bread doodle, T9). Steps: a `size.iconBig` disc in `iconFill` with the number.
+- Architecture: three cards (the phone or browser, our server, Meta's cloud), chips `radius.photo` on `bg`; the food gate chip has an `accent` border. Arrows: a 20 pt line glyph (`glyph.iconBox`, `glyph.stroke`) in `muted`.
+- Focus: `size.focusBorder` outline in `link`, `space.hair` from the control. Hover and press: `opacity.hover`, `opacity.pressed`.
+- Words: plain, short; facts and numbers only from NEW_WORK.md. No Facebook until the service account; the barcode database is "Food DB", with no count (T9, Oct 30).
 
 ## Mockups
 

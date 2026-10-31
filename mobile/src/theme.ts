@@ -186,6 +186,7 @@ export const type = { // text styles (sizes measured from the glyph heights; lin
   title: { fontFamily: font.semibold, fontSize: 18, lineHeight: 24 },
   body: { fontFamily: font.regular, fontSize: 14, lineHeight: 20 },     // fields, labels, notes, errors
   button: { fontFamily: font.semibold, fontSize: 14, lineHeight: 20 },
+  display: { fontFamily: font.semibold, fontSize: 22, lineHeight: 28 }, // the title of the About page (T9, Oct 30)
 } as const;
 
 /** Opacity of a control: pressed (a choice), busy (measured: the Post pill while posting, X32), hover (Ref-login). */

@@ -22,7 +22,13 @@ export const SIGN_IN = {
   hide: "Hide",
   showName: "Show password",
   hideName: "Hide password",
+  about: "About",
 } as const;
+
+/** The About page (NEW_WORK.md #78): a static page of the web build (mobile/public/about/), on the same site. */
+export const ABOUT_PATH = "/about/";
+/** The same page from a phone build, which has no site of its own (T9, Oct 30: the app is a web app for now). */
+export const ABOUT_URL = "https://icarus.thehungreeapp.com/about/";
 
 /**
  * The form of an email, the same loose check as the auth service on branch services (auth/auth.go, emailForm):

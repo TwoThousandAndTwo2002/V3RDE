@@ -1,0 +1,206 @@
+// Tests of the About page (mobile/public/about/index.html), written new for V3RDE (NEW_WORK.md #78, branch about).
+// The page is static HTML, so the S3 style test (src/ and App.tsx only) does not read it. These tests hold it to the
+// same rule (mobile/docs/style_guide.md "About page"): every colour, text style, length, opacity and doodle value is
+// a token of src/theme.ts; the backdrop is the app's doodle wallpaper; the sign-in screen links to it.
+import test from "node:test";
+import { strict as assert } from "node:assert";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import vm from "node:vm";
+import { ABOUT_PATH, ABOUT_URL, SIGN_IN } from "../src/signin.ts";
+import { startGrid, stepUp, wallpaper } from "../src/automata.ts";
+
+const ROOT = new URL("..", import.meta.url).pathname;
+const PAGE = readFileSync(join(ROOT, "public/about/index.html"), "utf8");
+const THEME = readFileSync(join(ROOT, "src/theme.ts"), "utf8");
+const GUIDE = readFileSync(join(ROOT, "docs/style_guide.md"), "utf8");
+const STYLE = PAGE.slice(PAGE.indexOf("<style>"), PAGE.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+const SCRIPT = PAGE.slice(PAGE.indexOf("<script>"), PAGE.indexOf("</script>"));
+const BODY = PAGE.slice(PAGE.indexOf("<body>"), PAGE.indexOf("<script>"));
+
+/** One token group of theme.ts as { key: "value" } (the text of the value, as the style test reads it). */
+function group(name: string): Record<string, string> {
+  const g = THEME.match(new RegExp("export const " + name + " = \\{([\\s\\S]*?)\\} as const;"));
+  assert.ok(g, name);
+  const out: Record<string, string> = {};
+  for (const m of g[1].matchAll(/^\s*(\w+):\s*("([^"]*)"|[^,\n]+?),?\s*(\/\/.*)?$/gm)) out[m[1]] = m[3] ?? m[2].trim();
+  return out;
+}
+function mode(name: "light" | "dark"): Record<string, string> {
+  const block = THEME.match(new RegExp(name + ": \\{([\\s\\S]*?)\\n  \\}"));
+  assert.ok(block, name);
+  const out: Record<string, string> = {};
+  for (const m of block[1].matchAll(/(\w+): "([^"]+)"/g)) out[m[1]] = m[2];
+  return out;
+}
+/** The custom properties of one CSS block of the page: { "--bg": "#F6F5F5", … }. */
+function vars(block: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const m of block.matchAll(/(--[\w-]+):\s*([^;]+);/g)) out[m[1]] = m[2].trim();
+  return out;
+}
+const LIGHT = vars(STYLE.match(/:root \{([\s\S]*?)\n\}/)![1]);
+const DARK_MEDIA = vars(STYLE.match(/:root:not\(\[data-theme="light"\]\) \{([\s\S]*?)\n  \}/)![1]);
+const DARK_SET = vars(STYLE.match(/:root\[data-theme="dark"\] \{([\s\S]*?)\n\}/)![1]);
+const px = (v: string) => v.replace(/px$/, "");
+
+test("every colour of the page is a palette token, in light and in dark mode", () => {
+  const light = mode("light"), dark = mode("dark");
+  const colours = Object.entries(LIGHT).filter(([, v]) => v.startsWith("#"));
+  assert.ok(colours.length >= 10, "colours: " + colours.length);
+  for (const [k, v] of colours) assert.equal(v, light[k.slice(2)], `light ${k}`);
+  for (const d of [DARK_MEDIA, DARK_SET]) {
+    for (const [k, v] of Object.entries(d).filter(([, x]) => x.startsWith("#"))) assert.equal(v, dark[k.slice(2)], `dark ${k}`);
+    assert.deepEqual(Object.keys(d).sort(), Object.keys(DARK_MEDIA).sort(), "the two dark blocks set the same names");
+  }
+  for (const k of Object.keys(DARK_MEDIA)) assert.ok(k in LIGHT, `${k} has a light value`);
+  // No colour outside the three token blocks (CSS, markup and script).
+  const rest = (STYLE.replace(/:root \{[\s\S]*?\n\}/, "").replace(/@media \(prefers-color-scheme: dark\) \{[\s\S]*?\n\}/, "")
+    .replace(/:root\[data-theme="dark"\] \{[\s\S]*?\n\}/, "") + BODY.replace(/<!--[\s\S]*?-->/g, "") + SCRIPT);
+  assert.deepEqual(rest.match(/#[0-9a-fA-F]{3,8}\b|\b(rgba?|hsla?)\(/g), null);
+});
+
+test("every length, opacity and text style of the page is a token", () => {
+  const space = group("space"), radius = group("radius"), size = group("size"), glyph = group("glyph");
+  const map: Record<string, string> = {
+    "--hair": space.hair, "--inset": space.inset, "--gap": space.gap, "--item": space.item, "--group": space.group,
+    "--grid": space.grid, "--gutter": space.gutter, "--foot": space.foot, "--pad": space.pad, "--bar": space.bar,
+    "--r-photo": radius.photo, "--r-card": radius.card, "--r-sheet": radius.sheet, "--r-round": radius.round,
+    "--control": size.control, "--iconBig": size.iconBig, "--topBar": size.topBar, "--header": size.header,
+    "--border": size.border, "--tabPadX": size.tabPadX, "--pillPadX": size.pillPadX, "--focus": size.focusBorder,
+    "--glyphBox": glyph.iconBox, "--glyphStroke": glyph.stroke,
+  };
+  const lengths = Object.entries(LIGHT).filter(([k, v]) => !v.startsWith("#") && k !== "--doodleOpacity" && k !== "--maxWidth");
+  for (const [k, v] of lengths) {
+    assert.ok(k in map, `${k} is not mapped to a token`);
+    assert.equal(px(v), map[k], `${k}`);
+  }
+  const doodle = group("doodle");
+  assert.equal(LIGHT["--doodleOpacity"], doodle.opacity);
+  assert.equal(DARK_MEDIA["--doodleOpacity"], doodle.opacityDark);
+  // layoutFor: the breakpoints and the widest content of each width.
+  const lay = THEME.slice(THEME.indexOf("export function layoutFor"));
+  const bounds = [...lay.matchAll(/width >= (\d+)/g)].map((m) => m[1]).sort();
+  const widths = [...lay.matchAll(/maxWidth: (\d+)/g)].map((m) => m[1]).sort();
+  assert.deepEqual([...STYLE.matchAll(/@media \(min-width: (\d+)px\) \{ :root \{ --maxWidth: (\d+)px/g)].map((m) => m[1]).sort(), bounds);
+  assert.deepEqual([...STYLE.matchAll(/--maxWidth: (\d+)px/g)].map((m) => m[1]).sort(), widths);
+  // Outside the token block, the only numbers in px are text sizes (checked next) and the breakpoints.
+  const outside = STYLE.replace(/:root \{[\s\S]*?\n\}/, "").replace(/--maxWidth: \d+px/g, "").replace(/@font-face[^\n]*/g, "");
+  const typeRows = [...THEME.matchAll(/^\s*(\w+): \{ fontFamily: font\.(\w+), fontSize: (\d+), lineHeight: (\d+) \}/gm)]
+    .map((m) => ({ name: m[1], weight: m[2] === "semibold" ? "600" : "400", size: m[3], line: m[4] }));
+  const allowed = new Set([...bounds, ...typeRows.flatMap((t) => [t.size, t.line])]);
+  for (const m of outside.matchAll(/(\d+(?:\.\d+)?)px/g)) assert.ok(allowed.has(m[1]), `a length that is not a token: ${m[0]}`);
+  // Each text class is one of the type tokens (weight, size and line height together).
+  for (const m of STYLE.matchAll(/font-weight: (\d+); font-size: (\d+)px; line-height: (\d+)px/g)) {
+    assert.ok(typeRows.some((t) => t.weight === m[1] && t.size === m[2] && t.line === m[3]), `not a type token: ${m[0]}`);
+  }
+  const display = typeRows.find((t) => t.name === "display");
+  assert.deepEqual(display, { name: "display", weight: "600", size: "22", line: "28" }, "type.display (T9, Oct 30: 22)");
+  assert.match(STYLE, /\.display \{ font-weight: 600; font-size: 22px; line-height: 28px;/);
+  assert.match(BODY, /<h1 class="display"/);
+  // Opacity: hover and pressed are the opacity tokens; nothing else uses a fraction.
+  const opacity = group("opacity");
+  assert.match(STYLE, new RegExp("\\.pill:hover \\{ opacity: " + opacity.hover.replace(".", "\\.") + "; \\}"));
+  assert.match(STYLE, new RegExp("\\.pill:active \\{ opacity: " + opacity.pressed.replace(".", "\\.") + "; \\}"));
+  const fractions = outside.replace(/opacity: (0\.92|0\.85);/g, "").replace(/--doodleOpacity: [\d.]+;/g, "").match(/(?<![\w.#-])\d*\.\d+(?!\w)/g);
+  assert.equal(fractions, null, `a fraction that is not a token: ${fractions}`);
+});
+
+test("the guide lists type.display with its value", () => {
+  const row = GUIDE.split("\n").find((l) => l.startsWith("| `type.display` |"));
+  assert.ok(row, "style_guide.md has no type.display row");
+  assert.ok(row.includes("| 22 / 28 |"), row);
+  assert.match(GUIDE, /^## About page \(`mobile\/public\/about\/index\.html`/m);
+});
+
+test("the backdrop is the app's doodle wallpaper: the same drawings, rule, seed and tokens", () => {
+  const doodles = readFileSync(join(ROOT, "src/doodles.tsx"), "utf8");
+  const app = [...doodles.matchAll(/^\s+"(M[^"]+)",\s*\/\//gm)].map((m) => m[1]);
+  const page = [...SCRIPT.slice(SCRIPT.indexOf("var D = ["), SCRIPT.indexOf("];")).matchAll(/"(M[^"]+)"/g)].map((m) => m[1]);
+  assert.equal(app.length, 20);
+  assert.deepEqual(page, app);
+  const d = group("doodle");
+  const t = SCRIPT.match(/var T = \{([^}]*)\}/)![1];
+  const want: Record<string, string> = { cell: d.cell, glyph: d.glyph, units: d.units, stroke: d.stroke, jitter: d.jitter,
+    turn: d.turn, steps: d.turnSteps, seed: d.seed, density: d.rowDensity, faint: d.faint, stepMs: d.stepMs };
+  for (const [k, v] of Object.entries(want)) assert.match(t, new RegExp("\\b" + k + ": " + v.replace(".", "\\.") + "\\b"), k);
+  // The automaton: the hash and the generator of automata.ts, rule 30, one row up each step, still with reduce motion.
+  const auto = readFileSync(join(ROOT, "src/automata.ts"), "utf8");
+  for (const k of ["1664525", "1013904223", "2166136261", "16777619", "0x85ebca6b", "0xc2b2ae35"]) {
+    assert.ok(auto.includes(k) && SCRIPT.includes(k), k);
+  }
+  assert.match(SCRIPT, /prefers-reduced-motion: reduce/);
+  assert.match(PAGE, /<svg class="backdrop" aria-hidden="true" focusable="false"><\/svg>/);
+  assert.match(STYLE, /svg\.backdrop \{ position: fixed; inset: 0;[^}]*opacity: var\(--doodleOpacity\)/);
+  assert.match(SCRIPT, /style="stroke: var\(--doodle\)"/); // the colour follows the mode (a CSS variable, not an attribute)
+  assert.match(STYLE, /\nbody \{\n  margin: 0; background: var\(--bg\);/);
+});
+
+test("the backdrop draws the same pattern as the app, and each step moves it up one row", () => {
+  // The pure part of the page script runs here and is compared with automata.ts (the app's Doodles uses it).
+  const pure = SCRIPT.slice(SCRIPT.indexOf("// ---- pure: start"), SCRIPT.indexOf("// ---- pure: end"));
+  const defs = SCRIPT.slice(SCRIPT.indexOf("var D = ["), SCRIPT.indexOf("// ---- pure: start"));
+  assert.doesNotMatch(pure, /\bdocument\.|\bwindow\.|\bsvg\.|matchMedia|setInterval/, "the pure part does not touch the page");
+  const page = vm.runInNewContext(defs + pure + "({ startGrid: startGrid, stepUp: stepUp, marks: marks, T: T })");
+  const d = group("doodle");
+  const plan = { cell: Number(d.cell), drawings: 20, jitter: Number(d.jitter), turn: Number(d.turn), steps: Number(d.turnSteps),
+    seed: Number(d.seed), density: Number(d.rowDensity) };
+  for (const [w, h] of [[390, 844], [1440, 900], [38, 38], [77, 400]]) {
+    const grid = page.startGrid(w, h);
+    assert.deepEqual(JSON.parse(JSON.stringify(grid)), startGrid(w, h, plan), `grid ${w}x${h}`);
+    assert.deepEqual(JSON.parse(JSON.stringify(page.marks(grid))), wallpaper(w, h, plan), `drawings ${w}x${h}`);
+    let a = grid, b = startGrid(w, h, plan);
+    for (let i = 0; i < 5; i++) { a = page.stepUp(a); b = stepUp(30, b); }
+    assert.deepEqual(JSON.parse(JSON.stringify(a)), b, `5 steps ${w}x${h}`);
+    assert.deepEqual(JSON.parse(JSON.stringify(page.marks(a))), wallpaper(w, h, plan, b), `drawings after 5 steps ${w}x${h}`);
+  }
+  // The page keeps the drawings and changes only live/dead on a step (as the app: "the drawings stay").
+  assert.match(SCRIPT, /grid = stepUp\(grid\);\n    var i = 0; grid\.forEach\(function \(line\) \{ line\.forEach\(function \(alive\) \{ if \(paths\[i\]\) paths\[i\]\.setAttribute\("stroke-opacity"/);
+});
+
+test("the fonts are the app's Poppins files from the web build", () => {
+  const faces = [...STYLE.matchAll(/@font-face \{ font-family: "Poppins"; font-weight: (\d+);[^}]*url\("([^"]+)"\)/g)];
+  assert.deepEqual(faces.map((f) => f[1]), ["400", "600"]);
+  const font = group("font");
+  assert.ok(faces[0][2].includes("/" + font.regular + "."), faces[0][2]);
+  assert.ok(faces[1][2].includes("/" + font.semibold + "."), faces[1][2]);
+  for (const f of faces) {
+    assert.match(f[2], /^\/assets\/node_modules\/@expo-google-fonts\/poppins\/\w+\/\w+\.[0-9a-f]{32}\.ttf$/);
+    assert.ok(existsSync(join(ROOT, "web-dist", f[2])), "web-dist has no " + f[2]);
+  }
+});
+
+test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
+  const text = BODY.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ");
+  assert.doesNotMatch(text, /Facebook/i, "no Facebook until the service account (T9)");
+  assert.doesNotMatch(text, /374,760|products\. A hit/, "the food DB has no product count (T9)");
+  assert.match(text, /Food DB/);
+  assert.match(text, /It does not say the food is safe/); // no medical or safety advice (anti-projects)
+  assert.match(text, /written again as new code/);       // new work only: the earlier parts are named
+  assert.equal((BODY.match(/<h1\b/g) ?? []).length, 1);
+  assert.match(PAGE, /<html lang="en">/);
+  assert.match(BODY, /<main id="main">/);
+  // "Watch the demo" stays hidden until the video exists; then only an https address shows it.
+  assert.match(BODY, /<a class="pill secondary label" href="#" data-testid="demo" hidden>Watch the demo<\/a>/);
+  const demo = SCRIPT.match(/var DEMO_URL = "([^"]*)";/);
+  assert.ok(demo && (demo[1] === "" || /^https:\/\//.test(demo[1])), "DEMO_URL is empty or https");
+  assert.match(SCRIPT, /\/\^https:\\\/\\\/\/\.test\(DEMO_URL\)/);
+  // Pills: secondary before primary in each row (style guide: secondary left, primary right).
+  const row = BODY.match(/<div class="row">([\s\S]*?)<\/div>/)![1];
+  const kinds = [...row.matchAll(/class="pill( secondary)? label"/g)].map((m) => (m[1] ? "secondary" : "primary"));
+  assert.deepEqual(kinds, ["secondary", "secondary", "primary"]);
+  // Every decorative drawing is hidden from screen readers.
+  for (const s of BODY.match(/<svg\b[^>]*>/g) ?? []) assert.match(s, /aria-hidden="true"/, s);
+});
+
+test("the sign-in screen links to the page", () => {
+  assert.equal(SIGN_IN.about, "About");
+  assert.equal(ABOUT_PATH, "/about/");
+  assert.equal(ABOUT_URL, "https://icarus.thehungreeapp.com" + ABOUT_PATH);
+  const login = readFileSync(join(ROOT, "src/screens/Login.tsx"), "utf8");
+  assert.match(login, /<TextLink testID="about" onPress=\{openAbout\}>\{SIGN_IN\.about\}<\/TextLink>/);
+  assert.match(login, /window\.location\.assign\(ABOUT_PATH\)/);
+  assert.match(login, /Linking\.openURL\(ABOUT_URL\)/);
+  // The page links back to the app (the same site).
+  assert.ok((BODY.match(/href="\/"/g) ?? []).length >= 3);
+});

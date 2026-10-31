@@ -1652,3 +1652,22 @@ T9: the rescue work joins the branch that is deployed, the same way as the trans
 - The web build is made again from the merged code.
 - Tests: post 69 + 23 = 92; mobile 118 + 8 = 126; the other modules as before.
 
+
+## 78. An About page, and an About link on the sign-in screen
+
+**When:** Oct 30 2026.
+**Branch:** `about`, made from `services` at entry 77, like the rescue branch. It joins `services` by a merge later.
+**Meta models:** none (a page that explains how the app uses them).
+**Files:** `mobile/public/about/index.html` (new), `mobile/tests/about.test.mts` (new), `mobile/src/theme.ts`, `mobile/src/signin.ts`, `mobile/src/screens/Login.tsx`, `mobile/tools/web/serve.mjs`, `mobile/tests/web.test.mts`, `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/docs/web.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/A1.md`
+
+T9 asked for a web page about the app: what it is for, who uses it (three roles), and how it is built. T9 approved the mockup ("V3RDE About Page Mockup", version 3) with these choices: the address `icarus.thehungreeapp.com/about/`, one word on the sign-in screen, a 22 pt title, the bread drawing for food programs, no Facebook for now, "Food DB" with no count, and the doodle wallpaper behind the whole page.
+
+- A static page next to the app, not in the app bundle. The web build copies it, and the edge serves it at `/about/`.
+- Sections: what V3RDE does, the three roles (Give, Receive, food programs), how it works in 7 steps, how it is built (the phone or browser, our server, Meta's cloud), measured numbers (entry 4), and what is new in the Hackathon.
+- The page takes every colour, size, text style and doodle value from the app's tokens. The backdrop is the app's doodle wallpaper: the same drawings, rule 30 and seed. It moves one row each second and stands still with "reduce motion". Light and dark mode.
+- A new token: `type.display` (22 / 28), the page title.
+- The sign-in screen has "About" at the right of "Forgot password?". It opens the page in the same tab.
+- The local web server serves a folder page with the trailing slash, as the edge does.
+- "Watch the demo" stays hidden until the video has an address.
+- Tests: mobile 126 -> 135.
