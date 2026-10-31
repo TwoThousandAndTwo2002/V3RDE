@@ -68,7 +68,7 @@ test("every length, opacity and text style of the page is a token", () => {
     "--r-photo": radius.photo, "--r-card": radius.card, "--r-sheet": radius.sheet, "--r-round": radius.round,
     "--control": size.control, "--iconBig": size.iconBig, "--topBar": size.topBar, "--header": size.header,
     "--border": size.border, "--tabPadX": size.tabPadX, "--pillPadX": size.pillPadX, "--focus": size.focusBorder,
-    "--glyphBox": glyph.iconBox, "--glyphStroke": glyph.stroke,
+    "--glyphBox": glyph.iconBox, "--glyphStroke": glyph.stroke, "--glyphSmall": glyph.box, "--iconSmall": size.iconSmall,
   };
   const lengths = Object.entries(LIGHT).filter(([k, v]) => !v.startsWith("#") && k !== "--doodleOpacity" && k !== "--maxWidth");
   for (const [k, v] of lengths) {
@@ -175,7 +175,7 @@ test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
   assert.doesNotMatch(text, /Facebook/i, "no Facebook until the service account (T9)");
   assert.doesNotMatch(text, /374,760|products\. A hit/, "the food DB has no product count (T9)");
   assert.match(text, /Food DB/);
-  assert.match(text, /It does not say the food is safe/); // no medical or safety advice (anti-projects)
+  assert.doesNotMatch(text, /\bsafe to eat\b|\bhealthy\b|\bnutrition|\bcalorie/i); // no safety, health or nutrition claims (anti-projects)
   assert.match(text, /written again as new code/);       // new work only: the earlier parts are named
   assert.equal((BODY.match(/<h1\b/g) ?? []).length, 1);
   assert.match(PAGE, /<html lang="en">/);
@@ -191,6 +191,70 @@ test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
   assert.deepEqual(kinds, ["secondary", "secondary", "primary"]);
   // Every decorative drawing is hidden from screen readers.
   for (const s of BODY.match(/<svg\b[^>]*>/g) ?? []) assert.match(s, /aria-hidden="true"/, s);
+});
+
+// ---- A2 (#81): the problem, "How it is built" (one drawing always open, three on a tap), left to right then down.
+const ARCH = BODY.slice(BODY.indexOf('<section aria-labelledby="h-arch">'), BODY.indexOf('<section aria-labelledby="h-num">'));
+const RIGHT = "M2 10 H17 M12 5 L17 10 L12 15", DOWN = "M10 2 V17 M5 12 L10 17 L15 12";
+
+test("the problem is stated, with the six languages and Rescue", () => {
+  const text = BODY.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.match(text, /Posting food should take seconds/);
+  assert.match(text, /V3RDE uses Meta's AI models to do that work for you/);
+  assert.match(text, /Nothing left behind/);
+  // The six languages are the ones of i18n/languages.json, by name and count.
+  const langs = JSON.parse(readFileSync(join(ROOT, "../i18n/languages.json"), "utf8")).languages as { name: string }[];
+  assert.equal(langs.length, 6);
+  for (const l of langs) assert.ok(text.includes(l.name.split(" (")[0]), "the page names " + l.name);
+  assert.match(text, /Six languages/);
+});
+
+test("How it is built: one drawing always open, three that open on a tap", () => {
+  const overview = ARCH.slice(ARCH.indexOf('<div class="card overview">'), ARCH.indexOf("<details"));
+  assert.ok(overview.length > 0 && !/<details/.test(overview), "the overview is not inside a details");
+  for (const part of ["Your phone or browser", "Our server", "Meta's AI models"]) assert.ok(overview.includes(part), part);
+  const more = ARCH.match(/<details\b[^>]*>/g) ?? [];
+  assert.deepEqual(more, ['<details class="more card" id="m-post">', '<details class="more card" id="m-rescue">', '<details class="more card" id="m-lang">']);
+  const glyph = group("glyph");
+  for (const sum of ARCH.match(/<summary>[\s\S]*?<\/summary>/g) ?? []) {
+    assert.ok(sum.includes('<path d="' + glyph.plus + '"/>') && sum.includes('<path d="' + glyph.minus + '"/>'), "plus and minus glyphs");
+  }
+  assert.match(STYLE, /\.more \.minus, \.more\[open\] \.plus \{ display: none; \}/);
+  assert.match(STYLE, /\.more summary:focus-visible \{ outline: var\(--focus\) solid var\(--link\)/);
+});
+
+test("every drawing reads left to right, then down: no arrow points back", () => {
+  const arrows = [...ARCH.matchAll(/<div class="(go|down)" aria-hidden="true"><svg[^>]*><path d="([^"]+)"\/><\/svg><\/div>/g)];
+  assert.ok(arrows.length > 20, "arrows: " + arrows.length);
+  for (const a of arrows) assert.equal(a[2], a[1] === "go" ? RIGHT : DOWN, a[0]);
+  const all = [...ARCH.matchAll(/<path d="([^"]+)"\/>/g)].map((m) => m[1]);
+  for (const d of all) assert.ok([RIGHT, DOWN, group("glyph").plus, group("glyph").minus].includes(d), "an arrow or glyph that is not right, down, plus or minus: " + d);
+  // On a wide screen a "go" arrow points right; stacked it turns to point down (a quarter turn, never back).
+  assert.match(STYLE, /\.go svg \{ transform: rotate\(90deg\); \}/);
+  assert.match(STYLE, /\.go svg \{ transform: none; \}/);
+  // The steps of each detail drawing are 1..n in reading order.
+  for (const id of ["m-post", "m-rescue", "m-lang"]) {
+    const part = ARCH.slice(ARCH.indexOf('id="' + id + '"'), ARCH.indexOf("</details>", ARCH.indexOf('id="' + id + '"')));
+    const steps = [...part.matchAll(/<span class="step">(\d+)<\/span>/g)].map((m) => Number(m[1]));
+    assert.deepEqual(steps, steps.map((_, i) => i + 1), id);
+  }
+});
+
+test("each box says where it runs; a Meta model has the red border; the models are the ones of NEW_WORK.md", () => {
+  const work = readFileSync(join(ROOT, "../NEW_WORK.md"), "utf8");
+  const boxes = [...ARCH.matchAll(/<div class="node([a-z ]*)"><p class="where">([^<]+)<\/p><p class="label">(?:<span class="step">\d+<\/span>)?([^<]+)<\/p>/g)];
+  assert.equal(boxes.length, (ARCH.match(/<p class="where">/g) ?? []).length, "every step box is read");
+  assert.equal(boxes.length, 24, "12 + 7 + 5 step boxes");
+  for (const m of boxes) {
+    const [, cls, where, label] = m;
+    assert.ok(/^(Your phone|Our server|Meta AI|Our server, a Meta AI model)$/.test(where), where);
+    assert.equal(cls.split(" ").includes("ai"), where.includes("Meta AI"), label + ": the red border marks a Meta AI model");
+  }
+  assert.match(STYLE, /\.node\.ai \{ border-color: var\(--accent\); \}/);
+  for (const model of ["SAM 3.1", "Muse Spark 1.3", "Muse Image 1.0", "Muse Voice Transcribe 1.0", "Muse Spark Open", "PE-Core"]) {
+    assert.ok(ARCH.includes(model), "the page names " + model);
+    assert.ok(work.includes(model), "NEW_WORK.md names " + model);
+  }
 });
 
 test("the sign-in screen links to the page", () => {

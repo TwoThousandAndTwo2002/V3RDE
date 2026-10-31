@@ -30,7 +30,7 @@
   --r-photo: 12px; --r-card: 18px; --r-sheet: 26px; --r-round: 999px;
   /* size */
   --control: 48px; --iconBig: 44px; --topBar: 64px; --header: 56px; --border: 1px; --tabPadX: 16px; --pillPadX: 20px;
-  --glyphBox: 20px; --glyphStroke: 1.67; --focus: 2px;
+  --glyphBox: 20px; --glyphSmall: 12px; --glyphStroke: 1.67; --focus: 2px; --iconSmall: 38px;
   --maxWidth: 560px;
   color-scheme: light;
 }
@@ -115,39 +115,64 @@ section > .title + .muted { margin-top: var(--hair); }
 .disc { flex: none; width: var(--iconBig); height: var(--iconBig); border-radius: var(--r-round); background: var(--accentSoft);
   display: flex; align-items: center; justify-content: center; }
 .disc svg { width: var(--glyphBox); height: var(--glyphBox); stroke: var(--accent); stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.card ul { margin: var(--group) 0 0; padding: 0 0 0 var(--gutter); }
-.card li + li { margin-top: var(--hair); }
-.card .muted.note { margin-top: var(--gap); }
+.card .lead { margin-top: var(--group); }
 
 /* Steps */
 ol.steps { list-style: none; margin: var(--gutter) 0 0; padding: 0; display: grid; gap: var(--item); }
 @media (min-width: 600px) { ol.steps { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 840px) { ol.steps { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+@media (min-width: 840px) { ol.steps { grid-template-columns: repeat(5, 1fr); } }
 ol.steps li { display: flex; gap: var(--group); align-items: flex-start; }
 .n { flex: none; width: var(--iconBig); height: var(--iconBig); border-radius: var(--r-round); background: var(--iconFill);
   display: flex; align-items: center; justify-content: center; }
 ol.steps li .label + .muted { margin-top: var(--hair); }
 
-/* Architecture */
-.arch { display: grid; grid-template-columns: 1fr; gap: var(--item); margin-top: var(--gutter); align-items: stretch; }
-@media (min-width: 840px) { .arch { grid-template-columns: 1fr var(--pad) 1fr var(--pad) 1fr; } }
-.zone .muted { margin-top: var(--hair); }
-.zone .items { margin-top: var(--group); display: grid; gap: var(--gap); }
-.chip { border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--gap) var(--group); background: var(--bg); }
-.chip .muted { margin-top: 0; }
-.chip.edge { border-color: var(--accent); }
-.arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); }
-.arrow svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; transform: rotate(90deg); }
-@media (min-width: 840px) { .arrow svg { transform: none; } }
-.flow { margin-top: var(--gutter); }
-.flow ol { margin: var(--gap) 0 0; padding: 0 0 0 var(--gutter); }
-.flow li + li { margin-top: var(--hair); }
+/* How it is built: flows of stages. A stage is a column of parts (top to bottom, an arrow down between them); the
+   stages go left to right with an arrow between them (size.control wide). Three stages a row (the high-level
+   drawing: five), so a row reads left to right and the rows read top to bottom. A phone: one column, arrows down. */
+.overview { margin-top: var(--gutter); padding: var(--pad); }
+.flow { display: flex; flex-direction: column; }
+.stage { display: flex; flex-direction: column; }
+.stage-name { color: var(--muted); margin-bottom: var(--gap); }
+.node { border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--gap) var(--group); background: var(--bg); }
+.node.ai { border-color: var(--accent); }
+.node .where { color: var(--muted); margin: 0; }
+.node .step { color: var(--link); margin-right: var(--inset); }
+.down, .go { display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.down { height: var(--gutter); }
+.go { height: var(--control); }
+.down svg, .go svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.go svg { transform: rotate(90deg); }
+@media (min-width: 840px) {
+  .flow { flex-direction: row; flex-wrap: wrap; row-gap: var(--pad); }
+  .flow.c3 .stage { flex: 0 0 calc((100% - 2 * var(--control)) / 3); }
+  .flow.c4 .stage { flex: 0 0 calc((100% - 3 * var(--control)) / 4); }
+  .flow.c5 .stage { flex: 0 0 calc((100% - 4 * var(--control)) / 5); }
+  .go { width: var(--control); height: auto; }
+  .go svg { transform: none; }
+  .flow.c3 > .go:nth-child(6n) { display: none; }         /* the end of a row of three: the next row starts left */
+  .stage .node { flex: 0 0 auto; }
+}
+/* More detail: a tap opens it (details and summary, no script) */
+.more { margin-top: var(--gutter); padding: 0; }
+.more summary { display: flex; align-items: center; justify-content: space-between; gap: var(--group); padding: var(--group) var(--pad); cursor: pointer; list-style: none; min-height: var(--control); }
+.more summary::-webkit-details-marker { display: none; }
+.more summary:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); border-radius: var(--r-card); }
+.sum-text { display: flex; flex-direction: column; }
+.toggle { flex: none; width: var(--iconSmall); height: var(--iconSmall); border-radius: var(--r-round); background: var(--iconFill); display: flex; align-items: center; justify-content: center; }
+.toggle svg { width: var(--glyphSmall); height: var(--glyphSmall); stroke: var(--fg); stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; }
+.more .minus, .more[open] .plus { display: none; }
+.more[open] .minus { display: block; }
+.more > .flow { padding: 0 var(--pad) var(--pad); }
+.part ul { margin: var(--gap) 0 0; padding: 0 0 0 var(--gutter); }
+.part li + li { margin-top: var(--hair); }
+.flow.parts .stage { justify-content: stretch; }
+.flow.parts .node { flex: 1 1 auto; }
+.sr { position: absolute; width: var(--border); height: var(--border); overflow: hidden; clip-path: inset(50%); }
 
 /* Numbers */
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--grid); margin-top: var(--gutter); }
 @media (min-width: 840px) { .stats { grid-template-columns: repeat(4, 1fr); } }
 .stat .muted { margin-top: var(--hair); }
-.src { margin-top: var(--gap); }
 
 footer { max-width: var(--maxWidth); margin: 0 auto; padding: var(--pad) var(--gutter); border-top: var(--border) solid var(--line); }
 @media (min-width: 840px) { footer { padding: var(--pad); } }
@@ -168,11 +193,11 @@ footer .muted + .muted { margin-top: var(--hair); }
 </header>
 
 <main id="main">
-  <!-- Impact: the problem, who benefits, what the user can do today -->
+  <!-- Impact: the problem, who benefits, what a person can do today -->
   <section class="hero" aria-labelledby="h-hero">
     <div class="hero-in">
       <h1 class="display" id="h-hero">Extra food goes to people near it, not to the trash</h1>
-      <p class="body muted">V3RDE connects people who have extra food with people near them who need a meal. Posted food is open to grab for 30 minutes. If nobody picks it up, V3RDE finds a food program near the food. To post, a giver takes one photo, and the app makes a listing for each item in it.</p>
+      <p class="body muted">Share a meal with people near you in 30 minutes. Food nobody picks up goes to a food program.</p>
       <div class="row">
         <!-- T9 Oct 30: "Watch the demo" shows when the video exists: set DEMO_URL in the script (https only). -->
         <a class="pill secondary label" href="#" data-testid="demo" hidden>Watch the demo</a>
@@ -182,49 +207,41 @@ footer .muted + .muted { margin-top: var(--hair); }
     </div>
   </section>
 
+  <!-- Impact: the problem and what changes (T9, Oct 30) -->
+  <section aria-labelledby="h-problem">
+    <h2 class="title" id="h-problem">Posting food should take seconds</h2>
+    <p class="body muted">Sharing extra food used to mean typing each item, counting servings and taking a good photo. Most people gave up, and the food went to the trash. V3RDE uses Meta's AI models to do that work for you.</p>
+    <div class="grid three">
+      <div class="card"><h3 class="label">One photo, not a form</h3><p class="body muted">Meta's models find, count and name each item, and make the photo look good.</p></div>
+      <div class="card"><h3 class="label">Six languages</h3><p class="body muted">English, Spanish, Portuguese, Chinese, Hindi and Arabic.</p></div>
+      <div class="card"><h3 class="label">Nothing left behind</h3><p class="body muted">Nobody grabbed it in 30 minutes? Rescue finds a food program near it.</p></div>
+    </div>
+  </section>
+
   <!-- Roles (T9: Give, Receive, and food programs) -->
   <section aria-labelledby="h-roles">
     <h2 class="title" id="h-roles">Who uses V3RDE</h2>
-    <p class="body muted">Three kinds of users. Each one has a different job.</p>
     <div class="grid three">
       <article class="card">
         <div class="head">
           <span class="disc" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2.5 6.5 H6 L7.5 4 H12.5 L14 6.5 H17.5 A1.5 1.5 0 0 1 19 8 V15.5 A1.5 1.5 0 0 1 17.5 17 H2.5 A1.5 1.5 0 0 1 1 15.5 V8 A1.5 1.5 0 0 1 2.5 6.5 Z M10 9 A3 3 0 1 0 10 15 A3 3 0 1 0 10 9 Z"/></svg></span>
           <div><h3 class="label">Give</h3><p class="body muted">Share your food</p></div>
         </div>
-        <p class="body" style="margin-top: var(--group)">A person or a business with food that nobody will eat.</p>
-        <ul class="body">
-          <li>Take one photo: one item or a full shelf.</li>
-          <li>Check the list. Speak or type to change it.</li>
-          <li>Post. Each listing is live for 30 minutes.</li>
-          <li>Nobody took it? Tap <span class="label">Rescue</span>.</li>
-        </ul>
+        <p class="body lead">Take one photo. The app lists each item. Post.</p>
       </article>
       <article class="card">
         <div class="head">
           <span class="disc" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M1.5 9.5 H18.5 A8.5 6.5 0 0 1 1.5 9.5 Z M7 18.5 H13 M7.5 6.5 C7.5 5.2 8.5 5 8.5 3.5 M11.5 6.5 C11.5 5.2 12.5 5 12.5 3.5"/></svg></span>
           <div><h3 class="label">Receive</h3><p class="body muted">Find food near you</p></div>
         </div>
-        <p class="body" style="margin-top: var(--group)">A person who wants a meal from food near them.</p>
-        <ul class="body">
-          <li>See food within 1, 5 or 10 miles.</li>
-          <li>Grab an item. You get the pickup place and the directions.</li>
-          <li>Cannot go? Release it, so another person can grab it.</li>
-        </ul>
-        <p class="body muted note">Your place is not stored. Distances show to 0.1 mile.</p>
+        <p class="body lead">See food near you. Grab it. Pick it up.</p>
       </article>
       <article class="card">
         <div class="head">
           <span class="disc" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="stroke-width: calc(var(--glyphStroke) * 1.2)"><path d="M5 11.4C2.8 11.4 2.8 7 6 7h12c3.2 0 3.2 4.4 1 4.4V19H5zM9.4 8.8l-1.2 2.2M13 8.8l-1.2 2.2M16.6 8.8l-1.2 2.2"/></svg></span>
           <div><h3 class="label">Food programs</h3><p class="body muted">Take what nobody grabbed</p></div>
         </div>
-        <p class="body" style="margin-top: var(--group)">Food banks and pantries take shelf-stable food. Soup kitchens and meal programs take perishable food.</p>
-        <ul class="body">
-          <li>The app finds the places nearest to the food.</li>
-          <li>Small amount: the giver takes it to one of the places. Call before you go.</li>
-          <li>Large amount: the giver sends a short message first, from their own email.</li>
-        </ul>
-        <p class="body muted note">The message asks if the program can take the food. It does not say the food is safe.</p>
+        <p class="body lead">Food banks, pantries and meal programs near the food.</p>
       </article>
     </div>
   </section>
@@ -232,96 +249,136 @@ footer .muted + .muted { margin-top: var(--hair); }
   <!-- How it works (Demo: the flow that the video shows) -->
   <section aria-labelledby="h-how">
     <h2 class="title" id="h-how">How it works</h2>
-    <p class="body muted">From one photo to a meal, in 7 steps.</p>
     <ol class="steps">
-      <li><span class="n label num" aria-hidden="true">1</span><div><p class="label">Take a photo</p><p class="body muted">One item, a tray or a full shelf.</p></div></li>
-      <li><span class="n label num" aria-hidden="true">2</span><div><p class="label">Every item is found</p><p class="body muted">Each one gets a name and a count. Items show as they come in.</p></div></li>
-      <li><span class="n label num" aria-hidden="true">3</span><div><p class="label">Make the photo better</p><p class="body muted">Better light or a plain background. The food does not change.</p></div></li>
-      <li><span class="n label num" aria-hidden="true">4</span><div><p class="label">Talk to change it</p><p class="body muted">"The salad is gone. Pick up at the back door."</p></div></li>
-      <li><span class="n label num" aria-hidden="true">5</span><div><p class="label">Post</p><p class="body muted">Each item is a listing for 30 minutes.</p></div></li>
-      <li><span class="n label num" aria-hidden="true">6</span><div><p class="label">Grab and pick up</p><p class="body muted">A person near you grabs it and comes to get it.</p></div></li>
-      <li><span class="n label num" aria-hidden="true">7</span><div><p class="label">Rescue</p><p class="body muted">Nobody came? A food program near the food gets it.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">1</span><div><p class="label">Snap</p><p class="body muted">One item or a full shelf.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">2</span><div><p class="label">Check</p><p class="body muted">Fix it by voice or text.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">3</span><div><p class="label">Post</p><p class="body muted">Live for 30 minutes.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">4</span><div><p class="label">Grab</p><p class="body muted">A neighbor picks it up.</p></div></li>
+      <li><span class="n label num" aria-hidden="true">5</span><div><p class="label">Rescue</p><p class="body muted">Or a food program does.</p></div></li>
     </ol>
   </section>
 
-  <!-- Architecture (Technical depth; Use of Meta AI tooling) -->
+  <!-- Architecture (Technical depth; Use of Meta AI tooling), read from the code (NEW_WORK.md entries 4, 9, 16, 17,
+       19, 48, 50, 54-64, 65, 69, 73, 74, 75). One drawing is always open; three more open on a tap (details).
+       Every drawing reads left to right, then top to bottom: an arrow points right or down, never back. -->
   <section aria-labelledby="h-arch">
     <h2 class="title" id="h-arch">How it is built</h2>
-    <p class="body muted">Fast checks run on our own server. The Meta models do the hard work in the cloud. A photo that is not food stops on our server and costs nothing.</p>
-    <div class="arch" role="group" aria-label="The three parts of V3RDE">
-      <div class="card zone">
-        <h3 class="label">Your phone or browser</h3>
-        <p class="body muted">One app for the web, iPhone and Android.</p>
-        <div class="items">
-          <div class="chip"><p class="label">Camera and barcode</p><p class="body muted">The barcode is read on the device.</p></div>
-          <div class="chip"><p class="label">Voice clip</p><p class="body muted">Made on the device as a WAV file.</p></div>
-          <div class="chip"><p class="label">Your place</p><p class="body muted">Location or ZIP code. A receiver's place is not stored. A giver's place is kept rounded and is not shown.</p></div>
-        </div>
-      </div>
-      <div class="arrow" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-      <div class="card zone">
-        <h3 class="label">Our server (the edge)</h3>
-        <p class="body muted">One small ARM server. Each part is its own Go service.</p>
-        <div class="items">
-          <div class="chip edge"><p class="label">Food gate: PE-Core-S16-384</p><p class="body muted">A Meta model on our server. It says food or not food before any paid call.</p></div>
-          <div class="chip"><p class="label">Food DB</p><p class="body muted">A barcode hit fills the listing at once.</p></div>
-          <div class="chip"><p class="label">Sign-in, listings, distance</p><p class="body muted">The 30-minute timer, grab and release.</p></div>
-          <div class="chip"><p class="label">Ledger</p><p class="body muted">Each model call, with its time, tokens and cost.</p></div>
-        </div>
-      </div>
-      <div class="arrow" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-      <div class="card zone">
-        <h3 class="label">Meta's cloud</h3>
-        <p class="body muted">The Meta Model API, plus Muse Spark Open.</p>
-        <div class="items">
-          <div class="chip"><p class="label">SAM 3.1</p><p class="body muted">Finds and counts each item: food, package and tray.</p></div>
-          <div class="chip"><p class="label">Muse Spark 1.3</p><p class="body muted">Names the items. Checks edits. Turns speech into changes. Writes the rescue message.</p></div>
-          <div class="chip"><p class="label">Muse Image 1.0</p><p class="body muted">Makes the photo better.</p></div>
-          <div class="chip"><p class="label">Muse Voice Transcribe 1.0</p><p class="body muted">Turns the voice clip into text.</p></div>
-          <div class="chip"><p class="label">Muse Spark Open</p><p class="body muted">Translates the app text into other languages. In progress.</p></div>
-        </div>
+    <p class="body muted">Three parts work together. Quick checks run on our own server; Meta's AI models do the hard work. Tap a flow below to see it step by step. A red border is a Meta AI model.</p>
+    <div class="card overview">
+      <div class="flow c3 parts">
+        <div class="stage"><div class="node part phone"><p class="label">Your phone or browser</p><p class="body muted">What you see and touch</p><ul class="body"><li>Camera and barcode reader</li><li>Microphone or keyboard</li><li>The app in your language</li></ul></div></div>
+        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+        <div class="stage"><div class="node part server"><p class="label">Our server</p><p class="body muted">Quick checks and your listings</p><ul class="body"><li>Sign-in and fair use</li><li>Food DB and food check (PE-Core)</li><li>Listings, timers and Rescue</li><li>Checks every AI answer</li><li>Logs the time and cost of each call</li></ul></div></div>
+        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+        <div class="stage"><div class="node part ai"><p class="label">Meta's AI models</p><p class="body muted">The hard work</p><ul class="body"><li>SAM 3.1: finds and counts</li><li>Muse Spark 1.3: names, understands, decides</li><li>Muse Image 1.0: better photos</li><li>Muse Voice Transcribe 1.0: speech to text</li><li>Muse Spark Open: translations</li></ul></div></div>
       </div>
     </div>
-
-    <div class="card flow">
-      <h3 class="label">What happens to one photo</h3>
-      <ol class="body">
-        <li>The barcode is looked up first. A hit is the fast path.</li>
-        <li>The food gate and SAM 3.1 start at the same time. The paid naming call waits for the gate.</li>
-        <li>SAM 3.1 finds every item. Muse Spark 1.3 reads the photo with a number drawn on each item, and names them all in one call.</li>
-        <li>Items that are the same are grouped and counted. Small items get a "check this" mark.</li>
-        <li>Muse Image 1.0 makes the photo better. Then Muse Spark 1.3 compares the two photos. If one item, label or count changed, the original stays.</li>
-        <li>Code checks every change that a model proposes. Voice cannot add food that the photo does not show.</li>
-      </ol>
-    </div>
+    <details class="more card" id="m-post">
+      <summary><span class="sum-text"><span class="label">Posting food, step by step</span><span class="body muted">12 steps, from the photo to the listing</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c3">
+          <div class="stage"><p class="label stage-name">Snap</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Camera</p><p class="body muted">Takes the photo and reads the barcode</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Front door</p><p class="body muted">Checks who you are and keeps use fair</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Check</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">3</span>Food DB</p><p class="body muted">A known barcode fills the listing at once</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server ai"><p class="where">Our server, a Meta AI model</p><p class="label"><span class="step">4</span>Food check</p><p class="body muted">PE-Core runs on our server. Not food? It stops here, free</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Find and name</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>SAM 3.1</p><p class="body muted">Finds and counts every item, even a full shelf</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">6</span>Muse Spark 1.3</p><p class="body muted">Names each item; same items are counted</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Better photo</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">7</span>Muse Image 1.0</p><p class="body muted">Makes the photo sharper and cleaner</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">8</span>Photo check</p><p class="body muted">Same food, same items, or the original stays</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Fix by talking</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">9</span>Your words</p><p class="body muted">Say or type: “the salad is gone”</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">10</span>Muse Voice Transcribe 1.0 and Muse Spark 1.3</p><p class="body muted">Understand what you mean</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">11</span>Change check</p><p class="body muted">Only real items, sensible servings</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Post</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">12</span>Listing</p><p class="body muted">Live for 30 minutes for people near you</p></div>
+          </div>
+        </div>
+    </details>
+    <details class="more card" id="m-rescue">
+      <summary><span class="sum-text"><span class="label">Rescue, step by step</span><span class="body muted">Food that nobody grabbed still finds a home</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c4">
+          <div class="stage"><p class="label stage-name">Start</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Rescue button</p><p class="body muted">The timer ended and nobody grabbed it</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Where is the food?</p><p class="body muted">Reads the ZIP code of the pickup address</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Decide</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Muse Spark 1.3</p><p class="body muted">Shelf-stable or perishable?</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Find places</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Food program directory</p><p class="body muted">The nearest food banks, pantries and meal programs</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>Muse Spark 1.3 web search</p><p class="body muted">Only when the directory finds none</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Go</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">6</span>Three places</p><p class="body muted">The nearest that take this kind of food</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">7</span>Directions and a call</p><p class="body muted">A large amount? An email to send first</p></div>
+          </div>
+        </div>
+    </details>
+    <details class="more card" id="m-lang">
+      <summary><span class="sum-text"><span class="label">Six languages, step by step</span><span class="body muted">English, Spanish, Portuguese, Chinese, Hindi and Arabic</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
+        <div class="flow c4">
+          <div class="stage"><p class="label stage-name">Find new text</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">1</span>New text</p><p class="body muted">After each update, finds what changed</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Translate</p>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">2</span>Muse Spark Open</p><p class="body muted">Translates a whole screen at a time</p></div>
+            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Two judges</p><p class="body muted">Muse Spark Open and Muse Spark 1.3 check meaning and tone</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Keep the good ones</p>
+            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Score check</p><p class="body muted">A weak translation keeps the last good text</p></div>
+          </div>
+          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
+          <div class="stage"><p class="label stage-name">Your language</p>
+            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">5</span>Your language</p><p class="body muted">The app text, ready in 6 languages</p></div>
+          </div>
+        </div>
+    </details>
   </section>
 
   <!-- Technical depth: measured, not estimated (NEW_WORK.md entry 4) -->
   <section aria-labelledby="h-num">
     <h2 class="title" id="h-num">Measured, not guessed</h2>
-    <p class="body muted">From live runs on 23 shelf photos, with a hand check of 294 boxes.</p>
+    <p class="body muted">Live runs on 23 shelf photos, a hand check of 294 boxes.</p>
     <div class="stats">
       <div class="card stat"><p class="title num">89.8%</p><p class="body muted">correct product names</p></div>
-      <div class="card stat"><p class="title num">97.4%</p><p class="body muted">correct when the item is 96 px or larger in the image Muse reads</p></div>
-      <div class="card stat"><p class="title num">$0.0012</p><p class="body muted">for each named item ($0.022 for each photo)</p></div>
-      <div class="card stat"><p class="title num">14.9 s → 6.1 s</p><p class="body muted">for a photo with 24 items, with 3 calls in parallel</p></div>
-    </div>
-    <div class="grid two">
-      <div class="card">
-        <h3 class="label">It learns from the givers</h3>
-        <p class="body muted" style="margin-top: var(--hair)">The app records each name and count that a giver changes. These labels tune the size limit for the "check this" mark. A person approves each change.</p>
-      </div>
-      <div class="card">
-        <h3 class="label">It is safe to leave running</h3>
-        <p class="body muted" style="margin-top: var(--hair)">Item photos are for their owner only. Each caller has a rate limit and a daily cost limit. Every change comes with tests, and every design decision names its source.</p>
-      </div>
+      <div class="card stat"><p class="title num">97.4%</p><p class="body muted">correct on items 96 px or larger</p></div>
+      <div class="card stat"><p class="title num">$0.0012</p><p class="body muted">for each named item</p></div>
+      <div class="card stat"><p class="title num">6.1 s</p><p class="body muted">for 24 items (was 14.9 s)</p></div>
     </div>
   </section>
 
   <!-- New work only (rules) -->
   <section aria-labelledby="h-new">
     <h2 class="title" id="h-new">Built for the Meta Global AI Developer Hackathon</h2>
-    <p class="body muted">We wrote all of this from Oct 26 to Nov 4, 2026. Parts that our earlier app also had (sign-in, listings, the barcode lookup) are written again as new code. The file NEW_WORK.md in our repository lists each part, the day we built it, its Meta model and its sources.</p>
+    <p class="body muted">Built Oct 26 to Nov 4, 2026. Parts our earlier app had are written again as new code. NEW_WORK.md in our repository lists each part.</p>
   </section>
 </main>
 

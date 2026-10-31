@@ -1671,3 +1671,20 @@ T9 asked for a web page about the app: what it is for, who uses it (three roles)
 - The local web server serves a folder page with the trailing slash, as the edge does.
 - "Watch the demo" stays hidden until the video has an address.
 - Tests: mobile 126 -> 135.
+
+## 81. The About page: the problem, and how it is built in drawings
+
+**When:** Oct 30 2026.
+**Branch:** `about` (after entry 78).
+**Meta models:** none (the page explains how the app uses them).
+**Files:** `mobile/public/about/index.html`, `mobile/tests/about.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/A2.md`
+
+T9 found the page dense and asked for an architecture drawing. Over versions 5 to 8 of the mockup T9 asked for fewer words, the problem, six languages and Rescue, drawings read from the code in plain words, one drawing always open with more on a tap, a left-to-right then top-to-bottom reading order, and a "How it is built" that is not the same as "How it works". T9 approved version 8 ("lock this in").
+
+- A new section: the problem. Posting food was manual work (typing, counting, a good photo); Meta's AI models now do it. Six languages. Rescue, so food nobody grabbed still finds a home.
+- Fewer words: one line for each role, five short steps, short captions.
+- How it is built: one drawing that is always open (the three parts and what each holds) and three that open on a tap: posting food (12 steps), Rescue (7) and six languages (5). Each box says where it runs. A red border marks a Meta AI model.
+- Each drawing reads left to right, then down. No arrow points back.
+- The tests read the page: no arrow points left or up, the steps are in order, each Meta model box has the red border, the six languages are the ones in `i18n/languages.json`, and the models are the ones in this file.
+- Tests: mobile 135 -> 139.
