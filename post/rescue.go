@@ -16,10 +16,22 @@ package post
 //	GET  /healthz
 //
 // Rules: the listing must be the caller's, still "active" (not collected)
-// and past expires_at; its number_of_serving must be at least MinServings
-// (the bulk rule; T9 decides the number). The directory has no email field
-// that we could confirm, so the donor gives the address (from the place's
-// site or a call) and the answer always has mailto: and tel: links.
+// and past expires_at. The directory has no email field that we could
+// confirm, so the donor gives the address (from the place's site or a call)
+// and a bulk answer always has mailto: and tel: links.
+//
+// R3 (T9 2026-10-31: "instead of an email it suggests that the user can
+// transport the food to one of 3 locations near them based on the pickup
+// instructions. the emails should only be for bulk items"; bulk = 30
+// servings or the scanner says bulk, "Either one"; "Map directions link"):
+//   - bulk (number_of_serving >= MinServings, or details.serving_type "bulk"
+//     from a vision scan): mode "email", the X35b flow (draft, mailto, /send);
+//   - else: mode "dropoff": Muse decides only shelf_stable (no draft), and
+//     each place has a Google Maps directions link; /send answers 409.
+//   - the search location: the ZIP at the end of the listing's pickup address
+//     ("12 Main St, Denver, CO 80219, front desk"), else the body's zip or
+//     lat/lng. The body is optional when the pickup address has a ZIP. The
+//     pickup text is never written to the events line (X48u rule).
 
 import (
 	"context"
@@ -41,6 +53,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
@@ -68,6 +81,101 @@ The email asks a local food program whether it can accept this donation, says wh
 and asks when the donor can drop it off. Do not say the food is safe, do not give dates or temperatures,
 do not invent facts about the food. Do not add a greeting name or a signature.`
 
+// R1 (T9 2026-10-30, option A): the food scanner already says how the food
+// was packed when it was listed (the contract field meal_condition, kept with
+// the listing as details, X48d). Rescue gives it to Muse Spark as a hint, with
+// the scanner's description; Muse still decides shelf_stable from the photo,
+// because "sealed" is not the same as "keeps without a refrigerator" (sealed
+// yogurt). A listing without the field gets the prompt of X35b, byte for byte.
+// A barcode answer's meal_condition is a fixed value (barcode/product.go), not
+// something the scanner saw, so the hint is used only when the scan's own
+// events line (the analyze events, read-only) says the route was "vision" for
+// the same user: see scanSource. Any other case gives no hint.
+
+// RescueHint is the line rescuePrompt puts after "Servings:". %s are the
+// condition words and the description part.
+const RescueHint = "Scanner note, made when the food was listed (it can be wrong; the photo decides): %s%s.\n"
+
+// hintWords are the words of each meal_condition value (server/contract.go).
+var hintWords = map[string]string{
+	"sealed":           "the food is in a sealed package",
+	"ready_to_eat":     "the food is ready to eat",
+	"cooking_required": "the food needs cooking",
+}
+
+// MaxHintDescription is the most characters (runes) of the description in the
+// note: the listings service keeps at most 200 (listings/details.go).
+const MaxHintDescription = 200
+
+// rescuePrompt is the Muse instruction for listing l, whose scan took route
+// source (scanSource), and the meal_condition value it used as a hint (""
+// when it used none: no field, a value not in the contract, or a route that
+// is not "vision").
+func rescuePrompt(l Listing, source string) (string, string) {
+	return promptFor(RescuePrompt, l, source)
+}
+
+// dropoffPrompt (R3) is rescuePrompt with DropoffPrompt.
+func dropoffPrompt(l Listing, source string) (string, string) {
+	return promptFor(DropoffPrompt, l, source)
+}
+
+// promptFor is tmpl (RescuePrompt or DropoffPrompt) for listing l, with the
+// scanner note when there is one.
+func promptFor(tmpl string, l Listing, source string) (string, string) {
+	note, cond := "", ""
+	if l.Details != nil && source == ScanVision {
+		if words, ok := hintWords[l.Details.MealCondition]; ok {
+			cond = l.Details.MealCondition
+			desc := ""
+			if d := oneLine(l.Details.Description, MaxHintDescription); d != "" {
+				desc = "; the scanner described it as: " + d
+			}
+			note = fmt.Sprintf(RescueHint, words, desc)
+		}
+	}
+	if note == "" {
+		return fmt.Sprintf(tmpl, l.Title, l.NumberOfServing), ""
+	}
+	// the note goes in as an argument, so a "%" in the description stays text
+	t := strings.Replace(tmpl, "Servings: %d\n", "Servings: %d\n%s", 1)
+	return fmt.Sprintf(t, l.Title, l.NumberOfServing, note), cond
+}
+
+// oneLine is s with control and format characters (new lines, and bidi or
+// zero-width marks too) as spaces, runs of spaces as one, trimmed, and at
+// most n runes.
+func oneLine(s string, n int) string {
+	s = strings.Join(strings.Fields(strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) || unicode.Is(unicode.Cf, r) {
+			return ' '
+		}
+		return r
+	}, s)), " ")
+	if r := []rune(s); len(r) > n {
+		s = strings.TrimSpace(string(r[:n]))
+	}
+	return s
+}
+
+// DropoffPrompt (R3) is the Muse instruction when the donor takes the food to
+// a place (not bulk): no email, only the decision. %s, %d as RescuePrompt;
+// the scanner note goes after "Servings:" as in RescuePrompt.
+const DropoffPrompt = `A donor listed this food on a food-sharing app and nobody picked it up in time.
+The donor will take it to a local food program.
+Title: %s
+Servings: %d
+Look at the photo. Return ONLY valid JSON:
+{"shelf_stable": true or false, "reason": "one sentence, 12 words maximum"}
+shelf_stable is true only for sealed food that keeps without a refrigerator (cans, dry goods, sealed jars).
+Do not say the food is safe, do not give dates or temperatures, do not invent facts about the food.`
+
+// The modes of a rescue (R3).
+const (
+	ModeEmail   = "email"   // bulk: the donor asks the place first (draft, mailto, /send)
+	ModeDropoff = "dropoff" // the donor takes the food to one of the places
+)
+
 // Place is one directory result as the app shows it.
 type Place struct {
 	ID            string  `json:"id"`
@@ -77,11 +185,24 @@ type Place struct {
 	Phone         string  `json:"phone,omitempty"`
 	DistanceMiles float64 `json:"distance_miles,omitempty"`
 	Website       string  `json:"website,omitempty"`
-	Email         string  `json:"email,omitempty"`  // only when the directory gives one
-	Source        string  `json:"source,omitempty"` // X44l: the record's data_source (the directory names it per record)
-	Tel           string  `json:"tel,omitempty"`    // tel: link
-	Mailto        string  `json:"mailto,omitempty"`
+	Email         string  `json:"email,omitempty"`      // only when the directory gives one
+	Source        string  `json:"source,omitempty"`     // X44l: the record's data_source (the directory names it per record)
+	Tel           string  `json:"tel,omitempty"`        // tel: link
+	Mailto        string  `json:"mailto,omitempty"`     // R3: bulk (mode email) only
+	Directions    string  `json:"directions,omitempty"` // R3: a Google Maps directions link to the place
+	SourceURL     string  `json:"source_url,omitempty"` // R4: the web page that shows a place the web search found
 }
+
+// SourceWebSearch is Place.Source for a place the web search agent found (R4).
+const SourceWebSearch = "web_search"
+
+// The states of a rescue (R4). A rescue made without ?async=1, or stored
+// before R4, has no status: it is done.
+const (
+	StatusRunning = "running"
+	StatusDone    = "done"
+	StatusFailed  = "failed"
+)
 
 // Draft is the inquiry Muse wrote.
 type Draft struct {
@@ -98,6 +219,7 @@ type Rescue struct {
 	Title       string  `json:"title"`
 	Servings    int     `json:"number_of_serving"`
 	Kind        string  `json:"kind"`
+	Mode        string  `json:"mode,omitempty"` // R3: email | dropoff ("" = a rescue from before R3, email)
 	ShelfStable bool    `json:"shelf_stable"`
 	Reason      string  `json:"reason"`
 	Draft       Draft   `json:"draft"`
@@ -106,6 +228,11 @@ type Rescue struct {
 	CreatedAt   string  `json:"created_at"`
 	CostUSD     float64 `json:"cost_usd"`
 	Sent        []Sent  `json:"sent"`
+	// R4: the job. Status running | done | failed; Code and Error tell why it failed.
+	Status  string `json:"status,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Error   string `json:"error,omitempty"`
+	FoundBy string `json:"found_by,omitempty"` // directory | web_search | none
 }
 
 // Sent is one email the relay sent for the donor.
@@ -451,6 +578,19 @@ func OpenRescues(dir string) (*RescueStore, error) {
 			return nil, fmt.Errorf("%s: %w", s.path, err)
 		}
 	}
+	// R4: a job that was running when the service stopped does not run now
+	stopped := false
+	for id, r := range s.items {
+		if r.Status == StatusRunning {
+			r.Status, r.Code, r.Error = StatusFailed, "interrupted", "the service restarted: start the rescue again"
+			s.items[id], stopped = r, true
+		}
+	}
+	if stopped {
+		if err := s.flushLocked(); err != nil {
+			return nil, err
+		}
+	}
 	return s, nil
 }
 
@@ -479,6 +619,15 @@ func (s *RescueStore) Put(r Rescue) error {
 	return nil
 }
 
+// Set (R4 review) stores r in memory even when the file write fails (it
+// returns that error): a job's end must never leave it "running".
+func (s *RescueStore) Set(r Rescue) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.items[r.RescueID] = r
+	return s.flushLocked()
+}
+
 // Get returns rescue id if owner owns it (one error for both cases).
 func (s *RescueStore) Get(id, owner string) (Rescue, bool) {
 	s.mu.Lock()
@@ -497,7 +646,7 @@ func (s *RescueStore) Begin(lid, owner string) (existing Rescue, found, busy boo
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, r := range s.items {
-		if r.ListingID == lid && r.OwnerID == owner {
+		if r.ListingID == lid && r.OwnerID == owner && r.Status != StatusFailed { // R4: a failed job can be run again
 			return r, true, false
 		}
 	}
@@ -553,8 +702,15 @@ type RescueConfig struct {
 	SendPerDay  int     // emails per donor per UTC day (3)
 	Timeout     time.Duration
 	Build       string
-	now         func() time.Time
-	sendMu      sync.Mutex // one /send at a time: the checks, the email and the record are one step
+	// AnalyzeEvents (R1) is the analyze service's events folder, read-only:
+	// the scan's route (barcode | vision) for the hint. "" = no hint ever.
+	AnalyzeEvents string
+	// R4: Search is the web search agent (nil = no fallback; only a job uses
+	// it); JobTimeout is the limit of one job (?async=1), default 90 s.
+	Search     *PlaceSearch
+	JobTimeout time.Duration
+	now        func() time.Time
+	sendMu     sync.Mutex // one /send at a time: the checks, the email and the record are one step
 }
 
 // zipRe is a US ZIP (5 digits, optional +4).
@@ -573,6 +729,9 @@ func NewRescue(c *RescueConfig) http.Handler {
 	}
 	if c.Timeout == 0 {
 		c.Timeout = 25 * time.Second
+	}
+	if c.JobTimeout == 0 {
+		c.JobTimeout = 90 * time.Second
 	}
 	if c.now == nil {
 		c.now = time.Now
@@ -625,16 +784,19 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in rescueReq
-	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in); err != nil {
+	// R3: the body is optional (the pickup address can give the ZIP); an empty body is {}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in); err != nil && !errors.Is(err, io.EOF) {
 		fail(http.StatusBadRequest, CodeBadRequest, "send JSON {\"zip\"} or {\"lat\",\"lng\"}")
 		return
 	}
 	in.Zip = strings.TrimSpace(in.Zip)
+	hasLatLng := in.Lat != nil && in.Lng != nil
 	switch {
 	case in.Zip != "" && !zipRe.MatchString(in.Zip):
 		fail(http.StatusBadRequest, CodeBadRequest, "zip must be a US ZIP code")
 		return
-	case in.Zip == "" && (in.Lat == nil || in.Lng == nil || *in.Lat < -90 || *in.Lat > 90 || *in.Lng < -180 || *in.Lng > 180):
+	case in.Zip == "" && (in.Lat != nil || in.Lng != nil) &&
+		(!hasLatLng || *in.Lat < -90 || *in.Lat > 90 || *in.Lng < -180 || *in.Lng > 180):
 		fail(http.StatusBadRequest, CodeBadRequest, "send zip, or lat and lng")
 		return
 	}
@@ -652,13 +814,25 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	case !l.Expired(c.now()):
 		fail(http.StatusConflict, "not_expired", "the listing timer has not run out")
 		return
-	case l.NumberOfServing < c.MinServings:
-		fail(http.StatusUnprocessableEntity, "not_bulk", fmt.Sprintf("rescue is for %d servings or more", c.MinServings))
+	}
+	// R3: where to search. The pickup address's ZIP first (where the food is),
+	// then the body's zip, then its lat/lng.
+	addr, pzip := pickupAddress(l.PickupText)
+	zip, from := in.Zip, "request"
+	switch {
+	case pzip != "":
+		zip, from = pzip, "pickup"
+	case in.Zip == "" && !hasLatLng:
+		fail(http.StatusBadRequest, CodeBadRequest, "the pickup address has no ZIP: send zip, or lat and lng")
 		return
 	}
 	// one rescue per listing: a second request gets the first one (no new call)
 	prev, found, busy := c.Store.Begin(lid, who.User.ID)
 	switch {
+	case found && prev.Status == StatusRunning && r.URL.Query().Get("async") != "1":
+		// R4 review: the one-request route does not answer a job that still runs
+		fail(http.StatusConflict, CodeConflict, "a rescue for this listing is being made")
+		return
 	case found:
 		ev.Status, ev.LatencyMS = 200, time.Since(t0).Milliseconds()
 		ev.Detail = map[string]any{"rescue_id": prev.RescueID, "existing": true}
@@ -669,55 +843,207 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusConflict, CodeConflict, "a rescue for this listing is being made")
 		return
 	}
-	defer c.Store.End(lid)
+	handoff := false // R4: a job ends the mark itself, when it is done
+	defer func() {
+		if !handoff {
+			c.Store.End(lid)
+		}
+	}()
 	hold, why := c.Budget.ReserveFor(who.RateKey) // X44a: the service cap and this caller's cap
 	if hold == nil {
 		fail(CapRefusal(why))
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
-	defer cancel()
-	type dirOut struct {
-		places []Place
-		ms     int64
-		err    error
-	}
-	dirc := make(chan dirOut, 1)
-	go func() { // the directory and Muse do not depend on each other
-		p, ms, err := c.Directory.Near(ctx, in.Zip, in.Lat, in.Lng)
-		dirc <- dirOut{p, ms, err}
-	}()
+	// The photo is read now, with the caller's cookie (R4: a job runs after the answer).
 	photo, mime, perr := c.Listings.Photo(r, lid)
 	var images []Image
 	if perr == nil {
 		images = append(images, Image{Bytes: photo, Mime: mime})
 	}
-	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", fmt.Sprintf(RescuePrompt, l.Title, l.NumberOfServing), images...)
+	source := scanSource(c.AnalyzeEvents, l) // R1: the scan's route, from its own events line
+	mode := ModeDropoff                      // R3: the bulk rule
+	if isBulk(l, source, c.MinServings) {
+		mode = ModeEmail
+	}
+	prompt, hint := dropoffPrompt(l, source)
+	if mode == ModeEmail {
+		prompt, hint = rescuePrompt(l, source)
+	}
+	base := map[string]any{"hint": hint, "scan_source": source, "mode": mode, "location_from": from, "photo": perr == nil} // never the pickup text
+	ev.Detail = base
+	j := rescueJob{id: id, lid: lid, owner: who.User.ID, l: l, zip: zip, lat: in.Lat, lng: in.Lng, addr: addr,
+		mode: mode, prompt: prompt, images: images, base: base}
+	if r.URL.Query().Get("async") != "1" { // the X35b route: one request, no web search (the 30 s gateway)
+		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
+		defer cancel()
+		res, calls_, status, code, msg := c.runRescue(ctx, j, nil)
+		calls = calls_
+		hold.Settle(Sum(calls))
+		if status != http.StatusOK {
+			fail(status, code, msg)
+			return
+		}
+		res.Status, res.FoundBy = "", "" // the X35b answer shape (R4 review)
+		if err := c.Store.Put(res); err != nil {
+			fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
+			return
+		}
+		ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
+		WriteJSON(w, http.StatusOK, res)
+		c.record(ev)
+		return
+	}
+	// R4: the job. The answer is 202 with the rescue (status running); the app
+	// polls GET /api/rescue/{rescue_id} until the status is done or failed.
+	run := Rescue{RescueID: newHex(16), RequestID: id, ListingID: lid, OwnerID: who.User.ID, Title: l.Title,
+		Servings: l.NumberOfServing, Mode: mode, Places: []Place{}, Sent: []Sent{}, Status: StatusRunning,
+		CreatedAt: c.now().UTC().Format(time.RFC3339Nano)}
+	if err := c.Store.Put(run); err != nil {
+		hold.Settle(0)
+		fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
+		return
+	}
+	handoff = true
+	WriteJSON(w, http.StatusAccepted, run)
+	go func() {
+		defer c.Store.End(lid)
+		ctx, cancel := context.WithTimeout(context.Background(), c.JobTimeout)
+		defer cancel()
+		res, calls, status, code, msg := c.runRescue(ctx, j, c.Search)
+		hold.Settle(Sum(calls))
+		res.RescueID, res.CreatedAt, res.Status = run.RescueID, run.CreatedAt, StatusDone
+		if status != http.StatusOK {
+			res = run
+			res.Status, res.Code, res.Error, res.CostUSD = StatusFailed, code, msg, Sum(calls)
+		}
+		if err := c.Store.Put(res); err != nil {
+			status, code, msg = http.StatusInternalServerError, CodeInternal, "could not store the rescue"
+			bad := run // R4 review: never stays "running"; a new POST may run again
+			bad.Status, bad.Code, bad.Error, bad.CostUSD = StatusFailed, code, msg, Sum(calls)
+			_ = c.Store.Set(bad)
+		}
+		ev.Status, ev.Code, ev.Error = status, "", ""
+		if status != http.StatusOK {
+			ev.Code, ev.Error = code, msg
+		}
+		ev.LatencyMS, ev.Calls, ev.CostUSD = time.Since(t0).Milliseconds(), calls, Sum(calls)
+		ev.Detail = j.detail(res)
+		ev.Detail["async"] = true
+		c.record(ev)
+	}()
+}
+
+// rescueJob (R4) is what a rescue needs once the request checks passed.
+type rescueJob struct {
+	id, lid, owner string
+	l              Listing
+	zip            string
+	lat, lng       *float64
+	addr           string // the address part of the pickup text (directions only; never logged)
+	mode, prompt   string
+	images         []Image
+	base           map[string]any // the events detail so far
+	dir            dirOut
+}
+
+// dirOut is the directory's answer, and the web search's when it ran.
+type dirOut struct {
+	places    []Place
+	ms        int64
+	err       error
+	searched  bool
+	searchErr error
+	call      *Call
+	foundBy   string
+}
+
+// detail is the events detail of a finished job.
+func (j rescueJob) detail(res Rescue) map[string]any {
+	d := map[string]any{}
+	for k, v := range j.base {
+		d[k] = v
+	}
+	d["rescue_id"], d["kind"], d["shelf_stable"], d["places"] = res.RescueID, res.Kind, res.ShelfStable, len(res.Places)
+	d["directory_results"], d["directory_ms"], d["found_by"] = len(j.dir.places), j.dir.ms, res.FoundBy
+	if j.dir.err != nil {
+		d["directory_error"] = clip(j.dir.err.Error(), 300)
+	}
+	if j.dir.searched {
+		d["web_search"] = true
+		if j.dir.searchErr != nil {
+			d["web_search_error"] = clip(j.dir.searchErr.Error(), 300)
+		}
+	}
+	return d
+}
+
+// runRescue makes the rescue: the directory (and, with search, the web search
+// when the directory finds nothing or fails) at the same time as the Muse
+// decision. status is 200, or the refusal with its code and words.
+func (c *RescueConfig) runRescue(ctx context.Context, j rescueJob, search *PlaceSearch) (Rescue, []Call, int, string, string) {
+	var calls []Call
+	dirc := make(chan dirOut, 1)
+	go func() { // the directory and Muse do not depend on each other
+		p, ms, err := c.Directory.Near(ctx, j.zip, j.lat, j.lng)
+		out := dirOut{places: p, ms: ms, err: err, foundBy: "directory"}
+		if search != nil && (err != nil || len(p) == 0) && ctx.Err() == nil { // R4
+			why := "the food directory found no places near this location."
+			if err != nil {
+				why = "the food directory did not answer (" + clip(err.Error(), 120) + ")."
+			}
+			sp, call, serr := search.Find(ctx, j.zip, j.lat, j.lng, why)
+			out.searched, out.searchErr, out.call = true, serr, &call
+			if serr == nil && len(sp) > 0 {
+				out.places, out.foundBy = sp, SourceWebSearch
+			}
+		}
+		if len(out.places) == 0 {
+			out.foundBy = "none"
+		}
+		dirc <- out
+	}()
+	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", j.prompt, j.images...)
 	calls = append(calls, call)
 	d := <-dirc
-	hold.Settle(Sum(calls))
+	if d.call != nil {
+		calls = append(calls, *d.call)
+	}
+	j.dir = d
+	res := Rescue{}
 	stable, isBool := obj["shelf_stable"].(bool)
 	draft := Draft{Subject: clip(Str(obj, "subject"), 120), Body: clip(Str(obj, "body"), 2000)}
+	fail := func(status int, code, msg string) (Rescue, []Call, int, string, string) {
+		for k, v := range j.detail(res) {
+			j.base[k] = v // the failure's events line keeps what is known
+		}
+		return res, calls, status, code, msg
+	}
 	switch {
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
-		fail(http.StatusGatewayTimeout, CodeTimeout, "took too long")
-		return
-	case merr != nil || !isBool || draft.Subject == "" || draft.Body == "":
-		fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
-		return
-	case d.err != nil:
+		return fail(http.StatusGatewayTimeout, CodeTimeout, "took too long")
+	case merr != nil || !isBool || (j.mode == ModeEmail && (draft.Subject == "" || draft.Body == "")):
+		return fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
+	case d.err != nil && !(d.searched && d.searchErr == nil):
 		// X44l: the reason goes into the events line (the answer stays short)
-		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms}
-		fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
-		return
+		if d.searched {
+			return fail(http.StatusBadGateway, CodeUpstream, "the directory and the web search are unavailable")
+		}
+		return fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
 	}
 	kind := KindMealProgram
 	if stable {
 		kind = KindFoodBank
 	}
 	places := PickPlaces(d.places, kind, c.Places)
+	if j.mode == ModeDropoff {
+		draft = Draft{} // R3: no email for a drop-off
+	}
 	for i := range places {
 		places[i].Tel = telLink(places[i].Phone)
+		places[i].Directions = directionsLink(j.addr, places[i]) // R3
+		if j.mode == ModeDropoff {
+			continue
+		}
 		if places[i].Email != "" {
 			places[i].Mailto = mailtoLink(places[i].Email, draft)
 		} else {
@@ -727,19 +1053,107 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	if places == nil {
 		places = []Place{}
 	}
-	res := Rescue{RescueID: newHex(16), RequestID: id, ListingID: lid, OwnerID: who.User.ID, Title: l.Title,
-		Servings: l.NumberOfServing, Kind: kind, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
-		Draft: draft, Places: places, Attribution: DirectoryAttribution,
-		CreatedAt: c.now().UTC().Format(time.RFC3339Nano), CostUSD: Sum(calls), Sent: []Sent{}}
-	if err := c.Store.Put(res); err != nil {
-		fail(http.StatusInternalServerError, CodeInternal, "could not store the rescue")
-		return
+	attr := DirectoryAttribution
+	if d.foundBy == SourceWebSearch {
+		attr = WebAttribution
 	}
-	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
-	ev.Detail = map[string]any{"rescue_id": res.RescueID, "kind": kind, "shelf_stable": stable,
-		"places": len(places), "directory_results": len(d.places), "directory_ms": d.ms, "photo": perr == nil}
-	WriteJSON(w, http.StatusOK, res)
-	c.record(ev)
+	res = Rescue{RescueID: newHex(16), RequestID: j.id, ListingID: j.lid, OwnerID: j.owner, Title: j.l.Title,
+		Servings: j.l.NumberOfServing, Kind: kind, Mode: j.mode, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
+		Draft: draft, Places: places, Attribution: attr, FoundBy: d.foundBy,
+		CreatedAt: c.now().UTC().Format(time.RFC3339Nano), CostUSD: Sum(calls), Sent: []Sent{}}
+	for k, v := range j.detail(res) {
+		j.base[k] = v
+	}
+	return res, calls, http.StatusOK, "", ""
+}
+
+// isBulk (R3) is the bulk rule: min or more servings, or the scanner said
+// "bulk" on a vision scan (a barcode answer's serving_type is a fixed value,
+// barcode/product.go, as its meal_condition).
+func isBulk(l Listing, source string, min int) bool {
+	return l.NumberOfServing >= min || (source == ScanVision && l.Details != nil && l.Details.ServingType == "bulk")
+}
+
+// usStates are the USPS two-letter codes (Publication 28, Appendix B):
+// states, DC, territories and the military codes.
+var usStates = map[string]bool{}
+
+func init() {
+	for _, s := range strings.Fields("AL AK AS AZ AR CA CO CT DE DC FM FL GA GU HI ID IL IN IA KS KY LA ME MH MD MA MI MN MS MO MT " +
+		"NE NV NH NJ NM NY NC ND MP OH OK OR PW PA PR RI SC SD TN TX UT VT VI VA WA WV WI WY AE AP AA") {
+		usStates[s] = true
+	}
+}
+
+// stateZipRe is a state code, then a ZIP (5 digits, optional +4), as the last
+// line of a US address ("Denver, CO 80219"): the code is a word of its own and
+// the ZIP is not part of a longer number. R3 review: a lone 5-digit number (a
+// house, suite or gate code number) is never a ZIP.
+var stateZipRe = regexp.MustCompile(`(?:^|[^A-Za-z0-9])([A-Za-z]{2})[ ,.]+(\d{5})(-\d{4})?(?:$|[^0-9-])`)
+
+// MaxPickupAddress is the most characters (runes) of each address in a
+// directions link, before encoding.
+const MaxPickupAddress = 150
+
+// MaxLinkPart is the most characters of each of origin and destination once
+// percent-encoded (R3 review: a rune can be 12): with the rest of the URL the
+// link stays under the Maps limit of 2,048.
+const MaxLinkPart = 900
+
+// pickupAddress (R3) splits the pickup text: zip is the last ZIP that comes
+// right after a USPS state code (uppercase, or any case after a comma:
+// "Denver, co 80219"; so "in" or "or" in a sentence is not a state), and the
+// address is the text up to and with it (the instructions come after it). No
+// such ZIP, or 00000: "", "".
+func pickupAddress(text string) (addr, zip string) {
+	text = oneLine(text, 1000)
+	ms := stateZipRe.FindAllStringSubmatchIndex(text, -1)
+	for k := len(ms) - 1; k >= 0; k-- {
+		m := ms[k]
+		st, z := text[m[2]:m[3]], text[m[4]:m[5]]
+		if !usStates[strings.ToUpper(st)] || z == "00000" {
+			continue
+		}
+		if st != strings.ToUpper(st) && !strings.HasSuffix(strings.TrimRight(text[:m[2]], " "), ",") {
+			continue
+		}
+		end := m[5]
+		if m[6] >= 0 {
+			end = m[7] // the +4 part stays with the address
+		}
+		return oneLine(strings.TrimRight(text[:end], " ,;"), MaxPickupAddress), z
+	}
+	return "", ""
+}
+
+// clipEncoded is s without its last runes until it is at most n characters
+// once query-encoded.
+func clipEncoded(s string, n int) string {
+	r := []rune(s)
+	for len(r) > 0 && len(url.QueryEscape(string(r))) > n {
+		r = r[:len(r)-1]
+	}
+	return strings.TrimSpace(string(r))
+}
+
+// directionsLink (R3) is a Google Maps directions URL (no API key) from the
+// pickup address to the place. With no pickup address the origin is left out:
+// Maps then starts at the device's location.
+func directionsLink(from string, p Place) string {
+	to := strings.TrimSpace(p.Address)
+	if to == "" {
+		to = strings.TrimSpace(p.Name)
+	} else if p.Name != "" {
+		to = p.Name + ", " + to
+	}
+	if to == "" {
+		return ""
+	}
+	q := url.Values{"api": {"1"}, "destination": {clipEncoded(oneLine(to, MaxPickupAddress), MaxLinkPart)}}
+	if from = clipEncoded(oneLine(from, MaxPickupAddress), MaxLinkPart); from != "" {
+		q.Set("origin", from)
+	}
+	return "https://www.google.com/maps/dir/?" + q.Encode()
 }
 
 func telLink(phone string) string {
@@ -817,6 +1231,10 @@ func (c *RescueConfig) send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ev.ListingID = res.ListingID
+	if res.Mode == ModeDropoff { // R3: no email for a drop-off
+		fail(http.StatusConflict, "dropoff", "this rescue is a drop-off: use the directions link")
+		return
+	}
 	var in sendReq
 	if err := json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&in); err != nil {
 		fail(http.StatusBadRequest, CodeBadRequest, "bad JSON body")

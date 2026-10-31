@@ -1510,6 +1510,37 @@ The first build of the translation image on the box stopped. One test in the bui
 - The image build now skips that one test. Every other test still runs before the build.
 - The SUP scripts still run that test with the whole repo.
 
+## 71. Rescue: the food scanner's note helps choose the place
+
+**When:** Oct 30 2026. Branch `rescue` (made from `services` at #70).
+**Meta models:** Muse Spark 1.3 (the rescue draft; no new call).
+**Files:** `post/post.go`, `post/rescue.go`, `post/rescue_source.go`, `post/rescue_test.go`, `post/rescue_hint_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R1.md`
+
+T9: the food scan already says how the food is packed (`meal_condition`), but the rescue did not use it. Option A: give it to Muse Spark as a hint.
+
+- The listing keeps the scanner's details since entry 51 ("A listing keeps what the scanner found"). Rescue now reads `meal_condition` and the description.
+- Muse Spark gets one more line in the prompt: a scanner note. It says the note can be wrong and the photo decides.
+- Muse still makes the decision. A sealed package is not always shelf-stable (some canned ham and seafood must stay cold).
+- The hint is used only for a photo scan. Each scan's events line already records its route (barcode or vision) and the user. The listing keeps the scan's request id, so rescue reads that line. A barcode scan gives a fixed "ready to eat", so it gets no hint, also for listings posted before this change.
+- No events line, another user's line, or no field: the same prompt as before, byte for byte.
+- The events line records the hint and the route, so the self-improvement step can compare the scanner with Muse.
+- Tests: post 67 -> 73.
+
+## 72. A barcode post does not send a fixed food condition
+
+**When:** Oct 30 2026. Branch `rescue`.
+**Meta models:** none (no model change).
+**Files:** `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/R2.md`
+
+T9: the rescue hint (entry 71) must not use the barcode answer's food condition. Rescue already checks the scan's route; this change also keeps the listing's own record true.
+
+- A barcode answer always says "ready to eat". The barcode catalog has no such field, so the service sets a fixed value.
+- The app now leaves that one field out of the listing's details for a barcode answer. A later screen that shows the details does not show a fixed value as a fact.
+- A photo scan keeps the field. The other details do not change.
+- Tests: mobile 96 -> 97.
+
 ## 73. Review: the item details, and a photo column on desktop
 
 **When:** Oct 30 2026.
@@ -1526,6 +1557,37 @@ T9 approved the review layout mockup. The scan's details are now used, not throw
 - The cost is never shown. Weight is in kg.
 - The user can change the details (condition, food, portions, weight). Each change is recorded for self-improvement.
 - Tests: mobile 96 -> 108; inference 97 (one more case).
+
+## 73. Rescue: small listings get a drop-off with directions, bulk gets the email
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** Muse Spark 1.3 (the decision for a drop-off; the draft for bulk).
+**Files:** `post/rescue.go`, `post/post.go`, `post/rescue_test.go`, `post/rescue_dropoff_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R3.md`
+
+T9: instead of an email, the app suggests that the donor takes the food to one of 3 places near the pickup address. The email is only for bulk food.
+
+- Bulk is 30 servings or more, or the scanner says "bulk" for a photo scan. Bulk keeps the email draft, as before.
+- Any other listing is a drop-off. Muse Spark decides only perishable or shelf-stable, and writes no email. Each place gets a map directions link.
+- The search uses the ZIP of the pickup address: the ZIP right after the state code ("Denver, CO 80219"). A house, suite or gate number is never read as a ZIP. The directions start at that address. When the address has no ZIP, the app's ZIP or location is used, as before.
+- A small listing is no longer refused. The pickup address never goes into the events log.
+- Tests: post 73 -> 79.
+
+## 74. Rescue runs as a job, and a web search agent finds places when the directory cannot
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** Muse Spark 1.3 with the built-in `web_search` tool (the agent); Muse Spark 1.3 (the decision).
+**Files:** `post/rescue.go`, `post/rescue_search.go`, `post/post.go`, `post/rescue_job_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R4.md`
+
+T9: when the food directory finds nothing, a web search with an agent looks for places; a directory failure seeds that search. The rescue is a job that the app polls.
+
+- The app starts the rescue and gets an answer at once. It then asks for the result each second or so, until the rescue is done or failed. A slow search no longer hits the 30-second gateway limit.
+- When the directory finds no place, or does not answer, Muse Spark searches the web near the same ZIP. Its prompt says why the search runs.
+- Each place from the web must have a name, an address and the web page that shows it. The answer says that a web search found the places, and asks the donor to check before going.
+- If the directory and the search both fail, the rescue fails, and the donor can start it again.
+- Each web search is counted in the cost.
+- Tests: post 79 -> 90.
 
 ## 75. Distance on Receive, far items in gray, release a grab, and the pickup place
 
@@ -1544,6 +1606,23 @@ T9 asked what happens when a user grabs an item and is not in the area. Before t
 - A phone build has no location module yet: it asks for the ZIP code.
 - Tests: listings 31 -> 42, post 67 -> 68, mobile 108 -> 118.
 
+## 75. Give: the Rescue pill and the rescue popup; the pickup field asks for the address
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** none in the app (the popup shows the rescue of entries 71-74: Muse Spark 1.3 and its web search).
+**Files:** `mobile/src/rescue.ts`, `mobile/src/screens/Rescue.tsx`, `mobile/src/screens/Give.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/src/ui.tsx`, `mobile/tests/rescue.test.mts`, `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/R5.md`
+
+T9 approved the mockup on Oct 31 ("V3RDE Rescue Mockup"), with one change: a one-word red pill.
+
+- On "Your listings", a card that expired with nobody grabbing it has the red pill "Rescue".
+- The pill opens a popup. It starts the rescue, asks for the result each second, and shows up to 3 places with "Directions" and "Call". Bulk food also gets "Email" with the drafted message.
+- When the pickup address has no ZIP code, the popup asks for one. It also shows when no place was found, and lets the donor try again after a failure.
+- The pickup field now says "Pickup address and instructions", with the example "12 Main St, Denver, CO 80219. Front desk", so the rescue can read the ZIP code.
+- From the independent check of the mockup: the links of an expired card keep full strength, the place links have a 44 pt touch area, and a dialog is never taller than the window allows.
+- From the code review: a sign-out during the popup goes to sign-in; only the newest search can change the popup; nothing changes after it closes.
+- Tests: mobile 97 -> 104.
+
 ## 76. Build fix: the post image copies the ZIP-center table
 
 **When:** Oct 31 2026.
@@ -1556,3 +1635,20 @@ The deploy of 75 stopped: the post image builds the listings package, and the pa
 - The post Dockerfile copies `listings/zcta.csv`, and its dockerignore lets it in.
 - A new test checks that every file listings embeds is in the post image.
 - Tests: post 68 -> 69.
+
+## 77. The rescue work joins the services branch
+
+**When:** Oct 31 2026.
+**Meta models:** Muse Spark 1.3 and its web search (no change; entries 71-75 of the rescue branch say how they are used).
+**Files:** the rescue branch (entries 71-75: `post/rescue*.go`, `post/cmd/rescue/main.go`, `mobile/src/rescue.ts`, `mobile/src/screens/Rescue.tsx`, …) merged; `NEW_WORK.md`, `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/src/api.ts`, `mobile/src/screens/Receive.tsx`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49g.md`
+
+T9: the rescue work joins the branch that is deployed, the same way as the translation work (entry 68). The merge was made again on top of entries 75 and 76 (distance), so it is entry 77.
+
+- A real merge: the rescue commits keep their history.
+- This file keeps every entry of both branches, in number order. The numbers both branches took (73 and 75) stay on both entries, the services entry first.
+- The test list and the style guide keep the lines of both branches. The app API imports both the place rules and the rescue rules.
+- Receive keeps the distance screen (75). From the rescue side (75): on a card that is gone, the pickup line fades with the card text, and the actions stay at full strength.
+- The web build is made again from the merged code.
+- Tests: post 69 + 23 = 92; mobile 118 + 8 = 126; the other modules as before.
+

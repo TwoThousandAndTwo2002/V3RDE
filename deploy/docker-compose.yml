@@ -138,12 +138,17 @@ services:
     entrypoint: ["/rescue"]
     command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
               "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
-              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-1}", "-trust-forwarded"]
+              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-30}", "-trust-forwarded",
+              # R1: the scan's route (barcode | vision) from analyze's events, for the scanner hint
+              "-analyze-events", "/analyze-events",
+              # R4: a rescue job searches the web (Muse Spark) when the directory finds nothing or fails
+              "-web-search", "-reserve-usd", "${RESCUE_RESERVE_USD:-0.04}"]
     mem_limit: 224m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - v3rde_rescue:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/rescue:/events
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/analyze-events:ro
     depends_on: [auth, listings]
 
   fanout:

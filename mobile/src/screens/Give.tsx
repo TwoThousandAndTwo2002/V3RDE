@@ -3,6 +3,7 @@
 // "+ New listing" opens the new-listing flow (Capture); it opens by itself when nothing of the giver is up.
 // Phone: the pill is at the bottom. Wide screen: it is next to the title.
 // X48t: a listing nobody has grabbed has "Delete" (it asks first, in a small popup); a grabbed one says why not.
+// R5: an expired listing nobody grabbed also has the red "Rescue" pill: the rescue popup (Rescue.tsx).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { ApiError, listings, type Listing } from "../api";
@@ -10,9 +11,11 @@ import { cameraFirst, canDelete, isGone, timeText } from "../listing";
 import { layoutFor, space } from "../theme";
 import { Grid, ListingCard, Muted, Pill, Popup, Row, ScreenHead, TextLink, Title, useNow } from "../ui";
 import NewListing from "./Capture";
+import RescueScreen from "./Rescue";
+import { canRescue } from "../rescue";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
-import { GIVE, RECEIVE, postedText, servings } from "../words";
+import { GIVE, RECEIVE, RESCUE, postedText, servings } from "../words";
 
 export default function GiveScreen() {
   const { say, ended } = useSession();
@@ -22,6 +25,7 @@ export default function GiveScreen() {
   const [capturing, setCapturing] = useState(false); // the new-listing flow is open
   const [asking, setAsking] = useState<Listing | null>(null); // X48t: the listing to delete, while the popup asks
   const [deleting, setDeleting] = useState(false);
+  const [rescuing, setRescuing] = useState<Listing | null>(null); // R5: the listing of the open rescue popup
   const deletingNow = useRef(false); // X48t review: a fast double tap sends one delete
   const arrived = useRef(true); // the camera opens by itself only when the screen comes, never after a post
   const reload = useCallback(async () => {
@@ -61,8 +65,12 @@ export default function GiveScreen() {
     }
   };
   const close = () => { if (!deletingNow.current) setAsking(null); }; // X48t review: the popup stays while it deletes
-  const extra = (l: Listing) => (!canDelete(l) ? <Muted>{GIVE.grabbed}</Muted>
-    : <TextLink testID={"delete-" + l.id} name={GIVE.removeName(l.title)} onPress={() => setAsking(l)}>{GIVE.remove}</TextLink>);
+  const del = (l: Listing) => <TextLink testID={"delete-" + l.id} name={GIVE.removeName(l.title)} onPress={() => setAsking(l)}>{GIVE.remove}</TextLink>;
+  const extra = (l: Listing) => (!canDelete(l) ? <Muted>{GIVE.grabbed}</Muted> : !canRescue(l, clockNow) ? del(l) : (
+    <Row tight style={{ gap: space.gutter, alignItems: "center", marginTop: space.hair }}>
+      <Pill testID={"rescue-" + l.id} name={RESCUE.pillName(l.title)} title={RESCUE.pill} onPress={() => setRescuing(l)} />
+      {del(l)}
+    </Row>));
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
       <Wallpaper />
@@ -85,6 +93,7 @@ export default function GiveScreen() {
           </Row>
         </Popup>
       ) : null}
+      {rescuing ? <RescueScreen listing={rescuing} onClose={() => setRescuing(null)} /> : null}
       {capturing ? <NewListing onClose={() => { setCapturing(false); reload(); }}
         onPosted={(n) => { setCapturing(false); say(postedText(n)); reload(); }} /> : null}
     </View>

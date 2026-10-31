@@ -67,6 +67,17 @@ func newRS(t *testing.T, museText string, museStatus int, relay bool) *rsEnv {
 		{ID: "l_000000000000000c", OwnerID: "u1", Title: "Bread", NumberOfServing: 10, Status: "collected", ExpiresAt: past},
 		{ID: "l_000000000000000d", OwnerID: "u2", Title: "Rice", NumberOfServing: 30, Status: "active", ExpiresAt: past},
 		{ID: "l_000000000000000e", OwnerID: "u1", Title: "Soup", NumberOfServing: 2, Status: "active", ExpiresAt: past},
+		// R1: a listing with the scanner's details (X48d)
+		{ID: "l_000000000000000f", OwnerID: "u1", Title: "Yogurt cups", NumberOfServing: 12, Status: "active", ExpiresAt: past,
+			CreatedAt: now.Add(-31 * time.Minute).Format(time.RFC3339Nano), RequestID: strings.Repeat("ab", 16),
+			Details: &ListingDetails{MealCondition: "sealed", Description: "Twelve sealed cups of\nstrawberry yogurt"}},
+		// R3: a small listing with a pickup address (ZIP, then instructions)
+		{ID: "l_0000000000000011", OwnerID: "u1", Title: "Bagels", NumberOfServing: 6, Status: "active", ExpiresAt: past,
+			PickupText: "12 Main St, Denver, CO 80219, front desk\nring twice"},
+		// R1: a barcode scan: its meal_condition is the fixed value, so no hint
+		{ID: "l_0000000000000010", OwnerID: "u1", Title: "Chips", NumberOfServing: 5, Status: "active", ExpiresAt: past,
+			CreatedAt: now.Add(-31 * time.Minute).Format(time.RFC3339Nano), RequestID: strings.Repeat("cd", 16),
+			Details: &ListingDetails{MealCondition: "ready_to_eat", Description: "Bags of chips"}},
 	})
 	var got []map[string]any
 	ms := museFake(t, museText, museStatus, &got)
@@ -193,17 +204,21 @@ func TestRescueRefusals(t *testing.T) {
 			t.Fatalf("%s %s: %d %s", c.path, c.body, w.Code, w.Body)
 		}
 	}
+	if len(*e.muse) != 0 {
+		t.Fatal("a refused request called Muse")
+	}
+	// R3: under the bulk rule a listing is not refused; it gets a drop-off (one Muse call)
 	e.cfg.MinServings = 10
-	if w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000e", `{"zip":"10001"}`, "u1")); w.Code != 422 ||
-		!strings.Contains(w.Body.String(), "not_bulk") {
+	if w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000e", `{"zip":"10001"}`, "u1")); w.Code != 200 ||
+		!strings.Contains(w.Body.String(), `"mode":"dropoff"`) {
 		t.Fatalf("bulk rule: %d %s", w.Code, w.Body)
 	}
 	e.cfg.Budget = NewBudget(0.01, 0.02, nil)
 	if w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", `{"zip":"10001"}`, "u1")); w.Code != 503 {
 		t.Fatalf("cap: %d", w.Code)
 	}
-	if len(*e.muse) != 0 {
-		t.Fatal("a refused request called Muse")
+	if len(*e.muse) != 1 {
+		t.Fatalf("Muse calls %d: only the drop-off may call it", len(*e.muse))
 	}
 }
 

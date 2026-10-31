@@ -75,6 +75,31 @@ export const GIVE = {
   removeFailed: "Could not delete it. Try again.",
 } as const;
 
+/** R5: the rescue of an expired listing (T9 2026-10-31: take it to one of 3 places; the email only for bulk). */
+export const RESCUE = {
+  pill: "Rescue", // T9 2026-10-31: one word, a red pill on the expired card
+  pillName: (title: string) => "Rescue " + title + ": find a place for it",
+  find: "Find a place for it", // the popup title until places come
+  title: "Take it to a food program",
+  titleBulk: "Ask a food program first",
+  looking: "Looking for places near the pickup address…",
+  dropoff: "Nobody picked this up in time. These places are near the pickup address. Call before you go.",
+  bulk: "This is a large amount. Send a message to a place first, then take the food there.",
+  directions: "Directions",
+  call: "Call",
+  email: "Email",
+  linkName: (what: string, place: string) => what + ", " + place,
+  none: "No place was found near the pickup address.",
+  failed: "Could not find places. Try again.",
+  retry: "Try again",
+  zipAsk: "The pickup address has no ZIP code. Enter the ZIP code where the food is.",
+  zip: "ZIP code",
+  zipHint: "For example 80219",
+  zipBad: "Enter 5 digits, for example 80219",
+  search: "Search",
+  close: "Close",
+} as const;
+
 /** The toast after a post: one listing or several. */
 export function postedText(n: number): string {
   return n > 1 ? n + " listings are posted. They stay up for 30 minutes." : "Listed. It stays up for 30 minutes.";
@@ -122,9 +147,9 @@ export const REVIEW = {
   servings: "Servings",
   fewer: "Fewer servings",
   more: "More servings",
-  pickup: "Pickup details",
-  pickupAll: "Pickup details (for all items)",
-  pickupHint: "Where to collect, for example Lobby of 12 Main St",
+  pickup: "Pickup address and instructions", // R5 (T9 2026-10-31)
+  pickupAll: "Pickup address and instructions (for all items)",
+  pickupHint: "12 Main St, Denver, CO 80219. Front desk",
   startOver: "Start over",
   post: "Post listing",
   posting: "Posting…",

@@ -255,11 +255,14 @@ export function FieldButton({ title, label, onPress }: { title: string; label?: 
 }
 
 /** An action in a line of text ("Create one"): `type.button`, `link`, underlined; a screen reader reads a button. */
-export function TextLink({ children, onPress, testID, name }: { children: React.ReactNode; onPress: () => void; testID?: string; name?: string }) {
+export function TextLink({ children, onPress, testID, name, touch }: {
+  children: React.ReactNode; onPress: () => void; testID?: string; name?: string; touch?: boolean;
+}) {
   const col = useColors();
+  // R5: `touch` gives the link a 44 pt tall touch area (space.group above and below the 20 pt line; Platform rule)
   return (
     <Text testID={testID} accessibilityRole="button" accessibilityLabel={name} onPress={onPress}
-      style={[type.button, { color: col.link, textDecorationLine: "underline" }]}>{children}</Text>
+      style={[type.button, { color: col.link, textDecorationLine: "underline" }, touch ? { paddingVertical: space.group } : null]}>{children}</Text>
   );
 }
 
@@ -477,8 +480,9 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID, sm
       <View testID={testID} style={StyleSheet.absoluteFill}>
         {layer}{tapOut}
         <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }]}>
-          <Animated.View ref={box} {...MODAL} style={{ width: Math.min(size.dialogSmall, width - 2 * space.gutter), transform: [{ translateY: shift }] }}>
-            <Frost round={{ borderRadius: radius.sheet }} style={{ padding: space.pad }}>{children}</Frost></Animated.View>
+          <Animated.View ref={box} {...MODAL} style={{ width: Math.min(size.dialogSmall, width - 2 * space.gutter),
+            maxHeight: Math.round(height * size.dialogMax), transform: [{ translateY: shift }] }}>
+            <Frost round={{ borderRadius: radius.sheet }} style={{ padding: space.pad, flexShrink: 1 }}>{children}</Frost></Animated.View>
         </View>
       </View>
     );
@@ -600,15 +604,17 @@ export function ListingCard({ photoPath, title, line, time, timeName, gone, tall
   const col = useColors();
   const uri = usePhoto(photoPath);
   return (
-    <View testID={testID} style={{ borderRadius: radius.card, overflow: "hidden", backgroundColor: col.accentSoft, opacity: gone ? opacity.gone : 1 }}>
-      <View style={{ height: tall ? size.feedPhoto : size.minePhoto }}>
+    <View testID={testID} style={{ borderRadius: radius.card, overflow: "hidden", backgroundColor: col.accentSoft }}>
+      <View style={{ height: tall ? size.feedPhoto : size.minePhoto, opacity: gone ? opacity.gone : 1 }}>
         {uri ? <Image source={{ uri }} resizeMode="cover" accessibilityIgnoresInvertColors accessibilityLabel={title} alt={title}
           style={StyleSheet.absoluteFill} /> : null}</View>
       <View style={{ position: "absolute", left: space.inset, right: space.inset, bottom: space.inset, padding: space.group,
         gap: space.hair, borderRadius: radius.photo, backgroundColor: col.panel }}>
-        <Text numberOfLines={2} style={[type.button, { color: col.fg }]}>{title}</Text>
-        <Row tight style={{ justifyContent: "space-between" }}><Muted>{line}</Muted><TimePill text={time} gone={gone} spoken={timeName} /></Row>
-        {extra}
+        <View style={{ gap: space.hair, opacity: gone ? opacity.gone : 1 }}>
+          <Text numberOfLines={2} style={[type.button, { color: col.fg }]}>{title}</Text>
+          <Row tight style={{ justifyContent: "space-between" }}><Muted>{line}</Muted><TimePill text={time} gone={gone} spoken={timeName} /></Row>
+        </View>
+        {extra /* R5 check: the actions stay at full strength on a gone card (4.5:1) */}
       </View>
     </View>
   );

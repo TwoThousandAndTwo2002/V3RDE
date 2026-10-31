@@ -10,6 +10,7 @@
 import { Platform as RN } from "react-native";
 import { SCAN_WAIT_MS, errorMessage, joinUrl, scanPoll, scanStep } from "./logic";
 import { placeFields, placeQuery, type Place } from "./place";
+import { RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "./rescue";
 
 export const API_BASE: string = RN.OS === "web" ? "" : (process.env.EXPO_PUBLIC_API_BASE ?? "");
 
@@ -167,6 +168,31 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
     if (step.kind === "error") throw new ApiError(step.status, errorMessage(step.status, step.body, "/api/analyze"), step.body);
   }
 }
+
+/** R5: the rescue of an expired listing (post/rescue.go). start() answers 202 with the job (or 200 with the
+ *  rescue the listing already has); wait() asks once a second until the job is done or failed. A body with a
+ *  ZIP only when the pickup address has none (the service answers 400 "no ZIP"). */
+export const rescue = Object.freeze({
+  start: (listingId: string, zip = "") => request<Rescue>("POST", "/api/rescue/" + encodeURIComponent(listingId) + "?async=1",
+    zip ? { json: { zip } } : {}),
+  get: (id: string) => request<Rescue>("GET", "/api/rescue/" + encodeURIComponent(id)),
+  async wait(first: Rescue, stop: () => boolean = () => false): Promise<Rescue> {
+    const until = Date.now() + RESCUE_WAIT_MS;
+    let r = first;
+    while (r.status === "running") {
+      await new Promise((go) => setTimeout(go, RESCUE_POLL_MS));
+      if (stop()) throw new ApiError(0, "Stopped");
+      if (Date.now() > until) throw new ApiError(0, "Timed out, try again");
+      try {
+        r = await rescue.get(r.rescue_id);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 0) continue; // one lost answer: ask again
+        throw err;
+      }
+    }
+    return r;
+  },
+});
 
 /** A touch-up job (branch services, post/touchup.go): running, then done (photo_id = the edit), kept_original
  *  (the check found a change to the food) or failed. */
