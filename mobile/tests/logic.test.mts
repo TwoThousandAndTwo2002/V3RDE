@@ -27,6 +27,19 @@ test("answerToItems: one card per item, servings clamped to 1-99, title cut at 8
   assert.equal(items[2].servings, "1");
 });
 
+test("answerToItems (R2): a barcode answer keeps no meal_condition (a fixed value); a vision answer keeps it", () => {
+  const f = { name: "Yogurt", number_of_serving: 1, description: "Strawberry yogurt", serving_type: "individual",
+    meal_condition: "ready_to_eat", weight: 0.15 };
+  const bar = answerToItems({ source: "barcode", items: [{ item: 1, fields: f, photo_id: ID }] });
+  assert.deepEqual(bar[0].details, { description: "Strawberry yogurt", serving_type: "individual", weight: 0.15 });
+  const vis = answerToItems({ source: "vision", items: [{ item: 1, fields: f, photo_id: ID }] });
+  assert.equal(vis[0].details?.meal_condition, "ready_to_eat");
+  assert.equal(answerToItems({ items: [{ item: 1, fields: f }] })[0].details?.meal_condition, "ready_to_eat");
+  // a barcode answer with only the fixed value has no details at all
+  assert.equal(answerToItems({ source: "barcode", items: [{ fields: { name: "Chips", meal_condition: "ready_to_eat" } }] })[0].details, undefined);
+  assert.equal(f.meal_condition, "ready_to_eat"); // the answer itself is not changed
+});
+
 test("itemDetails (X48d): the scanner's fields that the listings service takes; a wrong one is left out", () => {
   const f = { name: "Lasagna", number_of_serving: 6, description: " Baked pasta ", is_non_veg: 1, serving_type: "bulk",
     meal_condition: "ready_to_eat", weight: 2.5, meal_cost: 0 };

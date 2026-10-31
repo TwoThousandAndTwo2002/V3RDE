@@ -1527,3 +1527,17 @@ T9: the food scan already says how the food is packed (`meal_condition`), but th
 - The events line records the hint and the route, so the self-improvement step can compare the scanner with Muse.
 - Tests: post 67 -> 73.
 
+## 72. A barcode post does not send a fixed food condition
+
+**When:** Oct 30 2026. Branch `rescue`.
+**Meta models:** none (no model change).
+**Files:** `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/R2.md`
+
+T9: the rescue hint (entry 71) must not use the barcode answer's food condition. Rescue already checks the scan's route; this change also keeps the listing's own record true.
+
+- A barcode answer always says "ready to eat". The barcode catalog has no such field, so the service sets a fixed value.
+- The app now leaves that one field out of the listing's details for a barcode answer. A later screen that shows the details does not show a fixed value as a fact.
+- A photo scan keeps the field. The other details do not change.
+- Tests: mobile 96 -> 97.
+
