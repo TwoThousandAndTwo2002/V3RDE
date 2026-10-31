@@ -818,10 +818,25 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	// R3: where to search. The pickup address's ZIP first (where the food is),
 	// then the body's zip, then its lat/lng.
 	addr, pzip := pickupAddress(l.PickupText)
+	lat, lng := in.Lat, in.Lng
+	var apoint bool // X49j: the chosen address has no ZIP: its point is where the food is
+	if a := l.PickupAddress; a != nil {
+		// X49j: the address the giver chose: its text, and its ZIP or else its point (the pickup text is only
+		// the instructions now: never a ZIP or a directions origin from it)
+		addr, pzip = oneLine(a.Text, MaxPickupAddress), ""
+		if a.Zip != "00000" && zipRe.MatchString(a.Zip) {
+			pzip = a.Zip
+		} else if a.Lat >= -90 && a.Lat <= 90 && a.Lng >= -180 && a.Lng <= 180 && (a.Lat != 0 || a.Lng != 0) {
+			alat, alng := a.Lat, a.Lng
+			lat, lng, apoint = &alat, &alng, true
+		}
+	}
 	zip, from := in.Zip, "request"
 	switch {
 	case pzip != "":
 		zip, from = pzip, "pickup"
+	case apoint:
+		zip, from = "", "pickup"
 	case in.Zip == "" && !hasLatLng:
 		fail(http.StatusBadRequest, CodeBadRequest, "the pickup address has no ZIP: send zip, or lat and lng")
 		return
@@ -871,7 +886,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	}
 	base := map[string]any{"hint": hint, "scan_source": source, "mode": mode, "location_from": from, "photo": perr == nil} // never the pickup text
 	ev.Detail = base
-	j := rescueJob{id: id, lid: lid, owner: who.User.ID, l: l, zip: zip, lat: in.Lat, lng: in.Lng, addr: addr,
+	j := rescueJob{id: id, lid: lid, owner: who.User.ID, l: l, zip: zip, lat: lat, lng: lng, addr: addr,
 		mode: mode, prompt: prompt, images: images, base: base}
 	if r.URL.Query().Get("async") != "1" { // the X35b route: one request, no web search (the 30 s gateway)
 		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)

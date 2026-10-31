@@ -38,11 +38,12 @@ export const FORM_WORDS = {
 } as const;
 
 /** The first problem of a listing before it goes to the services, or "". */
-export function listingProblem(title: string, servings: string | number, pickup: string): string {
+export function listingProblem(title: string, servings: string | number, pickup: string, pickupOptional = false): string {
   const t = title.trim(), p = pickup.trim(), n = Number(servings);
   if (t.length === 0 || t.length > LIMITS.title) return FORM_WORDS.title;
   if (!Number.isInteger(n) || n < 1 || n > LIMITS.servingsMax) return FORM_WORDS.servings;
-  if (p.length === 0 || p.length > LIMITS.pickup) return FORM_WORDS.pickup;
+  // X49j: with a chosen address the pickup text is only the instructions, and they may be empty
+  if ((p.length === 0 && !pickupOptional) || p.length > LIMITS.pickup) return FORM_WORDS.pickup;
   return "";
 }
 

@@ -24,7 +24,7 @@ function Choice({ uri, label, name, on, onPress, testID }: {
   );
 }
 
-/** The pill row of an item on the review: Touch up (when it can start) and `side` (X49: the Details pill). */
+/** The pill row of an item on the review: Touch up (when it can start). */
 export function PillRow({ children }: { children: React.ReactNode }) {
   return <Row style={{ flexWrap: "wrap", columnGap: space.gap, rowGap: space.hair }}>{children}</Row>;
 }

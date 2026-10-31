@@ -109,6 +109,7 @@ export const size = {
   sheetMedium: 0.44, // a medium phone sheet (the role sheet): this share of the screen height
   dialogWide: 860,   // a dialog with the photo on the left
   dialogExtraWide: 1140, // X49: the review dialog with the details column at the right (the photo, the list, the details)
+  mapH: 160,         // X49j: the map of the pickup address on the review
   chatColumn: 320,   // X49i: the chat column of the wide review (T9: wider than the X49 details column, 260)
   scanPhoto: 3 / 4,  // X49: the scan photo of the wide review (width to height); it is as high as the column
   dialogSmall: 440,  // a dialog with a title, a line and two pills
@@ -152,6 +153,7 @@ export const glyph = {
   sparkle: "M10 2 L11.6 8.4 L18 10 L11.6 11.6 L10 18 L8.4 11.6 L2 10 L8.4 8.4 Z", // X49: touch up
   info: "M10 1.5 A8.5 8.5 0 1 0 10 18.5 A8.5 8.5 0 1 0 10 1.5 Z M10 9 V14 M10 6 V6.2", // X49: details
   pencil: "M13.5 3 L17 6.5 L7 16.5 H3.5 V13 Z", // X49: change the details
+  pin: "M10 18.5 C10 18.5 3.5 12 3.5 7.5 A6.5 6.5 0 0 1 16.5 7.5 C16.5 12 10 18.5 10 18.5 Z M10 5.5 A2 2 0 1 0 10 9.5 A2 2 0 1 0 10 5.5 Z", // X49j: the pickup pin
   stop: "M6.5 5 H13.5 A1.5 1.5 0 0 1 15 6.5 V13.5 A1.5 1.5 0 0 1 13.5 15 H6.5 A1.5 1.5 0 0 1 5 13.5 V6.5 A1.5 1.5 0 0 1 6.5 5 Z",
   upload: "M7.5 0.835 V10.8 M4.25 4 L7.5 0.835 L10.75 4 M0.835 11 V12.2 A2.2 2.2 0 0 0 3.035 14.165 H11.965 A2.2 2.2 0 0 0 14.165 12.2 V11",
 } as const;

@@ -225,6 +225,14 @@ func ForwardCookie(from, to *http.Request) {
 
 // ---- the listings service --------------------------------------------------
 
+// PickupAddress (X49j) is the listings service's pickup address.
+type PickupAddress struct {
+	Text string  `json:"text"`
+	Zip  string  `json:"zip,omitempty"`
+	Lat  float64 `json:"lat"`
+	Lng  float64 `json:"lng"`
+}
+
 // Listing is the listings service's shape (listings/listing.go, frozen W0;
 // R1 adds the optional details of X48d).
 type Listing struct {
@@ -243,6 +251,9 @@ type Listing struct {
 	// Details (R1): the scanner's fields that the listings service keeps with
 	// the listing (X48d); absent for a listing posted without them.
 	Details *ListingDetails `json:"details,omitempty"`
+	// PickupAddress (X49j): the address the giver chose (the owner's answer of
+	// the listings service has it); rescue takes its ZIP and its text first.
+	PickupAddress *PickupAddress `json:"pickup_address,omitempty"`
 }
 
 // ListingDetails (R1, R3) are the scanner fields of a listing (listings/details.go)

@@ -1680,3 +1680,20 @@ T9 approved the Give and review mockup (version 2).
 - Desktop (widest dialog): the third column holds the talk-or-type chat, frosted, 320 pt wide (token `size.chatColumn`, before `size.detailsColumn` 260).
 - The frosted X and the small Rescue pill (78) get the hover state of the other buttons.
 - Tests: mobile 127 -> 128.
+
+## 80. The pickup address: one suggestion, then the map; rescue uses it
+
+**When:** Oct 31 2026.
+**Meta models:** none. Google Maps Platform (Places Autocomplete, New; Maps JavaScript): project `v3rde-maps`, a browser key limited to the app's site and 3 Maps APIs.
+**Files:** `listings/listing.go`, `listings/store.go`, `listings/handler.go`, `listings/cmd/listings/main.go`, `listings/place_test.go`, `post/post.go`, `post/rescue.go`, `post/rescue_test.go`, `post/rescue_dropoff_test.go`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`, `mobile/src/maps.ts` (new), `mobile/src/screens/Pickup.tsx` (new), `mobile/src/screens/Review.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/screens/TouchUp.tsx`, `mobile/src/api.ts`, `mobile/src/capture.ts`, `mobile/src/words.ts`, `mobile/src/theme.ts`, `mobile/src/ui.tsx`, `mobile/tests/maps.test.mts` (new), `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49j.md`
+
+T9 asked why the review asked for a ZIP and an address with a ZIP, and for a map. T9 approved the mockup (version 2).
+
+- The giver types the pickup address. One suggestion shows. A tap locks the address, and a small map shows the pin.
+- The text box holds only the instructions at the door, and it may be empty.
+- The listing keeps the address (text, ZIP, point). Only the owner and the user who grabbed it get it, with the instructions. Before a grab, receivers see only the distance.
+- Rescue takes the ZIP (or the point, when the address has no ZIP), and the directions start from the chosen address.
+- The key is not in the app files: the listings service reads it on the box (x49n) and gives it to the app. Without a key the review shows the place row of 75.
+- If Maps does not work, the review shows the place row of 75 again.
+- Tests: listings 42 -> 44, post 92 -> 94, mobile 128 -> 135.

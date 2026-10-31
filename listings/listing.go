@@ -87,7 +87,24 @@ type Listing struct {
 	// DistanceMi (X49e): miles from the caller's place, 2 decimals; only in
 	// an answer to a request with a place, never in the data file.
 	DistanceMi *float64 `json:"distance_mi,omitempty"`
+	// PickupAddress (X49j): the address the giver chose (Places autocomplete);
+	// only for the owner (mine) and for the user who grabbed it (grab,
+	// grabbed). T9: receivers see the distance before a grab, the address and
+	// the pin after it.
+	PickupAddress *PickupAddress `json:"pickup_address,omitempty"`
 }
+
+// PickupAddress (X49j) is the pickup address of a listing: the text the
+// giver chose, its ZIP (rescue uses it) and its point (the pin after a grab).
+type PickupAddress struct {
+	Text string  `json:"text"`
+	Zip  string  `json:"zip,omitempty"`
+	Lat  float64 `json:"lat"`
+	Lng  float64 `json:"lng"`
+}
+
+// MaxAddress is the longest pickup address text (bytes).
+const MaxAddress = 200
 
 // Input is one create request before and after Validate.
 type Input struct {
@@ -104,6 +121,9 @@ type Input struct {
 	Details *Details
 	// Place (X49e): the pickup place; the store keeps it snapped (place.go).
 	Place *Place
+	// Address (X49j): the chosen pickup address (the handler checked it);
+	// with it, the pickup text holds only the instructions and may be empty.
+	Address *PickupAddress
 }
 
 // MinTestTTL is the shortest timer a test account can ask for (X44h, T9
@@ -122,7 +142,7 @@ func (in *Input) Validate() error {
 	if in.NumberOfServing < 1 || in.NumberOfServing > MaxServings {
 		return fmt.Errorf("number_of_serving must be 1-%d", MaxServings)
 	}
-	if in.PickupText == "" || len(in.PickupText) > MaxPickup {
+	if (in.PickupText == "" && in.Address == nil) || len(in.PickupText) > MaxPickup {
 		return fmt.Errorf("pickup_text must be 1-%d characters", MaxPickup)
 	}
 	if in.RequestID != "" && !hex32.MatchString(in.RequestID) {

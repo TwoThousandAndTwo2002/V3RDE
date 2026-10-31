@@ -54,12 +54,12 @@ export function ErrorText({ children, center, lines, style }: {
 
 // ---------------------------------------------------------------- icons and buttons
 
-export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil";
+export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil" | "pin";
 
 /** The square box of each glyph (pt). */
 const GLYPH_BOX: Record<Glyph, number> = {
   close: glyph.box, minus: glyph.box, plus: glyph.box, upload: glyph.uploadBox, give: glyph.iconBox, receive: glyph.iconBox, menu: glyph.iconBox,
-  mic: glyph.iconBox, stop: glyph.iconBox, sparkle: glyph.iconBox, info: glyph.iconBox, pencil: glyph.iconBox,
+  mic: glyph.iconBox, stop: glyph.iconBox, sparkle: glyph.iconBox, info: glyph.iconBox, pencil: glyph.iconBox, pin: glyph.iconBox,
 };
 
 /** A line glyph (close ✕, minus −, plus +, upload, give, receive, menu ☰): one SVG path with round ends, in its own square box. */

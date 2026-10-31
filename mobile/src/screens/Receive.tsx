@@ -17,7 +17,7 @@ import { ChipBtn, Field, Grid, ListingCard, Muted, Pill, Popup, Rise, Row, Scree
   usePhoto } from "../ui";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
-import { PLACE, RECEIVE, grabMessage, servings } from "../words";
+import { PLACE, RECEIVE, grabMessage, pickupLine, servings } from "../words";
 
 /** Opens a link outside the app: a new browser tab on the web. */
 function openOut(url: string) {
@@ -202,7 +202,8 @@ export default function ReceiveScreen() {
         <ListingCard testID={"card-" + l.id} photoPath={l.photo_url} title={l.title} line={line(l)}
           time={timeText(l, RECEIVE, now)} timeName={RECEIVE.timeLeft} gone={gone} tall extra={(
             <>
-              <Muted lines={1} style={{ opacity: gone ? opacity.gone : 1 }}>{l.pickup_text}</Muted>
+              {/* X49j: before a grab, only the instructions (the address shows after the grab) */}
+              {l.pickup_text ? <Muted lines={1} style={{ opacity: gone ? opacity.gone : 1 }}>{l.pickup_text}</Muted> : null}
               {!gone ? (
                 <View style={{ marginTop: space.gap }}>
                   <Pill testID={"grab-" + l.id} title={RECEIVE.grab} name={RECEIVE.grab + ": " + l.title} busy={taking === l.id}
@@ -218,9 +219,9 @@ export default function ReceiveScreen() {
       <ListingCard key={l.id} testID={"pickup-" + l.id} photoPath={l.photo_url} title={l.title} line={line(l)}
         time={left === 0 ? RECEIVE.expired : clock(left)} timeName={RECEIVE.timeLeft} gone={left === 0} tall extra={(
           <>
-            <Muted lines={1} style={{ opacity: left === 0 ? opacity.gone : 1 }}>{l.pickup_text}</Muted>
+            <Muted lines={2} style={{ opacity: left === 0 ? opacity.gone : 1 }}>{pickupLine(l)}</Muted>
             <Row style={{ marginTop: space.gap }}>
-              <Pill kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(l.pickup_text))} />
+              <Pill kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(l.pickup_address?.text || l.pickup_text))} />
               <Pill title={RECEIVE.chat} grow onPress={() => openOut(chatLink(grabMessage(l, who.email)))} />
             </Row>
             {canRelease(l, who.id, now) ? (
@@ -289,9 +290,9 @@ export default function ReceiveScreen() {
         {taken ? (
           <Sheet testID="grab-sheet" kind="small" photo={takenPhoto || undefined} onClose={() => setTaken(null)} closeName={RECEIVE.close}>
             <Rise i={0}><Title center>{RECEIVE.grabbed}</Title></Rise>
-            <Rise i={1}><Muted center lines={2} style={{ marginTop: space.hair }}>{taken.title + " · " + taken.pickup_text}</Muted></Rise>
+            <Rise i={1}><Muted center lines={2} style={{ marginTop: space.hair }}>{taken.title + " · " + pickupLine(taken)}</Muted></Rise>
             <Rise i={2}><Row style={{ marginTop: space.gutter }}>
-              <Pill testID="maps" kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(taken.pickup_text))} />
+              <Pill testID="maps" kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(taken.pickup_address?.text || taken.pickup_text))} />
               <Pill testID="chat" title={RECEIVE.chat} grow onPress={() => openOut(chatLink(grabMessage(taken, who.email)))} />
             </Row></Rise>
           </Sheet>

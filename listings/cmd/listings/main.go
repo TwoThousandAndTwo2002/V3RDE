@@ -28,6 +28,7 @@ func main() {
 	touchupPhotos := flag.String("touchup-photos", "", "the touch-up service's edited photos, read-only (photo_id); \"\" = off")
 	fanoutURL := flag.String("fanout", "", "fan-out status route for the claim hook, e.g. http://fanout:8090/v1/fanout/status; \"\" = off")
 	fanoutTokenFile := flag.String("fanout-token-file", "/run/secrets/fanout_status_token", "the claim hook's own secret (never the analyze token)")
+	mapsKeyFile := flag.String("maps-key-file", "", "X49j: the Google Maps browser key (a file); \"\" or a missing file = no map in the app")
 	testEmails := flag.String("test-ttl-emails", "", "X44h: comma-separated test account emails that may send ttl_seconds (30 s up to the TTL); \"\" = none")
 	flag.Parse()
 	testTTL := map[string]bool{}
@@ -41,6 +42,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("open %s: %v", *data, err)
 	}
+	mapsKey := ""
+	if *mapsKeyFile != "" {
+		if k, err := listings.ReadToken(*mapsKeyFile); err == nil {
+			mapsKey = k
+		} else {
+			log.Printf("maps key: %v (the app uses the place row)", err) // never fatal: the rest works without a map
+		}
+	}
 	var claim *listings.ClaimHook
 	if *fanoutURL != "" {
 		tok, err := listings.ReadToken(*fanoutTokenFile)
@@ -51,7 +60,7 @@ func main() {
 	}
 	var h http.Handler = listings.New(listings.Config{Store: st,
 		Auth:       &listings.AuthClient{URL: *authURL, HTTP: &http.Client{Timeout: 5 * time.Second}},
-		ItemPhotos: *itemPhotos, TouchupPhotos: *touchupPhotos, Claim: claim, TestTTLEmails: testTTL})
+		ItemPhotos: *itemPhotos, TouchupPhotos: *touchupPhotos, Claim: claim, TestTTLEmails: testTTL, MapsKey: mapsKey})
 	if *events != "" {
 		if err := os.MkdirAll(*events, 0o755); err != nil {
 			log.Fatalf("events dir: %v", err)

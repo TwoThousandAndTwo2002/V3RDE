@@ -51,6 +51,7 @@ services:
               "-item-photos", "/item-photos", "-touchup-photos", "/touchup-photos",
               "-fanout", "http://fanout:8090/v1/fanout/status",
               "-fanout-token-file", "/run/secrets/fanout_status_token",
+              "-maps-key-file", "/run/secrets/google_maps_api_key",   # X49j: the Maps browser key for the app
               # X44h: the test accounts that may set a short timer (ttl_seconds) for tests
               "-test-ttl-emails", "${LISTINGS_TEST_TTL_EMAILS:-x42-touchup-test@example.org,x44-receiver-test@example.org,x44-stress-1@example.org,x44-stress-2@example.org,x44-stress-3@example.org}"]
     volumes:
@@ -58,6 +59,7 @@ services:
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/touchup-photos:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/fanout_status_token:/run/secrets/fanout_status_token:ro
+      - ${V3RDE_CFG:-~/.config/v3rde}/google_maps_api_key:/run/secrets/google_maps_api_key:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/listings:/events
     depends_on: [auth]
 

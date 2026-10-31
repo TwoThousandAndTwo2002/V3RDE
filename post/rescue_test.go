@@ -74,6 +74,12 @@ func newRS(t *testing.T, museText string, museStatus int, relay bool) *rsEnv {
 		// R3: a small listing with a pickup address (ZIP, then instructions)
 		{ID: "l_0000000000000011", OwnerID: "u1", Title: "Bagels", NumberOfServing: 6, Status: "active", ExpiresAt: past,
 			PickupText: "12 Main St, Denver, CO 80219, front desk\nring twice"},
+		// X49j: the chosen pickup address (its ZIP), and the pickup text is only the instructions
+		{ID: "l_0000000000000012", OwnerID: "u1", Title: "Muffins", NumberOfServing: 6, Status: "active", ExpiresAt: past,
+			PickupText: "front desk, ask for Sam", PickupAddress: &PickupAddress{Text: "40 Elm St, Boulder, CO 80302, USA", Zip: "80302", Lat: 40.01, Lng: -105.27}},
+		// X49j review: a chosen address with no ZIP: its point, never the instructions' ZIP
+		{ID: "l_0000000000000013", OwnerID: "u1", Title: "Scones", NumberOfServing: 6, Status: "active", ExpiresAt: past,
+			PickupText: "side door, Denver, CO 80219", PickupAddress: &PickupAddress{Text: "1 Pearl St, Boulder, CO, USA", Lat: 40.02, Lng: -105.28}},
 		// R1: a barcode scan: its meal_condition is the fixed value, so no hint
 		{ID: "l_0000000000000010", OwnerID: "u1", Title: "Chips", NumberOfServing: 5, Status: "active", ExpiresAt: past,
 			CreatedAt: now.Add(-31 * time.Minute).Format(time.RFC3339Nano), RequestID: strings.Repeat("cd", 16),

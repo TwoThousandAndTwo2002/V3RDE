@@ -28,8 +28,10 @@ import { TouchUp } from "./TouchUp";
 import { DetailsView, hasDetails } from "./Details";
 import { useChat } from "./Voice";
 import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
-import { MORE, PLACE, TOUCH, VOICE } from "../words";
+import { MORE, PICKUP, PLACE, TOUCH, VOICE } from "../words";
 import { currentPosition, zipOf, type Place } from "../place";
+import type { PickedAddress } from "../maps";
+import { PickupAddress } from "./Pickup";
 
 /** One card of the review list, with the item photo of the server (or the touched-up photo the user chose). */
 function ItemCard({ it, n, touch, mark, editId, onChange, onRemove }: {
@@ -63,6 +65,16 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   // X49e: the pickup place: the location now (asked at Post), or a ZIP code when location is off
   const [placeHow, setPlaceHow] = useState<"location" | "zip">("location");
   const [placeZip, setPlaceZip] = useState("");
+  // X49j: the pickup address (Places autocomplete, then the map) when the server gives a Maps key (web); else the X49e row
+  const [mapsKey, setMapsKey] = useState("");
+  const [picked, setPicked] = useState<PickedAddress | null>(null);
+  useEffect(function mapsConfig() {
+    if (RN.Platform.OS !== "web") return; // the Maps JavaScript API is a browser script
+    let on = true;
+    listings.config().then((c) => { if (on) setMapsKey(c.maps_key ?? ""); }).catch(() => undefined); // no key: the X49e row
+    return () => { on = false; };
+  }, []);
+  const byAddress = !!mapsKey;
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState("");
   const [partial, setPartial] = useState(false);
@@ -192,20 +204,22 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     if (busy.current || items.length === 0) return;
     if (working) return setProblem(TOUCH.wait); // a touch-up that still runs decides the photo
     if (talking.current) return setProblem(VOICE.first); // a chat line is still being read
-    const pickupWrong = listingProblem("-", 1, pickup); // the pickup is for all items: no item name with it
+    if (byAddress && !picked) return setProblem(PICKUP.need); // X49j: the address comes first
+    const pickupWrong = listingProblem("-", 1, pickup, byAddress); // the pickup is for all items: no item name with it
     if (pickupWrong) return setProblem(pickupWrong);
     for (const it of items) {
-      const wrong = listingProblem(it.title, it.servings, pickup);
+      const wrong = listingProblem(it.title, it.servings, pickup, byAddress);
       if (wrong) return setProblem(one || !it.title.trim() ? wrong : it.title.trim() + ": " + wrong);
     }
-    if (placeHow === "zip" && !zipOf(placeZip)) return setProblem(PLACE.needZip);
+    if (!byAddress && placeHow === "zip" && !zipOf(placeZip)) return setProblem(PLACE.needZip);
     setProblem("");
     busy.current = true;
     onBusy(true);
     setSending(true);
     let place: Place;
     try {
-      place = placeHow === "zip" ? { zip: zipOf(placeZip) as string } : await currentPosition();
+      place = byAddress && picked ? { lat: picked.lat, lng: picked.lng }
+        : placeHow === "zip" ? { zip: zipOf(placeZip) as string } : await currentPosition();
     } catch { // location is off, or this device has none: the giver types the ZIP code
       busy.current = false;
       onBusy(false);
@@ -221,7 +235,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       const it = items[k];
       if (!one) setProgress(postingText(k + 1, items.length));
       const base = { title: it.title.trim(), number_of_serving: Number(it.servings), pickup_text: pickup.trim(), request_id: answer.requestId,
-        details: it.details, place };
+        details: it.details, place, address: byAddress && picked ? { text: picked.text, zip: picked.zip } : undefined };
       try {
         const photoId = photoToPost(it.photo_id, touch[it.item] ?? { kind: "idle" });
         await listings.create(photoId ? { ...base, photo_id: photoId } : { ...base, photo: shot });
@@ -229,7 +243,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         sent.push(it);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) { busy.current = false; onBusy(false); return ended(); }
-        if (err instanceof ApiError && err.status === 400 && /zip/i.test(err.message)) { // X49e: a ZIP code the server does not know
+        if (!byAddress && err instanceof ApiError && err.status === 400 && /zip/i.test(err.message)) { // X49e: a ZIP code the server does not know
           for (const rest of items.slice(k)) left.push(rest);
           zipBad = true;
           setPlaceHow("zip");
@@ -258,8 +272,8 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   };
 
   const pickupField = (
-    <Field ref={pickupBox} testID="pickup" label={one ? REVIEW.pickup : REVIEW.pickupAll} value={pickup} multiline maxLength={LIMITS.pickup}
-      placeholder={REVIEW.pickupHint} returnKeyType="done" submitBehavior="blurAndSubmit"
+    <Field ref={pickupBox} testID="pickup" label={byAddress ? PICKUP.notes : one ? REVIEW.pickup : REVIEW.pickupAll} value={pickup} multiline
+      maxLength={LIMITS.pickup} placeholder={byAddress ? PICKUP.notesHint : REVIEW.pickupHint} returnKeyType="done" submitBehavior="blurAndSubmit"
       onChangeText={(t) => change(now.current.items, t.replace(/\n/g, " "), "hand")} />
   );
   const pickupMark = chat.pickupMarked ? (
@@ -282,6 +296,15 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         <TextLink testID="place-zip" onPress={() => setPlaceHow("zip")}>{PLACE.useZip}</TextLink></View>
     </View>
   );
+  // X49j: the pickup part: the address (then the map), the safety line, then the instructions; or the X49e row
+  const pickupPart = byAddress ? (
+    <>
+      <PickupAddress mapsKey={mapsKey} picked={picked} onPicked={(a) => { setPicked(a); setProblem(""); }} locked={sending}
+        onFail={() => { setMapsKey(""); setPicked(null); }} />
+      <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.safety}</Muted>
+      <View style={{ marginTop: space.group }}>{pickupField}</View>{pickupMark}
+    </>
+  ) : <>{pickupField}{pickupMark}{placeRow}</>;
   let fields: React.ReactNode;
   if (one) {
     const it = items[0];
@@ -304,7 +327,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
             <IconBtn big glyph="plus" label={REVIEW.more} onPress={() => set({ servings: stepServings(it.servings, 1) })} />
           </Row>
         </Rise>
-        <Rise i={5}>{pickupField}{pickupMark}{placeRow}</Rise>
+        <Rise i={5}>{pickupPart}</Rise>
         {problem ? <ErrorText>{problem}</ErrorText> : null}
       </View>
     );
@@ -317,7 +340,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
               onChange={(f) => change(now.current.items.map((x) => (x.item === it.item ? f : x)), now.current.pickup, "hand")}
               onRemove={() => { removed.current.add(it.item); change(now.current.items.filter((x) => x.item !== it.item), now.current.pickup, "hand"); }} /></Rise>
         ))}
-        <Rise i={2 + items.length}>{pickupField}{pickupMark}{placeRow}</Rise>
+        <Rise i={2 + items.length}>{pickupPart}</Rise>
         {problem ? <ErrorText>{problem}</ErrorText> : null}
       </View>
     );

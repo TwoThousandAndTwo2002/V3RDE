@@ -11,7 +11,8 @@
 #
 # Folders (set them from outside; the box uses /opt/v3rde/...):
 #   V3RDE_CFG     secrets: meta_model_api_key (made by hand, 0600), analyze_token and
-#                 fanout_status_token (made here when missing, 0600)
+#                 fanout_status_token (made here when missing, 0600), google_maps_api_key (X49j: an
+#                 empty file when missing: no map)
 #   V3RDE_ASSETS  products.sqlite, gate_pe_s16_f16w_384.tflite, gate_head_pe_s16_384_deploy.json
 #   V3RDE_PHOTOS  the photo store (items/, touchups/)
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
@@ -91,6 +92,13 @@ preflight() {
   asroot && chown 65534:65534 "$key"
   secret_file "$V3RDE_CFG/analyze_token"
   secret_file "$V3RDE_CFG/fanout_status_token"
+  # X49j: the Google Maps browser key (x49m on the Mac, x49n on the box). Missing: an empty file, so the bind mount
+  # is a file, not a folder Docker would make; the listings service then gives no key and the app shows no map.
+  local maps="$V3RDE_CFG/google_maps_api_key"
+  [ -e "$maps" ] && [ ! -f "$maps" ] && die "$maps is not a file (remove it; the next up makes it)"
+  [ -e "$maps" ] || { ( umask 077; : > "$maps" ); echo "   made $maps (empty: no map in the app)"; }
+  chmod 600 "$maps"
+  asroot && chown 65534:65534 "$maps"
   # an edge of another project (for example an old stack) on our port would
   # answer our checks: stop here instead
   local other

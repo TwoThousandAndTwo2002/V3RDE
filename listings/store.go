@@ -26,6 +26,31 @@ type stored struct {
 	// Place (X49e): the pickup place, snapped to GridMiles; only in the data
 	// file (the app gets distance_mi). Records before X49e have none.
 	Place *Place `json:"place,omitempty"`
+	// Address (X49j): the chosen pickup address; only in the data file and in
+	// the answers to the owner and to the user who grabbed it (forOwnerOrGrabber).
+	Address *PickupAddress `json:"address,omitempty"`
+}
+
+// forEveryone (X49j review) is the listing of r as the feed shows it to every
+// user: with a chosen address the pickup text (the instructions at the door)
+// goes only with the address, after a grab, so a street said or typed into
+// the instructions does not reach the feed.
+func forEveryone(r stored) Listing {
+	l := r.Listing
+	if r.Address != nil {
+		l.PickupText = ""
+	}
+	return l
+}
+
+// forOwnerOrGrabber (X49j) is the listing of r with its pickup address.
+func forOwnerOrGrabber(r stored) Listing {
+	l := r.Listing
+	if r.Address != nil {
+		a := *r.Address
+		l.PickupAddress = &a
+	}
+	return l
 }
 
 // Store keeps the listings in memory and in <dir>/listings.json (written
@@ -158,7 +183,12 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 		p := Snap(*in.Place)
 		place = &p
 	}
-	r := stored{PhotoFile: file, Place: place, Listing: Listing{
+	var addr *PickupAddress
+	if in.Address != nil {
+		a := *in.Address
+		addr = &a
+	}
+	r := stored{PhotoFile: file, Place: place, Address: addr, Listing: Listing{
 		ID: id, OwnerID: ownerID, Title: in.Title, NumberOfServing: in.NumberOfServing,
 		PhotoURL: "/api/listings/" + id + "/photo", PickupText: in.PickupText, Status: "active",
 		CreatedAt: now.Format(time.RFC3339Nano), ExpiresAt: now.Add(ttl).Format(time.RFC3339Nano),
@@ -172,7 +202,7 @@ func (s *Store) Create(ownerID string, in Input) (Listing, error) {
 		os.Remove(photo)
 		return Listing{}, err
 	}
-	return r.Listing, nil
+	return forOwnerOrGrabber(r), nil
 }
 
 // active: status "active" and not expired at now.
@@ -239,7 +269,7 @@ func (s *Store) Active(after string, limit int) ([]Listing, string) {
 		if len(page) == limit {
 			return page, page[len(page)-1].ID
 		}
-		page = append(page, r.Listing)
+		page = append(page, forEveryone(r))
 	}
 	return page, ""
 }
@@ -256,7 +286,7 @@ func withDistance(r stored, from Place) (Listing, float64, bool) {
 	if d > MaxMiles {
 		return Listing{}, 0, false
 	}
-	l := r.Listing
+	l := forEveryone(r)
 	m := roundMiles(d)
 	l.DistanceMi = &m
 	return l, d, true
@@ -378,7 +408,7 @@ func (s *Store) Grabbed(userID string, from *Place) []Listing {
 		if r.Status != "collected" || r.CollectedBy == nil || *r.CollectedBy != userID || !running(r, now) {
 			continue
 		}
-		l := r.Listing
+		l := forOwnerOrGrabber(r) // X49j: the grabber sees the address
 		if from != nil && r.Place != nil {
 			m := roundMiles(Miles(*from, *r.Place))
 			l.DistanceMi = &m
@@ -445,7 +475,7 @@ func (s *Store) Mine(ownerID string) []Listing {
 	var out []Listing
 	for _, r := range s.newestFirstLocked() {
 		if r.OwnerID == ownerID {
-			out = append(out, r.Listing)
+			out = append(out, forOwnerOrGrabber(r)) // X49j: the owner sees the address
 		}
 	}
 	return out
@@ -485,7 +515,7 @@ func (s *Store) GrabThen(id, userID string, after func(Listing)) (Listing, error
 	if after != nil {
 		after(r.Listing)
 	}
-	return r.Listing, nil
+	return forOwnerOrGrabber(r), nil // X49j: the grabber gets the address
 }
 
 // Delete removes listing id of ownerID (X48t, T9 2026-10-30: "the user

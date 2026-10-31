@@ -54,8 +54,14 @@ export function servings(n: number): string {
 }
 
 /** The WhatsApp message to the giver after a grab. */
-export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string }, email: string): string {
-  return `Hi! I grabbed "${l.title}" on V3RDE (${servings(l.number_of_serving)}). Pickup: ${l.pickup_text}. I am ${email}. When can I come?`;
+export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string; pickup_address?: { text: string } },
+  email: string): string {
+  return `Hi! I grabbed "${l.title}" on V3RDE (${servings(l.number_of_serving)}). Pickup: ${pickupLine(l)}. I am ${email}. When can I come?`;
+}
+
+/** X49j: where the food is, for the user who grabbed it: the chosen address, then the instructions. */
+export function pickupLine(l: { pickup_text: string; pickup_address?: { text: string } }): string {
+  return [l.pickup_address?.text ?? "", l.pickup_text.trim()].filter((x) => x).join(". ");
 }
 
 /** The Give screen: the listings of the giver. */
@@ -208,6 +214,22 @@ export const MORE = {
   close: "Close",
   chat: "Talk or type a change",
   name: (n: number) => "More for item " + n,
+} as const;
+
+/** X49j: the pickup address on the review (Places autocomplete, then the map). */
+export const PICKUP = {
+  address: "Pickup address",
+  hint: "Type the street address",
+  choose: "Tap the address to choose it. Then the map shows the pickup place.",
+  change: "Change the address",
+  none: "No address found. Check the street and the town.",
+  failed: "The address search did not answer. Try again.",
+  need: "Choose the pickup address from the list.",
+  useLocation: "Use my location instead",
+  safety: "Receivers see only how far it is. They see the address and the instructions after they grab.",
+  notes: "Instructions at the door",
+  notesHint: "For example: front desk, ask for Sam",
+  mapName: (address: string) => "Map of " + address,
 } as const;
 
 /** The photo touch-up on the review (the original stays the default). */

@@ -172,3 +172,52 @@ func TestRescueNeedsALocation(t *testing.T) {
 		t.Fatal("Muse was called without a location")
 	}
 }
+
+// X49j: the address the giver chose gives the ZIP and the directions origin (the pickup text is the instructions).
+func TestRescueUsesThePickupAddress(t *testing.T) {
+	e := newRS(t, `{"shelf_stable": true, "reason": "packaged"}`, 200, true)
+	defer e.stop()
+	e.cfg.MinServings = 30
+	w := do(e.h, jsonReq("POST", "/api/rescue/l_0000000000000012", ``, "u1"))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	var res Rescue
+	json.Unmarshal(w.Body.Bytes(), &res)
+	if !strings.Contains(e.dir.query, "zip=80302") || len(res.Places) == 0 {
+		t.Fatalf("directory query %s, %d places", e.dir.query, len(res.Places))
+	}
+	u, _ := url.Parse(res.Places[0].Directions)
+	if u == nil || u.Query().Get("origin") != "40 Elm St, Boulder, CO 80302, USA" {
+		t.Fatalf("directions %s", res.Places[0].Directions)
+	}
+	b, _ := os.ReadFile(e.cfg.Events.Path(e.now))
+	if !strings.Contains(string(b), `"location_from":"pickup"`) || strings.Contains(string(b), "Elm St") || strings.Contains(string(b), "ask for Sam") {
+		t.Fatalf("events %s", b)
+	}
+}
+
+// X49j review: an address with no ZIP: rescue searches at its point (not at the ZIP of the instructions), and the
+// directions start from the address.
+func TestRescueAddressWithoutZipUsesItsPoint(t *testing.T) {
+	e := newRS(t, `{"shelf_stable": true, "reason": "packaged"}`, 200, true)
+	defer e.stop()
+	e.cfg.MinServings = 30
+	w := do(e.h, jsonReq("POST", "/api/rescue/l_0000000000000013", ``, "u1"))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	var res Rescue
+	json.Unmarshal(w.Body.Bytes(), &res)
+	if strings.Contains(e.dir.query, "80219") || !strings.Contains(e.dir.query, "lat=40.02") || !strings.Contains(e.dir.query, "lng=-105.28") {
+		t.Fatalf("directory query %s", e.dir.query)
+	}
+	u, _ := url.Parse(res.Places[0].Directions)
+	if u == nil || u.Query().Get("origin") != "1 Pearl St, Boulder, CO, USA" {
+		t.Fatalf("directions %s", res.Places[0].Directions)
+	}
+	b, _ := os.ReadFile(e.cfg.Events.Path(e.now))
+	if !strings.Contains(string(b), `"location_from":"pickup"`) {
+		t.Fatalf("events %s", b)
+	}
+}

@@ -312,3 +312,83 @@ func TestNearPagesDoNotSkipWhenTheListChanges(t *testing.T) {
 		t.Fatalf("page 2 %v (want %v) next %q", p2, ids[3:], next2)
 	}
 }
+
+// X49j: the pickup address the giver chose: kept, shown only to the owner and
+// to the user who grabbed it (T9: the address and the pin after a grab).
+func TestPickupAddressOnlyForOwnerAndGrabber(t *testing.T) {
+	e := newEnv(t, nil)
+	f := okFields()
+	f["lat"], f["lng"] = "40.7600", "-74.0000"
+	f["address"], f["address_zip"], f["pickup_text"] = "12 Main St, New York, NY 10001, USA", "10001", ""
+	w, body := call(e.h, form(t, "u_donor", f, jpeg, "image/jpeg"))
+	if w.Code != 201 || body["pickup_address"] == nil || body["pickup_text"] != "" {
+		t.Fatalf("create with an address and no instructions: %d %v", w.Code, body)
+	}
+	id := body["id"].(string)
+	a := body["pickup_address"].(map[string]any)
+	if a["text"] != "12 Main St, New York, NY 10001, USA" || a["zip"] != "10001" || a["lat"] != 40.76 || a["lng"] != -74.0 {
+		t.Fatalf("address %v", a)
+	}
+	// the review: the instructions go only with the address (a street in them would reach the feed)
+	f2 := okFields()
+	f2["lat"], f2["lng"], f2["address"], f2["pickup_text"] = "40.7601", "-74.0000", "9 Oak Ave, New York, NY 10001", "ring at 12 Main St"
+	if w, body := call(e.h, form(t, "u_donor", f2, jpeg, "image/jpeg")); w.Code != 201 || body["pickup_text"] != "ring at 12 Main St" {
+		t.Fatalf("the owner gets the instructions: %d %v", w.Code, body)
+	}
+	for _, path := range []string{"/api/listings", "/api/listings?lat=40.75&lng=-74"} {
+		if w, _ := call(e.h, get("u_r", path)); strings.Contains(w.Body.String(), "ring at") || strings.Contains(w.Body.String(), "Oak Ave") {
+			t.Fatalf("%s shows the instructions of a listing with an address: %s", path, w.Body)
+		}
+	}
+	for _, path := range []string{"/api/listings", "/api/listings?lat=40.75&lng=-74"} {
+		if w, _ := call(e.h, get("u_r", path)); strings.Contains(w.Body.String(), "pickup_address") || strings.Contains(w.Body.String(), "Main St") {
+			t.Fatalf("%s shows the address before a grab: %s", path, w.Body)
+		}
+	}
+	if w, _ := call(e.h, get("u_donor", "/api/listings/mine")); !strings.Contains(w.Body.String(), `"pickup_address"`) {
+		t.Fatalf("the owner does not see the address: %s", w.Body)
+	}
+	w, body = call(e.h, post("u_r", "/api/listings/"+id+"/grab"))
+	if w.Code != 200 || body["pickup_address"] == nil {
+		t.Fatalf("grab answer without the address: %d %v", w.Code, body)
+	}
+	if w, _ := call(e.h, get("u_r", "/api/listings/grabbed")); !strings.Contains(w.Body.String(), `"pickup_address"`) {
+		t.Fatalf("Your pickup without the address: %s", w.Body)
+	}
+	if w, _ := call(e.h, get("u_s", "/api/listings/grabbed")); strings.Contains(w.Body.String(), "Main St") {
+		t.Fatalf("another user sees the address: %s", w.Body)
+	}
+	// the rules: the address needs lat and lng; a bad zip; too long; no address and no instructions
+	for _, c := range []struct {
+		set  map[string]string
+		want string
+	}{
+		{map[string]string{"address": "x", "lat": "", "lng": "", "zip": "10001"}, "send lat and lng with the address"},
+		{map[string]string{"address": "x", "address_zip": "1234"}, "address_zip must be a 5-digit US zip"},
+		{map[string]string{"address": strings.Repeat("a", MaxAddress+1)}, "address must be 1-200 characters"},
+		{map[string]string{"pickup_text": ""}, "pickup_text must be 1-200 characters"},
+	} {
+		f := okFields()
+		for k, v := range c.set {
+			if v == "" {
+				delete(f, k)
+			} else {
+				f[k] = v
+			}
+		}
+		if w, body := call(e.h, form(t, "u_donor", f, jpeg, "image/jpeg")); w.Code != 400 || body["error"] != c.want {
+			t.Errorf("%v: %d %v", c.set, w.Code, body)
+		}
+	}
+}
+
+func TestConfigGivesTheMapsKeyToASession(t *testing.T) {
+	e := newEnv(t, nil)
+	e.h = New(Config{Store: e.st, Auth: fakeAuth{}, MapsKey: "k-123"})
+	if w, _ := call(e.h, get("", "/api/listings/config")); w.Code != 401 {
+		t.Fatalf("no session: %d", w.Code)
+	}
+	if w, body := call(e.h, get("u_r", "/api/listings/config")); w.Code != 200 || body["maps_key"] != "k-123" {
+		t.Fatalf("config: %d %v", w.Code, body)
+	}
+}

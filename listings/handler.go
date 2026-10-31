@@ -118,6 +118,10 @@ type Config struct {
 	// TestTTLEmails (X44h): the test accounts (lower case) that may send
 	// ttl_seconds on create; nil = nobody. Every other caller gets 403.
 	TestTTLEmails map[string]bool
+	// MapsKey (X49j): the Google Maps browser key (Places autocomplete and the
+	// map of the pickup address); "" = the app uses the X49e place row. The key
+	// is limited to the app's site and the 3 Maps APIs (Google Cloud).
+	MapsKey string
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
@@ -148,6 +152,7 @@ func New(c Config) http.Handler {
 	mux.HandleFunc("POST "+p, rt.signedIn(rt.create))
 	mux.HandleFunc("GET "+p, rt.signedIn(rt.list))
 	mux.HandleFunc("GET "+p+"/mine", rt.signedIn(rt.mine))
+	mux.HandleFunc("GET "+p+"/config", rt.signedIn(rt.config))   // X49j
 	mux.HandleFunc("GET "+p+"/grabbed", rt.signedIn(rt.grabbed)) // X49e
 	mux.HandleFunc("POST "+p+"/{id}/grab", rt.signedIn(rt.grab))
 	mux.HandleFunc("POST "+p+"/{id}/release", rt.signedIn(rt.release)) // X49e
@@ -206,6 +211,22 @@ func (rt routes) create(w http.ResponseWriter, r *http.Request, u User) {
 		return
 	}
 	in.Place = place
+	// X49j: the pickup address the giver chose (Places autocomplete): its text, its ZIP and the point of lat/lng
+	if text := strings.TrimSpace(r.FormValue("address")); text != "" {
+		zip := strings.TrimSpace(r.FormValue("address_zip"))
+		switch {
+		case len(text) > MaxAddress:
+			fail(w, http.StatusBadRequest, fmt.Sprintf("address must be 1-%d characters", MaxAddress))
+			return
+		case zip != "" && !zipRe.MatchString(zip):
+			fail(w, http.StatusBadRequest, "address_zip must be a 5-digit US zip")
+			return
+		case strings.TrimSpace(r.FormValue("lat")) == "":
+			fail(w, http.StatusBadRequest, "send lat and lng with the address")
+			return
+		}
+		in.Address = &PickupAddress{Text: text, Zip: zip, Lat: place.Lat, Lng: place.Lng}
+	}
 	photoID := strings.TrimSpace(r.FormValue("photo_id"))
 	if f, hdr, err := r.FormFile("photo"); err == nil {
 		defer f.Close()
@@ -270,6 +291,11 @@ func (rt routes) list(w http.ResponseWriter, r *http.Request, _ User) {
 		items = []Listing{}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"items": items, "next": next})
+}
+
+// config is GET /api/listings/config (X49j): {"maps_key": ...} for the app.
+func (rt routes) config(w http.ResponseWriter, _ *http.Request, _ User) {
+	writeJSON(w, http.StatusOK, map[string]string{"maps_key": rt.MapsKey})
 }
 
 // mine is GET /api/listings/mine.
