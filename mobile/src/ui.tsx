@@ -336,8 +336,9 @@ function Frost({ round, children, style }: { round: ViewStyle; children: React.R
   const col = useColors();
   return (
     <View style={[round, { overflow: "hidden" }, style]}>
-      <BlurView intensity={size.blur} tint={col.blurTint === "dark" ? "dark" : "light"} style={StyleSheet.absoluteFill} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: col.sheetTint }]} />
+      {/* X49h: the blur and the tint take the corners too (a round button showed a square blur on the web) */}
+      <BlurView intensity={size.blur} tint={col.blurTint === "dark" ? "dark" : "light"} style={[StyleSheet.absoluteFill, round]} />
+      <View style={[StyleSheet.absoluteFill, round, { backgroundColor: col.sheetTint }]} />
       {children}
     </View>
   );
@@ -597,9 +598,11 @@ export function TimePill({ text, gone, spoken }: { text: string; gone: boolean; 
  * A photo-first listing card: the photo (`size.feedPhoto` on Receive, `size.minePhoto` on Give), with a panel on
  * it: the title, the servings and the time pill, and below them `extra` (the pickup text, "Your listing", Grab).
  */
-export function ListingCard({ photoPath, title, line, time, timeName, gone, tall, extra, testID }: {
+export function ListingCard({ photoPath, title, line, time, timeName, gone, tall, extra, testID, corner }: {
   photoPath: string; title: string; line: string; time: string; timeName?: string; gone: boolean; tall: boolean; extra?: React.ReactNode;
   testID?: string;
+  /** X49h: a control at the top right of the photo, `space.inset` from the edges (Delete on Give). */
+  corner?: React.ReactNode;
 }) {
   const col = useColors();
   const uri = usePhoto(photoPath);
@@ -616,7 +619,36 @@ export function ListingCard({ photoPath, title, line, time, timeName, gone, tall
         </View>
         {extra /* R5 check: the actions stay at full strength on a gone card (4.5:1) */}
       </View>
+      {corner ? <View style={{ position: "absolute", top: space.inset, right: space.inset }}>{corner}</View> : null}
     </View>
+  );
+}
+
+/**
+ * X49h (T9: "an X with a semi opaque frosted circle"): a round frosted icon button on a photo, `size.iconSmall`
+ * (its touch area grows to `size.iconBig`), the glyph in `fg` on the frosted layer of the sheets.
+ */
+export function FrostBtn({ glyph: g, label, onPress, testID }: { glyph: Glyph; label: string; onPress: () => void; testID?: string }) {
+  const col = useColors();
+  return (
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={(size.iconBig - size.iconSmall) / 2}
+      style={({ pressed }) => ({ width: size.iconSmall, height: size.iconSmall, borderRadius: radius.round, opacity: pressed ? opacity.pressed : 1 })}>
+      <Frost round={{ borderRadius: radius.round }} style={{ width: size.iconSmall, height: size.iconSmall, alignItems: "center", justifyContent: "center" }}>
+        {/* a View: the glyph paints over the two layers of the frost (they are positioned) */}
+        <View><GlyphIcon name={g} color={col.fg} /></View></Frost>
+    </Pressable>
+  );
+}
+
+/** X49h (T9: "the same size as the timer pill"): a primary pill the size of the time pill (`size.timeW`, `size.timePadY`,
+ *  `type.button` in `onAccent` on `accent`); its touch area grows by `space.group`. */
+export function SmallPill({ title, name, onPress, testID }: { title: string; name?: string; onPress: () => void; testID?: string }) {
+  const col = useColors();
+  return (
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={name ?? title} onPress={onPress} hitSlop={space.group}
+      style={({ pressed }) => ({ width: size.timeW, paddingVertical: size.timePadY, borderRadius: radius.round, alignItems: "center",
+        backgroundColor: col.accent, opacity: pressed ? opacity.pressed : 1 })}>
+      <Text numberOfLines={1} style={[type.button, { color: col.onAccent }]}>{title}</Text></Pressable>
   );
 }
 

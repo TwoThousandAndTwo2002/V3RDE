@@ -9,7 +9,7 @@ import { ScrollView, View, useWindowDimensions } from "react-native";
 import { ApiError, listings, type Listing } from "../api";
 import { cameraFirst, canDelete, isGone, timeText } from "../listing";
 import { layoutFor, space } from "../theme";
-import { Grid, ListingCard, Muted, Pill, Popup, Row, ScreenHead, TextLink, Title, useNow } from "../ui";
+import { FrostBtn, Grid, ListingCard, Muted, Pill, Popup, Row, ScreenHead, SmallPill, Title, useNow } from "../ui";
 import NewListing from "./Capture";
 import RescueScreen from "./Rescue";
 import { canRescue } from "../rescue";
@@ -65,11 +65,12 @@ export default function GiveScreen() {
     }
   };
   const close = () => { if (!deletingNow.current) setAsking(null); }; // X48t review: the popup stays while it deletes
-  const del = (l: Listing) => <TextLink testID={"delete-" + l.id} name={GIVE.removeName(l.title)} onPress={() => setAsking(l)}>{GIVE.remove}</TextLink>;
-  const extra = (l: Listing) => (!canDelete(l) ? <Muted>{GIVE.grabbed}</Muted> : !canRescue(l, clockNow) ? del(l) : (
-    <Row tight style={{ gap: space.gutter, alignItems: "center", marginTop: space.hair }}>
-      <Pill testID={"rescue-" + l.id} name={RESCUE.pillName(l.title)} title={RESCUE.pill} onPress={() => setRescuing(l)} />
-      {del(l)}
+  // X49h (T9): Delete is an X in a frosted round button on the photo; Rescue is a pill the size of the time pill
+  const del = (l: Listing) => (canDelete(l)
+    ? <FrostBtn testID={"delete-" + l.id} glyph="close" label={GIVE.removeName(l.title)} onPress={() => setAsking(l)} /> : null);
+  const extra = (l: Listing) => (!canDelete(l) ? <Muted>{GIVE.grabbed}</Muted> : !canRescue(l, clockNow) ? null : (
+    <Row tight style={{ justifyContent: "flex-end" }}>
+      <SmallPill testID={"rescue-" + l.id} name={RESCUE.pillName(l.title)} title={RESCUE.pill} onPress={() => setRescuing(l)} />
     </Row>));
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
@@ -80,7 +81,7 @@ export default function GiveScreen() {
           ? <Muted center style={{ paddingVertical: space.bar }}>{GIVE.empty}</Muted>
           : <Grid columns={page.columns}>{mine.map((l) => (
               <ListingCard key={l.id} testID={"mine-" + l.id} photoPath={l.photo_url} title={l.title} line={servings(l.number_of_serving)}
-                time={timeText(l, RECEIVE, clockNow)} timeName={RECEIVE.timeLeft} gone={isGone(l, clockNow)} tall={false} extra={extra(l)} />
+                time={timeText(l, RECEIVE, clockNow)} timeName={RECEIVE.timeLeft} gone={isGone(l, clockNow)} tall={false} extra={extra(l)} corner={del(l)} />
             ))}</Grid>}</ScrollView>
       {page.dialogs ? null : <View style={[lane, { paddingVertical: space.item }]}>{add}</View>}
       {asking ? (

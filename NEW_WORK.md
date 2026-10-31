@@ -1652,3 +1652,16 @@ T9: the rescue work joins the branch that is deployed, the same way as the trans
 - The web build is made again from the merged code.
 - Tests: post 69 + 23 = 92; mobile 118 + 8 = 126; the other modules as before.
 
+## 78. Give cards: Delete on the photo, a small Rescue pill
+
+**When:** Oct 31 2026.
+**Meta models:** none.
+**Files:** `mobile/src/ui.tsx`, `mobile/src/screens/Give.tsx`, `mobile/tests/listing.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49h.md`
+
+T9 approved the Give and review mockup (version 2).
+
+- Delete is an X in a round, frosted button at the top right of the photo. A grabbed card has no X.
+- Rescue is a red pill with the size and the text of the time pill, under it.
+- The frosted layer now takes the corners of its part (a round button showed a square blur on the web).
+- Tests: mobile 126 -> 127.

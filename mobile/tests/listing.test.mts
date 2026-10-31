@@ -92,3 +92,23 @@ test("delete: only before a grab", async () => {
   const ui = (await import("node:fs")).readFileSync(new URL("../src/screens/Give.tsx", import.meta.url), "utf8");
   assert.match(ui, /<Popup testID="delete-confirm" small /); // T9: the small popup class on a phone
 });
+
+// X49h (T9 2026-10-31): Delete is an X in a frosted round button on the photo; Rescue is a pill the size of the time pill.
+test("Give cards: Delete on the photo, a small Rescue pill", async () => {
+  const fs = await import("node:fs");
+  const give = fs.readFileSync(new URL("../src/screens/Give.tsx", import.meta.url), "utf8");
+  const ui = fs.readFileSync(new URL("../src/ui.tsx", import.meta.url), "utf8");
+  assert.match(give, /<FrostBtn testID=\{"delete-" \+ l\.id\} glyph="close"/);
+  assert.match(give, /corner=\{del\(l\)\}/);
+  assert.match(give, /<SmallPill testID=\{"rescue-" \+ l\.id\}/);
+  assert.doesNotMatch(give, /<TextLink /); // the old underlined "Delete" is gone
+  assert.doesNotMatch(give, /<Pill testID=\{"rescue-/); // the big pill is gone
+  // the small pill has the size and the text style of the time pill
+  const pill = ui.slice(ui.indexOf("export function SmallPill"), ui.indexOf("export function SmallPill") + 900);
+  const time = ui.slice(ui.indexOf("export function TimePill"), ui.indexOf("export function TimePill") + 700);
+  for (const part of ["width: size.timeW", "paddingVertical: size.timePadY", "type.button"]) {
+    assert.ok(pill.includes(part) && time.includes(part), part);
+  }
+  // the frost layers take the corners of the part (a round button showed a square blur)
+  assert.match(ui, /style=\{\[StyleSheet\.absoluteFill, round\]\} \/>/);
+});
