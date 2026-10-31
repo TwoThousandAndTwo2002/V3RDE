@@ -1541,3 +1541,18 @@ T9: the rescue hint (entry 71) must not use the barcode answer's food condition.
 - A photo scan keeps the field. The other details do not change.
 - Tests: mobile 96 -> 97.
 
+## 73. Rescue: small listings get a drop-off with directions, bulk gets the email
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** Muse Spark 1.3 (the decision for a drop-off; the draft for bulk).
+**Files:** `post/rescue.go`, `post/post.go`, `post/rescue_test.go`, `post/rescue_dropoff_test.go`, `post/cmd/rescue/main.go`, `deploy/docker-compose.yml`, `docs/morpheus/post_api.md`
+**Sources:** `docs/sources/R3.md`
+
+T9: instead of an email, the app suggests that the donor takes the food to one of 3 places near the pickup address. The email is only for bulk food.
+
+- Bulk is 30 servings or more, or the scanner says "bulk" for a photo scan. Bulk keeps the email draft, as before.
+- Any other listing is a drop-off. Muse Spark decides only perishable or shelf-stable, and writes no email. Each place gets a map directions link.
+- The search uses the ZIP of the pickup address: the ZIP right after the state code ("Denver, CO 80219"). A house, suite or gate number is never read as a ZIP. The directions start at that address. When the address has no ZIP, the app's ZIP or location is used, as before.
+- A small listing is no longer refused. The pickup address never goes into the events log.
+- Tests: post 73 -> 79.
+

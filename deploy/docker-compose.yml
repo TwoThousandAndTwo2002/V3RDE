@@ -138,7 +138,7 @@ services:
     entrypoint: ["/rescue"]
     command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
               "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
-              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-1}", "-trust-forwarded",
+              "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-30}", "-trust-forwarded",
               # R1: the scan's route (barcode | vision) from analyze's events, for the scanner hint
               "-analyze-events", "/analyze-events"]
     mem_limit: 224m

@@ -16,10 +16,22 @@ package post
 //	GET  /healthz
 //
 // Rules: the listing must be the caller's, still "active" (not collected)
-// and past expires_at; its number_of_serving must be at least MinServings
-// (the bulk rule; T9 decides the number). The directory has no email field
-// that we could confirm, so the donor gives the address (from the place's
-// site or a call) and the answer always has mailto: and tel: links.
+// and past expires_at. The directory has no email field that we could
+// confirm, so the donor gives the address (from the place's site or a call)
+// and a bulk answer always has mailto: and tel: links.
+//
+// R3 (T9 2026-10-31: "instead of an email it suggests that the user can
+// transport the food to one of 3 locations near them based on the pickup
+// instructions. the emails should only be for bulk items"; bulk = 30
+// servings or the scanner says bulk, "Either one"; "Map directions link"):
+//   - bulk (number_of_serving >= MinServings, or details.serving_type "bulk"
+//     from a vision scan): mode "email", the X35b flow (draft, mailto, /send);
+//   - else: mode "dropoff": Muse decides only shelf_stable (no draft), and
+//     each place has a Google Maps directions link; /send answers 409.
+//   - the search location: the ZIP at the end of the listing's pickup address
+//     ("12 Main St, Denver, CO 80219, front desk"), else the body's zip or
+//     lat/lng. The body is optional when the pickup address has a ZIP. The
+//     pickup text is never written to the events line (X48u rule).
 
 import (
 	"context"
@@ -100,6 +112,17 @@ const MaxHintDescription = 200
 // when it used none: no field, a value not in the contract, or a route that
 // is not "vision").
 func rescuePrompt(l Listing, source string) (string, string) {
+	return promptFor(RescuePrompt, l, source)
+}
+
+// dropoffPrompt (R3) is rescuePrompt with DropoffPrompt.
+func dropoffPrompt(l Listing, source string) (string, string) {
+	return promptFor(DropoffPrompt, l, source)
+}
+
+// promptFor is tmpl (RescuePrompt or DropoffPrompt) for listing l, with the
+// scanner note when there is one.
+func promptFor(tmpl string, l Listing, source string) (string, string) {
 	note, cond := "", ""
 	if l.Details != nil && source == ScanVision {
 		if words, ok := hintWords[l.Details.MealCondition]; ok {
@@ -112,11 +135,11 @@ func rescuePrompt(l Listing, source string) (string, string) {
 		}
 	}
 	if note == "" {
-		return fmt.Sprintf(RescuePrompt, l.Title, l.NumberOfServing), ""
+		return fmt.Sprintf(tmpl, l.Title, l.NumberOfServing), ""
 	}
 	// the note goes in as an argument, so a "%" in the description stays text
-	tmpl := strings.Replace(RescuePrompt, "Servings: %d\n", "Servings: %d\n%s", 1)
-	return fmt.Sprintf(tmpl, l.Title, l.NumberOfServing, note), cond
+	t := strings.Replace(tmpl, "Servings: %d\n", "Servings: %d\n%s", 1)
+	return fmt.Sprintf(t, l.Title, l.NumberOfServing, note), cond
 }
 
 // oneLine is s with control and format characters (new lines, and bidi or
@@ -135,6 +158,24 @@ func oneLine(s string, n int) string {
 	return s
 }
 
+// DropoffPrompt (R3) is the Muse instruction when the donor takes the food to
+// a place (not bulk): no email, only the decision. %s, %d as RescuePrompt;
+// the scanner note goes after "Servings:" as in RescuePrompt.
+const DropoffPrompt = `A donor listed this food on a food-sharing app and nobody picked it up in time.
+The donor will take it to a local food program.
+Title: %s
+Servings: %d
+Look at the photo. Return ONLY valid JSON:
+{"shelf_stable": true or false, "reason": "one sentence, 12 words maximum"}
+shelf_stable is true only for sealed food that keeps without a refrigerator (cans, dry goods, sealed jars).
+Do not say the food is safe, do not give dates or temperatures, do not invent facts about the food.`
+
+// The modes of a rescue (R3).
+const (
+	ModeEmail   = "email"   // bulk: the donor asks the place first (draft, mailto, /send)
+	ModeDropoff = "dropoff" // the donor takes the food to one of the places
+)
+
 // Place is one directory result as the app shows it.
 type Place struct {
 	ID            string  `json:"id"`
@@ -144,10 +185,11 @@ type Place struct {
 	Phone         string  `json:"phone,omitempty"`
 	DistanceMiles float64 `json:"distance_miles,omitempty"`
 	Website       string  `json:"website,omitempty"`
-	Email         string  `json:"email,omitempty"`  // only when the directory gives one
-	Source        string  `json:"source,omitempty"` // X44l: the record's data_source (the directory names it per record)
-	Tel           string  `json:"tel,omitempty"`    // tel: link
-	Mailto        string  `json:"mailto,omitempty"`
+	Email         string  `json:"email,omitempty"`      // only when the directory gives one
+	Source        string  `json:"source,omitempty"`     // X44l: the record's data_source (the directory names it per record)
+	Tel           string  `json:"tel,omitempty"`        // tel: link
+	Mailto        string  `json:"mailto,omitempty"`     // R3: bulk (mode email) only
+	Directions    string  `json:"directions,omitempty"` // R3: a Google Maps directions link to the place
 }
 
 // Draft is the inquiry Muse wrote.
@@ -165,6 +207,7 @@ type Rescue struct {
 	Title       string  `json:"title"`
 	Servings    int     `json:"number_of_serving"`
 	Kind        string  `json:"kind"`
+	Mode        string  `json:"mode,omitempty"` // R3: email | dropoff ("" = a rescue from before R3, email)
 	ShelfStable bool    `json:"shelf_stable"`
 	Reason      string  `json:"reason"`
 	Draft       Draft   `json:"draft"`
@@ -695,16 +738,19 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in rescueReq
-	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in); err != nil {
+	// R3: the body is optional (the pickup address can give the ZIP); an empty body is {}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in); err != nil && !errors.Is(err, io.EOF) {
 		fail(http.StatusBadRequest, CodeBadRequest, "send JSON {\"zip\"} or {\"lat\",\"lng\"}")
 		return
 	}
 	in.Zip = strings.TrimSpace(in.Zip)
+	hasLatLng := in.Lat != nil && in.Lng != nil
 	switch {
 	case in.Zip != "" && !zipRe.MatchString(in.Zip):
 		fail(http.StatusBadRequest, CodeBadRequest, "zip must be a US ZIP code")
 		return
-	case in.Zip == "" && (in.Lat == nil || in.Lng == nil || *in.Lat < -90 || *in.Lat > 90 || *in.Lng < -180 || *in.Lng > 180):
+	case in.Zip == "" && (in.Lat != nil || in.Lng != nil) &&
+		(!hasLatLng || *in.Lat < -90 || *in.Lat > 90 || *in.Lng < -180 || *in.Lng > 180):
 		fail(http.StatusBadRequest, CodeBadRequest, "send zip, or lat and lng")
 		return
 	}
@@ -722,8 +768,16 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	case !l.Expired(c.now()):
 		fail(http.StatusConflict, "not_expired", "the listing timer has not run out")
 		return
-	case l.NumberOfServing < c.MinServings:
-		fail(http.StatusUnprocessableEntity, "not_bulk", fmt.Sprintf("rescue is for %d servings or more", c.MinServings))
+	}
+	// R3: where to search. The pickup address's ZIP first (where the food is),
+	// then the body's zip, then its lat/lng.
+	addr, pzip := pickupAddress(l.PickupText)
+	zip, from := in.Zip, "request"
+	switch {
+	case pzip != "":
+		zip, from = pzip, "pickup"
+	case in.Zip == "" && !hasLatLng:
+		fail(http.StatusBadRequest, CodeBadRequest, "the pickup address has no ZIP: send zip, or lat and lng")
 		return
 	}
 	// one rescue per listing: a second request gets the first one (no new call)
@@ -754,7 +808,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	}
 	dirc := make(chan dirOut, 1)
 	go func() { // the directory and Muse do not depend on each other
-		p, ms, err := c.Directory.Near(ctx, in.Zip, in.Lat, in.Lng)
+		p, ms, err := c.Directory.Near(ctx, zip, in.Lat, in.Lng)
 		dirc <- dirOut{p, ms, err}
 	}()
 	photo, mime, perr := c.Listings.Photo(r, lid)
@@ -763,8 +817,15 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		images = append(images, Image{Bytes: photo, Mime: mime})
 	}
 	source := scanSource(c.AnalyzeEvents, l) // R1: the scan's route, from its own events line
-	prompt, hint := rescuePrompt(l, source)
-	ev.Detail = map[string]any{"hint": hint, "scan_source": source} // R1 review: every exit after this keeps them
+	mode := ModeDropoff                      // R3: the bulk rule
+	if isBulk(l, source, c.MinServings) {
+		mode = ModeEmail
+	}
+	prompt, hint := dropoffPrompt(l, source)
+	if mode == ModeEmail {
+		prompt, hint = rescuePrompt(l, source)
+	}
+	ev.Detail = map[string]any{"hint": hint, "scan_source": source, "mode": mode, "location_from": from} // R1 review: every exit after this keeps them
 	obj, call, merr := c.Muse.AskJSON(ctx, "rescue:draft", prompt, images...)
 	calls = append(calls, call)
 	d := <-dirc
@@ -775,13 +836,13 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
 		fail(http.StatusGatewayTimeout, CodeTimeout, "took too long")
 		return
-	case merr != nil || !isBool || draft.Subject == "" || draft.Body == "":
+	case merr != nil || !isBool || (mode == ModeEmail && (draft.Subject == "" || draft.Body == "")):
 		fail(http.StatusBadGateway, CodeUpstream, "the draft failed")
 		return
 	case d.err != nil:
 		// X44l: the reason goes into the events line (the answer stays short)
 		ev.Detail = map[string]any{"directory_error": clip(d.err.Error(), 300), "directory_ms": d.ms, "hint": hint,
-			"scan_source": source}
+			"scan_source": source, "mode": mode, "location_from": from}
 		fail(http.StatusBadGateway, CodeUpstream, "the directory is unavailable")
 		return
 	}
@@ -790,8 +851,15 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		kind = KindFoodBank
 	}
 	places := PickPlaces(d.places, kind, c.Places)
+	if mode == ModeDropoff {
+		draft = Draft{} // R3: no email for a drop-off
+	}
 	for i := range places {
 		places[i].Tel = telLink(places[i].Phone)
+		places[i].Directions = directionsLink(addr, places[i]) // R3
+		if mode == ModeDropoff {
+			continue
+		}
 		if places[i].Email != "" {
 			places[i].Mailto = mailtoLink(places[i].Email, draft)
 		} else {
@@ -802,7 +870,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		places = []Place{}
 	}
 	res := Rescue{RescueID: newHex(16), RequestID: id, ListingID: lid, OwnerID: who.User.ID, Title: l.Title,
-		Servings: l.NumberOfServing, Kind: kind, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
+		Servings: l.NumberOfServing, Kind: kind, Mode: mode, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),
 		Draft: draft, Places: places, Attribution: DirectoryAttribution,
 		CreatedAt: c.now().UTC().Format(time.RFC3339Nano), CostUSD: Sum(calls), Sent: []Sent{}}
 	if err := c.Store.Put(res); err != nil {
@@ -812,9 +880,98 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = 200, time.Since(t0).Milliseconds(), calls, Sum(calls)
 	ev.Detail = map[string]any{"rescue_id": res.RescueID, "kind": kind, "shelf_stable": stable,
 		"places": len(places), "directory_results": len(d.places), "directory_ms": d.ms, "photo": perr == nil,
-		"hint": hint, "scan_source": source} // R1: the hint Muse got ("" none) and the scan's route, for F6
+		"hint": hint, "scan_source": source, "mode": mode, "location_from": from} // R1/R3: for F6; never the pickup text
 	WriteJSON(w, http.StatusOK, res)
 	c.record(ev)
+}
+
+// isBulk (R3) is the bulk rule: min or more servings, or the scanner said
+// "bulk" on a vision scan (a barcode answer's serving_type is a fixed value,
+// barcode/product.go, as its meal_condition).
+func isBulk(l Listing, source string, min int) bool {
+	return l.NumberOfServing >= min || (source == ScanVision && l.Details != nil && l.Details.ServingType == "bulk")
+}
+
+// usStates are the USPS two-letter codes (Publication 28, Appendix B):
+// states, DC, territories and the military codes.
+var usStates = map[string]bool{}
+
+func init() {
+	for _, s := range strings.Fields("AL AK AS AZ AR CA CO CT DE DC FM FL GA GU HI ID IL IN IA KS KY LA ME MH MD MA MI MN MS MO MT " +
+		"NE NV NH NJ NM NY NC ND MP OH OK OR PW PA PR RI SC SD TN TX UT VT VI VA WA WV WI WY AE AP AA") {
+		usStates[s] = true
+	}
+}
+
+// stateZipRe is a state code, then a ZIP (5 digits, optional +4), as the last
+// line of a US address ("Denver, CO 80219"): the code is a word of its own and
+// the ZIP is not part of a longer number. R3 review: a lone 5-digit number (a
+// house, suite or gate code number) is never a ZIP.
+var stateZipRe = regexp.MustCompile(`(?:^|[^A-Za-z0-9])([A-Za-z]{2})[ ,.]+(\d{5})(-\d{4})?(?:$|[^0-9-])`)
+
+// MaxPickupAddress is the most characters (runes) of each address in a
+// directions link, before encoding.
+const MaxPickupAddress = 150
+
+// MaxLinkPart is the most characters of each of origin and destination once
+// percent-encoded (R3 review: a rune can be 12): with the rest of the URL the
+// link stays under the Maps limit of 2,048.
+const MaxLinkPart = 900
+
+// pickupAddress (R3) splits the pickup text: zip is the last ZIP that comes
+// right after a USPS state code (uppercase, or any case after a comma:
+// "Denver, co 80219"; so "in" or "or" in a sentence is not a state), and the
+// address is the text up to and with it (the instructions come after it). No
+// such ZIP, or 00000: "", "".
+func pickupAddress(text string) (addr, zip string) {
+	text = oneLine(text, 1000)
+	ms := stateZipRe.FindAllStringSubmatchIndex(text, -1)
+	for k := len(ms) - 1; k >= 0; k-- {
+		m := ms[k]
+		st, z := text[m[2]:m[3]], text[m[4]:m[5]]
+		if !usStates[strings.ToUpper(st)] || z == "00000" {
+			continue
+		}
+		if st != strings.ToUpper(st) && !strings.HasSuffix(strings.TrimRight(text[:m[2]], " "), ",") {
+			continue
+		}
+		end := m[5]
+		if m[6] >= 0 {
+			end = m[7] // the +4 part stays with the address
+		}
+		return oneLine(strings.TrimRight(text[:end], " ,;"), MaxPickupAddress), z
+	}
+	return "", ""
+}
+
+// clipEncoded is s without its last runes until it is at most n characters
+// once query-encoded.
+func clipEncoded(s string, n int) string {
+	r := []rune(s)
+	for len(r) > 0 && len(url.QueryEscape(string(r))) > n {
+		r = r[:len(r)-1]
+	}
+	return strings.TrimSpace(string(r))
+}
+
+// directionsLink (R3) is a Google Maps directions URL (no API key) from the
+// pickup address to the place. With no pickup address the origin is left out:
+// Maps then starts at the device's location.
+func directionsLink(from string, p Place) string {
+	to := strings.TrimSpace(p.Address)
+	if to == "" {
+		to = strings.TrimSpace(p.Name)
+	} else if p.Name != "" {
+		to = p.Name + ", " + to
+	}
+	if to == "" {
+		return ""
+	}
+	q := url.Values{"api": {"1"}, "destination": {clipEncoded(oneLine(to, MaxPickupAddress), MaxLinkPart)}}
+	if from = clipEncoded(oneLine(from, MaxPickupAddress), MaxLinkPart); from != "" {
+		q.Set("origin", from)
+	}
+	return "https://www.google.com/maps/dir/?" + q.Encode()
 }
 
 func telLink(phone string) string {
@@ -892,6 +1049,10 @@ func (c *RescueConfig) send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ev.ListingID = res.ListingID
+	if res.Mode == ModeDropoff { // R3: no email for a drop-off
+		fail(http.StatusConflict, "dropoff", "this rescue is a drop-off: use the directions link")
+		return
+	}
 	var in sendReq
 	if err := json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&in); err != nil {
 		fail(http.StatusBadRequest, CodeBadRequest, "bad JSON body")

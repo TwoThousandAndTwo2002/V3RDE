@@ -245,11 +245,12 @@ type Listing struct {
 	Details *ListingDetails `json:"details,omitempty"`
 }
 
-// ListingDetails (R1) are the two scanner fields of a listing (listings/details.go)
-// that rescue reads; the other four are not decoded here.
+// ListingDetails (R1, R3) are the scanner fields of a listing (listings/details.go)
+// that rescue reads; the other three are not decoded here.
 type ListingDetails struct {
 	Description   string `json:"description,omitempty"`
 	MealCondition string `json:"meal_condition,omitempty"`
+	ServingType   string `json:"serving_type,omitempty"` // R3: the bulk rule
 }
 
 // Expired is true when the listing is still "active" but its timer ran out

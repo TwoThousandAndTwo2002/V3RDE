@@ -35,7 +35,7 @@ func main() {
 	capUSD := flag.Float64("cap-usd", 1, "daily spend cap in USD, UTC day (this service only)")
 	callerCap := flag.Float64("caller-cap-usd", 0, "X44a: daily spend cap in USD for each caller (one user or one bearer address); 0 = off")
 	estimate := flag.Float64("reserve-usd", 0.02, "spend reserved per rescue while it runs")
-	minServings := flag.Int("min-servings", 1, "the bulk rule: a listing needs this many servings (T9 decides; 1 = every listing)")
+	minServings := flag.Int("min-servings", 1, "R3: the bulk rule: this many servings or more (or the scanner's bulk) gets an email draft; fewer get a drop-off with directions (T9: 30)")
 	places := flag.Int("places", 3, "places in the answer")
 	sendPerDay := flag.Int("send-per-day", 3, "emails per donor per UTC day (relay only)")
 	burst := flag.Int("rate-burst", 6, "requests per window per user")
