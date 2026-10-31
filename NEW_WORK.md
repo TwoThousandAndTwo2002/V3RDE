@@ -1572,3 +1572,20 @@ T9: when the food directory finds nothing, a web search with an agent looks for 
 - Each web search is counted in the cost.
 - Tests: post 79 -> 90.
 
+## 75. Give: the Rescue pill and the rescue popup; the pickup field asks for the address
+
+**When:** Oct 31 2026. Branch `rescue`.
+**Meta models:** none in the app (the popup shows the rescue of entries 71-74: Muse Spark 1.3 and its web search).
+**Files:** `mobile/src/rescue.ts`, `mobile/src/screens/Rescue.tsx`, `mobile/src/screens/Give.tsx`, `mobile/src/screens/Receive.tsx`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/src/ui.tsx`, `mobile/tests/rescue.test.mts`, `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/R5.md`
+
+T9 approved the mockup on Oct 31 ("V3RDE Rescue Mockup"), with one change: a one-word red pill.
+
+- On "Your listings", a card that expired with nobody grabbing it has the red pill "Rescue".
+- The pill opens a popup. It starts the rescue, asks for the result each second, and shows up to 3 places with "Directions" and "Call". Bulk food also gets "Email" with the drafted message.
+- When the pickup address has no ZIP code, the popup asks for one. It also shows when no place was found, and lets the donor try again after a failure.
+- The pickup field now says "Pickup address and instructions", with the example "12 Main St, Denver, CO 80219. Front desk", so the rescue can read the ZIP code.
+- From the independent check of the mockup: the links of an expired card keep full strength, the place links have a 44 pt touch area, and a dialog is never taller than the window allows.
+- From the code review: a sign-out during the popup goes to sign-in; only the newest search can change the popup; nothing changes after it closes.
+- Tests: mobile 97 -> 104.
+

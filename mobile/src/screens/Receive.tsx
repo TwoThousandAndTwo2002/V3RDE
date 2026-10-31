@@ -7,7 +7,7 @@ import { Linking, Modal, RefreshControl, ScrollView, View, useWindowDimensions }
 import * as RN from "react-native";
 import { ApiError, listings, type Listing } from "../api";
 import { chatLink, isGone, loadOthers, mapLink, othersOnly, timeText, withChange } from "../listing";
-import { layoutFor, size, space, useColors } from "../theme";
+import { layoutFor, opacity, size, space, useColors } from "../theme";
 import { Grid, ListingCard, Muted, Pill, Rise, Row, ScreenHead, Sheet, Title, useNow, usePhoto } from "../ui";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
@@ -100,7 +100,7 @@ export default function ReceiveScreen() {
       <ListingCard key={l.id} testID={"card-" + l.id} photoPath={l.photo_url} title={l.title} line={servings(l.number_of_serving)}
         time={timeText(l, RECEIVE, now)} timeName={RECEIVE.timeLeft} gone={gone} tall extra={(
           <>
-            <Muted lines={1}>{l.pickup_text}</Muted>
+            <Muted lines={1} style={{ opacity: gone ? opacity.gone : 1 }}>{l.pickup_text}</Muted>
             {!gone ? (
               <View style={{ marginTop: space.gap }}>
                 <Pill testID={"grab-" + l.id} title={RECEIVE.grab} name={RECEIVE.grab + ": " + l.title} busy={taking === l.id}
