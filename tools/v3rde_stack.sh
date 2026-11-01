@@ -32,7 +32,7 @@ export V3RDE_I18N="${V3RDE_I18N:-$HOME/V3RDE_i18n}"           # X49b: the publis
 export V3RDE_LIF_SEED="${V3RDE_LIF_SEED:-$HOME/V3RDE_lif_seed}" # X49b: the first round's start (the Mac's runs)
 export COOKIE_SECURE="${COOKIE_SECURE:-true}" ANALYZE_RATE_BURST="${ANALYZE_RATE_BURST:-6}"
 PATH="/opt/homebrew/bin:/usr/local/bin:/snap/bin:$PATH"
-SERVICES="analyze auth listings barcode gate touchup rescue fanout voice"   # each writes $V3RDE_RUNS/<name>
+SERVICES="analyze auth listings barcode gate touchup rescue fanout voice push"   # WS1: push   # each writes $V3RDE_RUNS/<name>
 
 say()  { printf '\n== %s ==\n' "$*"; }
 die()  { printf '\nABORT: %s\n' "$*" >&2; exit 1; }
@@ -106,9 +106,9 @@ preflight() {
   # FB: the Facebook Page token (fb2 on the Mac and the box). Missing: an empty file; fan-out then does not post.
   # LR3: admin_users, the accounts (auth user ids, one per line or comma-separated) that may read the learn reports.
   # Missing: an empty file; then nobody is an admin and the route answers 404.
-  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/admin_users"; do
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/admin_users" "$V3RDE_CFG/push_secret"; do
     [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
-    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no admin)"; }
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no admin / no push)"; }
     chmod 600 "$sf"
     asroot && chown 65534:65534 "$sf"
   done
@@ -208,7 +208,7 @@ up() {
       printf '   %-30s %s\n' "${s%%:*} on TCP" "no answer (want no answer)"
     fi
   done
-  for s in analyze:8087 touchup:8088 rescue:8089 fanout:8090 voice:8091; do
+  for s in analyze:8087 touchup:8088 rescue:8089 fanout:8090 voice:8091 push:8092; do
     h=$(dc exec -T caddy wget -qO- -T 5 "http://$s/healthz" </dev/null 2>/dev/null | cut -c1-150 || true)
     [ -n "$h" ] || { h="did not answer  <-- CHECK"; BAD=$((BAD+1)); }
     printf '   %-30s %s\n' "${s%%:*} (internal)" "$h"
@@ -221,7 +221,7 @@ up() {
   local ids n f
   ids=$(dc ps -q) || die "docker compose ps failed"
   [ -n "$ids" ] || die "no containers"
-  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass fb_page_token; do
+  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass fb_page_token push_secret; do
     [ -s "$V3RDE_CFG/$f" ] || continue # an empty file matches every line (X49o: smtp_pass is empty until x49p)
     # shellcheck disable=SC2086
     n=$(docker inspect $ids | grep -cFf "$V3RDE_CFG/$f" || true)

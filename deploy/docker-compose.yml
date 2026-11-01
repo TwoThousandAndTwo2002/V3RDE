@@ -147,7 +147,8 @@ services:
               "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-caller-cap-usd", "${TOUCHUP_CALLER_CAP_USD:-0.5}", "-trust-forwarded",
               # X48o: the auto touch-up (Muse Image bigger + the scene rule's mask + studio blur):
               # the item is cut again from the upload; the scan's item names come from analyze's events
-              "-v2", "-photos", "/photos", "-analyze-events", "/analyze-events", "-reserve-usd", "0.06"]
+              "-v2", "-photos", "/photos", "-analyze-events", "/analyze-events", "-reserve-usd", "0.06",
+              "-push", "http+unix://push.sock"]   # WS1: a message to the app when a job ends
     mem_limit: 640m                # X48o: full-size pictures in code (2 at a time)
     environment: {GOMEMLIMIT: 560MiB}
     volumes:
@@ -170,7 +171,8 @@ services:
               # R1: the scan's route (barcode | vision) from analyze's events, for the scanner hint
               "-analyze-events", "/analyze-events",
               # R4: a rescue job searches the web (Muse Spark) when the directory finds nothing or fails
-              "-web-search", "-reserve-usd", "${RESCUE_RESERVE_USD:-0.04}"]
+              "-web-search", "-reserve-usd", "${RESCUE_RESERVE_USD:-0.04}",
+              "-push", "http+unix://push.sock"]   # WS1: a message to the app when a job ends
     mem_limit: 224m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
@@ -212,6 +214,24 @@ services:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/voice:/events
+      - v3rde_sock:/sock
+    depends_on: [auth]
+
+  # WS1: the push service (the box side of the API Gateway WebSocket API). Off until the
+  # WebSocket API exists: V3RDE_PUSH_ENDPOINT, V3RDE_PUSH_URL and the push_secret file set it on.
+  # It needs the box role's credentials from IMDS (the instance's metadata hop limit must be 2).
+  push:
+    <<: *post
+    entrypoint: ["/push"]
+    command: ["-listen", "0.0.0.0:8092", "-socket", "/sock/push.sock", "-auth", "http+unix://auth.sock",
+              "-secret-file", "/run/secrets/push_secret",
+              "-origins", "${V3RDE_PUBLIC_URL:-https://icarus.thehungreeapp.com}",
+              "-endpoint", "${V3RDE_PUSH_ENDPOINT:-}", "-url", "${V3RDE_PUSH_URL:-}", "-region", "${V3RDE_PUSH_REGION:-us-east-1}",
+              "-events", "/events"]
+    mem_limit: 96m
+    volumes:
+      - ${V3RDE_CFG:-~/.config/v3rde}/push_secret:/run/secrets/push_secret:ro
+      - ${V3RDE_RUNS:-~/V3RDE_runs}/push:/events
       - v3rde_sock:/sock
     depends_on: [auth]
 

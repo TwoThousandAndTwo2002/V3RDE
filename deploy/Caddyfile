@@ -67,6 +67,18 @@
 			import caller
 		}
 	}
+	# WS1: the push service: the app's one-time ticket, and the $connect and
+	# $disconnect integrations of the API Gateway WebSocket API (they carry
+	# the integration's shared secret). The messages of the services go over
+	# the unix socket, not through here.
+	handle /api/push/* {
+		request_body {
+			max_size 4KB
+		}
+		reverse_proxy push:8092 {
+			import caller
+		}
+	}
 	handle /api/rescue/* {
 		request_body {
 			max_size 64KB

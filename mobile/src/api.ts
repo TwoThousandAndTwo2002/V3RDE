@@ -10,7 +10,8 @@
 import { Platform as RN } from "react-native";
 import { CLIENT, SCAN_WAIT_MS, SEND_AGAIN_MS, errorMessage, joinUrl, scanPoll, scanStep, sendAgain } from "./logic";
 import { placeFields, placeQuery, type Place } from "./place";
-import { RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "./rescue";
+import { RESCUE_POLL_MS, RESCUE_PUSH_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "./rescue";
+import { pollMs, pushNow, pushWait, type Ticket } from "./push";
 
 export const API_BASE: string = RN.OS === "web" ? "" : (process.env.EXPO_PUBLIC_API_BASE ?? "");
 
@@ -104,6 +105,11 @@ export const auth = Object.freeze({
   signup: (email: string, password: string) => request<User>("POST", "/api/auth/signup", { json: { email, password } }),
   login: (email: string, password: string) => request<User>("POST", "/api/auth/login", { json: { email, password } }),
   logout: () => request<unknown>("POST", "/api/auth/logout"),
+  /** WS1: a one-time ticket for the push socket; null when the box has push off (404). */
+  pushTicket: () => request<Ticket>("POST", "/api/push/ticket").catch((err) => {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }),
   /** Asks for a reset link by email (202 also for an unknown email). */
   resetRequest: (email: string) => request<unknown>("POST", "/api/auth/reset", { json: { email } }),
   /** Sets a new password with the token of the link; signs in (200 user + session). */
@@ -199,8 +205,11 @@ export const rescue = Object.freeze({
   async wait(first: Rescue, stop: () => boolean = () => false): Promise<Rescue> {
     const until = Date.now() + RESCUE_WAIT_MS;
     let r = first;
+    let asked = pushNow(); // WS1: a message that came since the last read of the job also ends the wait
     while (r.status === "running") {
-      await new Promise((go) => setTimeout(go, RESCUE_POLL_MS));
+      const id = r.rescue_id; // WS1: a push message for this rescue ends the wait at once
+      await pushWait(pollMs(RESCUE_POLL_MS, RESCUE_PUSH_POLL_MS), (m) => m.kind === "rescue" && m.id === id, asked);
+      asked = pushNow();
       if (stop()) throw new ApiError(0, "Stopped");
       if (Date.now() > until) throw new ApiError(0, "Timed out, try again");
       try {

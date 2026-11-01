@@ -53,6 +53,7 @@ func main() {
 	searchTimeout := flag.Duration("search-timeout", 60*time.Second, "R4: the web search call")
 	jobTimeout := flag.Duration("job-timeout", 90*time.Second, "R4: one rescue job, every call included")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
+	pushURL := flag.String("push", "", "WS1: the push service (http+unix://push.sock): a message to the app when a job ends; empty = off")
 	flag.Parse()
 	analyze.EnableUnixURLs(analyze.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 	post.TrustForwarded = *trustFwd
@@ -69,6 +70,7 @@ func main() {
 	budget := post.NewBudget(*capUSD, *estimate, ev)
 	budget.PerCaller = *callerCap
 	cfg := &post.RescueConfig{
+		Push:        &post.PushClient{URL: *pushURL},
 		Muse:        &post.Muse{Base: *base, Key: key, Model: *model, Effort: "low", HTTP: &http.Client{Timeout: *timeout}},
 		Directory:   &post.Directory{Base: *directory, HTTP: &http.Client{Timeout: 10 * time.Second}},
 		Listings:    &post.ListingsClient{URL: *listingsURL, HTTP: &http.Client{Timeout: 10 * time.Second}},

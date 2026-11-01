@@ -50,6 +50,7 @@ func main() {
 	photos := flag.String("photos", "", "X48o: the analyze upload folder, read-only (the item is cut again from it); empty = the item photo as it is")
 	analyzeEvents := flag.String("analyze-events", "", "X48o: the analyze events folder, read-only (the scan's item names); empty = the general concepts")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
+	pushURL := flag.String("push", "", "WS1: the push service (http+unix://push.sock): a message to the app when a job ends; empty = off")
 	flag.Parse()
 	analyze.EnableUnixURLs(analyze.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 	post.TrustForwarded = *trustFwd
@@ -84,6 +85,7 @@ func main() {
 	budget.PerCaller = *callerCap
 	hc := &http.Client{Timeout: *jobTimeout}
 	cfg := &post.TouchupConfig{
+		Push:        &post.PushClient{URL: *pushURL},
 		Editor:      &post.ImageEditor{Base: *base, Key: key, Model: *imageModel, Reasoning: *imageReasoning, HTTP: hc},
 		Session:     &post.AuthClient{URL: *authURL},
 		Auth:        bearer,

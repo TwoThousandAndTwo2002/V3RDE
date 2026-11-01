@@ -2010,3 +2010,18 @@ T9: unix sockets inside the box.
 - The food gate, the barcode catalog and the ledger have no network port any more: only the services that mount the socket folder reach them.
 - The stack check asks each socket for its health and checks that the three have no port.
 - Tests: server 44 -> 45, auth 33 -> 35, gate 26 -> 28, barcode 20 -> 22, telemetry 22 -> 24, listings 48 -> 50.
+
+## 97. A push channel through an API Gateway WebSocket, with polling as the fallback
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `post/push.go` (new), `post/push_test.go` (new), `post/sigv4.go` (new), `post/sigv4_test.go` (new), `post/cmd/push/main.go` (new), `post/rescue.go`, `post/touchup.go`, `post/cmd/rescue/main.go`, `post/cmd/touchup/main.go`, `mobile/src/push.ts` (new), `mobile/tests/push.test.mts` (new), `mobile/src/api.ts`, `mobile/src/rescue.ts`, `mobile/src/touchup.ts`, `mobile/src/screens/Review.tsx`, `mobile/App.tsx`, `mobile/package.json`, `mobile/web-dist/`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/WS1.md`
+
+T9 chose the AWS WebSocket API.
+
+- A new push service on the box: API Gateway holds the app's WebSocket; when a rescue or a touch-up ends, the box sends the app a short message (only what ended, never the data).
+- The web app opens the socket with a one-time ticket after sign-in. While the socket works (the box answers its ping every minute), the app polls less often and reads the result at once when the message comes. Without a working socket (and in the phone app), it polls as before.
+- A logout or an ended session closes the socket in 1 to 1.5 minutes. The services send messages over a unix socket only.
+- Push stays off until the WebSocket API is set up in AWS (the SME steps); nothing changes for users until then.
+- Tests: post 101 -> 108, mobile 159 -> 165.
