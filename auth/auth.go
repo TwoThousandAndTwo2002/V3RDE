@@ -29,6 +29,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -42,8 +43,17 @@ const (
 	maxBodyBytes = 16 << 10
 )
 
-// emailForm is a loose check: something@something.something, no spaces.
-var emailForm = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+// emailForm (X49w, T9: "emails should be validated more strictly", any country) is the "valid e-mail address" of
+// the HTML standard (https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address) plus a domain with a dot
+// and an ending of 2 to 63 letters: name@domain.com, name@company.ng, name@yahoo.co.uk. The app has the same check
+// (mobile/src/signin.ts EMAIL_FORM). Only sign-up checks it. Sign-in does not check the form, so an account made
+// before this still signs in.
+var emailForm = regexp.MustCompile("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\\.[A-Za-z]{2,63}$")
+
+// emailLoose (X49w review) is the check from before the strict form: something@something.something with no space
+// and one @. The reset request uses it, so an account made before emailForm still gets its reset link. The app has
+// the same check (mobile/src/signin.ts EMAIL_LOOSE).
+var emailLoose = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 
 // User is what a caller sees: never the hash.
 type User struct {
@@ -60,6 +70,11 @@ var (
 	ErrBadEmail   = errors.New("email is not valid")
 	ErrShortPass  = errors.New("password must be at least 8 characters")
 	ErrEmailTaken = errors.New("email already registered")
-	ErrBadLogin   = errors.New("email or password is wrong")
-	ErrNoSession  = errors.New("no session")
+	ErrBadLogin   = errors.New("email or password is wrong") // X49w: the wrapper of the two below (errors.Is)
+	// X49w (T9 2026-11-01: "if a password is wrong only then do you render forgot password"; "when an email is not
+	// recognized ... render create an account"): sign-in tells the two cases apart, with a code for the app. Sign-up
+	// already tells that an email is taken (ErrEmailTaken), and the per-address limit stays.
+	ErrNoAccount     = fmt.Errorf("%w: no account uses this email", ErrBadLogin)
+	ErrWrongPassword = fmt.Errorf("%w: wrong password", ErrBadLogin)
+	ErrNoSession     = errors.New("no session")
 )

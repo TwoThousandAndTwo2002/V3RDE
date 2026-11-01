@@ -1925,3 +1925,19 @@ T9: "[EXPIRED]" sounds like the food went bad.
 - When the listing's time ends, fan-out now puts "[UNAVAILABLE]" in front of the Facebook post (it was "[EXPIRED]"). "[CLAIMED]" stays for a grab.
 - Tests: post 96 -> 97.
 
+## 91. The keyboard does not cover the field; Post goes to the address; clearer sign-in
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/src/keyboard.ts` (new), `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/screens/AuthFrame.tsx`, `mobile/src/screens/Login.tsx`, `mobile/src/screens/Pickup.tsx`, `mobile/src/screens/Reset.tsx`, `mobile/src/screens/Review.tsx`, `mobile/src/signin.ts`, `mobile/docs/style_guide.md`, `mobile/package.json`, `mobile/tests/keyboard.test.mts` (new), `mobile/tests/maps.test.mts`, `mobile/tests/signin.test.mts`, `auth/auth.go`, `auth/store.go`, `auth/handler.go`, `auth/reset.go`, `auth/auth_test.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X49w.md`
+
+T9, from the tester feedback; T9 approved the "V3RDE Batch 1 Mockup" v3.
+
+- On a phone browser the keyboard no longer covers the field: the sheet and the sign-in button move up, and the field you type in comes into view. When the keyboard closes, the screen is as before.
+- Post with no pickup address scrolls the page to the address field, with the error under it.
+- "Use my current location" is a round target icon inside the address field.
+- Sign-in: an unknown email shows "No account uses this email." and "Create an account"; a wrong password shows "Wrong password." and "Forgot password?". Before a try only "About" shows.
+- A new account's email must have a real form (name@domain.ending, any country). Sign-in and the password reset keep the earlier check, so older accounts still sign in and get a reset link.
+- Tests: mobile 153 -> 159, auth 32 -> 33.
+

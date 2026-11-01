@@ -15,7 +15,7 @@ import { ADDRESS_FOLLOW_M, NAME_LIMIT_MS, NAME_WAIT_MS, SUGGEST_MIN, SUGGEST_WAI
   newSession, suggest, type DrawnMap, type PickedAddress, type Suggestion } from "../maps";
 import { currentPosition } from "../place";
 import { opacity, radius, size, space, useColors } from "../theme";
-import { Body, ErrorText, Field, GlyphIcon, Muted, TextLink } from "../ui";
+import { Body, ErrorText, Field, GlyphIcon, IconBtn, Muted } from "../ui";
 import { PICKUP } from "../words";
 
 type Point = { lat: number; lng: number };
@@ -57,7 +57,7 @@ function MapBox({ mapsKey, at, name, drawKey, tall, still, onMove }: { mapsKey: 
   );
 }
 
-export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need, onNaming }: {
+export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need, needSeq = 0, onNaming }: {
   mapsKey: string; picked: PickedAddress | null; onPicked: (a: PickedAddress | null) => void;
   /** The listings post: no change. */
   locked: boolean;
@@ -65,6 +65,8 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
   onFail: () => void;
   /** X49q: Post was pressed with no address: the error shows under the field. */
   need?: boolean;
+  /** X49w: goes up at each Post that has no address: the page scrolls to this field (T9: "the screen should scroll to the address area"). */
+  needSeq?: number;
   /** X49q review: true while the address of a moved pin is being found (Post waits: the text must match the pin). */
   onNaming?: (busy: boolean) => void;
 }) {
@@ -109,6 +111,12 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
     }, SUGGEST_WAIT_MS);
     return () => clearTimeout(id);
   }, [text, picked, editing, mapsKey]);
+  const seenNeed = useRef(needSeq); // X49w review: a new mount does not scroll for an older Post
+  useEffect(function showNeed() { // X49w: Post with no address brings the address field into view
+    if (needSeq === seenNeed.current || Platform.OS !== "web") return;
+    seenNeed.current = needSeq;
+    (block.current as unknown as HTMLElement | null)?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+  }, [needSeq]);
   // X49q: the block moves to the top of the page, and a tap outside it closes the change (web: the map is web only)
   useEffect(function edit() {
     if (!editing || Platform.OS !== "web") return;
@@ -184,10 +192,10 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
   };
   if (!named.current && picked) named.current = { lat: picked.lat, lng: picked.lng };
 
-  const hereLink = (
-    <View style={{ marginTop: space.hair, marginLeft: space.inset, alignSelf: "flex-start" }}>
-      <TextLink testID="pickup-here" onPress={here}>{finding ? PICKUP.finding : PICKUP.here}</TextLink></View>
-  );
+  // X49w (T9: "a simple button to use current location ... an icon, i prefer this better than underlined text"):
+  // a round icon button inside the field; while it works, the line under the field says so
+  const hereBtn = <IconBtn testID="pickup-here" glyph="locate" label={finding ? PICKUP.finding : PICKUP.here} onPress={here} />;
+  const hereLink = finding ? <Muted style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.finding}</Muted> : null;
   const suggestion = hit ? (
     <Pressable testID="pickup-suggestion" accessibilityRole="button" accessibilityLabel={hit.main + ", " + hit.secondary} onPress={choose}
       style={(state) => ({ marginTop: space.hair, paddingHorizontal: space.group, paddingVertical: space.inset, borderRadius: radius.card,
@@ -197,7 +205,7 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
   ) : null;
   const field = (
     <Field testID="pickup-address" label={PICKUP.address} value={text} placeholder={PICKUP.hint} maxLength={200} autoFocus={editing}
-      autoComplete="street-address" onChangeText={setText} />
+      autoComplete="street-address" onChangeText={setText} right={hereBtn} />
   );
   if (picked) { // one block and one map for both modes (X49q review: a mode change keeps the map, no new map load)
     const l = addressLines(picked.text);

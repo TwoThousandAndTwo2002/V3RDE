@@ -68,6 +68,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const [mapsKey, setMapsKey] = useState("");
   const [picked, setPicked] = useState<PickedAddress | null>(null);
   const [needAddress, setNeedAddress] = useState(false); // X49q: the error shows under the address field
+  const [needSeq, setNeedSeq] = useState(0); // X49w: each Post with no address scrolls the page to the address field
   const [naming, setNaming] = useState(false); // X49q review: the address of a moved pin is being found: Post waits
   useEffect(function mapsConfig() {
     if (RN.Platform.OS !== "web") return; // the Maps JavaScript API is a browser script
@@ -205,7 +206,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     if (busy.current || items.length === 0) return;
     if (working) return setProblem(TOUCH.wait); // a touch-up that still runs decides the photo
     if (talking.current) return setProblem(VOICE.first); // a chat line is still being read
-    if (byAddress && !picked) { setProblem(""); return setNeedAddress(true); } // X49j: the address comes first (X49q: the error under the field)
+    if (byAddress && !picked) { setProblem(""); setNeedSeq((n) => n + 1); return setNeedAddress(true); } // X49j: the address comes first (X49q: the error under the field)
     if (byAddress && naming) return setProblem(PICKUP.naming); // X49q review: the text must match the pin
     const pickupWrong = listingProblem("-", 1, pickup, byAddress); // the pickup is for all items: no item name with it
     if (pickupWrong) return setProblem(pickupWrong);
@@ -274,7 +275,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const pickupPart = byAddress ? (
     <>
       <PickupAddress mapsKey={mapsKey} picked={picked} onPicked={(a) => { setPicked(a); setNeedAddress(false); }} locked={sending} onNaming={setNaming}
-        onFail={() => { setMapsKey(""); setPicked(null); }} need={needAddress} />
+        onFail={() => { setMapsKey(""); setPicked(null); }} need={needAddress} needSeq={needSeq} />
       <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.safety}</Muted>
       <View style={{ marginTop: space.group }}>{pickupField}</View>{pickupMark}
     </>

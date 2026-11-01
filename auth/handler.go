@@ -112,6 +112,12 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 // fail is every error body: {"error": msg}.
+// X49w: the codes of a failed sign-in (401), read by the app (mobile/src/signin.ts failure()).
+const (
+	CodeNoAccount     = "no_account"
+	CodeWrongPassword = "wrong_password"
+)
+
 func fail(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
@@ -228,6 +234,10 @@ func (c Config) login(w http.ResponseWriter, r *http.Request) {
 	}
 	u, err := c.Store.Login(in.Email, in.Password)
 	switch {
+	case errors.Is(err, ErrNoAccount): // X49w: the app offers "Create an account"
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "no account uses this email", "code": CodeNoAccount})
+	case errors.Is(err, ErrWrongPassword): // X49w: the app offers "Forgot password?"
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "wrong password", "code": CodeWrongPassword})
 	case errors.Is(err, ErrBadLogin):
 		fail(w, http.StatusUnauthorized, err.Error())
 	case err != nil:

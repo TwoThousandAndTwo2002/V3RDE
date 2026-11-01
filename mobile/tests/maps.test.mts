@@ -59,7 +59,7 @@ test("the screens: the review asks the config, the address comes first; a card b
   const receive = fs.readFileSync(new URL("../src/screens/Receive.tsx", import.meta.url), "utf8");
   const api = fs.readFileSync(new URL("../src/api.ts", import.meta.url), "utf8");
   assert.match(review, /listings\.config\(\)/);
-  assert.match(review, /if \(byAddress && !picked\) \{ setProblem\(""\); return setNeedAddress\(true\); \}/);
+  assert.match(review, /if \(byAddress && !picked\) \{ setProblem\(""\); setNeedSeq\(\(n\) => n \+ 1\); return setNeedAddress\(true\); \}/);
   assert.match(review, /address: byAddress && picked \? \{ text: picked\.text \} : undefined/);
   assert.match(api, /form\.append\("address", n\.address\.text\)/);
   // the feed card: the instructions only; the address only in "Your pickup" and the grab sheet
@@ -78,7 +78,9 @@ test("a Maps failure: the location at Post; X49q: the map moves, the current loc
   assert.match(pickup, /loadMaps\(mapsKey\)\.catch\(\(\) => \{ if \(on\) onFail\(\); \}\)/);
   assert.match(pickup, /height: h \}\} \/>/); // the map element has its own size
   assert.match(pickup, /const h = tall \? size\.mapTall : size\.mapH;/);
-  assert.match(pickup, /testID="pickup-here" onPress=\{here\}/);
+  assert.match(pickup, /<IconBtn testID="pickup-here" glyph="locate" label=\{finding \? PICKUP\.finding : PICKUP\.here\} onPress=\{here\} \/>/);
+  assert.match(pickup, /onChangeText=\{setText\} right=\{hereBtn\} \/>/); // X49w: the icon is in the address field
+  assert.doesNotMatch(pickup, /TextLink/);
   assert.match(pickup, /need \? <ErrorText>\{PICKUP\.need\}<\/ErrorText>/);
   assert.match(review, /setNeedAddress\(true\)/);
   assert.doesNotMatch(review, /PLACE\.hereNow/);
@@ -131,4 +133,14 @@ test("the address follows the pin: metres between two points, the 20 m rule, the
   assert.match(maps, /gestureHandling: still \? "none" : "greedy"/);
   assert.match(pickup, /scrollIntoView\?\.\(\{ block: "start"/);
   assert.match(pickup, /onPicked\(\{ text: t, lat: p\.lat, lng: p\.lng \}\)/); // the found address keeps the point of its move
+});
+
+// X49w (T9 2026-10-31): Post with no address scrolls the page to the address field, each time.
+test("Post with no address brings the address field into view", async () => {
+  const fs = await import("node:fs");
+  const review = fs.readFileSync(new URL("../src/screens/Review.tsx", import.meta.url), "utf8");
+  const pickup = fs.readFileSync(new URL("../src/screens/Pickup.tsx", import.meta.url), "utf8");
+  assert.match(review, /need=\{needAddress\} needSeq=\{needSeq\}/);
+  assert.match(pickup, /const seenNeed = useRef\(needSeq\);/);
+  assert.match(pickup, /if \(needSeq === seenNeed\.current \|\| Platform\.OS !== "web"\) return;\s*seenNeed\.current = needSeq;\s*\(block\.current[^;]*scrollIntoView\?\.\(\{ block: "center", behavior: "smooth" \}\);\s*\}, \[needSeq\]\);/);
 });

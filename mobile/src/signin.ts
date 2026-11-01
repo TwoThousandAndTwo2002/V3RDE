@@ -15,8 +15,13 @@ export const SIGN_IN = {
   incomplete: "Enter your email and a password of " + MIN_PASSWORD + " characters or more",
   badEmail: "Enter an email like you@email.com",
   waiting: "Signing in…",
-  noAccount: "No account found.",
-  create: "Create one",
+  // X49w (tester: a wrong password showed "No account found. Create one"; T9 2026-11-01: "when an email is not
+  // recognized ... render create an account ... if a password is wrong only then do you render forgot password"):
+  // the auth service answers 401 with a code for each case (auth/handler.go CodeNoAccount, CodeWrongPassword)
+  noAccount: "No account uses this email.",
+  wrongPassword: "Wrong password.",
+  badLogin: "Wrong email or password.", // a 401 with no code (an older service)
+  create: "Create an account",
   go: "Continue",
   show: "Show",
   hide: "Hide",
@@ -31,28 +36,41 @@ export const ABOUT_PATH = "/about/";
 export const ABOUT_URL = "https://icarus.thehungreeapp.com/about/";
 
 /**
- * The form of an email, the same loose check as the auth service on branch services (auth/auth.go, emailForm):
- * something@something.something, no spaces.
+ * The form of an email for a new account, the same check as the auth service (auth/auth.go, emailForm). X49w (T9:
+ * "emails should be validated more strictly"; any country): the "valid e-mail address" of the HTML standard (the
+ * browser's own check of an email field) plus a domain with a dot and an ending of 2 letters or more:
+ * name@domain.com, name@company.ng, name@yahoo.co.uk; not name@domain, name@domain.c, spaces or two @.
  */
-export const EMAIL_FORM = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_FORM = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,63}$/;
+
+/** X49w review: sign-in and the reset request keep the earlier loose check (auth emailLoose), so an account made
+ *  before the strict form still signs in and gets a reset link: something@something.something, no spaces. */
+export const EMAIL_LOOSE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** The email as the services keep it: no spaces at the ends. */
 export function cleanEmail(email: string): string {
   return email.trim();
 }
 
-/** The first problem of the form, or "" when it can go to the services. */
-export function formProblem(email: string, password: string): string {
+/** The first problem of the form, or "" when it can go to the services. X49w review: the strict form for sign-up only. */
+export function formProblem(email: string, password: string, mode: "login" | "signup" = "login"): string {
   const e = cleanEmail(email);
   if (e.length === 0 || password.length < MIN_PASSWORD) return SIGN_IN.incomplete;
-  if (!EMAIL_FORM.test(e)) return SIGN_IN.badEmail;
+  if (!(mode === "signup" ? EMAIL_FORM : EMAIL_LOOSE).test(e)) return SIGN_IN.badEmail;
   return "";
 }
 
-/** What a failed request shows: the offer to create an account (a 401 on sign-in) or a line of text. */
-export function failure(mode: "login" | "signup", status: number | undefined, message: string): { offer: boolean; text: string } {
-  if (mode === "login" && status === 401) return { offer: true, text: "" };
-  return { offer: false, text: message };
+/** X49w: the link under the fields after a failed sign-in: "Create an account", "Forgot password?" or none. */
+export type Offer = "create" | "forgot" | "";
+
+/** What a failed request shows: a line of text and the one link that helps (X49w: from the code of a 401 on sign-in). */
+export function failure(mode: "login" | "signup", status: number | undefined, message: string, code?: unknown): { offer: Offer; text: string } {
+  if (mode === "login" && status === 401) {
+    if (code === "no_account") return { offer: "create", text: SIGN_IN.noAccount };
+    if (code === "wrong_password") return { offer: "forgot", text: SIGN_IN.wrongPassword };
+    return { offer: "forgot", text: SIGN_IN.badLogin };
+  }
+  return { offer: "", text: message };
 }
 
 // Reset password by email link (UI 9). The services part is on branch services (docs/sources/U9.md: the routes).

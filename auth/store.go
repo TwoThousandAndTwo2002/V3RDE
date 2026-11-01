@@ -174,11 +174,11 @@ func (s *Store) Login(email, password string) (User, error) {
 	u := s.data.Users[id]
 	s.mu.Unlock()
 	if !ok {
-		verifyPassword(missHash, password)
-		return User{}, ErrBadLogin
+		verifyPassword(missHash, password) // the same time for both answers (X49w: they differ now, the time need not)
+		return User{}, ErrNoAccount
 	}
 	if !verifyPassword(u.PwHash, password) {
-		return User{}, ErrBadLogin
+		return User{}, ErrWrongPassword
 	}
 	return u.public(), nil
 }

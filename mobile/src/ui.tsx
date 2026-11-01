@@ -10,6 +10,7 @@ import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
 import { photoUrl as photoUri } from "./api";
 import { LIMITS } from "./capture";
+import { revealOnFocus, useKeyboardInset } from "./keyboard";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 import { typeDelay } from "./details";
 
@@ -54,12 +55,13 @@ export function ErrorText({ children, center, lines, style }: {
 
 // ---------------------------------------------------------------- icons and buttons
 
-export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil" | "pin";
+export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil" | "pin" | "locate";
 
 /** The square box of each glyph (pt). */
 const GLYPH_BOX: Record<Glyph, number> = {
   close: glyph.box, minus: glyph.box, plus: glyph.box, upload: glyph.uploadBox, give: glyph.iconBox, receive: glyph.iconBox, menu: glyph.iconBox,
   mic: glyph.iconBox, stop: glyph.iconBox, sparkle: glyph.iconBox, info: glyph.iconBox, pencil: glyph.iconBox, pin: glyph.iconBox,
+  locate: glyph.iconBox,
 };
 
 /** A line glyph (close ✕, minus −, plus +, upload, give, receive, menu ☰): one SVG path with round ends, in its own square box. */
@@ -216,7 +218,7 @@ export function Field({ label, multiline, center, right, style, onFocus, onBlur,
       ref={ref}
       placeholderTextColor={col.placeholder}
       multiline={multiline}
-      onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+      onFocus={(e) => { setFocused(true); revealOnFocus(e?.target); onFocus?.(e); }}
       onBlur={(e) => { setFocused(false); onBlur?.(e); }}
       aria-label={label}
       {...rest}
@@ -375,6 +377,7 @@ export function Sheet({ kind, wide, extraWide, photo, children, testID, onClose,
   useEffect(() => Animated.spring(rise, { toValue: 1, useNativeDriver: true, bounciness: motion.sheetBounce, speed: motion.sheetSpeed }).start(), [rise]);
   const shift = rise.interpolate({ inputRange: [0, 1], outputRange: [height * motion.sheetShift, 0] });
   const inset = useInsets();
+  const kb = useKeyboardInset(); // X49w: the sheet moves up over the phone keyboard (web)
   const back = photo ? <Backdrop photo={photo} /> : null;
   // onClose: a ✕ in the top corner, and a tap on the photo closes the sheet (people did not know the tap)
   const tapOut = onClose ? <Pressable accessible={false} onPress={onClose} style={StyleSheet.absoluteFill} /> : null;
@@ -399,10 +402,10 @@ export function Sheet({ kind, wide, extraWide, photo, children, testID, onClose,
   return (
     <View testID={testID} style={{ flex: 1, backgroundColor: col.bg }}>
       {back}{tapOut}
-      <Animated.View style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxHeight: Math.round(height * size.sheetLarge), // whole pt: the parts stay on whole pixels
+      <Animated.View style={{ position: "absolute", left: 0, right: 0, bottom: kb, maxHeight: Math.round(height * size.sheetLarge), // whole pt (the web height is already the visible part)
         minHeight: large ? undefined : size.sheetSmall, transform: [{ translateY: shift }] }}>
         <Frost round={{ borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet }}
-          style={{ flexShrink: 1, flexGrow: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot + inset.bottom }}>
+          style={{ flexShrink: 1, flexGrow: 1, paddingHorizontal: space.gutter, paddingBottom: space.foot + (kb ? 0 : inset.bottom) }}>
           <View style={{ alignSelf: "center", width: size.handleW, height: size.handleH, borderRadius: radius.round,
             backgroundColor: col.handle, marginTop: size.handleTop, marginBottom: space.gutter }} />
           {children}{cross}

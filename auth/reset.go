@@ -59,7 +59,7 @@ func resetOver(r resetRec, now time.Time) bool {
 // email. A new token replaces every earlier token of that user; tokens that are over are removed.
 func (s *Store) NewReset(email string) (token string, u User, ok bool, err error) {
 	email = NormalizeEmail(email)
-	if !emailForm.MatchString(email) {
+	if !emailLoose.MatchString(email) { // X49w review: an older account gets its link too
 		return "", User{}, false, ErrBadEmail
 	}
 	var b [32]byte
@@ -370,7 +370,7 @@ func (c Config) resetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	email := NormalizeEmail(in.Email)
-	if !emailForm.MatchString(email) {
+	if !emailLoose.MatchString(email) { // X49w review: an older account gets its link too
 		fail(w, http.StatusBadRequest, ErrBadEmail.Error())
 		return
 	}

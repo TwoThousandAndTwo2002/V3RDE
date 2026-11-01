@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -153,17 +154,58 @@ func TestSignupRefusals(t *testing.T) {
 	}
 }
 
-func TestLoginWrongIsOneAnswer(t *testing.T) {
+// X49w: the stricter email form (any country); the app's EMAIL_FORM has the same cases (mobile/tests/signin.test.mts).
+func TestEmailForm(t *testing.T) {
+	for _, ok := range []string{"sam@example.com", "a@b.co", "donor@example.org", "x.y+z@mail.example.co.uk", "ade@company.ng",
+		"priya@school.in", "korede@thehungreeapp.com", "o'brien@example.ie"} {
+		if !emailForm.MatchString(ok) {
+			t.Errorf("refused %q", ok)
+		}
+	}
+	for _, bad := range []string{"sam", "sam@", "sam@example", "@example.com", "sam@@example.com", "sam @example.com", "sam@example.",
+		"sam@example.c", "sam@example.c0m", "sam@.example.com", "sam@example..com", "sam@-example.com", "sam@example-.com",
+		"sam(at)example.com", "sam@exa mple.com", "sam@example.com.", "sam,x@example.com"} {
+		if emailForm.MatchString(bad) {
+			t.Errorf("took %q", bad)
+		}
+	}
+	// X49w review: the reset request keeps the loose form, so an account made before the strict form gets its link
+	for _, ok := range []string{"sam@example.c", "sam@example.c0m", "josé@example.com", "sam@example.com"} {
+		if !emailLoose.MatchString(ok) {
+			t.Errorf("loose refused %q", ok)
+		}
+	}
+	for _, bad := range []string{"sam", "sam@example", "sam @example.com", "sam@@example.com"} {
+		if emailLoose.MatchString(bad) {
+			t.Errorf("loose took %q", bad)
+		}
+	}
+	s := newRig(t, 0).st
+	if _, _, ok, err := s.NewReset("sam@example.c"); ok || err != nil {
+		t.Errorf("NewReset(old form) = ok %v, err %v; want no account and no error", ok, err)
+	}
+	if _, err := s.Signup("sam@example.c", "abcdefgh"); err != ErrBadEmail {
+		t.Errorf("Signup(old form) err = %v; want ErrBadEmail", err)
+	}
+}
+
+// X49w (T9): a wrong password and an unknown email have two answers, both 401 with no cookie, each with its code.
+func TestLoginTwoAnswers(t *testing.T) {
 	g := newRig(t, 0)
 	g.send("POST", "/api/auth/signup", `{"email":"a@b.co","password":"right-password"}`, "")
 	wrong := g.send("POST", "/api/auth/login", `{"email":"a@b.co","password":"wrong-password"}`, "")
 	none := g.send("POST", "/api/auth/login", `{"email":"nobody@b.co","password":"right-password"}`, "")
-	if wrong.Code != 401 || none.Code != 401 || wrong.Body.String() != none.Body.String() ||
-		bodyOf(wrong)["error"] != "email or password is wrong" {
-		t.Fatalf("wrong %d %s / none %d %s", wrong.Code, wrong.Body, none.Code, none.Body)
+	if wrong.Code != 401 || bodyOf(wrong)["code"] != CodeWrongPassword || bodyOf(wrong)["error"] != "wrong password" {
+		t.Fatalf("wrong %d %s", wrong.Code, wrong.Body)
+	}
+	if none.Code != 401 || bodyOf(none)["code"] != CodeNoAccount || bodyOf(none)["error"] != "no account uses this email" {
+		t.Fatalf("none %d %s", none.Code, none.Body)
 	}
 	if len(wrong.Result().Cookies()) != 0 || len(none.Result().Cookies()) != 0 {
 		t.Fatal("a failed login sets a cookie")
+	}
+	if !errors.Is(ErrNoAccount, ErrBadLogin) || !errors.Is(ErrWrongPassword, ErrBadLogin) {
+		t.Fatal("both are a bad login")
 	}
 }
 
@@ -404,7 +446,7 @@ func TestOldAccountsKeepWorking(t *testing.T) {
 	if u, err := st.Login(" DONOR@example.org", "old-pass-123"); err != nil || u.CreatedAt != "2026-10-25T17:00:00Z" {
 		t.Fatalf("old password: %+v %v", u, err)
 	}
-	if _, err := st.Login("donor@example.org", "old-pass-124"); err != ErrBadLogin {
+	if _, err := st.Login("donor@example.org", "old-pass-124"); err != ErrWrongPassword {
 		t.Fatalf("wrong password: %v", err)
 	}
 	if _, err := st.Signup("donor@example.org", "12345678"); err != ErrEmailTaken {

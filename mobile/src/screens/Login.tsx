@@ -1,6 +1,6 @@
 // The sign-in screen, written new for V3RDE (NEW_WORK_UI.md, UI 8; mobile/docs/style_guide.md "Sign-in").
-// One button: Continue signs in. A 401 shows "No account found. Create one" (the same for an unknown email and
-// a wrong password, so the screen tells nothing about which accounts exist). Phone: the button sits at the
+// One button: Continue signs in. X49w (T9): an unknown email shows "No account uses this email." and the link "Create an
+// account"; a wrong password shows "Wrong password." and the link "Forgot password?". Before a try, only "About" shows. Phone: the button sits at the
 // bottom. Wide screen: a centred card, which fades and rises away (`leaving`) when the next screen comes in
 // (AuthFrame). "Forgot password?" opens the reset screen (UI 9). "About" (#78), at the right of the same row, opens
 // the About page: on the web in the same tab (the page is on the same site), on a phone in the browser.
@@ -9,7 +9,7 @@ import { Linking, Platform, TextInput, View } from "react-native";
 import { ApiError, auth, type User } from "../api";
 import { space } from "../theme";
 import { AuthFrame } from "./AuthFrame";
-import { ABOUT_PATH, ABOUT_URL, RESET, SIGN_IN, cleanEmail, failure, formProblem } from "../signin";
+import { ABOUT_PATH, ABOUT_URL, RESET, SIGN_IN, cleanEmail, failure, formProblem, type Offer } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
 
 /** Opens the About page: the same tab on the web, the browser on a phone. */
@@ -23,7 +23,8 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
   const [password, setPassword] = useState<string>("");
   const [visible, setVisible] = useState(false);
   const [problem, setProblem] = useState("");
-  const [unknown, setUnknown] = useState(false);
+  const [offer, setOffer] = useState<Offer>(""); // X49w: the one link after a failed sign-in
+  const unknown = offer === "create";
   const [waiting, setWaiting] = useState(false);
   const busy = useRef(false); // one request at a time, also before the next render (Enter, "Create one")
   const passwordBox = useRef<React.ComponentRef<typeof TextInput>>(null);
@@ -31,8 +32,8 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
   const submit = async (mode: "login" | "signup") => {
     if (busy.current || leaving) return; // not again from under the role sheet
     setProblem("");
-    setUnknown(false);
-    const wrong = formProblem(email, password);
+    setOffer("");
+    const wrong = formProblem(email, password, mode);
     if (wrong) return setProblem(wrong);
     busy.current = true;
     setWaiting(true);
@@ -41,8 +42,9 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
       setPassword(""); // the password does not stay in memory after sign-in
       onSignedIn(who);
     } catch (e) {
-      const said = failure(mode, e instanceof ApiError ? e.status : undefined, e instanceof Error ? e.message : String(e));
-      setUnknown(said.offer);
+      const said = failure(mode, e instanceof ApiError ? e.status : undefined, e instanceof Error ? e.message : String(e),
+        e instanceof ApiError ? e.body?.code : undefined);
+      setOffer(said.offer);
       setProblem(said.text);
     } finally {
       busy.current = false;
@@ -65,12 +67,12 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
           right={<FieldButton title={visible ? SIGN_IN.hide : SIGN_IN.show} label={visible ? SIGN_IN.hideName : SIGN_IN.showName}
             onPress={() => setVisible((v) => !v)} />} />
         <Muted style={{ marginTop: space.inset, marginLeft: space.inset }}>{SIGN_IN.rule}</Muted>
-        {problem ? <ErrorText>{problem}</ErrorText> : null}
-        {unknown ? (
-          <ErrorText>{SIGN_IN.noAccount + " "}<TextLink testID="create" onPress={() => submit("signup")}>{SIGN_IN.create}</TextLink></ErrorText>
-        ) : null}
+        {problem ? <ErrorText style={{ marginLeft: space.inset }}>{problem}</ErrorText> : null}
+        {/* X49w: one row on the same left edge as the notes: the one link that helps (or none), and About at the right */}
         <View style={{ marginTop: space.gap, marginHorizontal: space.inset, flexDirection: "row", justifyContent: "space-between" }}>
-          <TextLink testID="forgot" onPress={() => busy.current || onForgot()}>{RESET.forgot}</TextLink>
+          {offer === "create" ? <TextLink testID="create" onPress={() => submit("signup")}>{SIGN_IN.create}</TextLink>
+            : offer === "forgot" ? <TextLink testID="forgot" onPress={() => busy.current || onForgot()}>{RESET.forgot}</TextLink>
+            : <View />}
           <TextLink testID="about" onPress={openAbout}>{SIGN_IN.about}</TextLink></View>
       </View>
     </View>

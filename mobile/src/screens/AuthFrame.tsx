@@ -7,6 +7,7 @@ import { Animated, KeyboardAvoidingView, ScrollView, View, useWindowDimensions }
 import * as RN from "react-native";
 import { layoutFor, motion, radius, size, space, useColors } from "../theme";
 import { Doodles as Wallpaper } from "../doodles";
+import { useKeyboardInset } from "../keyboard";
 
 /** A screen that is not active: hidden from screen readers (iOS, Android and the web). */
 const asleep = (on?: boolean) => (on ? { "aria-hidden": true, accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const } : {});
@@ -14,6 +15,7 @@ const asleep = (on?: boolean) => (on ? { "aria-hidden": true, accessibilityEleme
 export function AuthFrame({ children, action, leaving }: { children: React.ReactNode; action: React.ReactNode; leaving?: boolean }) {
   const col = useColors();
   const { width } = useWindowDimensions();
+  const kb = useKeyboardInset(); // X49w: the Continue button stays above the phone keyboard (web)
   const [away] = useState(() => new Animated.Value(0));
   useEffect(() => Animated.timing(away, { toValue: leaving ? 1 : 0, duration: motion.handoffMs, useNativeDriver: RN.Platform.OS !== "web" }).start(), [leaving, away]);
   if (layoutFor(width).dialogs) {
@@ -32,7 +34,7 @@ export function AuthFrame({ children, action, leaving }: { children: React.React
     );
   }
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: col.bg }} behavior={RN.Platform.OS === "ios" ? "padding" : undefined}
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: col.bg, paddingBottom: kb }} behavior={RN.Platform.OS === "ios" ? "padding" : undefined}
       pointerEvents={leaving ? "none" : "auto"} {...asleep(leaving)}>
       <Wallpaper />
       <ScrollView keyboardShouldPersistTaps="handled"

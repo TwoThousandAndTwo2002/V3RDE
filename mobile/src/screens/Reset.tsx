@@ -6,7 +6,7 @@ import React, { useRef, useState } from "react";
 import { View } from "react-native";
 import { ApiError, auth, type User } from "../api";
 import { space } from "../theme";
-import { EMAIL_FORM, EXPIRED_ERROR, MIN_PASSWORD, RESET, SIGN_IN, cleanEmail } from "../signin";
+import { EMAIL_LOOSE, EXPIRED_ERROR, MIN_PASSWORD, RESET, SIGN_IN, cleanEmail } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
 import { AuthFrame } from "./AuthFrame";
 
@@ -20,7 +20,7 @@ export function ForgotPassword({ onBack, startEmail = "" }: { onBack: () => void
     if (busy.current) return;
     setProblem("");
     const e = cleanEmail(email);
-    if (!EMAIL_FORM.test(e)) return setProblem(SIGN_IN.badEmail);
+    if (!EMAIL_LOOSE.test(e)) return setProblem(SIGN_IN.badEmail); // X49w review: an older account gets its link too
     busy.current = true;
     setWaiting(true);
     try {
