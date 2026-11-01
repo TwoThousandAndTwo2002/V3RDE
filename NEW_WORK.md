@@ -2016,3 +2016,16 @@ From the security assessment (F1, High): a small PNG or GIF can say it is 16000 
 
 - The scan route and the food check now read the picture's size from its header first and refuse more than 50 megapixels (the limit JPEG photos already had). The food check decodes one photo at a time and gets a 1 GB memory limit.
 - Tests: gate 26 -> 28, server 38, inference 104 (more cases in the refusal tests).
+
+## 98. Two tests that failed at times are steady
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `inference/scanjob_test.go`, `auth/auth_test.go`
+**Sources:** `docs/sources/X52.md`
+
+Two tests failed at times in the SUP preflight: a scan-job test ("TempDir RemoveAll cleanup: ... directory not empty") and the login time test.
+
+- The test started three scan jobs and did not wait for them, so they wrote files while the test removed its folder. The test now waits for each job to end, and the wait has a 30-second deadline in place of 2.5 seconds.
+- The login time test takes the fastest of 7 tries of each kind, in turn, so a busy moment does not fail it.
+- No app change. Tests: inference 104, auth 33 (no new test).

@@ -16,7 +16,8 @@ import (
 // poll GETs the job (auth as in req) until it is not running.
 func (s *svc) poll(t *testing.T, path, auth string) (*httptest.ResponseRecorder, ScanJob) {
 	t.Helper()
-	for i := 0; i < 500; i++ {
+	// X52: a deadline, not 500 tries of 5 ms (2.5 s): under a full SUP test run the job can take longer
+	for deadline := time.Now().Add(30 * time.Second); time.Now().Before(deadline); {
 		r := httptest.NewRequest(http.MethodGet, path, nil)
 		switch auth {
 		case "bearer":
@@ -116,19 +117,32 @@ func TestAnalyzeAsyncSamePhoto(t *testing.T) {
 	if again := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again != id {
 		t.Fatalf("the same photo started a new scan: %s, want %s", again, id)
 	}
-	if other := startScan(t, s, req(t, "/api/analyze?async=1", "u2", testPhoto(t), "")); other == id {
+	other := startScan(t, s, req(t, "/api/analyze?async=1", "u2", testPhoto(t), ""))
+	if other == id {
 		t.Fatal("another user got the job")
 	}
-	if code := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "078742370026")); code == id {
+	code := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "078742370026"))
+	if code == id {
 		t.Fatal("a new barcode read got the old job")
+	}
+	// X52 (the flaky test: "TempDir RemoveAll cleanup: ... directory not empty"): every job this test starts ends
+	// before the test does, so no job writes into the temporary folder while it is removed
+	for _, j := range [][2]string{{other, "u2"}, {code, "u1"}} {
+		if w, _ := s.poll(t, "/api/analyze/scan/"+j[0], j[1]); w.Code != 200 { // a 404 would end the wait too early
+			t.Fatalf("the wait for job %s: %d", j[0], w.Code)
+		}
 	}
 	f := newSvc(t, threeBoxes(t), "NOT_FOOD", 0, nil)
 	bad := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), ""))
 	if w, j := f.poll(t, "/api/analyze/scan/"+bad, "u1"); w.Code != 200 || j.Status != ScanFailed {
 		t.Fatalf("failed job: %d %s", w.Code, w.Body)
 	}
-	if again := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again == bad {
+	again := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), ""))
+	if again == bad {
 		t.Fatal("Try again after a failure got the failed job")
+	}
+	if w, _ := f.poll(t, "/api/analyze/scan/"+again, "u1"); w.Code != 200 { // X52: it ends before the test does
+		t.Fatalf("the wait for the new job: %d", w.Code)
 	}
 }
 

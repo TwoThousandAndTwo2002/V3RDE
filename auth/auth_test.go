@@ -219,16 +219,13 @@ func TestLoginMissTakesTheHashTime(t *testing.T) {
 		g.send("POST", "/api/auth/login", body, "")
 		return time.Since(start)
 	}
-	median := func(body string) time.Duration {
-		var d []time.Duration
-		for i := 0; i < 3; i++ {
-			d = append(d, timeIt(body))
-		}
-		sort.Slice(d, func(i, j int) bool { return d[i] < d[j] })
-		return d[1]
+	// X52: the fastest of 7 tries each, taken in turn (it was the middle of 3, one kind after the other): under a full
+	// SUP test run a busy moment made one kind slow and the test failed. A miss with no hash stays fast in every try.
+	var wrong, miss time.Duration = 1 << 62, 1 << 62
+	for i := 0; i < 7; i++ {
+		wrong = min(wrong, timeIt(`{"email":"a@b.co","password":"wrong-password"}`))
+		miss = min(miss, timeIt(`{"email":"nobody@b.co","password":"wrong-password"}`))
 	}
-	wrong := median(`{"email":"a@b.co","password":"wrong-password"}`)
-	miss := median(`{"email":"nobody@b.co","password":"wrong-password"}`)
 	if miss < wrong/3 {
 		t.Fatalf("an unknown email is much faster: %s vs %s", miss, wrong)
 	}
