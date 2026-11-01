@@ -38,6 +38,29 @@
 :80 {
 	encode gzip
 
+	# X53 (security F4): security headers on every answer of the edge. nosniff: a browser keeps the
+	# declared type. Referrer-Policy: other sites get the origin only. X-Frame-Options SAMEORIGIN: no
+	# other site can frame the app. HSTS for one day first (a longer time is hard to take back).
+	# The CSP is Report-Only: the browser reports in its console what the policy would block and
+	# blocks nothing; it allows the Google Maps origins of Google's own allowlist policy and, by its
+	# hash, the one inline script (the doodles of the about page). Before it is enforced, each report
+	# must be checked. The block has no "-" line, so it runs at once (a delete would defer the whole
+	# block, and a deferred block is not run when a service cannot be reached: X53 review).
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options SAMEORIGIN
+		Strict-Transport-Security "max-age=86400"
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'sha256-Qhuu6158CmAhpPuyT+Di/IviQcpxmgLFmQLnzfuy6ZQ=' 'unsafe-eval' blob: https://*.googleapis.com https://*.gstatic.com *.google.com https://*.ggpht.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://*.googleapis.com https://*.gstatic.com *.google.com *.googleusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' data: blob: https://*.googleapis.com *.google.com https://*.gstatic.com; media-src 'self' blob:; worker-src 'self' blob:; frame-src *.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+	}
+	# the edge does not name itself, in every answer and in its own error answers (a 502 when a
+	# service cannot be reached); an error answer keeps its status and gets the headers above
+	header -Server
+	handle_errors {
+		header -Server
+		respond "" {err.status_code}
+	}
+
 	# The one analysis route: /v1/analyze (shared bearer token) and
 	# /api/analyze (session cookie); the service checks the caller. The image
 	# limit is 5 MB (the service checks it); a JSON body is 4/3 of the image.

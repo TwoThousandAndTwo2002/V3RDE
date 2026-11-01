@@ -2029,3 +2029,15 @@ Two tests failed at times in the SUP preflight: a scan-job test ("TempDir Remove
 - The test started three scan jobs and did not wait for them, so they wrote files while the test removed its folder. The test now waits for each job to end, and the wait has a 30-second deadline in place of 2.5 seconds.
 - The login time test takes the fastest of 7 tries of each kind, in turn, so a busy moment does not fail it.
 - No app change. Tests: inference 104, auth 33 (no new test).
+
+## 99. Security F4: security headers on every answer of the edge
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `deploy/Caddyfile`, `mobile/tests/edge.test.mts` (new), `mobile/package.json`
+**Sources:** `docs/sources/X53.md`
+
+From the security assessment (F4, Medium): the edge sent no security headers.
+
+- Every answer now has nosniff, a Referrer-Policy, X-Frame-Options SAMEORIGIN and HSTS for one day, and the edge no longer names itself. This is also true for the edge's own error answers. A Content Security Policy is sent as Report-Only: the browser reports what it would block and blocks nothing, until the reports are checked.
+- Tests: mobile 176 -> 180.
