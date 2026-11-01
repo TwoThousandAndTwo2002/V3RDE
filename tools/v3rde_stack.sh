@@ -193,7 +193,22 @@ up() {
   check "POST /v1/fanout/status" 404 -X POST "$u/v1/fanout/status"
   local s
   local s h
-  for s in barcode:8083 gate:8084 analyze:8087 ledger:8086 touchup:8088 rescue:8089 fanout:8090 voice:8091; do
+  # US: auth, barcode, gate and ledger answer on their unix sockets (the binary probes its own socket);
+  # barcode, gate and ledger have no TCP port any more
+  for s in auth barcode gate ledger; do
+    # the probe prints the body also on a 503 (a gate with no model): its exit status decides
+    if h=$(dc exec -T "$s" "/$s" -probe-socket "/sock/$s.sock" </dev/null 2>&1); then h=$(printf '%s' "$h" | head -1 | cut -c1-150)
+    else h="$(printf '%s' "$h" | tail -1 | cut -c1-110)  <-- CHECK"; BAD=$((BAD+1)); fi
+    printf '   %-30s %s\n' "$s (socket)" "$h"
+  done
+  for s in barcode:8083 gate:8084 ledger:8086; do
+    if dc exec -T caddy wget -qO- -T 3 "http://$s/healthz" </dev/null >/dev/null 2>&1; then
+      printf '   %-30s %s\n' "${s%%:*} on TCP" "answers  <-- CHECK (want: no TCP port)"; BAD=$((BAD+1))
+    else
+      printf '   %-30s %s\n' "${s%%:*} on TCP" "no answer (want no answer)"
+    fi
+  done
+  for s in analyze:8087 touchup:8088 rescue:8089 fanout:8090 voice:8091; do
     h=$(dc exec -T caddy wget -qO- -T 5 "http://$s/healthz" </dev/null 2>/dev/null | cut -c1-150 || true)
     [ -n "$h" ] || { h="did not answer  <-- CHECK"; BAD=$((BAD+1)); }
     printf '   %-30s %s\n' "${s%%:*} (internal)" "$h"

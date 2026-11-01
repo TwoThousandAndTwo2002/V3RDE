@@ -1996,3 +1996,17 @@ T9 chose a systemd timer, and the report page for admin accounts only.
 - `GET /api/analyze/learn` lists the days, `/api/analyze/learn/<day>` gives a report (JSON, or Markdown). Only a signed-in account whose user id is in the `admin_users` file gets it; every other caller gets the 404 of a path that does not exist.
 - The timer is installed once on the box: `sudo bash tools/learn_install.sh`.
 - Tests: inference 114 -> 115.
+
+## 96. The services of the box talk over unix sockets
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `server/sock.go` (new), `server/sock_test.go` (new), `listings/sock.go` (new), `listings/sock_test.go` (new), `auth/sock.go` (new), `auth/sock_test.go` (new), `gate/sock.go` (new), `gate/sock_test.go` (new), `barcode/sock.go` (new), `barcode/sock_test.go` (new), `telemetry/sock.go` (new), `telemetry/sock_test.go` (new), `auth/cmd/auth/main.go`, `gate/cmd/gate/main.go`, `barcode/cmd/barcode/main.go`, `telemetry/cmd/ledger/main.go`, `inference/cmd/inventory/main.go`, `listings/cmd/listings/main.go`, `post/cmd/fanout/main.go`, `post/cmd/rescue/main.go`, `post/cmd/touchup/main.go`, `post/cmd/voice/main.go`, `auth/Dockerfile`, `listings/Dockerfile`, `barcode/Dockerfile`, `gate/Dockerfile`, `telemetry/Dockerfile`, `inference/Dockerfile`, `post/Dockerfile`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/US1.md`
+
+T9: unix sockets inside the box.
+
+- Every service checks the sign-in of each request with auth over a unix socket, not over the container network.
+- The food gate, the barcode catalog and the ledger have no network port any more: only the services that mount the socket folder reach them.
+- The stack check asks each socket for its health and checks that the three have no port.
+- Tests: server 44 -> 45, auth 33 -> 35, gate 26 -> 28, barcode 20 -> 22, telemetry 22 -> 24, listings 48 -> 50.

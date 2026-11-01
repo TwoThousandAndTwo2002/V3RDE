@@ -37,7 +37,8 @@ services:
     build: {context: ./auth, args: {BUILD: "${V3RDE_BUILD_AUTH:-dev}"}}
     image: v3rde-auth
     restart: unless-stopped
-    command: ["-listen", "0.0.0.0:8081", "-db", "/data/auth.json",
+    # US: TCP for Caddy (/api/auth/*) and the socket /sock/auth.sock for the services (the session check)
+    command: ["-listen", "0.0.0.0:8081", "-socket", "/sock/auth.sock", "-db", "/data/auth.json",
               "-cookie-secure=${COOKIE_SECURE:-true}", "-events", "/events",
               # X49o: the reset mail (Google Workspace SMTP, an app password); empty files = reset answers 503
               "-smtp-addr", "smtp.gmail.com:465",
@@ -45,6 +46,7 @@ services:
               "-reset-link-base", "${V3RDE_PUBLIC_URL:-https://icarus.thehungreeapp.com}"]
     volumes:
       - v3rde_auth:/data
+      - v3rde_sock:/sock
       - ${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events
       - ${V3RDE_CFG:-~/.config/v3rde}/smtp_user:/run/secrets/smtp_user:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/smtp_pass:/run/secrets/smtp_pass:ro
@@ -53,7 +55,7 @@ services:
     build: {context: ./listings, args: {BUILD: "${V3RDE_BUILD_LISTINGS:-dev}"}}
     image: v3rde-listings
     restart: unless-stopped
-    command: ["-listen", "0.0.0.0:8082", "-data", "/data", "-auth", "http://auth:8081", "-events", "/events",
+    command: ["-listen", "0.0.0.0:8082", "-data", "/data", "-auth", "http+unix://auth.sock", "-events", "/events",
               "-item-photos", "/item-photos", "-touchup-photos", "/touchup-photos",
               "-fanout", "http://fanout:8090/v1/fanout/status",
               "-fanout-token-file", "/run/secrets/fanout_status_token",
@@ -65,6 +67,7 @@ services:
               "-test-ttl-emails", "${LISTINGS_TEST_TTL_EMAILS:-x42-touchup-test@example.org,x44-receiver-test@example.org,x44-stress-1@example.org,x44-stress-2@example.org,x44-stress-3@example.org}"]
     volumes:
       - v3rde_listings:/data
+      - v3rde_sock:/sock
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/touchup-photos:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/fanout_status_token:/run/secrets/fanout_status_token:ro
@@ -76,8 +79,10 @@ services:
     build: {context: ./barcode, args: {BUILD: "${V3RDE_BUILD_BARCODE:-dev}"}}
     image: v3rde-barcode
     restart: unless-stopped
-    command: ["-listen", "0.0.0.0:8083", "-catalog", "/assets/products.sqlite", "-events", "/events"]
+    # US: the socket only (no TCP port: only the containers that mount v3rde_sock reach it)
+    command: ["-listen", "", "-socket", "/sock/barcode.sock", "-catalog", "/assets/products.sqlite", "-events", "/events"]
     volumes:
+      - v3rde_sock:/sock
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/products.sqlite:/assets/products.sqlite:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/barcode:/events
 
@@ -87,12 +92,14 @@ services:
     restart: unless-stopped
     # PE-Core-S16-384 (Meta, Apache-2.0) is the only gate (D32); the pins are
     # the gate's defaults too (X38g, D145). No shadow gate.
-    command: ["-listen", "0.0.0.0:8084", "-model", "/assets/gate_pe_s16_f16w_384.tflite",
+    # US: the socket only (no TCP port)
+    command: ["-listen", "", "-socket", "/sock/gate.sock", "-model", "/assets/gate_pe_s16_f16w_384.tflite",
               "-head", "/assets/gate_head_pe_s16_384_deploy.json",
               "-model-sha256", "c0618012abe6a22664285b85ae0d7820e3013342965cb74aa6767404a5ff649e",
               "-head-sha256", "7ba764ea8b562bef0948678dba5a1d103b0772ce2df46f3959d181d093c507a4",
               "-events", "/events", "-threads", "2"]   # X46a: box bench, 595 ms against 1,071 ms
     volumes:
+      - v3rde_sock:/sock
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_pe_s16_f16w_384.tflite:/assets/gate_pe_s16_f16w_384.tflite:ro
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_head_pe_s16_384_deploy.json:/assets/gate_head_pe_s16_384_deploy.json:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/gate:/events
@@ -105,8 +112,8 @@ services:
     image: v3rde-analyze
     restart: unless-stopped
     command: ["-listen", "0.0.0.0:8087", "-key-file", "/run/secrets/meta_key",
-              "-token-file", "/run/secrets/analyze_token", "-gate", "http://gate:8084", "-events", "/events",
-              "-auth", "http://auth:8081", "-barcode", "http://barcode:8083", "-listings", "http://listings:8082",
+              "-token-file", "/run/secrets/analyze_token", "-gate", "http+unix://gate.sock", "-events", "/events",
+              "-auth", "http+unix://auth.sock", "-barcode", "http+unix://barcode.sock", "-listings", "http://listings:8082",
               "-photos", "/photos", "-max-image-bytes", "5242880",
               # N1: the Open Food Facts product photo of a barcode hit (b/ cutouts, a/ as is); an empty folder = the camera shot
               "-stock", "/stock",
@@ -123,6 +130,7 @@ services:
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}:/photos
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/stock:/stock:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/events
+      - v3rde_sock:/sock
       - ${V3RDE_RUNS:-~/V3RDE_runs}/learn:/learn-reports:ro   # not /learn: the image has the /learn binary
       - ${V3RDE_CFG:-~/.config/v3rde}/admin_users:/run/secrets/admin_users:ro
     depends_on: [gate, auth, barcode, listings]
@@ -133,7 +141,7 @@ services:
   touchup:
     <<: *post
     entrypoint: ["/touchup"]
-    command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
+    command: ["-listen", "0.0.0.0:8088", "-key-file", "/run/secrets/meta_key", "-auth", "http+unix://auth.sock",
               "-token-file", "/run/secrets/analyze_token",   # X42e: /v1/touchup for the bearer token
               "-item-photos", "/item-photos", "-dir", "/data", "-events", "/events",
               "-cap-usd", "${TOUCHUP_CAP_USD:-2}", "-caller-cap-usd", "${TOUCHUP_CALLER_CAP_USD:-0.5}", "-trust-forwarded",
@@ -150,12 +158,13 @@ services:
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/items:/item-photos:ro
       - ${V3RDE_PHOTOS:-~/V3RDE_photos}/touchups:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/touchup:/events
+      - v3rde_sock:/sock
     depends_on: [auth]
 
   rescue:
     <<: *post
     entrypoint: ["/rescue"]
-    command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http://auth:8081",
+    command: ["-listen", "0.0.0.0:8089", "-key-file", "/run/secrets/meta_key", "-auth", "http+unix://auth.sock",
               "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
               "-cap-usd", "${RESCUE_CAP_USD:-1}", "-caller-cap-usd", "${RESCUE_CALLER_CAP_USD:-0.25}", "-min-servings", "${RESCUE_MIN_SERVINGS:-30}", "-trust-forwarded",
               # R1: the scan's route (barcode | vision) from analyze's events, for the scanner hint
@@ -167,6 +176,7 @@ services:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - v3rde_rescue:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/rescue:/events
+      - v3rde_sock:/sock
       - ${V3RDE_RUNS:-~/V3RDE_runs}/analyze:/analyze-events:ro
     depends_on: [auth, listings]
 
@@ -179,7 +189,7 @@ services:
               # FANOUT_PAGE_ID= (empty) also turns posting off.
               "-page-id", "${FANOUT_PAGE_ID-1415609644973410}", "-page-token-file", "/run/secrets/fb_page_token",
               "-link-base", "${FANOUT_LINK_BASE-https://icarus.thehungreeapp.com/l/}",
-              "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
+              "-auth", "http+unix://auth.sock", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
               "-cap-usd", "${FANOUT_CAP_USD:-1}", "-caller-cap-usd", "${FANOUT_CALLER_CAP_USD:-0.25}", "-sweep", "1m", "-trust-forwarded"]
     mem_limit: 224m
     volumes:
@@ -188,19 +198,21 @@ services:
       - ${V3RDE_CFG:-~/.config/v3rde}/fb_page_token:/run/secrets/fb_page_token:ro
       - v3rde_fanout:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/fanout:/events
+      - v3rde_sock:/sock
     depends_on: [auth, listings]
 
   voice:
     <<: *post
     entrypoint: ["/voice"]
     command: ["-listen", "0.0.0.0:8091", "-key-file", "/run/secrets/meta_key",
-              "-token-file", "/run/secrets/analyze_token", "-auth", "http://auth:8081", "-events", "/events",
+              "-token-file", "/run/secrets/analyze_token", "-auth", "http+unix://auth.sock", "-events", "/events",
               "-cap-usd", "${VOICE_CAP_USD:-1}", "-caller-cap-usd", "${VOICE_CALLER_CAP_USD:-0.25}", "-max-in-flight", "2", "-trust-forwarded"]
     mem_limit: 320m
     volumes:
       - ${V3RDE_CFG:-~/.config/v3rde}/meta_model_api_key:/run/secrets/meta_key:ro
       - ${V3RDE_CFG:-~/.config/v3rde}/analyze_token:/run/secrets/analyze_token:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/voice:/events
+      - v3rde_sock:/sock
     depends_on: [auth]
 
   # Telemetry: one sidecar per service (in its PID namespace) + the ledger.
@@ -254,8 +266,9 @@ services:
   ledger:
     <<: *sidecar
     entrypoint: ["/ledger"]
-    command: ["-spool", "/spool", "-dir", "/ledger-data", "-listen", "0.0.0.0:8086"]
-    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/telemetry:/spool:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/ledger:/ledger-data"]
+    # US: the socket only (no TCP port)
+    command: ["-spool", "/spool", "-dir", "/ledger-data", "-listen", "", "-socket", "/sock/ledger.sock"]
+    volumes: ["${V3RDE_RUNS:-~/V3RDE_runs}/telemetry:/spool:ro", "${V3RDE_RUNS:-~/V3RDE_runs}/ledger:/ledger-data", "v3rde_sock:/sock"]
 
 # Explicit names: the volumes are v3rde_auth ... (not v3rde_v3rde_auth).
 
@@ -284,3 +297,4 @@ volumes:
   v3rde_listings: {name: v3rde_listings}
   v3rde_rescue: {name: v3rde_rescue}
   v3rde_fanout: {name: v3rde_fanout}
+  v3rde_sock: {name: v3rde_sock}   # US: the unix sockets of auth, gate, barcode and ledger (only the stack's own services mount it)

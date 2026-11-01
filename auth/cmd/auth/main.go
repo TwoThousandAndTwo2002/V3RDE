@@ -11,6 +11,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -26,6 +27,9 @@ var build = "dev"
 
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8081", "address to listen on")
+	// US (T9 2026-11-01: "the unix sockets within the box"): -listen "" with -socket = the socket only
+	socket := flag.String("socket", "", "US: also answer on this unix socket (the shared volume /sock); \"\" = no socket")
+	probe := flag.String("probe-socket", "", "US: GET /healthz over this unix socket, print the answer and exit (the stack check)")
 	dbPath := flag.String("db", "./auth.json", "the data file (on a mounted volume in the container)")
 	secure := flag.Bool("cookie-secure", true, "set Secure on the session cookie (false only for plain http without Caddy)")
 	burst := flag.Int("rate-burst", 20, "signup + login tries per window per address")
@@ -40,6 +44,14 @@ func main() {
 	resetWindow := flag.Duration("reset-window", 15*time.Minute, "the window of -reset-burst")
 	resetIPBurst := flag.Int("reset-ip-burst", 5, "reset requests per hour per address")
 	flag.Parse()
+	if *probe != "" {
+		body, err := auth.ProbeUnix(*probe, "/api/auth/healthz", 5*time.Second)
+		fmt.Println(body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
 	st, err := auth.Open(*dbPath)
 	if err != nil {
@@ -58,8 +70,8 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: h, ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("v3rde-auth listening on %s db=%s cookie-secure=%v events=%q reset-mail=%v build=%s", *listen, *dbPath, *secure, *events, cfg.Mailer != nil, build)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	log.Printf("v3rde-auth listening on %q socket=%q db=%s cookie-secure=%v events=%q reset-mail=%v build=%s", *listen, *socket, *dbPath, *secure, *events, cfg.Mailer != nil, build)
+	if err := auth.Serve(srv, *listen, *socket); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 }

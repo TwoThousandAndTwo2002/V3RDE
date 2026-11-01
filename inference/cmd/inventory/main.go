@@ -69,6 +69,7 @@ func main() {
 	learnDir := flag.String("learn-dir", "", "LR3: the stored learn reports (cmd/learn), read-only; empty = no route")
 	adminsFile := flag.String("admins-file", "", "LR3: a file of the admin accounts' user ids (auth's id; comma-separated or one per line) that may read the learn reports; empty or no file = no admin")
 	flag.Parse()
+	analyze.EnableUnixURLs(analyze.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 
 	admins := ""
 	if *adminsFile != "" {

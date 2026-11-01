@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /calibrate ./cmd/calibrate \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /learn ./cmd/learn \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /touchupcompare ./cmd/touchupcompare \
- && mkdir -p /events && chown 65534:65534 /events
+ && mkdir -p /events /sock && chown 65534:65534 /events /sock
 
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
@@ -32,6 +32,8 @@ COPY --from=build /learn /learn
 COPY --from=build /touchupcompare /touchupcompare
 COPY --from=build /src/inference/third_party/SAM_LICENSE.txt /licenses/SAM_LICENSE.txt
 COPY --from=build --chown=65534:65534 /events /events
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 # The box has 1.9 GiB: the Go heap aims to stay under this (a soft limit).
 ENV GOMEMLIMIT=400MiB

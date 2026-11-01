@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
 ARG BUILD=dev
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod mkdir -p /out \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /out/ ./cmd/... \
- && mkdir -p /data /events && chown 65534:65534 /data /events
+ && mkdir -p /data /events /sock && chown 65534:65534 /data /events /sock
 
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
@@ -38,6 +38,8 @@ COPY --from=build /src/post/third_party/GO_AUDIO_LICENSE.txt /licenses/GO_AUDIO_
 COPY inference/third_party/SAM_LICENSE.txt /licenses/SAM_LICENSE.txt
 COPY --from=build --chown=65534:65534 /data /data
 COPY --from=build --chown=65534:65534 /events /events
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 ENV GOMEMLIMIT=200MiB
 VOLUME ["/data", "/events"]

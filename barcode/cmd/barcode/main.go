@@ -60,11 +60,22 @@ func load(path, pin string, rows int) (barcode.Store, string, error) {
 
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8083", "address to listen on")
+	// US (T9 2026-11-01: "the unix sockets within the box"): -listen "" with -socket = the socket only
+	socket := flag.String("socket", "", "US: also answer on this unix socket (the shared volume /sock); \"\" = no socket")
+	probe := flag.String("probe-socket", "", "US: GET /healthz over this unix socket, print the answer and exit (the stack check)")
 	catalog := flag.String("catalog", "/assets/products.sqlite", "the catalog SQLite file")
 	pin := flag.String("catalog-sha256", pinCatalog, "the catalog's required sha256 (\"\" = no check)")
 	rows := flag.Int("rows", barcode.ExpectedRows, "the required row count (0 = no check)")
 	events := flag.String("events", "/events", "folder for events-YYYYMMDD.jsonl (a volume)")
 	flag.Parse()
+	if *probe != "" {
+		body, err := barcode.ProbeUnix(*probe, "/healthz", 5*time.Second)
+		fmt.Println(body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
 	if err := os.MkdirAll(*events, 0o755); err != nil {
 		log.Fatalf("events dir: %v", err)
@@ -81,8 +92,8 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: barcode.New(c), ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("v3rde-barcode listening on %s", *listen)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	log.Printf("v3rde-barcode listening on %q socket=%q", *listen, *socket)
+	if err := barcode.Serve(srv, *listen, *socket); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 }

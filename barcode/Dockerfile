@@ -22,11 +22,13 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
     go build -tags "sqlite sqlite_omit_load_extension" -trimpath \
       -ldflags="-s -w -X main.build=${BUILD} -linkmode external -extldflags -static" \
       -o /barcode ./cmd/barcode \
- && mkdir -p /events && chown 65534:65534 /events
+ && mkdir -p /events /sock && chown 65534:65534 /events /sock
 
 FROM scratch
 COPY --from=build /barcode /barcode
 COPY --from=build --chown=65534:65534 /events /events
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 VOLUME ["/events"]
 EXPOSE 8083

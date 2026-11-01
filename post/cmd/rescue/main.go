@@ -18,6 +18,8 @@ import (
 	"time"
 
 	"github.com/TwoThousandAndTwo2002/Icarus/post"
+
+	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
 var build = "dev" // -ldflags "-X main.build=<git sha>"
@@ -52,6 +54,7 @@ func main() {
 	jobTimeout := flag.Duration("job-timeout", 90*time.Second, "R4: one rescue job, every call included")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
 	flag.Parse()
+	analyze.EnableUnixURLs(analyze.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 	post.TrustForwarded = *trustFwd
 
 	key, err := post.ReadSecret(*keyFile, "api key")

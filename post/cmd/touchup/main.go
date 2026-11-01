@@ -51,6 +51,7 @@ func main() {
 	analyzeEvents := flag.String("analyze-events", "", "X48o: the analyze events folder, read-only (the scan's item names); empty = the general concepts")
 	trustFwd := flag.Bool("trust-forwarded", false, "rate-limit by X-Forwarded-For (only behind Caddy, which sets it)")
 	flag.Parse()
+	analyze.EnableUnixURLs(analyze.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 	post.TrustForwarded = *trustFwd
 
 	key, err := post.ReadSecret(*keyFile, "api key")
