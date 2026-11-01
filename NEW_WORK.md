@@ -1992,3 +1992,15 @@ T9: "on mobile user is not able to upload a previously taken photo" (Android, Du
 
 - "Upload a photo" on the web now opens a real file field in the tap (not a hidden one with a made-up click), and the chosen photo goes straight to the upload step. A photo that cannot be read now says "The photo failed. Try again." in place of a silent wait.
 - Tests: mobile 170 -> 175.
+
+## 96. Touch-up: the choice closes the menu and the large photo shows it
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/src/screens/Review.tsx`, `mobile/tests/touchup.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X50a.md`
+
+T9: after picking the touched-up photo only the small picture changed; "the menu should collapse so that the user can see the photo large".
+
+- A tap on Original or Touched up closes More, and the large photo of the listing shows the photo that will post.
+- Tests: mobile 175 -> 176.

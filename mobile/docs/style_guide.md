@@ -343,6 +343,7 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - When the edit passed the food check: "Choose the photo to post:" and two photos side by side (`size.choiceThumb`, `radius.photo`), "Original" and "Touched up"; the chosen one has a `size.focusBorder` `accent` border. The original is chosen until the user taps the edit (a radio group).
 - When the check saw a change to the food: "The photo stays as it is: the check saw a change to the food." A failed job, the daily limit or a busy service each have one line; the Touch up pill stays, so the user can try again.
 - Post waits for a touch-up that runs ("Wait for the touch-up to end, then post.").
+- X50a (T9 Nov 1: "once that touched up picture is picked the menu should collapse so that the user can see the photo large"): a tap on Original or Touched up closes More (the phone sheet, or the open More of a wide screen). The large photo of the one-item form (the photo behind the phone sheet, the photo column of a wide screen) is the photo that posts; with several items, each card shows the photo of its item.
 
 ## Chat bar (`mobile/src/screens/Voice.tsx`, rules in `mobile/src/voice.ts`; X48s, the approved "V3RDE Chat Bar Mockup")
 

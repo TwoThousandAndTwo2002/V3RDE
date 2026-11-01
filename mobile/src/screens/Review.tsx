@@ -146,6 +146,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         const name = (x: "original" | "edit") => (x === "edit" ? "touched_up" : "original");
         if (t.chosen !== c) edits.current = addEdits(edits.current, [{ item: it.item, field: "photo", from: name(t.chosen), to: name(c), how: "hand" }]);
         setOne(it.item, { ...t, chosen: c });
+        closeMore(); // X50a (T9: "once that touched up picture is picked the menu should collapse so that the user can see the photo large")
       }} />
   ));
   // X49i: what More holds: Touch up, then the details at once (Change edits them in place)
@@ -173,6 +174,8 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   };
   const working = items.some((it) => touch[it.item]?.kind === "working"); // only items still in the list
   const editOf = (it: ItemForm) => { const t = touch[it.item]; return t?.kind === "offer" && t.chosen === "edit" ? t.id : undefined; };
+  const oneEdit = answer.items.length === 1 && items.length === 1 ? editOf(items[0]) : undefined; // X50a
+  const bigPhoto = usePhoto(oneEdit ? touchup.photoPath(oneEdit) : undefined);
   const postedSoFar = useRef(0); // the listings of this answer that are up (a second Post after a partial one adds to it)
   const told = useRef(false); // the label report goes one time for this answer
   const tell = (final: ItemForm[], outcome: LabelOutcome) => {
@@ -323,9 +326,12 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
   const title = one ? REVIEW.one : partial ? notPostedTitle(items.length) : foundTitle(items.length);
   const last = one ? 6 : 3 + items.length;
   const sheetItem = !wide ? items.find((x) => x.item === moreOpen && hasMore(x)) : undefined; // X49i: a phone opens More in a sheet
+  // X50a (T9: "the picture was not changed for the posting page"): the large photo shows the photo that posts. One item: the
+  // edit when the user chose it; several items: the scan (each card shows the photo of its item).
+  const bigUri = bigPhoto || shot.uri;
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={RN.Platform.OS === "ios" ? "padding" : undefined}>
-      <Sheet testID={one ? "your-listing" : "review-list"} kind="large" wide extraWide={column && items.length > 0} photo={shot.uri}>
+      <Sheet testID={one ? "your-listing" : "review-list"} kind="large" wide extraWide={column && items.length > 0} photo={bigUri}>
         <View style={{ flexShrink: 1, flexGrow: 1 }}>
           <Rise i={0}><Title style={{ marginBottom: space.hair }}>{title}</Title></Rise>
           {one ? null : <Rise i={1}><Muted>{REVIEW.check}</Muted></Rise>}
@@ -334,7 +340,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
             <View style={{ flexDirection: "row", gap: space.foot, alignItems: "flex-start", marginTop: space.inset, flexShrink: 1, minHeight: 0 }}>
               {/* X49 (option A): the scan photo is as high as the column */}
               <View style={{ flex: 1, minWidth: 0, alignSelf: "stretch", alignItems: "flex-start" }}>
-                <Image source={{ uri: shot.uri }} resizeMode="cover"
+                <Image source={{ uri: bigUri }} resizeMode="cover"
                   style={{ height: "100%", aspectRatio: size.scanPhoto, maxWidth: "100%", borderRadius: radius.card }} /></View>
               <View style={{ flex: 1, minWidth: 0, alignSelf: "stretch" }}>
                 <SheetBody>{fields}{items.length > 0 && !column ? chat.thread : null}</SheetBody>
