@@ -2041,3 +2041,15 @@ From the security assessment (F4, Medium): the edge sent no security headers.
 
 - Every answer now has nosniff, a Referrer-Policy, X-Frame-Options SAMEORIGIN and HSTS for one day, and the edge no longer names itself. This is also true for the edge's own error answers. A Content Security Policy is sent as Report-Only: the browser reports what it would block and blocks nothing, until the reports are checked.
 - Tests: mobile 176 -> 180.
+
+## 100. Security F10: the Go services drop all capabilities
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `deploy/docker-compose.yml`, `mobile/tests/compose.test.mts` (new), `mobile/package.json`
+**Sources:** `docs/sources/X54.md`
+
+From the security assessment (F10, container hardening): no service dropped Linux capabilities or blocked new privileges.
+
+- The Go services, their sidecars and the ledger (all run as uid 65534) now drop all Linux capabilities and cannot gain new privileges. Caddy and the translation job run as root and stay as they are.
+- Tests: mobile 180 -> 182.
