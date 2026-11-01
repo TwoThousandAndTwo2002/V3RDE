@@ -18,6 +18,7 @@ import { CameraBtn, CardDialog, ErrorText, Hint, Muted, Pill, Progress, Rise, Ro
 import { useSession } from "../session";
 import { CAPTURE } from "../words";
 import Review from "./Review";
+import { canDecode, isImageFile, pickImageWeb } from "../webpick";
 
 /** The retail barcodes the catalog knows (EAN and UPC). */
 const CODES: BarcodeType[] = ["ean13", "ean8", "upc_a", "upc_e"];
@@ -137,6 +138,13 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
 
   const pick = async () => {
     if (shooting.current) return; // not while a photo is on its way
+    if (RN.Platform.OS === "web") { // X50c: a real file field, opened in the tap (webpick.ts)
+      const f = await pickImageWeb();
+      if (!f) return;
+      if (!isImageFile(f) || !(await canDecode(f))) return setProblem(CAPTURE.shotFailed); // X50c review: a photo the browser cannot read
+      try { await take(keep(URL.createObjectURL(f))); } catch { setProblem(CAPTURE.shotFailed); } // keep: freed at Start over and at the end
+      return;
+    }
     try {
       const r = await Picker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
       if (!r.canceled && r.assets?.[0]) await take(r.assets[0].uri);
@@ -202,7 +210,9 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
     const dropped = (e: DragEvent) => {
       e.preventDefault(); setDropping(false);
       const file = e.dataTransfer?.files?.[0];
-      if (!shot && file && file.type.startsWith("image/")) take(URL.createObjectURL(file));
+      if (!shot && file && file.type.startsWith("image/")) { // X50c review: freed later; a photo the browser cannot read is refused
+        canDecode(file).then((ok) => (ok ? take(keep(URL.createObjectURL(file))) : setProblem(CAPTURE.shotFailed)));
+      }
     };
     for (const [name, fn] of [["dragover", over], ["dragleave", leave], ["drop", dropped]] as const) window.addEventListener(name, fn as EventListener);
     return () => {

@@ -1980,3 +1980,15 @@ T9: "after user selects rescue and backs out the results should be cached"; "acc
 - The service already kept one rescue for each listing, but a listing with no pickup place asked for the location again on each open. Now the stored rescue comes back at once, with no model call, and the app shows a finished rescue again with no wait.
 - Every place that the food directory or the web search finds goes into one store on the server, by area. When the directory has nothing for an area, the stored places of the last 30 days are used and the paid web search does not run.
 - Tests: post 97 -> 102, mobile 169 -> 170.
+
+## 95. Upload a photo: a sure way to open the photo picker on phones
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/src/webpick.ts` (new), `mobile/src/screens/Capture.tsx`, `mobile/tests/webpick.test.mts` (new), `mobile/package.json`, `i18n/rules.json`, `mobile/web-dist/`
+**Sources:** `docs/sources/X50c.md`
+
+T9: "on mobile user is not able to upload a previously taken photo" (Android, DuckDuckGo).
+
+- "Upload a photo" on the web now opens a real file field in the tap (not a hidden one with a made-up click), and the chosen photo goes straight to the upload step. A photo that cannot be read now says "The photo failed. Try again." in place of a silent wait.
+- Tests: mobile 170 -> 175.

@@ -10,6 +10,7 @@
     {"file": "maps.ts", "text": "the map did not load", "why": "X49x: a Maps load error, never shown"},
     {"file": "maps.ts", "text": "the address has no point", "why": "X49x: a Places error, never shown"},
     {"file": "logic.ts", "text": "{path}?since={v}&wait={SCAN_HOLD_MS}", "why": "X49x: the poll URL of a scan job, not text"},
+    {"file": "webpick.ts", "why": "X50c: the file field's MIME type, attributes and CSS; no app text"},
     {"file": "lang.ts", "why": "X49x: the language code itself (the names of the languages come from /i18n/index.json) and regular expressions; no app text"}
   ]
 }

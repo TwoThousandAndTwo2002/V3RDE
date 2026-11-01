@@ -30,7 +30,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "node --no-warnings --experimental-strip-types --import ./tests/resolve.mjs --test --test-reporter=tap tests/wav.test.mts tests/clipsession.test.mts tests/logic.test.mts tests/style.test.mts tests/automata.test.mts tests/signin.test.mts tests/reset.test.mts tests/words.test.mts tests/listing.test.mts tests/capture.test.mts tests/touchup.test.mts tests/details.test.mts tests/place.test.mts tests/maps.test.mts tests/voice.test.mts tests/web.test.mts tests/webvoice.test.mts tests/rescue.test.mts tests/about.test.mts tests/keyboard.test.mts tests/lang.test.mts",
+    "test": "node --no-warnings --experimental-strip-types --import ./tests/resolve.mjs --test --test-reporter=tap tests/wav.test.mts tests/clipsession.test.mts tests/logic.test.mts tests/style.test.mts tests/automata.test.mts tests/signin.test.mts tests/reset.test.mts tests/words.test.mts tests/listing.test.mts tests/capture.test.mts tests/touchup.test.mts tests/details.test.mts tests/place.test.mts tests/maps.test.mts tests/voice.test.mts tests/web.test.mts tests/webvoice.test.mts tests/rescue.test.mts tests/about.test.mts tests/keyboard.test.mts tests/lang.test.mts tests/webpick.test.mts",
     "typecheck": "tsc --noEmit",
     "export:web": "expo export -p web",
     "web:build": "expo export -p web --output-dir web-dist",
