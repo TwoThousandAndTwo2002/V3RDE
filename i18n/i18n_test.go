@@ -184,7 +184,7 @@ func TestLanguages(t *testing.T) {
 			t.Errorf("%s: dir %s", g.Code, g.Dir)
 		}
 	}
-	if got := strings.Join(codes, " "); got != "en:source es-419:first pt-BR:target zh-Hans:target hi:target ar:target" || l.Source != "en" {
+	if got := strings.Join(codes, " "); got != "en:source es-419:first pt-BR:target zh-Hans:target hi:target ar:target yo:target" || l.Source != "en" {
 		t.Errorf("languages: %s", got)
 	}
 	en := read(t, "en.json")

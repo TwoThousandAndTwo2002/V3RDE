@@ -22,7 +22,7 @@ function Choices<T extends string | number>({ label, options, value, onChange }:
 }) {
   return (
     <View accessibilityRole="radiogroup" aria-label={label} style={{ gap: space.hair }}>
-      <Muted style={{ marginLeft: space.inset }}>{label}</Muted>
+      <Muted style={{ marginStart: space.inset }}>{label}</Muted>
       <Row tight style={{ flexWrap: "wrap", rowGap: space.inset }}>
         {options.map(([t, v]) => <ChipBtn key={t} title={t} name={t} on={value === v} onPress={() => onChange(value === v ? undefined : v)} />)}
       </Row>

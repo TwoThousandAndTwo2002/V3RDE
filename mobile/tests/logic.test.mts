@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, NO_ITEMS_TEXT, CLIENT, sendAgain, SEND_TRIES, SEND_AGAIN_MS, plural, foundTitle, postTitle, postingText,
+  answerToItems, labelReport, diffEdits, addEdits, clipBytes, fitReport, deviceLocale, analyzeKind, retryText, noItemsText, CLIENT, sendAgain, SEND_TRIES, SEND_AGAIN_MS, foundTitle, postTitle, postingText,
   notPostedTitle, postedSummary, itemPhotoPath, UPLOAD, streamTarget, sameTurn, targetSize, joinUrl, errorMessage,
   scanStep, scanPoll, itemDetails, notPostedItems, stillOpen, SCAN_HOLD_MS, SCAN_POLL_MS,
 } from "../src/logic.ts"; // run with Node type stripping
@@ -118,8 +118,8 @@ test("retryText: one cause, one sentence", () => {
     assert.match(retryText(status, body), kept);
     assert.doesNotMatch(retryText(status, body), /busy/);
   }
-  assert.doesNotMatch(NO_ITEMS_TEXT, /busy/);
-  assert.match(NO_ITEMS_TEXT, /^The scanner found no items in this photo\./);
+  assert.doesNotMatch(noItemsText(), /busy/);
+  assert.match(noItemsText(), /^The scanner found no items in this photo\./);
 });
 
 test("sendAgain: only a lost connection, with time left", () => {
@@ -134,8 +134,11 @@ test("sendAgain: only a lost connection, with time left", () => {
 });
 
 test("the words of the review list", () => {
-  assert.equal(plural(1, "item", "items"), "1 item");
+  assert.equal(foundTitle(1), "1 item found"); // X49x: whole messages (COUNT, words.ts), the same English
   assert.equal(foundTitle(3), "3 items found");
+  assert.equal(postTitle(4), "Post 4 listings");
+  assert.equal(postedSummary(1, 1), "1 listing posted. 1 item is kept here; try again.");
+  assert.equal(postedSummary(2, 3), "2 listings posted. 3 items are kept here; try again.");
   assert.equal(postTitle(1), "Post 1 listing");
   assert.equal(postingText(3, 6), "Posting 3 of 6…");
   assert.equal(notPostedTitle(1), "1 item not posted");

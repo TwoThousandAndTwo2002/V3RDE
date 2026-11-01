@@ -35,7 +35,7 @@ func run(repo, commit, asJSON string) error {
 	var oldEn i18n.EnFile
 	var oldG i18n.GraphFile
 	var ctx i18n.ContextFile
-	for p, v := range map[string]any{"source.json": &src, "rules.json": &lists, "en.json": &oldEn, "graph.json": &oldG, "context.json": &ctx} {
+	for p, v := range map[string]any{"source.json": &src, "rules_ui.json": &lists, "en.json": &oldEn, "graph.json": &oldG, "context.json": &ctx} {
 		if err := i18n.ReadJSON(p, v); err != nil {
 			return fmt.Errorf("%s: %v", p, err)
 		}

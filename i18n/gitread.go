@@ -102,7 +102,9 @@ func Build(repo, dir string) (en, skipped, graph []byte, n int, err error) {
 	if err = ReadJSON(filepath.Join(dir, "source.json"), &src); err != nil {
 		return
 	}
-	if err = ReadJSON(filepath.Join(dir, "rules.json"), &lists); err != nil {
+	// X49x: the rules of the ui commit in source.json stay as they were (rules_ui.json); rules.json is for the
+	// app of the deployed tree (cmd/round), whose files and texts moved on.
+	if err = ReadJSON(filepath.Join(dir, "rules_ui.json"), &lists); err != nil {
 		return
 	}
 	files, err := ReadSource(repo, src)

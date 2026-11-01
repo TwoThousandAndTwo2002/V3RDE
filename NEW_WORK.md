@@ -1941,3 +1941,19 @@ T9, from the tester feedback; T9 approved the "V3RDE Batch 1 Mockup" v3.
 - A new account's email must have a real form (name@domain.ending, any country). Sign-in and the password reset keep the earlier check, so older accounts still sign in and get a reset link.
 - Tests: mobile 153 -> 159, auth 32 -> 33.
 
+
+## 92. The app in your language: Spanish, Portuguese, Chinese, Hindi, Arabic and Yoruba
+
+**When:** Nov 1 2026.
+**Meta models:** none in the app; the translations come from the rounds (Muse Spark Open, Muse Spark 1.3 as a judge).
+**Files:** `mobile/src/lang.ts` (new), `mobile/src/language.tsx` (new), `mobile/App.tsx`, `mobile/src/words.ts`, `mobile/src/signin.ts`, `mobile/src/capture.ts`, `mobile/src/logic.ts`, `mobile/src/rescue.ts`, `mobile/src/place.ts`, `mobile/src/api.ts`, `mobile/src/clipsession.ts`, `mobile/src/voicerec.ts`, `mobile/src/webvoice.ts`, `mobile/src/ui.tsx`, `mobile/src/theme.ts`, `mobile/src/screens/Login.tsx`, `mobile/src/screens/Role.tsx`, `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Details.tsx`, `mobile/src/screens/Pickup.tsx`, `mobile/src/screens/Reset.tsx`, `mobile/src/screens/Review.tsx`, `mobile/public/about/index.html`, `mobile/docs/style_guide.md`, `mobile/package.json`, `mobile/tests/lang.test.mts` (new), `mobile/tests/resolve.mjs` (new), `mobile/tests/app_texts.json` (new), `mobile/tests/logic.test.mts`, `mobile/tests/about.test.mts`, `i18n/languages.json`, `i18n/rules.json`, `i18n/rules_ui.json` (new), `i18n/gitread.go`, `i18n/cmd/graph/main.go`, `i18n/i18n_test.go`, `i18n/tables_test.go` (new), `mobile/web-dist/`
+**Sources:** `docs/sources/X49x.md`
+
+T9; T9 approved the "V3RDE Language Mockup" v2.
+
+- A language button (a globe and the language's name) on the sign-in screen, next to About, and in the menu, above Log out. It opens the list of languages; a tap changes every screen at once and the browser keeps the choice. The first language is the browser's language when the app has it.
+- The app shows the translations that the box publishes after each translation round. A text with no translation yet stays English.
+- Arabic reads right to left.
+- Every app text is now one whole message in a word table, so each language can say it its way (for example "1 item found" and "3 items found"). The next round translates the 57 new texts.
+- Yoruba joins the translation rounds. The About page says "Seven languages".
+- Tests: mobile 159 -> 169, i18n 64 -> 66.

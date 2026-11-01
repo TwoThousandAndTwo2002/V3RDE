@@ -269,14 +269,14 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       onChangeText={(t) => change(now.current.items, t.replace(/\n/g, " "), "hand")} />
   );
   const pickupMark = chat.pickupMarked ? (
-    <Muted style={{ color: col.link, marginTop: space.hair, marginLeft: space.inset }}>{VOICE.markPickup}</Muted>
+    <Muted style={{ color: col.link, marginTop: space.hair, marginStart: space.inset }}>{VOICE.markPickup}</Muted>
   ) : null;
   // X49j: the pickup part: the address (then the map), the safety line, then the instructions; or the X49e row
   const pickupPart = byAddress ? (
     <>
       <PickupAddress mapsKey={mapsKey} picked={picked} onPicked={(a) => { setPicked(a); setNeedAddress(false); }} locked={sending} onNaming={setNaming}
         onFail={() => { setMapsKey(""); setPicked(null); }} need={needAddress} needSeq={needSeq} />
-      <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.safety}</Muted>
+      <Muted lines={2} style={{ marginTop: space.hair, marginStart: space.inset }}>{PICKUP.safety}</Muted>
       <View style={{ marginTop: space.group }}>{pickupField}</View>{pickupMark}
     </>
   ) : <>{pickupField}{pickupMark}</>; // X49q: no "Pickup place" row: the location is taken at Post
@@ -290,10 +290,10 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         <Rise i={2}><Field testID="title" label={REVIEW.title} value={it.title} maxLength={LIMITS.title} returnKeyType="next"
           onSubmitEditing={() => pickupBox.current?.focus()}
           onChangeText={(t) => set({ title: t })} /></Rise>
-        {note ? <Rise i={3}><Muted style={{ marginTop: space.inset, marginLeft: space.inset }}>{note}</Muted></Rise> : null}
+        {note ? <Rise i={3}><Muted style={{ marginTop: space.inset, marginStart: space.inset }}>{note}</Muted></Rise> : null}
         {hasMore(it) ? <Rise i={3}><View style={{ marginTop: space.inset }}>{moreFor(it, 1)}</View></Rise> : null}
         <Rise i={4}>
-          <Muted style={{ marginTop: space.group, marginLeft: space.inset, marginBottom: space.hair }}>{REVIEW.servings}</Muted>
+          <Muted style={{ marginTop: space.group, marginStart: space.inset, marginBottom: space.hair }}>{REVIEW.servings}</Muted>
           <Row>
             <IconBtn big glyph="minus" label={REVIEW.fewer} onPress={() => set({ servings: stepServings(it.servings, -1) })} />
             <View style={{ flex: 1, minWidth: 0 }}>

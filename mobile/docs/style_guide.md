@@ -156,6 +156,7 @@ The glyphs are SVG paths with round ends (react-native-svg, MIT, https://github.
 | `glyph.pencil` | M13.5 3 L17 6.5 L7 16.5 H3.5 V13 Z | X49 (T9, Oct 30) | Change (the details column) |
 | `glyph.pin` | M10 18.5 C10 18.5 3.5 12 3.5 7.5 A6.5 6.5 0 0 1 16.5 7.5 C16.5 12 10 18.5 10 18.5 Z M10 5.5 A2 2 0 1 0 10 9.5 A2 2 0 1 0 10 5.5 Z | X49j (the approved mockup v2) | the pin of the pickup map |
 | `glyph.locate` | M10 4 A6 6 0 1 0 10 16 A6 6 0 1 0 10 4 Z M10 1.5 V4 M10 16 V18.5 M1.5 10 H4 M16 10 H18.5 M10 8.5 A1.5 1.5 0 1 0 10 11.5 A1.5 1.5 0 1 0 10 8.5 Z | X49w (T9: an icon, not underlined text) | "Use my current location": an `IconBtn` (`size.iconSmall`) inside the address field |
+| `glyph.globe` | M10 2 A8 8 0 1 0 10 18 A8 8 0 1 0 10 2 Z M2 10 H18 M10 2 C6.5 5.5 6.5 14.5 10 18 M10 2 C13.5 5.5 13.5 14.5 10 18 | X49x (T9: the language choice on the sign-in screen and in the menu) | The language button: `glyph.globe` in `link` with the name of the language now, in that language |
 
 ## Shade (`shade`)
 
@@ -366,3 +367,9 @@ A static page next to the app (not in the app bundle): the web build copies `mob
 ## Mockups
 
 A new or changed screen is shown to T9 before its code change: rendered from the real parts in a copy of the app, exported for the web and captured with Playwright (phone 390 × 844 at 3×, desktop 1440 × 900 at 2×), with real photos. The review page shows phone shots at true size. Nothing is drawn by hand, and nothing is stretched. An independent check compares the shots with the approved shots.
+
+## Language (X49x)
+- T9 (Nov 1): the language choice is on the sign-in screen (the bottom row: the one link that helps at the start; the language button and About at the end) and in the role sheet (above Log out). The desktop top bar does not change.
+- The language button: `glyph.globe` and the short name of the language now, in that language, with no region (T9: "español", not "español (Latinoamérica)"; "中文"), in `link` with `type.button`; its name for screen readers is "Language: <name>". It does not show when the box publishes only English.
+- The language sheet: a `Popup` with the title "Language" and one row for each language: the name in that language (`type.button`, `fg`), the English name at the end (`muted`); the language now has the `accent` line (as a chosen role card). A tap puts every screen in that language at once and keeps the choice in the browser.
+- Every app text is in a word table (an exported object, for example `SIGN_IN` or `COUNT`), as one whole message for each case (no joined parts). The layout uses start and end (`marginStart`, `paddingEnd`, `end`, text align start) in place of left and right, so Arabic reads right to left; the camera buttons and the safe-area padding keep their sides.

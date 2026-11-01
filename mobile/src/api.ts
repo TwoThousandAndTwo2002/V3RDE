@@ -11,6 +11,7 @@ import { Platform as RN } from "react-native";
 import { CLIENT, SCAN_WAIT_MS, SEND_AGAIN_MS, errorMessage, joinUrl, scanPoll, scanStep, sendAgain } from "./logic";
 import { placeFields, placeQuery, type Place } from "./place";
 import { RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "./rescue";
+import { NET } from "./words";
 
 export const API_BASE: string = RN.OS === "web" ? "" : (process.env.EXPO_PUBLIC_API_BASE ?? "");
 
@@ -71,7 +72,7 @@ async function request<T>(method: string, path: string, opt: Options = {}): Prom
     res = await fetch(joinUrl(API_BASE, path), { method, headers, body: payload, credentials: "include", signal: abort.signal });
   } catch (err) {
     const timedOut = (err as { name?: string } | null)?.name === "AbortError";
-    throw new ApiError(0, timedOut ? "Timed out, try again" : "Network error, check the connection",
+    throw new ApiError(0, timedOut ? NET.timedOut : NET.offline,
       { code: timedOut ? CLIENT.timeout : CLIENT.offline });
   } finally {
     clearTimeout(timer);
@@ -161,7 +162,7 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
     } catch (err) {
       if (!(err instanceof ApiError && sendAgain(err.body?.code, n, Date.now(), until, stop()))) throw err;
       await new Promise((go) => setTimeout(go, SEND_AGAIN_MS));
-      if (stop()) throw new ApiError(0, "Stopped"); // the user went back while it waited
+      if (stop()) throw new ApiError(0, NET.stopped); // the user went back while it waited
     }
   }
   if (typeof started?.scan_id !== "string") return started; // a service without the job route answers at once
@@ -170,8 +171,8 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
   for (let first = true; ; first = false) {
     const next = scanPoll(path, job, first);
     if (next.sleepMs > 0) await new Promise((go) => setTimeout(go, next.sleepMs));
-    if (stop()) throw new ApiError(0, "Stopped");
-    if (Date.now() > until) throw new ApiError(0, "Timed out, try again", { code: CLIENT.timeout });
+    if (stop()) throw new ApiError(0, NET.stopped);
+    if (Date.now() > until) throw new ApiError(0, NET.timedOut, { code: CLIENT.timeout });
     try {
       job = await request<unknown>("GET", next.path, { timeoutMs: next.timeoutMs });
     } catch (err) {
@@ -180,7 +181,7 @@ export async function analyze(photo: Upload, barcode = "", capture?: Record<stri
         continue;
       }
       // 404: the job is gone (the service started again); the user tries again with the photo that is kept
-      if (err instanceof ApiError && err.status === 404) throw new ApiError(0, "Try again", { code: CLIENT.lost });
+      if (err instanceof ApiError && err.status === 404) throw new ApiError(0, NET.tryAgain, { code: CLIENT.lost });
       throw err; // 401: signed out
     }
     const step = scanStep(job);
@@ -201,8 +202,8 @@ export const rescue = Object.freeze({
     let r = first;
     while (r.status === "running") {
       await new Promise((go) => setTimeout(go, RESCUE_POLL_MS));
-      if (stop()) throw new ApiError(0, "Stopped");
-      if (Date.now() > until) throw new ApiError(0, "Timed out, try again");
+      if (stop()) throw new ApiError(0, NET.stopped);
+      if (Date.now() > until) throw new ApiError(0, NET.timedOut);
       try {
         r = await rescue.get(r.rescue_id);
       } catch (err) {
@@ -257,12 +258,12 @@ export const photoUrl = (path: string): Promise<string> => {
   if (known) return known;
   const load = fetch(joinUrl(API_BASE, path), { headers: TUNNEL_HEADERS, credentials: "include" })
     .then(async (res) => {
-      if (!res.ok) throw new ApiError(res.status, "photo " + res.status);
+      if (!res.ok) throw new ApiError(res.status, NET.photo);
       const blob = await res.blob();
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error("photo read failed"));
+        reader.onerror = () => reject(new Error(NET.photo));
         reader.readAsDataURL(blob);
       });
     });

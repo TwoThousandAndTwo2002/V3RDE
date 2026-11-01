@@ -9,7 +9,7 @@ import * as RN from "react-native";
 import { CameraView, useCameraPermissions as useCameraAccess, type BarcodeScanningResult, type BarcodeType } from "expo-camera";
 import * as Picker from "expo-image-picker";
 import { ApiError, analyze, type Upload } from "../api";
-import { NO_ITEMS_TEXT, analyzeKind, answerToItems, retryText, type AnalyzeKind, type ItemForm } from "../logic";
+import { analyzeKind, noItemsText, answerToItems, retryText, type AnalyzeKind, type ItemForm } from "../logic";
 import { SHOT_QUALITY, analyzeShare, barcodeOf, elapsedText } from "../capture";
 import { asUri, fromBlob, fromUri } from "../photo";
 import { freeze, raise, still, unfreeze, videoIn, videoState } from "../webcam";
@@ -173,7 +173,7 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
       const body = await analyze(up, code, how.current, stale);
       if (stale()) return;
       const items = answerToItems(body);
-      if (items.length === 0) { setStep({ kind: "ask" }); setProblem(NO_ITEMS_TEXT); return; }
+      if (items.length === 0) { setStep({ kind: "ask" }); setProblem(noItemsText()); return; }
       setStep({ kind: "found", answer: { requestId: typeof body?.request_id === "string" ? body.request_id : "", items,
         source: typeof body?.source === "string" ? body.source : "" } });
     } catch (err) {

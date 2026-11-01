@@ -11,6 +11,7 @@ import { space } from "../theme";
 import { AuthFrame } from "./AuthFrame";
 import { ABOUT_PATH, ABOUT_URL, RESET, SIGN_IN, cleanEmail, failure, formProblem, type Offer } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
+import { LanguageButton } from "../language";
 
 /** Opens the About page: the same tab on the web, the browser on a phone. */
 function openAbout() {
@@ -66,14 +67,17 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
           returnKeyType="go" submitBehavior="submit" blurOnSubmit={false} onSubmitEditing={() => submit("login")}
           right={<FieldButton title={visible ? SIGN_IN.hide : SIGN_IN.show} label={visible ? SIGN_IN.hideName : SIGN_IN.showName}
             onPress={() => setVisible((v) => !v)} />} />
-        <Muted style={{ marginTop: space.inset, marginLeft: space.inset }}>{SIGN_IN.rule}</Muted>
-        {problem ? <ErrorText style={{ marginLeft: space.inset }}>{problem}</ErrorText> : null}
+        <Muted style={{ marginTop: space.inset, marginStart: space.inset }}>{SIGN_IN.rule}</Muted>
+        {problem ? <ErrorText style={{ marginStart: space.inset }}>{problem}</ErrorText> : null}
         {/* X49w: one row on the same left edge as the notes: the one link that helps (or none), and About at the right */}
         <View style={{ marginTop: space.gap, marginHorizontal: space.inset, flexDirection: "row", justifyContent: "space-between" }}>
           {offer === "create" ? <TextLink testID="create" onPress={() => submit("signup")}>{SIGN_IN.create}</TextLink>
             : offer === "forgot" ? <TextLink testID="forgot" onPress={() => busy.current || onForgot()}>{RESET.forgot}</TextLink>
             : <View />}
-          <TextLink testID="about" onPress={openAbout}>{SIGN_IN.about}</TextLink></View>
+          {/* X49x: the language choice, then About, at the end of the row */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: space.group }}>
+            <LanguageButton />
+            <TextLink testID="about" onPress={openAbout}>{SIGN_IN.about}</TextLink></View></View>
       </View>
     </View>
   );

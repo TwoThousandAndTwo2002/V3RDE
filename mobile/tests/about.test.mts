@@ -197,16 +197,16 @@ test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
 const ARCH = BODY.slice(BODY.indexOf('<section aria-labelledby="h-arch">'), BODY.indexOf('<section aria-labelledby="h-num">'));
 const RIGHT = "M2 10 H17 M12 5 L17 10 L12 15", DOWN = "M10 2 V17 M5 12 L10 17 L15 12";
 
-test("the problem is stated, with the six languages and Rescue", () => {
+test("the problem is stated, with the seven languages and Rescue", () => {
   const text = BODY.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
   assert.match(text, /Posting food should take seconds/);
   assert.match(text, /V3RDE uses Meta's AI models to do that work for you/);
   assert.match(text, /Nothing left behind/);
-  // The six languages are the ones of i18n/languages.json, by name and count.
+  // The seven languages are the ones of i18n/languages.json, by name and count (X49x: T9 added Yoruba).
   const langs = JSON.parse(readFileSync(join(ROOT, "../i18n/languages.json"), "utf8")).languages as { name: string }[];
-  assert.equal(langs.length, 6);
+  assert.equal(langs.length, 7);
   for (const l of langs) assert.ok(text.includes(l.name.split(" (")[0]), "the page names " + l.name);
-  assert.match(text, /Six languages/);
+  assert.match(text, /Seven languages/);
 });
 
 test("How it is built: one drawing always open, three that open on a tap", () => {

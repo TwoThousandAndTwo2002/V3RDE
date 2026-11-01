@@ -13,13 +13,14 @@ import { LIMITS } from "./capture";
 import { revealOnFocus, useKeyboardInset } from "./keyboard";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 import { typeDelay } from "./details";
+import { CAPTURE, CARD } from "./words";
 
 // ---------------------------------------------------------------- text
 
 export function Title({ children, center, style }: { children: React.ReactNode; center?: boolean; style?: StyleProp<TextStyle> }) {
   const col = useColors();
   return (
-    <Text accessibilityRole="header" style={[type.title, { color: col.fg, textAlign: center ? "center" : "left" }, style]}>
+    <Text accessibilityRole="header" style={[type.title, { color: col.fg, textAlign: center ? "center" : START }, style]}>
       {children}
     </Text>
   );
@@ -35,7 +36,7 @@ export function Muted({ children, style, lines, center }: {
 }) {
   const col = useColors();
   return (
-    <Text numberOfLines={lines} style={[type.body, { color: col.muted, textAlign: center ? "center" : "left" }, style]}>
+    <Text numberOfLines={lines} style={[type.body, { color: col.muted, textAlign: center ? "center" : START }, style]}>
       {children}
     </Text>
   );
@@ -47,7 +48,7 @@ export function ErrorText({ children, center, lines, style }: {
   const col = useColors();
   return (
     <Text accessibilityRole="alert" numberOfLines={lines}
-      style={[type.body, { color: col.danger, textAlign: center ? "center" : "left", marginTop: space.gap }, style]}>
+      style={[type.body, { color: col.danger, textAlign: center ? "center" : START, marginTop: space.gap }, style]}>
       {children}
     </Text>
   );
@@ -55,13 +56,16 @@ export function ErrorText({ children, center, lines, style }: {
 
 // ---------------------------------------------------------------- icons and buttons
 
-export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil" | "pin" | "locate";
+/** X49x: text starts at the start side of the language (left, or right for Arabic); react-native-web flips "start". */
+const START = "start" as unknown as TextStyle["textAlign"];
+
+export type Glyph = "close" | "minus" | "plus" | "upload" | "give" | "receive" | "menu" | "mic" | "stop" | "sparkle" | "info" | "pencil" | "pin" | "locate" | "globe";
 
 /** The square box of each glyph (pt). */
 const GLYPH_BOX: Record<Glyph, number> = {
   close: glyph.box, minus: glyph.box, plus: glyph.box, upload: glyph.uploadBox, give: glyph.iconBox, receive: glyph.iconBox, menu: glyph.iconBox,
   mic: glyph.iconBox, stop: glyph.iconBox, sparkle: glyph.iconBox, info: glyph.iconBox, pencil: glyph.iconBox, pin: glyph.iconBox,
-  locate: glyph.iconBox,
+  locate: glyph.iconBox, globe: glyph.iconBox,
 };
 
 /** A line glyph (close ✕, minus −, plus +, upload, give, receive, menu ☰): one SVG path with round ends, in its own square box. */
@@ -154,7 +158,7 @@ export function CameraBtn({ glyph, label, onPress, style }: { glyph: Glyph; labe
 }
 
 /** The shutter: a white ring around a white disc, centred at the bottom of the camera (or of the dialog photo). */
-export function Shutter({ onPress, label = "Take photo", bottom = camera.shutterBottom }: { onPress: () => void; label?: string; bottom?: number }) {
+export function Shutter({ onPress, label = CAPTURE.shoot, bottom = camera.shutterBottom }: { onPress: () => void; label?: string; bottom?: number }) {
   const col = useColors();
   const inner = camera.shutter - 2 * (camera.shutterRing + camera.shutterGap);
   return (
@@ -225,22 +229,22 @@ export function Field({ label, multiline, center, right, style, onFocus, onBlur,
       style={[type.body, {
         color: col.fg, backgroundColor: col.card,
         borderWidth: focused ? size.focusBorder : size.border, borderColor: focused ? col.accent : col.line,
-        borderRadius: radius[multiline ? "card" : "round"], paddingLeft: size.fieldPadX,
-        paddingRight: right ? size.fieldSlot : size.fieldPadX,
-        height: multiline ? size.controlTall : size.control, textAlign: center ? "center" : "left",
+        borderRadius: radius[multiline ? "card" : "round"], paddingStart: size.fieldPadX,
+        paddingEnd: right ? size.fieldSlot : size.fieldPadX,
+        height: multiline ? size.controlTall : size.control, textAlign: center ? "center" : START,
         textAlignVertical: multiline ? "top" : "center", paddingTop: multiline ? size.fieldPadTop : 0,
       }, NO_RING, style]}
     />
   );
   const box = right ? (
     <View style={{ justifyContent: "center" }}>{input}
-      <View style={{ position: "absolute", right: space.gap }}>{right}</View>
+      <View style={{ position: "absolute", end: space.gap }}>{right}</View>
     </View>
   ) : input;
   if (!label) return box;
   return (
     <View>
-      <Muted style={{ marginLeft: space.inset, marginTop: space.item, marginBottom: space.hair }}>{label}</Muted>
+      <Muted style={{ marginStart: space.inset, marginTop: space.item, marginBottom: space.hair }}>{label}</Muted>
       {box}
     </View>
   );
@@ -382,7 +386,7 @@ export function Sheet({ kind, wide, extraWide, photo, children, testID, onClose,
   // onClose: a ✕ in the top corner, and a tap on the photo closes the sheet (people did not know the tap)
   const tapOut = onClose ? <Pressable accessible={false} onPress={onClose} style={StyleSheet.absoluteFill} /> : null;
   const cross = onClose ? (
-    <View style={{ position: "absolute", top: space.item, right: space.item }}>
+    <View style={{ position: "absolute", top: space.item, end: space.item }}>
       <IconBtn testID="sheet-close" glyph="close" label={closeName ?? ""} onPress={onClose} /></View>
   ) : null;
   if (dialogs) {
@@ -625,7 +629,7 @@ export function ListingCard({ photoPath, title, line, time, timeName, gone, tall
         </View>
         {extra /* R5 check: the actions stay at full strength on a gone card (4.5:1) */}
       </View>
-      {corner ? <View style={{ position: "absolute", top: space.inset, right: space.inset }}>{corner}</View> : null}
+      {corner ? <View style={{ position: "absolute", top: space.inset, end: space.inset }}>{corner}</View> : null}
     </View>
   );
 }
@@ -699,15 +703,15 @@ export function ReviewCard({ uri, n, title, servings, error, extra, onTitle, onS
       <Photo uri={uri} side={size.thumb} round="photo" style={{ alignSelf: "center" }} />
       <View style={{ flex: 1, gap: space.gap }}>
         <Row tight>
-          <View style={{ flex: 1 }}><Field accessibilityLabel={"Title of item " + n} value={title} onChangeText={onTitle} maxLength={LIMITS.title} /></View>
-          <IconBtn glyph="close" label={"Remove item " + n} onPress={onRemove} />
+          <View style={{ flex: 1 }}><Field accessibilityLabel={CARD.title(n)} value={title} onChangeText={onTitle} maxLength={LIMITS.title} /></View>
+          <IconBtn glyph="close" label={CARD.remove(n)} onPress={onRemove} />
         </Row>
         <Row tight>
-          <IconBtn glyph="minus" label={"Fewer servings of item " + n} onPress={onLess} />
+          <IconBtn glyph="minus" label={CARD.fewer(n)} onPress={onLess} />
           <View style={{ flex: 1 }}>
-            <Field accessibilityLabel={"Servings of item " + n} value={String(servings)} onChangeText={onServings} keyboardType="number-pad" center />
+            <Field accessibilityLabel={CARD.servings(n)} value={String(servings)} onChangeText={onServings} keyboardType="number-pad" center />
           </View>
-          <IconBtn glyph="plus" label={"More servings of item " + n} onPress={onMore} />
+          <IconBtn glyph="plus" label={CARD.more(n)} onPress={onMore} />
         </Row>
         {extra}
         {error ? <ErrorText lines={2}>{error}</ErrorText> : null}

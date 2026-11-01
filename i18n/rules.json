@@ -1,11 +1,15 @@
 {
-  "text": [
-    {"file": "logic.ts", "text": "listing", "why": "plural(): Post 1 listing"},
-    {"file": "logic.ts", "text": "listings", "why": "plural(): Post 3 listings"}
-  ],
+  "text": [],
   "not_text": [
     {"file": "wav.ts", "why": "WAV file header bytes"},
     {"file": "signin.ts", "text": "reset link expired", "why": "the auth service's error text, compared, never shown"},
-    {"file": "ui.tsx", "text": "[tabindex]:not([tabindex=\"-1\"]), button, input, textarea, a[href]", "why": "CSS selector of the focus trap"}
+    {"file": "ui.tsx", "text": "[tabindex]:not([tabindex=\"-1\"]), button, input, textarea, a[href]", "why": "CSS selector of the focus trap"},
+    {"file": "webcam.ts", "why": "X49x: canvas and blob errors of the camera frame; Capture shows CAPTURE.shotFailed, never these"},
+    {"file": "maps.ts", "text": "no map here", "why": "X49x: a Maps load error; Pickup only hides the map (onFail), never shows it"},
+    {"file": "maps.ts", "text": "the map did not load in time", "why": "X49x: a Maps load error, never shown"},
+    {"file": "maps.ts", "text": "the map did not load", "why": "X49x: a Maps load error, never shown"},
+    {"file": "maps.ts", "text": "the address has no point", "why": "X49x: a Places error, never shown"},
+    {"file": "logic.ts", "text": "{path}?since={v}&wait={SCAN_HOLD_MS}", "why": "X49x: the poll URL of a scan job, not text"},
+    {"file": "lang.ts", "why": "X49x: the language code itself (the names of the languages come from /i18n/index.json) and regular expressions; no app text"}
   ]
 }

@@ -11,15 +11,17 @@
 // it closes the microphone at once, and an automatic stop that ends after it
 // does not call onAutoStop.
 
+import { MIC } from "./words";
+
 export class ClipBusy extends Error {
   constructor() {
-    super("A recording is already running");
+    super(MIC.busy);
   }
 }
 
 export class ClipCancelled extends Error {
   constructor() {
-    super("The recording was cancelled");
+    super(MIC.cancelled);
   }
 }
 
@@ -105,7 +107,7 @@ export class ClipSession<C> {
       if (this.state === "stopped") this.reset();
       return d;
     }
-    if (this.state !== "recording" || !this.parts) return Promise.reject(new Error("Not recording"));
+    if (this.state !== "recording" || !this.parts) return Promise.reject(new Error(MIC.notRecording));
     this.clearTimer();
     const gen = this.gen;
     const d = this.parts.finish();

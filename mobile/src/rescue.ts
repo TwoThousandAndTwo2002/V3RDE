@@ -3,6 +3,7 @@
 // (R1-R4): POST /api/rescue/{listing_id}?async=1, then GET /api/rescue/{rescue_id} until done or failed.
 
 /** One place of a rescue answer. */
+import { UNITS } from "./words";
 export type RescuePlace = {
   id: string; name: string; type?: string; address?: string; phone?: string; distance_miles?: number;
   website?: string; email?: string; source?: string; source_url?: string; tel?: string; mailto?: string; directions?: string;
@@ -15,15 +16,16 @@ export type Rescue = {
 };
 
 /** The words of each place type (Feed America types and the web search types). */
-const TYPE_WORDS: Record<string, string> = {
+export const TYPE_WORDS: Record<string, string> = {
+  other: "Food program", // X49x: a type with no words of its own
   food_pantry: "Food pantry", pantry: "Food pantry", food_bank: "Food bank", mobile_pantry: "Mobile pantry",
   soup_kitchen: "Soup kitchen", meal_program: "Meal program", shelter: "Shelter",
 };
 
 /** "Food pantry · 0.5 mi" (the type, then the distance when the service has one). */
 export function placeLine(p: RescuePlace): string {
-  const kind = TYPE_WORDS[p.type ?? ""] ?? "Food program";
-  const d = typeof p.distance_miles === "number" && p.distance_miles > 0 ? (Math.round(p.distance_miles * 10) / 10) + " mi" : "";
+  const kind = (p.type && p.type !== "other" ? TYPE_WORDS[p.type] : undefined) ?? TYPE_WORDS.other;
+  const d = typeof p.distance_miles === "number" && p.distance_miles > 0 ? UNITS.miles(String(Math.round(p.distance_miles * 10) / 10)) : "";
   return d ? kind + " · " + d : kind;
 }
 
@@ -57,3 +59,6 @@ export function canRescue(l: { status: string; expires_at: string }, now = Date.
 /** The polls of a rescue job: once a second, up to RESCUE_WAIT_MS (the service job limit is 90 s). */
 export const RESCUE_POLL_MS = 1000;
 export const RESCUE_WAIT_MS = 100_000;
+
+/** X49x: the word tables of this file (src/lang.ts). */
+export const RESCUE_TABLES = { TYPE_WORDS } as unknown as Record<string, Record<string, unknown>>;

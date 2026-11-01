@@ -2,6 +2,7 @@
 // Pure functions (no React, no network), so the tests run them directly.
 
 /** The JPEG quality of a phone camera photo (kept quick; the upload is made again at UPLOAD.quality). */
+import { SOURCE_NOTE, UNITS } from "./words";
 export const SHOT_QUALITY = 0.7;
 
 /** The app waits this long for the analyze route (api.analyze); the progress bar fills in this time. */
@@ -14,7 +15,7 @@ export function analyzeShare(ms: number): number {
 
 /** Tenths of a second, counting up: "2.4 s". */
 export function elapsedText(ms: number): string {
-  return (Math.floor(Math.max(0, ms) / 100) / 10).toFixed(1) + " s";
+  return UNITS.seconds((Math.floor(Math.max(0, ms) / 100) / 10).toFixed(1));
 }
 
 /**
@@ -60,8 +61,8 @@ export function servingsInput(text: string): string {
 
 /** The line under the title of the one-item form: where the title came from. */
 export function sourceNote(barcode: string, description: string): string {
-  if (barcode) return "From the barcode " + barcode;
-  if (description) return "The scanner says: " + description;
+  if (barcode) return SOURCE_NOTE.barcode(barcode);
+  if (description) return SOURCE_NOTE.scanner(description);
   return "";
 }
 
@@ -79,3 +80,6 @@ export function weightProblem(text: string): string {
   const n = Number(t);
   return /^\d*\.?\d*$/.test(t) && t !== "." && Number.isFinite(n) && n >= 0 && n <= LIMITS.weightMax ? "" : FORM_WORDS.weight;
 }
+
+/** X49x: the word tables of this file (src/lang.ts). */
+export const CAPTURE_TABLES = { FORM_WORDS } as unknown as Record<string, Record<string, unknown>>;

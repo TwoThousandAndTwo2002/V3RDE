@@ -123,3 +123,6 @@ export function claimListing(url: string | null | undefined): string {
   const m = /^\/l\/(l_[0-9a-f]{16})\/?(?:[?#].*)?$/.exec(path);
   return m ? m[1] : "";
 }
+
+/** X49x: the word tables of this file (src/lang.ts). */
+export const SIGNIN_TABLES = { SIGN_IN, RESET } as unknown as Record<string, Record<string, unknown>>;

@@ -195,7 +195,7 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
   // X49w (T9: "a simple button to use current location ... an icon, i prefer this better than underlined text"):
   // a round icon button inside the field; while it works, the line under the field says so
   const hereBtn = <IconBtn testID="pickup-here" glyph="locate" label={finding ? PICKUP.finding : PICKUP.here} onPress={here} />;
-  const hereLink = finding ? <Muted style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.finding}</Muted> : null;
+  const hereLink = finding ? <Muted style={{ marginTop: space.hair, marginStart: space.inset }}>{PICKUP.finding}</Muted> : null;
   const suggestion = hit ? (
     <Pressable testID="pickup-suggestion" accessibilityRole="button" accessibilityLabel={hit.main + ", " + hit.secondary} onPress={choose}
       style={(state) => ({ marginTop: space.hair, paddingHorizontal: space.group, paddingVertical: space.inset, borderRadius: radius.card,
@@ -214,12 +214,12 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
         {editing ? (
           <>
             {field}{suggestion}
-            {problem ? <ErrorText>{problem}</ErrorText> : <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{naming ? PICKUP.naming : PICKUP.editHint}</Muted>}
+            {problem ? <ErrorText>{problem}</ErrorText> : <Muted lines={2} style={{ marginTop: space.hair, marginStart: space.inset }}>{naming ? PICKUP.naming : PICKUP.editHint}</Muted>}
             {hereLink}
           </>
         ) : (
           <>
-            <Muted style={{ marginLeft: space.inset, marginBottom: space.hair }}>{PICKUP.address}</Muted>
+            <Muted style={{ marginStart: space.inset, marginBottom: space.hair }}>{PICKUP.address}</Muted>
             <Pressable testID="pickup-address-box" accessibilityRole="button" accessibilityLabel={PICKUP.changeName(picked.text)}
               disabled={locked} onPress={() => { setText(picked.text); setProblem(""); setEditing(true); }}
               style={(state) => ({ paddingHorizontal: space.group, paddingVertical: space.inset, borderRadius: radius.card, borderWidth: size.border,
@@ -228,7 +228,7 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
           </>
         )}
         <MapBox mapsKey={mapsKey} at={picked} name={PICKUP.mapName(picked.text)} drawKey={drawKey} tall={editing} still={locked} onMove={moved} />
-        {editing ? null : <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.moveHint}</Muted>}
+        {editing ? null : <Muted lines={2} style={{ marginTop: space.hair, marginStart: space.inset }}>{PICKUP.moveHint}</Muted>}
       </View>
     );
   }
@@ -236,7 +236,7 @@ export function PickupAddress({ mapsKey, picked, onPicked, locked, onFail, need,
     <View ref={block} style={{ marginTop: space.group }}>
       {field}{suggestion}
       {problem ? <ErrorText>{problem}</ErrorText> : need ? <ErrorText>{PICKUP.need}</ErrorText>
-        : <Muted lines={2} style={{ marginTop: space.hair, marginLeft: space.inset }}>{PICKUP.choose}</Muted>}
+        : <Muted lines={2} style={{ marginTop: space.hair, marginStart: space.inset }}>{PICKUP.choose}</Muted>}
       {hereLink}
     </View>
   );

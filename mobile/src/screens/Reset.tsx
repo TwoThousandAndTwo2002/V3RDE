@@ -51,7 +51,7 @@ export function ForgotPassword({ onBack, startEmail = "" }: { onBack: () => void
           autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress" keyboardType="email-address"
           inputMode="email" returnKeyType="send" submitBehavior="submit" blurOnSubmit={false} onSubmitEditing={send} />
         {problem ? <ErrorText>{problem}</ErrorText> : null}
-        <View style={{ marginTop: space.gutter, marginLeft: space.inset, flexDirection: "row" }}>
+        <View style={{ marginTop: space.gutter, marginStart: space.inset, flexDirection: "row" }}>
           <TextLink testID="backlink" onPress={() => busy.current || onBack()}>{RESET.back}</TextLink></View>
       </View>
     </AuthFrame>

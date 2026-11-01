@@ -4,6 +4,7 @@
 // 2026-10-31: "lets drop zip code", "Everywhere"): no ZIP code; with location off the list has no distance.
 // Pure functions, except `readPlaceChoice`, `savePlaceChoice` and `currentPosition`.
 import type { Listing } from "./api";
+import { UNITS } from "./words";
 
 /** Whole seconds until expires_at (0 after it, or when it does not parse); the rule of listing.secondsLeft. Here again
  *  because the tests run this file without a bundler (type imports only). */
@@ -39,8 +40,8 @@ export function placeQuery(p: Place | null, after = ""): string {
 /** The distance on a card: one decimal ("0.4 mi"); under 0.05 mi it is "0.1 mi or less". */
 export function milesText(d: number | undefined): string {
   if (d === undefined || !Number.isFinite(d)) return "";
-  if (d < 0.05) return "0.1 mi or less";
-  return (Math.round(d * 10) / 10).toFixed(1) + " mi";
+  if (d < 0.05) return UNITS.near;
+  return UNITS.miles((Math.round(d * 10) / 10).toFixed(1));
 }
 
 /** Far: farther than the distance the user picked (T9: "if its more then the preset the choose then its a far grab"). */

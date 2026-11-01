@@ -28,6 +28,7 @@ import type { Upload } from "./api";
 import { ClipBusy, ClipCancelled, ClipSession } from "./clipsession";
 import { VOICE_MAX_MS, VOICE_RATE } from "./wav";
 import { startWebCapture, VoiceError, type WebCapture } from "./webvoice";
+import { MIC } from "./words";
 
 export { VoiceError };
 // start() / stop() reject with ClipCancelled when cancel() (or unmount) came first.
@@ -74,13 +75,13 @@ function useNativeVoice(opts?: VoiceOptions): VoiceRecorder {
     await session.start({
       begin: async () => {
         const perm = await requestRecordingPermissionsAsync();
-        if (!perm.granted) throw new VoiceError("denied", "Allow the microphone to talk to the app");
+        if (!perm.granted) throw new VoiceError("denied", MIC.allow);
         try {
           await stream.start();
           await stream.startFileRecordingAsync({ format: "wav" });
         } catch (e: any) {
           try { stream.stop(); } catch { /* already stopped */ }
-          throw new VoiceError("failed", e?.message || "The microphone did not start");
+          throw new VoiceError("failed", e?.message || MIC.failed);
         }
       },
       finish: async () => {

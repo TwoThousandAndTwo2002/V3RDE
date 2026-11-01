@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { opacity, radius, size, space, type, useColors } from "../theme";
 import { GlyphIcon, Muted, Pill, Popup, Rise, Title } from "../ui";
 import { ROLE, roleCard, type RoleName } from "../words";
+import { LanguageButton } from "../language";
 
 /** True while the mouse is on the card (react-native-web adds `hovered` to the Pressable state). */
 const isHovered = (state: object) => (state as { hovered?: boolean }).hovered === true;
@@ -37,7 +38,9 @@ export function RoleSheet({ dim, chosen, onPick, onLogout, onDismiss }: {
         <RoleCard role="give" chosen={chosen === "give"} onPress={() => onPick("give")} /></View></Rise>
       <Rise i={2}><View style={{ marginTop: space.item }}>
         <RoleCard role="receive" chosen={chosen === "receive"} onPress={() => onPick("receive")} /></View></Rise>
-      <Rise i={3}><View style={{ marginTop: space.gutter }}>
+      {/* X49x: the language choice, above Log out */}
+      <Rise i={3}><View style={{ marginTop: space.gutter, alignItems: "center" }}><LanguageButton testID="menu-language" /></View></Rise>
+      <Rise i={4}><View style={{ marginTop: space.gutter }}>
         <Pill testID="logout" kind="secondary" title={ROLE.logout} onPress={onLogout} /></View></Rise>
     </Popup>
   );

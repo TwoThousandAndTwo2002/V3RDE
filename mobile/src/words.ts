@@ -48,15 +48,29 @@ export const RECEIVE = {
   timeLeft: "Time left",
 } as const;
 
+/** X49x: the counts and units (whole messages, one text for each case, so each language can say them its way). */
+export const UNITS = {
+  servings: (n: number) => (n === 1 ? "1 serving" : n + " servings"),
+  miles: (d: string) => d + " mi",
+  near: "0.1 mi or less",
+  seconds: (t: string) => t + " s",
+} as const;
+
 /** "1 serving", "6 servings". */
 export function servings(n: number): string {
-  return n === 1 ? "1 serving" : n + " servings";
+  return UNITS.servings(n);
 }
+
+/** X49x: the WhatsApp message to the giver after a grab, as one whole message. */
+export const GRAB = {
+  message: (title: string, amount: string, pickup: string, email: string) =>
+    `Hi! I grabbed "${title}" on V3RDE (${amount}). Pickup: ${pickup}. I am ${email}. When can I come?`,
+} as const;
 
 /** The WhatsApp message to the giver after a grab. */
 export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string; pickup_address?: { text: string } },
   email: string): string {
-  return `Hi! I grabbed "${l.title}" on V3RDE (${servings(l.number_of_serving)}). Pickup: ${pickupLine(l)}. I am ${email}. When can I come?`;
+  return GRAB.message(l.title, servings(l.number_of_serving), pickupLine(l), email);
 }
 
 /** X49j: where the food is, for the user who grabbed it: the chosen address, then the instructions. */
@@ -105,10 +119,83 @@ export const RESCUE = {
   close: "Close",
 } as const;
 
+/** X49x: the counts of the review list and of a post (approved mockup words; one whole message for each case). */
+export const COUNT = {
+  found: (n: number) => (n === 1 ? "1 item found" : n + " items found"),
+  post: (n: number) => (n === 1 ? "Post 1 listing" : "Post " + n + " listings"),
+  posting: (i: number, n: number) => "Posting " + i + " of " + n + "\u2026",
+  notPosted: (n: number) => (n === 1 ? "1 item not posted" : n + " items not posted"),
+  postedSome: (posted: number, left: number) => posted === 1
+    ? (left === 1 ? "1 listing posted. 1 item is kept here; try again." : "1 listing posted. " + left + " items are kept here; try again.")
+    : (left === 1 ? posted + " listings posted. 1 item is kept here; try again." : posted + " listings posted. " + left + " items are kept here; try again."),
+  posted: (n: number) => (n > 1 ? n + " listings are posted. They stay up for 30 minutes." : "Listed. It stays up for 30 minutes."),
+} as const;
+
 /** The toast after a post: one listing or several. */
 export function postedText(n: number): string {
-  return n > 1 ? n + " listings are posted. They stay up for 30 minutes." : "Listed. It stays up for 30 minutes.";
+  return COUNT.posted(n);
 }
+
+/** X49x: the retry line under "Try again?" (logic.ts retryText), each one a whole sentence; the photo is kept. */
+export const SCAN = {
+  busy: "The scanner is busy. Wait a few seconds \u2014 your photo is kept.",
+  tooMany: "Too many photos this minute. Wait a minute \u2014 your photo is kept.",
+  gate: "The food check is not available right now \u2014 your photo is kept.",
+  tooLong: "This photo took too long. Try a closer photo of fewer items \u2014 your photo is kept.",
+  unreadable: "The scanner could not read this photo. Try again, or retake it closer \u2014 your photo is kept.",
+  offline: "No connection. Check your internet, then try again \u2014 your photo is kept.",
+  noAnswer: "No answer in time. Check your internet, then try again \u2014 your photo is kept.",
+  stopped: "The scan stopped. Try again \u2014 your photo is kept.",
+  ourSide: "Something went wrong on our side. Try again \u2014 your photo is kept.",
+  said: (said: string) => said + " \u2014 your photo is kept.",
+  failed: (status: number) => "Request failed (" + status + ") \u2014 your photo is kept.",
+  noItems: "The scanner found no items in this photo. Retake it closer to the food.",
+} as const;
+
+/** X49x: the words of a request that did not get an answer (api.ts, logic.ts errorMessage). */
+export const NET = {
+  timedOut: "Timed out, try again",
+  offline: "Network error, check the connection",
+  stopped: "Stopped",
+  tryAgain: "Try again",
+  scannerBusy: "The food scanner is busy, try again",
+  serviceBusy: "The service is busy, try again",
+  failed: (status: number) => "Request failed (" + status + ")",
+  photo: "The photo did not load",
+} as const;
+
+/** X49x: the names of the parts of a review card (ui.tsx ReviewCard), for screen readers. */
+export const CARD = {
+  title: (n: number) => "Title of item " + n,
+  remove: (n: number) => "Remove item " + n,
+  fewer: (n: number) => "Fewer servings of item " + n,
+  servings: (n: number) => "Servings of item " + n,
+  more: (n: number) => "More servings of item " + n,
+} as const;
+
+/** X49x: the microphone and recording errors (voicerec.ts, webvoice.ts, clipsession.ts). */
+export const MIC = {
+  allow: "Allow the microphone to talk to the app",
+  failed: "The microphone did not start",
+  tapAgain: "The microphone did not start. Tap the microphone again.",
+  https: "This browser cannot record here (https is needed)",
+  busy: "A recording is already running",
+  cancelled: "The recording was cancelled",
+  notRecording: "Not recording",
+} as const;
+
+/** X49x: the line under the title of the one-item form: where the title came from (capture.ts sourceNote). */
+export const SOURCE_NOTE = {
+  barcode: (code: string) => "From the barcode " + code,
+  scanner: (description: string) => "The scanner says: " + description,
+} as const;
+
+/** X49x: the language choice (sign-in row, role sheet). The names of the languages come from /i18n/index.json. */
+export const LANG = {
+  title: "Language",
+  name: (language: string) => "Language: " + language,
+  close: "Close",
+} as const;
 
 /** The camera and the sheets after the shutter (the approved X25 and X32 words, made simpler). */
 export const CAPTURE = {
@@ -312,3 +399,7 @@ export const VOICE = {
   markPickup: "Changed in the chat",
   none: "No change found in what you said.",
 } as const;
+
+/** X49x: every word table of this file, by name (src/lang.ts puts them in the chosen language). */
+export const WORD_TABLES = { ROLE, FRAME, RECEIVE, GIVE, RESCUE, CAPTURE, REVIEW, PLACE, MORE, PICKUP, TOUCH, DETAILS, VOICE,
+  UNITS, GRAB, COUNT, SCAN, NET, CARD, MIC, SOURCE_NOTE, LANG } as unknown as Record<string, Record<string, unknown>>;

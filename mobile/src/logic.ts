@@ -12,6 +12,7 @@
 // same shape for one item and for many. Each item becomes one card in the
 // review list (or the one-item form); servings = the count of identical
 // items, clamped to the form's 1-99.
+import { COUNT, NET, SCAN } from "./words";
 export type ItemForm = {
   item: number; title: string; servings: string; photo_id: string; description: string; err: string;
   details?: ItemDetails; // X48d: the scanner's other fields, kept with the listing
@@ -234,21 +235,21 @@ export const CLIENT = Object.freeze({ offline: "offline", timeout: "client_timeo
 
 // X49r (T9 2026-10-31: "the food scanner is busy" was shown for every failure): one sentence for each cause.
 export function retryText(status: number, body: any): string {
-  const kept = " — your photo is kept.";
-  if (body?.code === "busy") return "The scanner is busy. Wait a few seconds" + kept;
-  if (body?.code === "rate_limited" || status === 429) return "Too many photos this minute. Wait a minute" + kept;
-  if (body?.code === "gate_unavailable") return "The food check is not available right now" + kept;
-  if (body?.code === "timeout") return "This photo took too long. Try a closer photo of fewer items" + kept;
-  if (body?.code === "upstream_error") return "The scanner could not read this photo. Try again, or retake it closer" + kept;
-  if (body?.code === CLIENT.offline) return "No connection. Check your internet, then try again" + kept;
-  if (body?.code === CLIENT.timeout) return "No answer in time. Check your internet, then try again" + kept;
-  if (status === 0) return "The scan stopped. Try again" + kept;
-  if (status >= 500) return "Something went wrong on our side. Try again" + kept;
-  return (typeof body?.error === "string" && body.error ? body.error : `Request failed (${status})`) + kept;
+  // X49x: each line is one whole sentence of the SCAN table (words.ts), so each language can say it its way
+  if (body?.code === "busy") return SCAN.busy;
+  if (body?.code === "rate_limited" || status === 429) return SCAN.tooMany;
+  if (body?.code === "gate_unavailable") return SCAN.gate;
+  if (body?.code === "timeout") return SCAN.tooLong;
+  if (body?.code === "upstream_error") return SCAN.unreadable;
+  if (body?.code === CLIENT.offline) return SCAN.offline;
+  if (body?.code === CLIENT.timeout) return SCAN.noAnswer;
+  if (status === 0) return SCAN.stopped;
+  if (status >= 500) return SCAN.ourSide;
+  return typeof body?.error === "string" && body.error ? SCAN.said(body.error) : SCAN.failed(status);
 }
 
-// X49r: a scan that answered with no items (Capture showed "busy" for it before).
-export const NO_ITEMS_TEXT = "The scanner found no items in this photo. Retake it closer to the food.";
+// X49r: a scan that answered with no items (Capture showed "busy" for it before). X49x: SCAN.noItems (words.ts).
+export function noItemsText(): string { return SCAN.noItems; }
 
 // X49r: a lost upload is sent again: at most SEND_TRIES in all, SEND_AGAIN_MS apart (inside SCAN_WAIT_MS).
 export const SEND_TRIES = 3;
@@ -258,17 +259,12 @@ export function sendAgain(code: unknown, n: number, now: number, until: number, 
   return code === CLIENT.offline && n < SEND_TRIES && now + SEND_AGAIN_MS < until && !stopped;
 }
 
-// The words of the review list (approved mockup).
-export function plural(n: number, one: string, many: string): string {
-  return n === 1 ? `1 ${one}` : `${n} ${many}`;
-}
-export function foundTitle(n: number): string { return plural(n, "item found", "items found"); }
-export function postTitle(n: number): string { return "Post " + plural(n, "listing", "listings"); }
-export function postingText(i: number, n: number): string { return `Posting ${i} of ${n}…`; }
-export function notPostedTitle(left: number): string { return plural(left, "item not posted", "items not posted"); }
-export function postedSummary(posted: number, left: number): string {
-  return `${plural(posted, "listing", "listings")} posted. ${left === 1 ? "1 item is" : left + " items are"} kept here; try again.`;
-}
+// The words of the review list (approved mockup). X49x: whole messages in the COUNT table (words.ts).
+export function foundTitle(n: number): string { return COUNT.found(n); }
+export function postTitle(n: number): string { return COUNT.post(n); }
+export function postingText(i: number, n: number): string { return COUNT.posting(i, n); }
+export function notPostedTitle(left: number): string { return COUNT.notPosted(left); }
+export function postedSummary(posted: number, left: number): string { return COUNT.postedSome(posted, left); }
 
 // ---- NEW: the path of an item photo the analyze route cut (owner only, 32 hex characters).
 export function itemPhotoPath(photoId: string): string {
@@ -327,7 +323,7 @@ export const joinUrl = (base: string, path: string): string => {
 // ---- NEW: the line the app shows for a failed request. The service's own
 // text ({error: "..."}) wins; the analyze screen picks its sheet from the
 // answer's code (analyzeKind), not from this line.
-const FIXED_TEXT: Record<number, string> = {
+export const FIXED_TEXT: Record<number, string> = {
   401: "Please log in again",
   429: "Too many requests, wait a minute",
 };
@@ -337,7 +333,10 @@ export function errorMessage(status: number, body: unknown, path = ""): string {
   if (typeof said === "string") return said;
   if (FIXED_TEXT[status]) return FIXED_TEXT[status];
   if (GATEWAY.includes(status)) {
-    return path.includes("/analyze") ? "The food scanner is busy, try again" : "The service is busy, try again";
+    return path.includes("/analyze") ? NET.scannerBusy : NET.serviceBusy;
   }
-  return "Request failed (" + status + ")";
+  return NET.failed(status);
 }
+
+/** X49x: the word tables of this file (src/lang.ts). */
+export const LOGIC_TABLES = { FIXED_TEXT } as unknown as Record<string, Record<string, unknown>>;

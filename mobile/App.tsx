@@ -23,6 +23,8 @@ import { ForgotPassword, NewPassword } from "./src/screens/Reset";
 import { RoleSheet } from "./src/screens/Role";
 import { Frame } from "./src/screens/Frame";
 import ReceiveScreen from "./src/screens/Receive";
+import { SOURCE, loadLanguages, saveLanguage, savedLanguage, startLanguage, switchLanguage, type Language } from "./src/lang";
+import { LanguageContext, LanguageSheet, type LanguageChoice } from "./src/language";
 import GiveScreen from "./src/screens/Give";
 
 /** Where the role sheet is: over the auth screen it came from (phone), over the doodles, or over the doodles
@@ -58,8 +60,37 @@ async function openingClaim(): Promise<string> {
 /** The screen of a role. */
 const RoleScreen = ({ role }: { role: RoleName }) => (role === "receive" ? <ReceiveScreen /> : <GiveScreen />);
 
+/** X49x: the most time the first screen waits for the words of the saved or browser language (then English). */
+const LANGUAGE_WAIT_MS = 1500;
+
 const Shell = () => {
-  const [ready] = useFontFiles({ [font.regular]: regularFile, [font.semibold]: semiboldFile });
+  const [fontsReady] = useFontFiles({ [font.regular]: regularFile, [font.semibold]: semiboldFile });
+  // X49x: the language: the published list, the one now, the sheet; the first screen waits for its words
+  const [languages, setLanguages] = useState<Language[]>([SOURCE]);
+  const [lang, setLang] = useState<Language>(SOURCE);
+  const [langReady, setLangReady] = useState(false);
+  const [langSheet, setLangSheet] = useState(false);
+  const ready = fontsReady && langReady;
+  useEffect(function firstLanguage() {
+    let on = true;
+    const late = setTimeout(() => on && setLangReady(true), LANGUAGE_WAIT_MS);
+    loadLanguages().then(async (list) => {
+      if (!on) return;
+      setLanguages(list);
+      const browser = typeof navigator !== "undefined" ? navigator.languages ?? [navigator.language] : [];
+      const code = startLanguage(savedLanguage(), browser, list);
+      const l = await switchLanguage(list.find((x) => x.code === code) ?? SOURCE);
+      if (on && l) setLang(l); // null: the user picked a language while this one loaded
+    }).finally(() => { clearTimeout(late); if (on) setLangReady(true); });
+    return () => { on = false; clearTimeout(late); };
+  }, []);
+  const pickLanguage = useCallback((code: string) => {
+    setLangSheet(false);
+    const l = languages.find((x) => x.code === code) ?? SOURCE;
+    saveLanguage(l.code);
+    switchLanguage(l).then((now) => { if (now) setLang(now); }); // every screen renders again with the new words
+  }, [languages]);
+  const choice = useMemo<LanguageChoice>(() => ({ languages, now: lang, open: () => setLangSheet(true) }), [languages, lang]);
   const col = useColors();
   const inset = useInsets();
   const wide = layoutFor(useWindowDimensions().width).dialogs;
@@ -133,7 +164,8 @@ const Shell = () => {
   const tokenOf = stage.kind === "newpass" ? stage.token : stage.kind === "leaving" || stage.kind === "role" ? stage.token ?? "" : "";
   const showDoodles = (stage.kind === "role" && stage.under !== "auth");
   return (
-    <View style={{ flex: 1, backgroundColor: col.bg, paddingTop: inset.top, paddingBottom: inset.bottom,
+    <LanguageContext.Provider value={choice}>
+    <View {...({ dir: lang.dir, lang: lang.code } as object)} style={{ flex: 1, backgroundColor: col.bg, paddingTop: inset.top, paddingBottom: inset.bottom,
       paddingLeft: inset.left, paddingRight: inset.right }}>
       {ready && (stage.kind === "signin" || authFrom === "signin") ? (
         <SignIn leaving={under} onSignedIn={signedIn("signin")} onForgot={() => setStage({ kind: "forgot" })} />
@@ -149,17 +181,20 @@ const Shell = () => {
             <RoleScreen role={stage.role} /></Frame>
         </SessionContext.Provider>
       ) : null}
-      {ready && stage.kind === "role" ? (
+      {/* X49x review: the language sheet shows alone (one focus trap); the role sheet comes back after it */}
+      {ready && stage.kind === "role" && !langSheet ? (
         <RoleSheet dim={stage.under !== "handoff"} onLogout={logout}
           onPick={(role) => setStage({ kind: "in", who: stage.who, role, menu: false })} />
       ) : null}
-      {ready && stage.kind === "in" && stage.menu ? (
+      {ready && stage.kind === "in" && stage.menu && !langSheet ? (
         <RoleSheet dim chosen={stage.role} onLogout={logout} onDismiss={() => setStage({ ...stage, menu: false })}
           onPick={(role) => setStage({ kind: "in", who: stage.who, role, menu: false })} />
       ) : null}
+      {ready && langSheet ? <LanguageSheet onPick={pickLanguage} onDismiss={() => setLangSheet(false)} /> : null}
       <Toast text={note} />
       <SystemBar style={"auto"} />
     </View>
+    </LanguageContext.Provider>
   );
 };
 

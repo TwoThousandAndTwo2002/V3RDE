@@ -6,6 +6,7 @@
 //   128-frame block, posted to this thread) -> chunks at the device rate ->
 //   src/wav.ts: 16 kHz mono 16-bit WAV.
 import { voiceWav } from "./wav";
+import { MIC } from "./words";
 
 export const WORKLET_URL = "/voice-capture-worklet.js";
 
@@ -36,7 +37,7 @@ export async function startWebCapture(workletUrl = WORKLET_URL, resumeWaitMs = R
   const Ctx: AudioContextCtor | undefined = typeof AudioContext !== "undefined" ? AudioContext
     : (globalThis as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext;
   if (!md?.getUserMedia || typeof AudioWorkletNode === "undefined" || !Ctx) {
-    throw new VoiceError("unsupported", "This browser cannot record here (https is needed)");
+    throw new VoiceError("unsupported", MIC.https);
   }
   // in the tap (no await before this line): iOS lets the audio start only here
   const ctx = new Ctx();
@@ -47,7 +48,7 @@ export async function startWebCapture(workletUrl = WORKLET_URL, resumeWaitMs = R
   } catch (e: any) {
     ctx.close().catch(() => undefined);
     const denied = e?.name === "NotAllowedError";
-    throw new VoiceError(denied ? "denied" : "failed", denied ? "Allow the microphone to talk to the app" : "The microphone did not start");
+    throw new VoiceError(denied ? "denied" : "failed", denied ? MIC.allow : MIC.failed);
   }
   const chunks: Float32Array[] = [];
   let node: AudioWorkletNode;
@@ -66,11 +67,11 @@ export async function startWebCapture(workletUrl = WORKLET_URL, resumeWaitMs = R
       await Promise.race([resumed.then(() => (ctx.state === "suspended" ? ctx.resume() : undefined)),
         new Promise((go) => setTimeout(go, resumeWaitMs))]);
     }
-    if (ctx.state !== "running") throw new Error("The microphone did not start. Tap the microphone again.");
+    if (ctx.state !== "running") throw new Error(MIC.tapAgain);
   } catch (e: any) {
     media.getTracks().forEach((t) => t.stop());
     ctx.close().catch(() => undefined);
-    throw new VoiceError("failed", e?.message || "The microphone did not start");
+    throw new VoiceError("failed", e?.message || MIC.failed);
   }
   let done = false;
   const release = () => {
