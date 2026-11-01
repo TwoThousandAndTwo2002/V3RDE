@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Linking, Platform, ScrollView, Text, View } from "react-native";
 import { ApiError, rescue as api, type Listing } from "../api";
-import { needsPlace, placeLine, rescueView, safeLink, type Rescue, type RescuePlace } from "../rescue";
+import { knownRescue, needsPlace, placeLine, rememberRescue, rescueView, safeLink, type Rescue, type RescuePlace } from "../rescue";
 import { currentPosition, type Place } from "../place";
 import { useColors, radius, size, space, type } from "../theme";
 import { Body, ErrorText, Muted, Pill, Popup, Row, TextLink, Title } from "../ui";
@@ -38,7 +38,7 @@ function PlaceRow({ p, bulk }: { p: RescuePlace; bulk: boolean }) {
 }
 
 export default function RescueScreen({ listing, onClose }: { listing: Listing; onClose: () => void }) {
-  const [res, setRes] = useState<Rescue | null>(null);
+  const [res, setRes] = useState<Rescue | null>(() => knownRescue(listing.id)); // X50b: a second open shows it at once
   const [problem, setProblem] = useState(""); // a failure of the request itself
   const [askPlace, setAskPlace] = useState(false); // X49q: the listing has no pickup place: the giver's location
   const [at, setAt] = useState<Place | null>(null);
@@ -58,6 +58,7 @@ export default function RescueScreen({ listing, onClose }: { listing: Listing; o
       setAskPlace(false);
       setRes(first);
       const last = await api.wait(first, stale);
+      rememberRescue(listing.id, last); // X50b: also when the popup was closed while it waited
       if (stale()) return;
       setRes(last);
     } catch (err) {
@@ -70,7 +71,10 @@ export default function RescueScreen({ listing, onClose }: { listing: Listing; o
       if (!stale()) setBusy(false);
     }
   };
-  useEffect(() => { run(); return () => { closed.current = true; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { // X50b: a rescue found in this visit shows at once, with no request
+    if (!knownRescue(listing.id)) run();
+    return () => { closed.current = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const close = () => { closed.current = true; onClose(); };
   const search = async () => {
     if (busy) return;

@@ -44,6 +44,20 @@ export function rescueView(r: Rescue | null): RescueView {
   return r.places.length > 0 ? "places" : "none";
 }
 
+/** X50b (T9 Nov 1: "after user selects rescue and backs out the results should be cached"): the finished rescues of
+ *  this visit, by listing, so a second open shows them at once (the service also keeps them). */
+const finished = new Map<string, Rescue>();
+export function rememberRescue(listingId: string, r: Rescue | null): void {
+  if (r && r.status !== "running" && r.status !== "failed" && listingId) finished.set(listingId, r);
+}
+export function knownRescue(listingId: string): Rescue | null {
+  return finished.get(listingId) ?? null;
+}
+/** X50b review: a sign-out (or an ended session) forgets them: the next account starts clean. */
+export function forgetRescues(): void {
+  finished.clear();
+}
+
 /** The service's 400 when the listing has no pickup place (its words still say "no ZIP"): X49q: the app then offers
  *  the giver's location, never a ZIP. */
 export function needsPlace(status: number, message: string): boolean {

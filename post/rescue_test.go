@@ -485,3 +485,28 @@ func TestRescueDirectoryErrorIsLogged(t *testing.T) {
 		t.Fatalf("events: %s", b)
 	}
 }
+
+// X50b (T9 Nov 1: a second open must not run the rescue again): a listing with no pickup place gets its stored
+// rescue on the next open with no body (before, each open got 400 and asked for the location again).
+func TestRescueSecondOpenNeedsNoLocation(t *testing.T) {
+	e := newRS(t, stableDraft, 200, false)
+	defer e.stop()
+	if w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", ``, "u1")); w.Code != 400 {
+		t.Fatalf("first open with no place: %d %s", w.Code, w.Body)
+	}
+	first := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", `{"zip":"10001"}`, "u1"))
+	if first.Code != 200 {
+		t.Fatalf("with a place: %d %s", first.Code, first.Body)
+	}
+	again := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", ``, "u1"))
+	var a, b Rescue
+	json.Unmarshal(first.Body.Bytes(), &a)
+	json.Unmarshal(again.Body.Bytes(), &b)
+	if again.Code != 200 || a.RescueID == "" || a.RescueID != b.RescueID || len(*e.muse) != 1 {
+		t.Fatalf("second open: %d %s, ids %s %s, %d Muse calls", again.Code, again.Body, a.RescueID, b.RescueID, len(*e.muse))
+	}
+	// another user gets no rescue of this listing (the listing is not theirs: 404 before the stored rescue)
+	if w := do(e.h, jsonReq("POST", "/api/rescue/l_000000000000000a", ``, "u2")); w.Code == 200 {
+		t.Fatalf("another user: %d %s", w.Code, w.Body)
+	}
+}

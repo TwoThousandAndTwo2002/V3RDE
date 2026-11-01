@@ -40,6 +40,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/mail"
@@ -666,6 +667,19 @@ func (s *RescueStore) Begin(lid, owner string) (existing Rescue, found, busy boo
 	return Rescue{}, false, false
 }
 
+// Existing returns the owner's rescue of listing lid that is not failed (the one Begin would give), with no mark.
+// X50b: a second open of the rescue gets it before any check of where to search.
+func (s *RescueStore) Existing(lid, owner string) (Rescue, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, r := range s.items {
+		if r.ListingID == lid && r.OwnerID == owner && r.Status != StatusFailed {
+			return r, true
+		}
+	}
+	return Rescue{}, false
+}
+
 // End clears the mark of Begin.
 func (s *RescueStore) End(lid string) {
 	s.mu.Lock()
@@ -718,6 +732,8 @@ type RescueConfig struct {
 	// it); JobTimeout is the limit of one job (?async=1), default 90 s.
 	Search     *PlaceSearch
 	JobTimeout time.Duration
+	// X50d: the store of every place found (nil = none): used before the web search, and filled after each search.
+	PlaceStore *PlaceStore
 	now        func() time.Time
 	sendMu     sync.Mutex // one /send at a time: the checks, the email and the record are one step
 }
@@ -822,6 +838,16 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		return
 	case !l.Expired(c.now()):
 		fail(http.StatusConflict, "not_expired", "the listing timer has not run out")
+		return
+	}
+	// X50b (T9 Nov 1: "after user selects rescue and backs out the results should be cached so that they dont have
+	// to run again"): the stored rescue of this listing answers at once, before the place checks. Before, a listing
+	// with no pickup place got 400 (no place) on each open, so the giver had to give the location again.
+	if prev, ok := c.Store.Existing(lid, who.User.ID); ok && (prev.Status != StatusRunning || r.URL.Query().Get("async") == "1") {
+		ev.Status, ev.LatencyMS = 200, time.Since(t0).Milliseconds()
+		ev.Detail = map[string]any{"rescue_id": prev.RescueID, "existing": true}
+		WriteJSON(w, http.StatusOK, prev)
+		c.record(ev)
 		return
 	}
 	// R3: where to search. The pickup address's ZIP first (where the food is),
@@ -978,6 +1004,7 @@ type dirOut struct {
 	searchErr error
 	call      *Call
 	foundBy   string
+	dirErr    error // X50d review: the directory's failure when the store answered (for the events line only)
 }
 
 // detail is the events detail of a finished job.
@@ -988,6 +1015,9 @@ func (j rescueJob) detail(res Rescue) map[string]any {
 	}
 	d["rescue_id"], d["kind"], d["shelf_stable"], d["places"] = res.RescueID, res.Kind, res.ShelfStable, len(res.Places)
 	d["directory_results"], d["directory_ms"], d["found_by"] = len(j.dir.places), j.dir.ms, res.FoundBy
+	if j.dir.err == nil && j.dir.dirErr != nil {
+		d["directory_error"] = clip(j.dir.dirErr.Error(), 300) // X50d review: the store answered
+	}
 	if j.dir.err != nil {
 		d["directory_error"] = clip(j.dir.err.Error(), 300)
 	}
@@ -1000,6 +1030,13 @@ func (j rescueJob) detail(res Rescue) map[string]any {
 	return d
 }
 
+// keepPlaces adds places to the store; a failed write goes to the service log (X50d review).
+func (c *RescueConfig) keepPlaces(area string, p []Place, foundBy string) {
+	if err := c.PlaceStore.Add(area, p, foundBy, c.now()); err != nil {
+		log.Printf("rescue: place store: %v", err)
+	}
+}
+
 // runRescue makes the rescue: the directory (and, with search, the web search
 // when the directory finds nothing or fails) at the same time as the Muse
 // decision. status is 200, or the refusal with its code and words.
@@ -1009,6 +1046,17 @@ func (c *RescueConfig) runRescue(ctx context.Context, j rescueJob, search *Place
 	go func() { // the directory and Muse do not depend on each other
 		p, ms, err := c.Directory.Near(ctx, j.zip, j.lat, j.lng)
 		out := dirOut{places: p, ms: ms, err: err, foundBy: "directory"}
+		area := AreaKey(j.zip, j.lat, j.lng)
+		if err == nil && len(p) > 0 {
+			c.keepPlaces(area, p, "directory") // X50d: the store grows with each search
+		}
+		if (err != nil || len(p) == 0) && ctx.Err() == nil { // X50d: the store before the paid web search
+			if sp := c.PlaceStore.Get(area, c.now(), PlaceMaxAge); len(sp) > 0 {
+				out.places, out.err, out.dirErr, out.foundBy = sp, nil, err, FoundByStore
+				dirc <- out
+				return
+			}
+		}
 		if search != nil && (err != nil || len(p) == 0) && ctx.Err() == nil { // R4
 			why := "the food directory found no places near this location."
 			if err != nil {
@@ -1018,6 +1066,7 @@ func (c *RescueConfig) runRescue(ctx context.Context, j rescueJob, search *Place
 			out.searched, out.searchErr, out.call = true, serr, &call
 			if serr == nil && len(sp) > 0 {
 				out.places, out.foundBy = sp, SourceWebSearch
+				c.keepPlaces(area, sp, SourceWebSearch) // X50d
 			}
 		}
 		if len(out.places) == 0 {
@@ -1079,6 +1128,22 @@ func (c *RescueConfig) runRescue(ctx context.Context, j rescueJob, search *Place
 	attr := DirectoryAttribution
 	if d.foundBy == SourceWebSearch {
 		attr = WebAttribution
+	}
+	if d.foundBy == FoundByStore { // X50d: the credit of the places as they were found (both when mixed)
+		web, dir := false, false
+		for _, p := range places {
+			if p.Source == SourceWebSearch {
+				web = true
+			} else {
+				dir = true
+			}
+		}
+		switch {
+		case web && dir:
+			attr = DirectoryAttribution + "; " + WebAttribution
+		case web:
+			attr = WebAttribution
+		}
 	}
 	res = Rescue{RescueID: newHex(16), RequestID: j.id, ListingID: j.lid, OwnerID: j.owner, Title: j.l.Title,
 		Servings: j.l.NumberOfServing, Kind: kind, Mode: j.mode, ShelfStable: stable, Reason: clip(Str(obj, "reason"), 160),

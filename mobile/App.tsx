@@ -16,6 +16,7 @@ import { font, layoutFor, motion, useColors } from "./src/theme";
 import { Toast } from "./src/ui";
 import { Doodles as Wallpaper } from "./src/doodles";
 import { claimListing, resetToken } from "./src/signin";
+import { forgetRescues } from "./src/rescue";
 import { FRAME, type RoleName } from "./src/words";
 import { SessionContext, type Session } from "./src/session";
 import SignIn from "./src/screens/Login";
@@ -145,6 +146,7 @@ const Shell = () => {
   };
   const logout = useCallback(() => {
     claim.current = ""; // N4 review: a claim never waits for the next account
+    forgetRescues(); // X50b review: the rescues of this account are not kept for the next one
     auth.logout().catch(() => undefined); // the services end the session; the app leaves at once
     setStage({ kind: "signin" });
   }, []);
@@ -155,6 +157,7 @@ const Shell = () => {
     say,
     ended: () => {
       if (stageNow.current.kind !== "in") return; // a late 401 after Log out changes nothing
+      forgetRescues(); // X50b review
       setStage({ kind: "signin" });
       say(FRAME.expired);
     },

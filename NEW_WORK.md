@@ -1967,3 +1967,16 @@ T9; T9 approved the "V3RDE Language Mockup" v2.
 
 - After #92 the translation round on the box did not start: its image runs the i18n tests, and two new tests read the app files, which are not in that image. The image now skips those two tests (every SUP script still runs them with the whole repo). The round then translates Yoruba and the 57 new texts.
 - Tests: no change (i18n 66).
+
+## 94. A rescue opens at once the second time; the places found are kept
+
+**When:** Nov 1 2026.
+**Meta models:** none new (the rescue's Muse Spark draft and web search run less often).
+**Files:** `post/rescue.go`, `post/rescue_places.go` (new), `post/rescue_places_test.go` (new), `post/rescue_test.go`, `post/cmd/rescue/main.go`, `mobile/src/rescue.ts`, `mobile/src/screens/Rescue.tsx`, `mobile/App.tsx`, `mobile/tests/rescue.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X50b.md`
+
+T9: "after user selects rescue and backs out the results should be cached"; "accruing a set of all food recovery locations ... to reduce our AI bill".
+
+- The service already kept one rescue for each listing, but a listing with no pickup place asked for the location again on each open. Now the stored rescue comes back at once, with no model call, and the app shows a finished rescue again with no wait.
+- Every place that the food directory or the web search finds goes into one store on the server, by area. When the directory has nothing for an area, the stored places of the last 30 days are used and the paid web search does not run.
+- Tests: post 97 -> 102, mobile 169 -> 170.

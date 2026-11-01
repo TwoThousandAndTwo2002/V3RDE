@@ -62,6 +62,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("open %s: %v", *data, err)
 	}
+	placeStore, err := post.OpenPlaces(*data) // X50d: the store of every place found
+	if err != nil {
+		log.Fatalf("open %s: %v", *data, err)
+	}
 	ev := post.NewEvents(*events)
 	budget := post.NewBudget(*capUSD, *estimate, ev)
 	budget.PerCaller = *callerCap
@@ -82,6 +86,7 @@ func main() {
 		// R1: the scan's route for the scanner hint
 		AnalyzeEvents: *analyzeEvents,
 		JobTimeout:    *jobTimeout,
+		PlaceStore:    placeStore,
 	}
 	if *webSearch { // R4: its own client, with the longer time limit
 		cfg.Search = &post.PlaceSearch{Muse: &post.Muse{Base: *base, Key: key, Model: *model, Effort: "low",

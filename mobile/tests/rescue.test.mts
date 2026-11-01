@@ -1,7 +1,7 @@
 // R5 tests: the rescue rules of the app (src/rescue.ts) and the words of the popup and the pickup field.
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { canRescue, needsPlace, placeLine, rescueView, safeLink, RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "../src/rescue.ts";
+import { canRescue, forgetRescues, knownRescue, needsPlace, rememberRescue, placeLine, rescueView, safeLink, RESCUE_POLL_MS, RESCUE_WAIT_MS, type Rescue } from "../src/rescue.ts";
 import { RESCUE, REVIEW } from "../src/words.ts";
 
 const T = Date.parse("2026-10-31T12:00:00Z");
@@ -60,4 +60,25 @@ test("words: the one-word pill; the pickup example has no ZIP (X49q)", () => {
   assert.equal(REVIEW.pickup, "Pickup address and instructions");
   assert.doesNotMatch(REVIEW.pickupHint, /\d{5}/);
   for (const w of Object.values(RESCUE)) if (typeof w === "string") assert.ok(w.length > 0 && w.length <= 120, w);
+});
+
+test("X50b: a finished rescue shows at once on the next open; a running or failed one does not", async () => {
+  const done = { rescue_id: "r1", status: "done", places: [] } as unknown as Rescue;
+  assert.equal(knownRescue("l1"), null);
+  rememberRescue("l1", { ...done, status: "running" } as Rescue);
+  rememberRescue("l1", { ...done, status: "failed" } as Rescue);
+  rememberRescue("l1", null);
+  assert.equal(knownRescue("l1"), null);
+  rememberRescue("l1", done);
+  assert.equal(knownRescue("l1"), done);
+  assert.equal(knownRescue("l2"), null);
+  forgetRescues(); // a sign-out
+  assert.equal(knownRescue("l1"), null);
+  const fs = await import("node:fs");
+  const screen = fs.readFileSync(new URL("../src/screens/Rescue.tsx", import.meta.url), "utf8");
+  assert.match(screen, /useState<Rescue \| null>\(\(\) => knownRescue\(listing\.id\)\)/);
+  assert.match(screen, /if \(!knownRescue\(listing\.id\)\) run\(\);/);
+  assert.match(screen, /rememberRescue\(listing\.id, last\);/);
+  const app = fs.readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+  assert.equal((app.match(/forgetRescues\(\);/g) ?? []).length, 2); // Log out and an ended session
 });
