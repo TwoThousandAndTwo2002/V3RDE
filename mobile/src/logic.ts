@@ -41,9 +41,10 @@ export function answerToItems(resp: any): ItemForm[] {
   const items = Array.isArray(resp?.items) ? resp.items : [];
   // R2 (T9 2026-10-30): a barcode answer's meal_condition is a fixed value (barcode/product.go Complete, provenance
   // "constant"), not something the scanner saw; rescue reads it as a hint (R1), so it is not kept with the listing.
-  const fixed = resp?.source === "barcode";
+  const all = resp?.source === "barcode";
   return items.map((it: any, i: number) => {
     const f = it?.fields ?? {};
+    const fixed = all || it?.source === "barcode"; // I1: a catalog item of a photo with many codes
     const n = Number(f.number_of_serving);
     return {
       item: Number.isFinite(it?.item) ? it.item : i + 1,

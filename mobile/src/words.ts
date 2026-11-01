@@ -129,6 +129,8 @@ export const CAPTURE = {
   usePhoto: "Use photo",
   tryAgain: "Try again",
   barcode: (code: string) => "Barcode " + code,
+  barcodes: (n: number) => n + " barcodes found", // I1: many codes in the still photo
+  reading: "Reading the barcodes",
   analyzing: "Analyzing…",
   notFood: "Try a food item",
   notFoodLine: "This does not look like food. Take a photo of the food item.",

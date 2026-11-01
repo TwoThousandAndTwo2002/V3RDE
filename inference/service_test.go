@@ -102,6 +102,14 @@ func newSvc(t *testing.T, f *fakeAPI, verdict string, gateStatus int, mod func(*
 	ev := NewEvents(s.dir)
 	s.budget = NewBudget(20, 0.10, ev)
 	barcode := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/barcode/0034000002405" { // I1: a second catalog product
+			_, _ = w.Write([]byte(`{"outcome":"HIT","gtin14":"00034000002405","admissible":true,"product":{"barcode":"00034000002405","title":"Hershey's Chocolate Syrup","description":"","is_non_veg":0,"number_of_serving":45,"serving_type":"bulk","meal_condition":"sealed","weight":0.68,"meal_cost":3}}`))
+			return
+		}
+		if r.URL.Path == "/v1/barcode/04000000000001" { // I1: a HIT that is not admissible
+			_, _ = w.Write([]byte(`{"outcome":"HIT","gtin14":"04000000000001","admissible":false,"product":{"barcode":"04000000000001","title":"Dog food"}}`))
+			return
+		}
 		if r.URL.Path == "/v1/barcode/078742370026" {
 			_, _ = w.Write([]byte(`{"outcome":"HIT","gtin14":"00078742370026","admissible":true,"product":{"barcode":"00078742370026","title":"Great Value Marinara Pasta Sauce","description":"","is_non_veg":0,"number_of_serving":13,"serving_type":"bulk","meal_condition":"sealed","weight":0.68,"meal_cost":2}}`))
 			return

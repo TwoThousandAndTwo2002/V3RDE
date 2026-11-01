@@ -7,6 +7,7 @@
 // EXPO_PUBLIC_API_BASE (mobile/.env.local, not committed, or an EAS variable).
 // Photo uploads from a phone are React Native FormData parts ({uri, name, type});
 // mobile/.env keeps React Native's fetch as the global fetch for them (U2 D5).
+import type { FoundCode } from "./capture";
 import { Platform as RN } from "react-native";
 import { CLIENT, SCAN_WAIT_MS, SEND_AGAIN_MS, errorMessage, joinUrl, scanPoll, scanStep, sendAgain } from "./logic";
 import { placeFields, placeQuery, type Place } from "./place";
@@ -145,9 +146,11 @@ export const listings = Object.freeze({
  *  service answers when the job changes (X48c, logic.scanPoll), or once a second on an older service. A long scan
  *  thus never meets the time limit of one request. The service stops a photo at 25 s; the app waits 75 s in all.
  *  `stop` is true when the user went back: the app stops asking. */
-export async function analyze(photo: Upload, barcode = "", capture?: Record<string, unknown>, stop: () => boolean = () => false) {
+export async function analyze(photo: Upload, barcode = "", capture?: Record<string, unknown>, stop: () => boolean = () => false,
+  barcodes: readonly FoundCode[] = []) {
   const form = formOf([], [["barcode", barcode]]);
   addFile(form, "image", photo);
+  if (barcodes.length > 0) form.append("barcodes", JSON.stringify(barcodes)); // I1: every code of the still photo
   if (capture && Object.keys(capture).length > 0) form.append("capture", JSON.stringify(capture).slice(0, 512));
   const until = Date.now() + SCAN_WAIT_MS;
   // the upload is inside the 75 s; a service with no job route answers here, with the whole scan.

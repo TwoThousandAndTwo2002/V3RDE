@@ -1941,3 +1941,20 @@ T9, from the tester feedback; T9 approved the "V3RDE Batch 1 Mockup" v3.
 - A new account's email must have a real form (name@domain.ending, any country). Sign-in and the password reset keep the earlier check, so older accounts still sign in and get a reset link.
 - Tests: mobile 153 -> 159, auth 32 -> 33.
 
+
+## 92. One photo with many barcodes
+
+**When:** Nov 1 2026.
+**Meta models:** SAM 3.1 and Muse Spark 1.3 for the other food in the photo (as the scan); no new model.
+**Files:** `inference/barcodes.go` (new), `inference/service.go`, `inference/events.go`, `inference/barcodes_test.go` (new), `inference/service_test.go`, `mobile/src/capture.ts`, `mobile/src/api.ts`, `mobile/src/logic.ts`, `mobile/src/words.ts`, `mobile/src/screens/Capture.tsx`, `mobile/tests/capture.test.mts`, `mobile/tests/logic.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/I1.md`
+
+T9 chose "A: one photo with many barcodes" and "barcodes + vision" for a photo with codes and other food; T9 approved the "V3RDE Items Mockup" v3.
+
+- After the shutter (or an upload), the app reads every retail barcode in the still photo (web; at most 2 s). "Use this photo?" says "2 barcodes found". The codes and their boxes go with the photo (`barcodes`, at most 24). One live barcode alone is the fast path, as before.
+- The service looks up every code at the same time. Each catalog product is one item, with its stock photo when there is one.
+- The scanner still runs for the other food in the photo (also for a plate with one packet). The smallest box of the scanner that holds a barcode is that product, so it is not listed twice.
+- If the scanner cannot answer (busy, the daily limit, not food, an error), the barcode items still answer.
+- A product that is already in your listings is left out, as before. The events line keeps every code and what it became.
+- Branch `items` (not deployed yet).
+- Tests: inference 104 -> 116, mobile 159 -> 162.

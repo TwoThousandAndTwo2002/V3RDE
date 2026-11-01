@@ -103,6 +103,9 @@ type AnswerItem struct {
 	PhotoID string         `json:"photo_id"`
 	// PhotoCredit (N1): set when the photo is a stock photo (StockCredit).
 	PhotoCredit string `json:"photo_credit,omitempty"`
+	// Source (I1): "barcode" for a catalog item of a photo with many codes
+	// (the answer's source is "vision" when the photo also had other food).
+	Source string `json:"source,omitempty"`
 }
 
 // Answer is the 200 body (the same shape for 1 item and for many).
@@ -287,6 +290,26 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		}
 		ev.Barcode = code
 		ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
+		// I1: the codes the app read in the still photo, and the live code
+		reads := withLive(ParseBarcodes(r.FormValue("barcodes")), code)
+		many := c.BarcodeURL != "" && stillOnly(reads, code)
+		// I1 review: the lookups run at the same time as the scanner, with one
+		// time budget (LookupBudget), so the scan keeps its time limit
+		var got []codeAnswer
+		var gotMS int64
+		lookups := make(chan struct{})
+		if many {
+			go func() {
+				defer close(lookups)
+				lctx, lcancel := context.WithTimeout(r.Context(), LookupBudget)
+				defer lcancel()
+				tb := time.Now()
+				got = lookupAll(lctx, r, c.FastHTTP, c.BarcodeURL, trace, reads)
+				gotMS = time.Since(tb).Milliseconds()
+			}()
+		} else {
+			close(lookups)
+		}
 		ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
 		done := func() {
 			ans.Count = len(ans.Items)
@@ -335,7 +358,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 1. barcode (read on the phone): the fast path, no model, no cap
-		if code != "" && c.BarcodeURL != "" {
+		if code != "" && c.BarcodeURL != "" && !many {
 			tb := time.Now()
 			bc, bst, berr := lookupBarcode(r, c.FastHTTP, c.BarcodeURL, trace, code)
 			ev.BarcodeMS, ev.BarcodeStatus, ev.BarcodeOutcome = time.Since(tb).Milliseconds(), bst, bc.Outcome
@@ -345,9 +368,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			if berr == nil && bc.Outcome == "HIT" && bc.Admissible && bc.Product != nil {
 				p := bc.Product
 				ev.CatalogServings = p.NumberOfServing // a label serving: logged, not shown
-				res := analyze.Result{Name: p.Title, Description: p.Description, IsNonVeg: p.IsNonVeg,
-					NumberOfServing: analyze.DefaultServings, ServingType: p.ServingType, MealCondition: p.MealCondition,
-					Weight: p.Weight, MealCost: p.MealCost}
+				res := catalogResult(p)
 				if dedup(); listed != nil {
 					if _, hit := listed[normName(res.Name)]; hit {
 						ev.DroppedListed = 1
@@ -384,6 +405,115 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				done()
 				return
 			}
+		}
+
+		// I1: many codes: every code is looked up at the same time; each
+		// admissible HIT that is not live in the caller's listings is an item
+		type hit struct {
+			read int // index into reads (and ev.Barcodes)
+			res  analyze.Result
+			gtin string
+		}
+		var hits []hit
+		listedHits := 0
+		hitsDone := false
+		waitHits := func() { // the lookups end, then the hits are made once (they need the dedup)
+			if hitsDone || !many {
+				return
+			}
+			hitsDone = true
+			<-lookups
+			ev.BarcodeMS = gotMS
+			dedup()
+			for i, g := range got {
+				br := BarcodeRead{Code: reads[i].Code, Outcome: g.ans.Outcome, Status: g.status, MS: g.ms}
+				switch {
+				case g.err != nil:
+					br.Outcome = "error"
+				case g.ans.Outcome != "HIT" || g.ans.Product == nil:
+				case !g.ans.Admissible:
+					br.Note = "not_admissible"
+				default:
+					res := catalogResult(g.ans.Product)
+					if listed != nil {
+						if _, x := listed[normName(res.Name)]; x {
+							br.Note = "already_listed"
+							ev.DroppedListed++
+							listedHits++
+							break
+						}
+					}
+					hits = append(hits, hit{read: i, res: res, gtin: g.ans.GTIN14})
+				}
+				ev.Barcodes = append(ev.Barcodes, br)
+			}
+		}
+		// I1: the catalog items come first: the stock photo, else a crop of the
+		// SAM box that holds the code, else the uploaded photo
+		boxOf := map[int]int{} // read -> index into inv.Items whose box holds the code
+		addHits := func(inv *Inventory, src image.Image) error {
+			for _, h := range hits {
+				n := len(ans.Items) + 1
+				var pid, credit string
+				var err error
+				if kind == "session" && c.Stock != nil {
+					jpg, sk := c.Stock.Find(h.gtin)
+					ev.Barcodes[h.read].Stock = sk
+					if jpg != nil {
+						pid, err = c.Photos.SaveItem(jpg, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
+							Item: n, Kind: "stock", Stock: sk, GTIN14: h.gtin, TS: t0.UTC().Format(time.RFC3339)})
+						credit = StockCredit
+						if err != nil { // the camera photo, as the single path (N1 review)
+							if ev.Error == "" {
+								ev.Error = "stock photo: " + err.Error()
+							}
+							pid, credit, err = "", "", nil
+						}
+					}
+				}
+				if k, ok := boxOf[h.read]; ok && pid == "" && inv != nil && src != nil {
+					if b, ok := inv.LargestBox(inv.Items[k]); ok {
+						if jb, cerr := CropJPEG(src, b, CropMargin); cerr == nil {
+							pid, err = c.Photos.SaveItem(jb, ItemPhotoMeta{UserID: user.ID, RequestID: id, ImageSHA256: ev.ImageSHA256,
+								Item: n, Kind: "crop", Box: boxSlice(b), FrameW: b.W, FrameH: b.H, GTIN14: h.gtin, TS: t0.UTC().Format(time.RFC3339)})
+						}
+					}
+				}
+				if pid == "" && err == nil {
+					pid, err = full(n)
+				}
+				if err != nil {
+					return err
+				}
+				ev.Barcodes[h.read].Item = n
+				ans.Items = append(ans.Items, AnswerItem{Item: n, Fields: h.res, PhotoID: pid, PhotoCredit: credit, Source: SourceBarcode})
+			}
+			return nil
+		}
+		// I1: the vision path cannot answer (busy, cap, not food, no food
+		// named, all listed, time out, model error), but codes did: the
+		// catalog items answer; with no hits it fails as before
+		vfail := func(status int, code, msg string) {
+			waitHits()
+			if len(hits) == 0 {
+				// I1 review: every code was a product already in the listings and the
+				// scanner found nothing else: 409, as the one-code path
+				if listedHits > 0 && (code == CodeNotFood || code == CodeNoFoodSingle || code == CodeNoFoodMulti || code == CodeAlreadyListed) {
+					fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
+					return
+				}
+				fail(status, code, msg)
+				return
+			}
+			if ev.Error == "" {
+				ev.Error = "vision " + code + ": " + msg
+			}
+			if err := addHits(nil, nil); err != nil {
+				fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
+				return
+			}
+			ans.Source, ans.Model = SourceBarcode, "catalog"
+			done()
 		}
 
 		ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
@@ -423,7 +553,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		case c.slots <- struct{}{}:
 			defer func() { <-c.slots }()
 		default:
-			fail(http.StatusServiceUnavailable, CodeBusy, "the scanner is busy; try again in a few seconds")
+			vfail(http.StatusServiceUnavailable, CodeBusy, "the scanner is busy; try again in a few seconds")
 			return
 		}
 
@@ -433,10 +563,10 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			var why string
 			if hold, why = c.Budget.ReserveFor(key); hold == nil {
 				if why == CodeCallerCap { // RFC 6585 4: too many requests from this caller
-					fail(http.StatusTooManyRequests, CodeCallerCap, "your daily scan limit is reached; try again after 00:00 UTC")
+					vfail(http.StatusTooManyRequests, CodeCallerCap, "your daily scan limit is reached; try again after 00:00 UTC")
 					return
 				}
-				fail(http.StatusServiceUnavailable, CodeDailyCap, "the daily limit is reached; try again after 00:00 UTC")
+				vfail(http.StatusServiceUnavailable, CodeDailyCap, "the daily limit is reached; try again after 00:00 UTC")
 				return
 			}
 		}
@@ -475,10 +605,10 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				if gerr != nil {
 					ev.Error = "gate: " + gerr.Error()
 				}
-				fail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
+				vfail(http.StatusServiceUnavailable, CodeGateUnavailable, "the food check is not available right now; try again")
 				return
 			}
-			fail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
+			vfail(http.StatusUnprocessableEntity, CodeNotFood, "no food detected in the image")
 			return
 		}
 		if job != nil {
@@ -498,11 +628,11 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			ledgerBoxes(&ev, inv, nil, nil, nil)
 			if errors.Is(err, context.DeadlineExceeded) || errors.Is(ctx.Err(), context.DeadlineExceeded) {
-				fail(http.StatusGatewayTimeout, CodeTimeout,
+				vfail(http.StatusGatewayTimeout, CodeTimeout,
 					fmt.Sprintf("this photo took longer than %s; try a closer photo of fewer items", c.Timeout))
 				return
 			}
-			fail(http.StatusBadGateway, CodeUpstream, "the scanner could not read this photo: "+err.Error())
+			vfail(http.StatusBadGateway, CodeUpstream, "the scanner could not read this photo: "+err.Error())
 			return
 		}
 
@@ -520,9 +650,9 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		if len(items) == 0 {
 			ledgerBoxes(&ev, inv, nil, noFood, nil)
 			if multi || inv.NotFood {
-				fail(http.StatusUnprocessableEntity, CodeNoFoodMulti, "the scanner found no food it can name in these items")
+				vfail(http.StatusUnprocessableEntity, CodeNoFoodMulti, "the scanner found no food it can name in these items")
 			} else {
-				fail(http.StatusUnprocessableEntity, CodeNoFoodSingle, "the scanner found no food it can name in this photo")
+				vfail(http.StatusUnprocessableEntity, CodeNoFoodSingle, "the scanner found no food it can name in this photo")
 			}
 			return
 		}
@@ -537,7 +667,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		ev.DroppedListed = len(listedIdx)
+		ev.DroppedListed += len(listedIdx) // I1 review: the listed codes stay counted
 		var keep []int
 		for _, i := range items {
 			if !listedIdx[i] {
@@ -546,20 +676,66 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(keep) == 0 {
 			ledgerBoxes(&ev, inv, nil, noFood, listedIdx)
-			fail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
+			vfail(http.StatusConflict, CodeAlreadyListed, "this item is already live in your listings")
 			return
 		}
 
 		// 8. item photos: a crop of the largest box when the photo had 2+
 		// boxes, else the uploaded photo
 		var src image.Image
-		if multi {
+		if multi || len(hits) > 0 {
 			if s, _, err := image.Decode(bytes.NewReader(img)); err == nil {
 				src = Upright(s, Orientation(img))
 			}
 		}
+		// I1: the smallest SAM box that holds the centre of a HIT code is that
+		// catalog item (not listed twice); a HIT with no box is the kept item
+		// with the same name (I1 review)
+		waitHits()
+		covered := map[int]int{} // inv item -> the first read it is
+		for _, h := range hits {
+			best, bestArea, bestBox := -1, 0, [4]int{}
+			for _, i := range keep {
+				for _, b := range inv.Items[i].Boxes {
+					area := (b[2] - b[0]) * (b[3] - b[1])
+					if centreIn(reads[h.read], b, inv.FrameW, inv.FrameH) && (best < 0 || area < bestArea) {
+						best, bestArea, bestBox = i, area, b
+					}
+				}
+			}
+			if best < 0 && reads[h.read].FW == 0 {
+				for _, i := range keep {
+					if normName(inv.Items[i].Name) == normName(h.res.Name) {
+						best = i
+						break
+					}
+				}
+			}
+			if best < 0 {
+				continue
+			}
+			boxOf[h.read] = best
+			if _, taken := covered[best]; !taken {
+				covered[best] = h.read
+			}
+			for n, kb := range inv.KeptBoxes {
+				if bestArea > 0 && kb == bestBox {
+					ev.Barcodes[h.read].Box = n + 1
+				}
+			}
+		}
+		if err := addHits(inv, src); err != nil {
+			fail(http.StatusInternalServerError, CodeInternal, "photo store: "+err.Error())
+			return
+		}
 		answerOf := map[int]int{}
+		for i, rd := range covered {
+			answerOf[i] = ev.Barcodes[rd].Item
+		}
 		for _, i := range keep {
+			if _, ok := covered[i]; ok {
+				continue
+			}
 			it := inv.Items[i]
 			n := len(ans.Items) + 1
 			var pid string
@@ -582,14 +758,17 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		}
 		ledgerBoxes(&ev, inv, answerOf, noFood, listedIdx)
 		ans.Source = SourceVision
+		if len(ans.Items) == len(hits) { // I1: every vision item was a code
+			ans.Source, ans.Model = SourceBarcode, "catalog"
+		}
 		done()
 	}
 	// X44b: ?async=1 answers 202 now and runs the rest as a job (scanjob.go)
 	if r.URL.Query().Get("async") == "1" {
 		sum := sha256.Sum256(img)
 		sha := hex.EncodeToString(sum[:])
-		same := sha + "|" + strings.TrimSpace(r.FormValue("barcode")) // a new barcode read is a new scan
-		if prev := c.scans.same(kind, user.ID, same); prev != nil {   // X49r: the app sent the photo again (network)
+		same := sha + "|" + strings.TrimSpace(r.FormValue("barcode")) + "|" + codesKey(ParseBarcodes(r.FormValue("barcodes"))) // a new barcode read is a new scan (I1: and the codes of the still)
+		if prev := c.scans.same(kind, user.ID, same); prev != nil {                                                            // X49r: the app sent the photo again (network)
 			ev.Async, ev.ImageSHA256, ev.Code = true, sha, CodeSameScan
 			finish(http.StatusAccepted, "same_scan")
 			writeJSONResp(w, http.StatusAccepted, map[string]any{"request_id": prev.RequestID, "scan_id": prev.ScanID, "status": ScanRunning})
@@ -745,4 +924,12 @@ func (c *ServiceConfig) gate(ctx context.Context, trace, fwd string, img []byte,
 		return "", 0, resp.StatusCode, err
 	}
 	return g.Verdict, g.P, resp.StatusCode, nil
+}
+
+// catalogResult is the answer fields of a catalog product (the barcode path):
+// the servings start at the default (the label's serving is logged, not shown).
+func catalogResult(p *CatalogProduct) analyze.Result {
+	return analyze.Result{Name: p.Title, Description: p.Description, IsNonVeg: p.IsNonVeg,
+		NumberOfServing: analyze.DefaultServings, ServingType: p.ServingType, MealCondition: p.MealCondition,
+		Weight: p.Weight, MealCost: p.MealCost}
 }
