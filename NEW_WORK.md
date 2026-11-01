@@ -1968,3 +1968,17 @@ T9 approved I1, the daily self-improvement report. The report compares what the 
 - Each 200 scan line has `answer`: every item as the app got it (the 8 fields), how it was made (whole photo, one call or a split of calls for the boxes, a retry, two-pass, agent, barcode), its units, and the "check this" and tray marks.
 - The donor's labels (same request id) were already logged; now every field can be compared, also the ones the donor did not change.
 - Tests: inference 109 -> 110.
+
+## 94. The learn report: what donors keep and change, for each prompt version
+
+**When:** Nov 1 2026.
+**Meta models:** none (it reads the logs of the Muse Spark and SAM 3.1 calls).
+**Files:** `inference/learn.go` (new), `inference/learn_test.go` (new), `inference/cmd/learn/main.go` (new), `inference/cmd/learn/main_test.go` (new), `inference/Dockerfile`
+**Sources:** `docs/sources/LR2.md`
+
+T9: a daily self-improvement report, and a prompt changes only when the logs can tie a change in results to it.
+
+- `learn` reads the scan events of the last 7 days and reports, for each prompt version (entry 92): scans, cost, p50 and p95 time, and how many names and servings the donors kept.
+- The same counts by how the item was made, the fields the donors change most (with the most common changes, by hand, voice or text), and whether the model's servings are too high or too low. The size calibration of X44g is in it too.
+- It changes nothing: a person reads it. It writes a JSON and a Markdown file per day.
+- Tests: inference 110 -> 114.
