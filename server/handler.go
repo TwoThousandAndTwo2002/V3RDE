@@ -1,9 +1,14 @@
 package analyze
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"image"
+	_ "image/gif" // X51: DecodeConfig reads the size from the header (WebP: the inference service registers x/image/webp)
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"log"
 	"net/http"
@@ -155,8 +160,18 @@ func (c Config) checkImage(img []byte, mimeType *string) *imageError {
 	case len(img) == 0:
 		return &imageError{http.StatusBadRequest, "empty image"}
 	}
+	// X51 (security F1): the size from the header, before any decode: more than MaxPixels is refused (a small PNG
+	// can say 16000 x 16000 and take gigabytes when decoded). A header that cannot be read goes on as before.
+	if cfg, _, err := image.DecodeConfig(bytes.NewReader(img)); err == nil &&
+		(cfg.Width <= 0 || cfg.Height <= 0 || int64(cfg.Width)*int64(cfg.Height) > MaxPixels) {
+		return &imageError{http.StatusRequestEntityTooLarge, "image has more than 50 megapixels"}
+	}
 	return nil
 }
+
+// MaxPixels is the largest photo the analyze route takes (X51, security F1; the gate and the bundle route use the
+// same 50 megapixels).
+const MaxPixels = 50_000_000
 
 // analyze is POST /v1/analyze: auth, rate limit, photo, one Meta call, the
 // checked contract with number_of_serving set. Every request writes one

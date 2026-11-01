@@ -2,6 +2,7 @@ package gate
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/draw"
@@ -52,6 +53,12 @@ func CropBox(w, h int) image.Rectangle {
 	return image.Rect(x, y, x+side, y+side)
 }
 
+// MaxPixels is the largest picture decoded, in every format (X51, security F1; the JPEG path had it already).
+const MaxPixels = 50_000_000
+
+// ErrTooManyPixels is the error of a picture larger than MaxPixels.
+var ErrTooManyPixels = errors.New("the picture has more than 50 megapixels")
+
 // Decode reads a JPEG, PNG or GIF into packed RGB (alpha dropped, as
 // Pillow's convert("RGB") does for opaque images). With the turbojpeg tag a
 // JPEG goes through libjpeg-turbo (decode_turbo.go), as in Pillow.
@@ -59,6 +66,15 @@ func Decode(b []byte) (rgb []uint8, w, h int, format string, err error) {
 	if isJPEG(b) {
 		rgb, w, h, err = decodeJPEG(b)
 		return rgb, w, h, "jpeg", err
+	}
+	// X51 (security F1): the size from the header first; a picture of more than MaxPixels is not decoded (a small
+	// PNG or GIF can say 16000 x 16000 and take gigabytes when decoded)
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(b))
+	if err != nil {
+		return nil, 0, 0, "", fmt.Errorf("decode: %w", err)
+	}
+	if cfg.Width <= 0 || cfg.Height <= 0 || int64(cfg.Width)*int64(cfg.Height) > MaxPixels {
+		return nil, 0, 0, "", fmt.Errorf("decode: %w (%d x %d)", ErrTooManyPixels, cfg.Width, cfg.Height)
 	}
 	img, format, err := image.Decode(bytes.NewReader(b))
 	if err != nil {

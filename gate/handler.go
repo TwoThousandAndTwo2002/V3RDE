@@ -215,11 +215,36 @@ func (g *gate) score(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// X51 review (security F1): the slot is taken before the decode, so one photo at a time is decoded and held
+	// (a 50-megapixel PNG of 16 bits takes about 750 MB while it is decoded; two at once were more than the gate's
+	// 1 GB). The slot is given back when the request returns (X51 re-check: so its decoded photo is no longer held
+	// when the next decode starts), or at once when the decode fails. The queue in front of the slot is as before.
+	select {
+	case g.waiting <- struct{}{}:
+	default:
+		g.busy.Add(1)
+		fail(http.StatusServiceUnavailable, "busy: gate queue full")
+		return
+	}
 	t := time.Now()
+	g.slot <- struct{}{}
+	<-g.waiting
+	res.MS.Queue = ms(time.Since(t))
+	held := true
+	free := func() {
+		if held {
+			held = false
+			<-g.slot
+		}
+	}
+	defer free()
+
+	t = time.Now()
 	rgb, wd, ht, format, err := Decode(img)
 	res.MS.Decode = ms(time.Since(t))
 	ev.Format, ev.Width, ev.Height = format, wd, ht
 	if err != nil {
+		free()
 		fail(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
@@ -230,20 +255,8 @@ func (g *gate) score(w http.ResponseWriter, r *http.Request) {
 	x := TensorFor(rgb, wd, ht, g.Head.InputSide, g.Head.Spec())
 	res.MS.Prep = ms(time.Since(t))
 
-	select {
-	case g.waiting <- struct{}{}:
-	default:
-		g.busy.Add(1)
-		fail(http.StatusServiceUnavailable, "busy: gate queue full")
-		return
-	}
-	t = time.Now()
-	g.slot <- struct{}{}
-	<-g.waiting
-	res.MS.Queue = ms(time.Since(t))
 	t = time.Now()
 	v, err := g.Model.Embed(x)
-	<-g.slot
 	res.MS.Invoke = ms(time.Since(t))
 	if err != nil {
 		res.Verdict, res.Why = Unavailable, err.Error()

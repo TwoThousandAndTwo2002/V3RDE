@@ -5,9 +5,13 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"hash/crc32"
+	"image"
+	"image/png"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -614,6 +618,7 @@ func TestAnalyzeRefusals(t *testing.T) {
 		{"no image field", formReq(t, "photo", png8, "image/png"), 400, "multipart field 'image' missing"},
 		{"pdf", formReq(t, "image", []byte("%PDF-1.7"), "application/pdf"), 415, "unsupported image type application/pdf"},
 		{"too large", formReq(t, "image", big, "image/png"), 413, "image too large"},
+		{"pixel bomb", formReq(t, "image", bombPNG(t, 16000, 16000), "image/png"), 413, "image has more than 50 megapixels"}, // X51
 		{"empty", jsonReq(`{"image_base64":"","mime":"image/jpeg"}`), 400, "empty image"},
 		{"bad base64", jsonReq(`{"image_base64":"%%%","mime":"image/png"}`), 400, "image_base64 is not base64"},
 		{"bad json", jsonReq(`{"image_base64":`), 400, "bad JSON body"},
@@ -626,8 +631,19 @@ func TestAnalyzeRefusals(t *testing.T) {
 	if n, _ := g.meta.seen(); n != 0 {
 		t.Fatalf("a refused photo must not reach Meta (%d calls)", n)
 	}
-	if n := len(metricLines(t, g.dir)); n != 9 {
+	if n := len(metricLines(t, g.dir)); n != 10 {
 		t.Fatalf("every refusal writes a line: %d", n)
+	}
+	// X51 review: the limit is "more than 50 megapixels": 8000 x 6250 passes the check, 8000 x 6251 does not
+	c := Config{MaxImage: 5 << 20}
+	for _, tc := range []struct {
+		w, h uint32
+		bad  bool
+	}{{8000, 6250, false}, {8000, 6251, true}} {
+		mime := "image/png"
+		if e := c.checkImage(bombPNG(t, tc.w, tc.h), &mime); (e != nil) != tc.bad {
+			t.Errorf("%d x %d: %v", tc.w, tc.h, e)
+		}
 	}
 }
 
@@ -761,4 +777,19 @@ func TestRecorderOneFilePerUTCDay(t *testing.T) {
 	if err := bad.Write(Line{}); err == nil {
 		t.Fatal("a write that cannot happen must return an error")
 	}
+}
+
+// bombPNG is a valid PNG header that says w x h (X51, security F1): a few bytes that would take gigabytes to decode.
+func bombPNG(t *testing.T, w, h uint32) []byte {
+	t.Helper()
+	var b bytes.Buffer
+	if err := png.Encode(&b, image.NewGray(image.Rect(0, 0, 1, 1))); err != nil {
+		t.Fatal(err)
+	}
+	p := b.Bytes()
+	// signature (8), IHDR length (4), "IHDR" (4), then width and height (4 + 4), ... CRC over "IHDR"+data (17 bytes)
+	binary.BigEndian.PutUint32(p[16:20], w)
+	binary.BigEndian.PutUint32(p[20:24], h)
+	binary.BigEndian.PutUint32(p[29:33], crc32.ChecksumIEEE(p[12:29]))
+	return p
 }

@@ -329,6 +329,12 @@ func TestAnalyzeRefusals(t *testing.T) {
 	if ev := s.events(t); len(ev) != 7 || ev[1].Status != 401 || ev[6].Code != CodeRateLimited {
 		t.Fatalf("%+v", ev)
 	}
+	// X51 review: a WebP that says 16384 x 16384 (a VP8X header, 30 bytes) is refused before it is decoded; the WebP
+	// decoder this package registers lets the size check read it
+	webp := []byte("RIFF\x16\x00\x00\x00WEBPVP8X\x0a\x00\x00\x00\x00\x00\x00\x00\xff\x3f\x00\xff\x3f\x00")
+	if _, _, code, msg := (analyze.Config{MaxImage: 5 << 20}).ReadImage(req(t, "/v1/analyze", "bearer", webp, "")); code != 413 {
+		t.Fatalf("a WebP of 16384 x 16384: %d %s", code, msg)
+	}
 }
 
 // T9: 6/min per user; another user has their own limit; bearer is per IP.

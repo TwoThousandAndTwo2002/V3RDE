@@ -25,8 +25,8 @@ import (
 // JPEGDecoder names the JPEG path in /healthz.
 const JPEGDecoder = "libjpeg-turbo"
 
-// maxPixels is the largest JPEG decoded (50 megapixels).
-const maxPixels = 50_000_000
+// maxPixels is the largest JPEG decoded (50 megapixels; X51: the same MaxPixels as the other formats).
+const maxPixels = MaxPixels
 
 func isJPEG(b []byte) bool { return len(b) > 3 && bytes.HasPrefix(b, []byte{0xFF, 0xD8, 0xFF}) }
 

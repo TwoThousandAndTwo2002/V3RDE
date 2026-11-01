@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"hash/crc32"
 	"image"
 	"image/color"
 	"image/gif"
@@ -18,6 +19,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -426,6 +428,29 @@ func TestQueueFullIsBusy(t *testing.T) {
 	}
 }
 
+// X51 review: a photo is decoded only in the model slot, so two photos are never decoded (and held) at once. While
+// one request is in the model, a second request with a bad photo gets no answer; its 422 comes after the first ends.
+func TestDecodeWaitsForTheSlot(t *testing.T) {
+	f := &fakeModel{v: []float32{1, 0}, block: make(chan struct{}), entered: make(chan int, 4)}
+	var once sync.Once
+	t.Cleanup(func() { once.Do(func() { close(f.block) }) })
+	g := New(Config{Model: f, Head: head(2, 0.5, 0, nil), Recorder: testRecorder(t, 64)})
+	first := make(chan int, 1)
+	go func() { w, _ := post(t, g, "image/png", photo(t), ""); first <- w.Code }()
+	<-f.entered // the first request holds the slot
+	second := make(chan int, 1)
+	go func() { w, _ := post(t, g, "image/png", []byte("\x89PNG\r\n\x1a\nnot a png"), ""); second <- w.Code }()
+	select {
+	case c := <-second:
+		t.Fatalf("the second photo was decoded while the first was in the model: %d", c)
+	case <-time.After(200 * time.Millisecond):
+	}
+	once.Do(func() { close(f.block) })
+	if a, b := <-first, <-second; a != 200 || b != 422 {
+		t.Fatalf("%d %d", a, b)
+	}
+}
+
 // formWithout is a multipart body with no "image" field.
 func formWithout(t *testing.T) struct {
 	ct   string
@@ -599,4 +624,66 @@ func testRecorder(t *testing.T, buf int) *Recorder {
 	r := NewRecorder(t.TempDir(), buf)
 	t.Cleanup(r.Close)
 	return r
+}
+
+// X51 (security F1): a small PNG or GIF that says it is huge is refused before it is decoded (no gigabyte allocation).
+func TestDecodeRefusesAPixelBomb(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		enc  func(*bytes.Buffer) error
+	}{
+		{"png", func(b *bytes.Buffer) error { return png.Encode(b, image.NewGray(image.Rect(0, 0, 8000, 6251))) }},
+		{"gif", func(b *bytes.Buffer) error {
+			return gif.Encode(b, image.NewPaletted(image.Rect(0, 0, 8000, 6251), color.Palette{color.Black, color.White}), nil)
+		}},
+	} {
+		var b bytes.Buffer
+		if err := tc.enc(&b); err != nil {
+			t.Fatal(err)
+		}
+		var before, after runtime.MemStats
+		runtime.GC()
+		runtime.ReadMemStats(&before)
+		_, _, _, _, err := Decode(b.Bytes())
+		runtime.ReadMemStats(&after)
+		if !errors.Is(err, ErrTooManyPixels) {
+			t.Fatalf("%s: %v", tc.name, err)
+		}
+		if grew := after.TotalAlloc - before.TotalAlloc; grew > 20<<20 {
+			t.Fatalf("%s: %d MB were allocated before the refusal", tc.name, grew>>20)
+		}
+	}
+	// X51 review: the limit is "more than": a PNG header that says 50 megapixels exactly (8000 x 6250) passes the
+	// size check (the decode then fails on the missing data), 8000 x 6251 does not
+	for _, tc := range []struct {
+		w, h uint32
+		bad  bool
+	}{{8000, 6250, false}, {8000, 6251, true}} {
+		if _, _, _, _, err := Decode(pngHeader(t, tc.w, tc.h)); errors.Is(err, ErrTooManyPixels) != tc.bad || err == nil {
+			t.Errorf("%d x %d: %v", tc.w, tc.h, err)
+		}
+	}
+	// a small PNG is still decoded
+	var b bytes.Buffer
+	if err := png.Encode(&b, image.NewGray(image.Rect(0, 0, 10, 10))); err != nil {
+		t.Fatal(err)
+	}
+	if _, w, h, _, err := Decode(b.Bytes()); err != nil || w != 10 || h != 10 {
+		t.Fatalf("a small PNG: %d x %d %v", w, h, err)
+	}
+}
+
+// pngHeader is a valid PNG header that says w x h, with the data of a 1 x 1 picture (X51 review).
+func pngHeader(t *testing.T, w, h uint32) []byte {
+	t.Helper()
+	var b bytes.Buffer
+	if err := png.Encode(&b, image.NewGray(image.Rect(0, 0, 1, 1))); err != nil {
+		t.Fatal(err)
+	}
+	p := b.Bytes()
+	// signature (8), IHDR length (4), "IHDR" (4), then width and height (4 + 4); the CRC covers "IHDR" and its 13 bytes
+	binary.BigEndian.PutUint32(p[16:20], w)
+	binary.BigEndian.PutUint32(p[20:24], h)
+	binary.BigEndian.PutUint32(p[29:33], crc32.ChecksumIEEE(p[12:29]))
+	return p
 }

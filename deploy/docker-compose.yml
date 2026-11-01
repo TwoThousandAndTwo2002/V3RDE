@@ -96,6 +96,12 @@ services:
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_pe_s16_f16w_384.tflite:/assets/gate_pe_s16_f16w_384.tflite:ro
       - ${V3RDE_ASSETS:-/opt/v3rde/assets}/gate_head_pe_s16_384_deploy.json:/assets/gate_head_pe_s16_384_deploy.json:ro
       - ${V3RDE_RUNS:-~/V3RDE_runs}/gate:/events
+    # X51 (security F1): a memory limit, so a bad picture cannot take the box's memory. A 50 MP picture, the largest
+    # decoded, needs about 750 MB in the non-JPEG path (a 16-bit PNG: 400 MB, the RGBA copy 200 MB, the RGB copy
+    # 150 MB); one photo is decoded at a time (X51 review). GOMEMLIMIT makes the Go collector work to stay under
+    # the cap; the model's memory is outside it.
+    mem_limit: 1g
+    environment: {GOMEMLIMIT: 850MiB}
 
   # The one analysis route: POST /v1/analyze (bearer token) and /api/analyze
   # (session cookie). $20/day cap, $5/day per caller (X44a); 6/min per user

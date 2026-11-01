@@ -2004,3 +2004,15 @@ T9: after picking the touched-up photo only the small picture changed; "the menu
 
 - A tap on Original or Touched up closes More, and the large photo of the listing shows the photo that will post.
 - Tests: mobile 175 -> 176.
+
+## 97. Security F1: a huge picture is refused before it is decoded
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `server/handler.go`, `server/server_test.go`, `gate/preprocess.go`, `gate/decode_turbo.go`, `gate/handler.go`, `gate/gate_test.go`, `inference/service_test.go`, `deploy/docker-compose.yml`
+**Sources:** `docs/sources/X51.md`
+
+From the security assessment (F1, High): a small PNG or GIF can say it is 16000 × 16000 pixels and take gigabytes when decoded, which stopped the scan service and could take the box's memory.
+
+- The scan route and the food check now read the picture's size from its header first and refuse more than 50 megapixels (the limit JPEG photos already had). The food check decodes one photo at a time and gets a 1 GB memory limit.
+- Tests: gate 26 -> 28, server 38, inference 104 (more cases in the refusal tests).
