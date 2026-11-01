@@ -69,6 +69,8 @@ type Event struct {
 	BarcodeMS       int64         `json:"barcode_ms,omitempty"`
 	CatalogServings float64       `json:"catalog_servings,omitempty"`
 	Barcodes        []BarcodeRead `json:"barcodes,omitempty"`              // I1: every code of a photo with many codes
+	Of              string        `json:"of,omitempty"`                    // I3: a find's scan (its request_id)
+	Find            *FindRec      `json:"find,omitempty"`                  // I3: what the find asked
 	StockPhoto      string        `json:"stock_photo,omitempty"`           // N1: cutout | as_is | none; "" = not looked up
 	Items           int           `json:"items"`                           // items in the answer
 	DroppedNoFood   int           `json:"dropped_model_no_food,omitempty"` // the model's answer said no food

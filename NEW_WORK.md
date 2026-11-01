@@ -1958,3 +1958,21 @@ T9 chose "A: one photo with many barcodes" and "barcodes + vision" for a photo w
 - A product that is already in your listings is left out, as before. The events line keeps every code and what it became.
 - Branch `items` (not deployed yet).
 - Tests: inference 104 -> 116, mobile 159 -> 162.
+
+## 93. Find a missed item: the find service
+
+**When:** Nov 1 2026.
+**Meta models:** SAM 3.1 (the item's word as its text concept, or the drawn box as its box prompt) and Muse Spark 1.3 (names what SAM found).
+**Files:** `inference/find.go` (new), `inference/findengine.go` (new), `inference/engine.go`, `inference/service.go`, `inference/events.go`, `inference/find_test.go` (new)
+**Sources:** `docs/sources/I3.md`
+
+T9 chose "2a, then 2b if not found"; T9 approved the "V3RDE Items Mockup" v3.
+
+- `POST /api/analyze/find`: after a scan, its owner asks for an item that the list does not have. 2a: its name ("rice"); SAM looks for that word in the scan's photo. 2b: a box drawn on the photo and its name; SAM takes the box.
+- Muse names what SAM found. The user's word goes to Muse as a quoted hint, never as an instruction.
+- A box that is already on the list (the scan's or an earlier find's) is not found again, also a drawn one. At most 3 new items; each has a crop of the photo as its listing photo. A model error is an error, not "not found".
+- 2b: if Muse cannot name the box as food, the item is the box with the user's name (T9: add it anyway).
+- Nothing new found: `not_found` (the app then offers "Draw a box around it").
+- Only the scan's owner; the rate limit, busy and the daily limit are as for a scan. The events line has step "find".
+- Tests: inference 116 -> 121.
+

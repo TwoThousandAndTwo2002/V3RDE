@@ -169,6 +169,7 @@ func NewService(c ServiceConfig) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 		})
 	}
+	mux.HandleFunc("POST /api/analyze/find", c.find) // I3: find a missed item (the scan's owner; session only)
 	return mux
 }
 
