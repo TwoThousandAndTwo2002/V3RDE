@@ -363,6 +363,15 @@ A static page next to the app (not in the app bundle): the web build copies `mob
 - Focus: `size.focusBorder` outline in `link`, `space.hair` from the control. Hover and press: `opacity.hover`, `opacity.pressed`.
 - Words: plain, short, non-technical; facts and numbers only from NEW_WORK.md and the code. No Facebook until the service account; the barcode database is "Food DB", with no count (T9, Oct 30).
 
+## Learn report page (`mobile/public/learn/index.html`; #98, the approved "Learn Report Mockup")
+
+A static page next to the app, as the About page, served at `/learn/`, for admin accounts. It has no data of its own: it reads `GET /api/analyze/learn` and `/api/analyze/learn/<day>` with the session cookie; any caller that is not an admin gets 404 there, and the page shows "Not found." under its heading. Its token block is the About page's, byte for byte (`mobile/tests/learn.test.mts`).
+- Header: as the About page (no "Open the app" button). The title in `type.display`, a "Markdown" `link` at the right (the same report as text), a `muted` line under it.
+- Days: up to 7 chips (the last reports, newest first), `size.control` tall, `size.tabPadX` sides, `radius.round`, `size.border` `line`; the chosen day: `accent` border on `accentSoft`.
+- Totals: four cards (`type.display` number, `type.button` label, `muted` line): a grid of one column on a phone, two at medium, four at expanded.
+- Rows (prompts, how the item was made, what donors change, box size): a card each, the name in `type.button`, the facts in `muted` with tabular numbers, `space.gap` × `space.gutter` apart; a bar (`space.gap` tall, `iconFill`, filled in `accent`) shows "name kept".
+- Words: as the report; the report's text (the donors' titles) is put in as text only.
+
 ## Mockups
 
 A new or changed screen is shown to T9 before its code change: rendered from the real parts in a copy of the app, exported for the web and captured with Playwright (phone 390 × 844 at 3×, desktop 1440 × 900 at 2×), with real photos. The review page shows phone shots at true size. Nothing is drawn by hand, and nothing is stretched. An independent check compares the shots with the approved shots.

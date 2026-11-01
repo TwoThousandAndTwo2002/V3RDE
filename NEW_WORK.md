@@ -2025,3 +2025,18 @@ T9 chose the AWS WebSocket API.
 - A logout or an ended session closes the socket in 1 to 1.5 minutes. The services send messages over a unix socket only.
 - Push stays off until the WebSocket API is set up in AWS (the SME steps); nothing changes for users until then.
 - Tests: post 101 -> 108, mobile 159 -> 165.
+
+## 98. The learn report page, for admin accounts
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/public/learn/index.html` (new), `mobile/tests/learn.test.mts` (new), `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`, `inference/scanjob_test.go`
+**Sources:** `docs/sources/I3.md`
+
+T9 approved the "Learn Report Mockup".
+
+- A page at `/learn/`, next to the About page: the daily learn report (entries 94 and 95) for an admin account. It shows up to 7 days, four totals, and rows for each prompt version, how the item was made, what donors change, the servings and the box sizes, with a link to the same report as text.
+- The page itself has no data: it reads the admin route with the session. Any other caller sees "Not found.".
+- The same colours, text sizes and spacing as the About page.
+- A scan test that failed now and then under load (it ended while its scans still wrote files) now waits for them.
+- Tests: mobile 165 -> 168.

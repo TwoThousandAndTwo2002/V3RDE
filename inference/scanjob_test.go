@@ -116,10 +116,12 @@ func TestAnalyzeAsyncSamePhoto(t *testing.T) {
 	if again := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again != id {
 		t.Fatalf("the same photo started a new scan: %s, want %s", again, id)
 	}
-	if other := startScan(t, s, req(t, "/api/analyze?async=1", "u2", testPhoto(t), "")); other == id {
+	other := startScan(t, s, req(t, "/api/analyze?async=1", "u2", testPhoto(t), ""))
+	if other == id {
 		t.Fatal("another user got the job")
 	}
-	if code := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "078742370026")); code == id {
+	code := startScan(t, s, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "078742370026"))
+	if code == id {
 		t.Fatal("a new barcode read got the old job")
 	}
 	f := newSvc(t, threeBoxes(t), "NOT_FOOD", 0, nil)
@@ -127,9 +129,15 @@ func TestAnalyzeAsyncSamePhoto(t *testing.T) {
 	if w, j := f.poll(t, "/api/analyze/scan/"+bad, "u1"); w.Code != 200 || j.Status != ScanFailed {
 		t.Fatalf("failed job: %d %s", w.Code, w.Body)
 	}
-	if again := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), "")); again == bad {
+	again := startScan(t, f, req(t, "/api/analyze?async=1", "u1", testPhoto(t), ""))
+	if again == bad {
 		t.Fatal("Try again after a failure got the failed job")
 	}
+	// I3 (a flake seen under load): the jobs started above still write their photo and events files; wait for
+	// their end, so the test's temporary folders are not removed under them ("directory not empty")
+	s.poll(t, "/api/analyze/scan/"+other, "u2")
+	s.poll(t, "/api/analyze/scan/"+code, "u1")
+	f.poll(t, "/api/analyze/scan/"+again, "u1")
 }
 
 // same(): a running job, or one that ended well less than ScanSameAfter ago.
