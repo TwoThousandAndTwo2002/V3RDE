@@ -29,7 +29,7 @@ test("the words name the link time and the password rule", () => {
 
 test("N4: the listing of a claim link (web and app), and nothing for other links", () => {
   const id = "l_0123456789abcdef";
-  assert.equal(claimListing("https://icarus.thehungreeapp.com/l/" + id), id);
+  assert.equal(claimListing("https://v3rde.thehungreeapp.com/l/" + id), id);
   assert.equal(claimListing("/l/" + id), id);
   assert.equal(claimListing("/l/" + id + "/"), id);
   assert.equal(claimListing("/l/" + id + "?fbclid=abc"), id); // Facebook adds fbclid to outgoing links

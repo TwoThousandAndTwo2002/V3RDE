@@ -54,7 +54,7 @@ services:
               # X49o: the reset mail (Google Workspace SMTP, an app password); empty files = reset answers 503
               "-smtp-addr", "smtp.gmail.com:465",
               "-smtp-user-file", "/run/secrets/smtp_user", "-smtp-pass-file", "/run/secrets/smtp_pass",
-              "-reset-link-base", "${V3RDE_PUBLIC_URL:-https://icarus.thehungreeapp.com}"]
+              "-reset-link-base", "${V3RDE_PUBLIC_URL:-https://v3rde.thehungreeapp.com}"]
     volumes:
       - v3rde_auth:/data
       - ${V3RDE_RUNS:-~/V3RDE_runs}/auth:/events
@@ -195,7 +195,7 @@ services:
               # FB (T9 2026-10-31): the V3RDE Page; the token file comes from fb2 (empty file = posting off).
               # FANOUT_PAGE_ID= (empty) also turns posting off.
               "-page-id", "${FANOUT_PAGE_ID-1415609644973410}", "-page-token-file", "/run/secrets/fb_page_token",
-              "-link-base", "${FANOUT_LINK_BASE-https://icarus.thehungreeapp.com/l/}",
+              "-link-base", "${FANOUT_LINK_BASE-https://v3rde.thehungreeapp.com/l/}",
               "-auth", "http://auth:8081", "-listings", "http://listings:8082", "-data", "/data", "-events", "/events",
               "-cap-usd", "${FANOUT_CAP_USD:-1}", "-caller-cap-usd", "${FANOUT_CALLER_CAP_USD:-0.25}", "-sweep", "1m", "-trust-forwarded"]
     mem_limit: 224m

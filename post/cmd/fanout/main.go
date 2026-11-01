@@ -37,7 +37,7 @@ func main() {
 	listingsURL := flag.String("listings", "http://127.0.0.1:8082", "listings base URL")
 	base := flag.String("base", post.DefaultBase, "Meta Model API base URL")
 	model := flag.String("model", post.DefaultModel, "Muse Spark model id")
-	linkBase := flag.String("link-base", "", "claim link prefix + listing id (e.g. https://icarus.thehungreeapp.com/l/); empty = no link")
+	linkBase := flag.String("link-base", "", "claim link prefix + listing id (e.g. https://v3rde.thehungreeapp.com/l/); empty = no link")
 	data := flag.String("data", "/data", "directory for posts.json (a volume)")
 	events := flag.String("events", "/events", "directory for events-YYYYMMDD.jsonl (a volume)")
 	capUSD := flag.Float64("cap-usd", 1, "daily spend cap in USD, UTC day (this service only)")

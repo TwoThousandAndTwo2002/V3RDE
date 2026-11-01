@@ -260,7 +260,7 @@ test("each box says where it runs; a Meta model has the red border; the models a
 test("the sign-in screen links to the page", () => {
   assert.equal(SIGN_IN.about, "About");
   assert.equal(ABOUT_PATH, "/about/");
-  assert.equal(ABOUT_URL, "https://icarus.thehungreeapp.com" + ABOUT_PATH);
+  assert.equal(ABOUT_URL, "https://v3rde.thehungreeapp.com" + ABOUT_PATH);
   const login = readFileSync(join(ROOT, "src/screens/Login.tsx"), "utf8");
   assert.match(login, /<TextLink testID="about" onPress=\{openAbout\}>\{SIGN_IN\.about\}<\/TextLink>/);
   assert.match(login, /window\.location\.assign\(ABOUT_PATH\)/);

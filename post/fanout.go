@@ -319,7 +319,7 @@ type FanoutConfig struct {
 	Budget        *Budget
 	Events        *Events
 	Store         *PostStore
-	LinkBase      string        // e.g. https://icarus.thehungreeapp.com/l/ ; "" = no link in the post
+	LinkBase      string        // e.g. https://v3rde.thehungreeapp.com/l/ ; "" = no link in the post
 	Timeout       time.Duration // the text calls (under the 30 s gateway)
 	// PublishTimeout bounds the Facebook upload. It does not end with the
 	// caller's request, so a post that Facebook accepts is always recorded.

@@ -2065,3 +2065,15 @@ The gate test failed at times in the SUP preflight ("gate down").
 
 - The test counted a cut-off SAM request as a Muse call. It now counts only requests that name a model that is not SAM.
 - No app change. Tests: inference 104 (no new test).
+
+## 102. The public name is v3rde.thehungreeapp.com
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/src/signin.ts`, `mobile/tests/about.test.mts`, `mobile/tests/reset.test.mts`, `deploy/docker-compose.yml`, `post/fanout.go`, `post/cmd/fanout/main.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X56.md`
+
+The SME moved the app to `https://v3rde.thehungreeapp.com`; the old icarus name has no address now.
+
+- The password-reset mail, the claim link in the Facebook post and the About link of the phone app now use the new name.
+- Tests: mobile 182 (two tests updated).
