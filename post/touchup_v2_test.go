@@ -166,6 +166,15 @@ func TestTouchupV2Background(t *testing.T) {
 		!strings.Contains(string(ev), "Ripe Plantains") { // the scan's name, in the note
 		t.Fatalf("events %s", ev)
 	}
+	// P1: the job's calls are on its line, each with its prompt
+	for _, f := range []string{`"purpose":"image:edit"`, `"prompt_id":"touchup.bigger"`, `"prompt_id":"sam.concept"`, `"prompt_id":"sam.box"`} {
+		if !strings.Contains(string(ev), f) {
+			t.Errorf("events have no %s: %s", f, ev)
+		}
+	}
+	if strings.Contains(string(ev), `"prompt_id":"unknown"`) {
+		t.Errorf("a call with an unknown prompt: %s", ev)
+	}
 	w := do(e.h, httptest.NewRequest("GET", "/healthz", nil))
 	if !strings.Contains(w.Body.String(), `"v2":true`) {
 		t.Fatalf("healthz %s", w.Body)

@@ -126,7 +126,10 @@ func (t *Transcriber) Transcribe(ctx context.Context, wavBytes []byte, keywords,
 		model = DefaultASRModel
 	}
 	call := Call{Purpose: "voice:transcribe", Model: model}
-	req := map[string]any{"mode": "PUSH_TO_TALK", "model": model, "audioEncoding": "WAV"}
+	req := map[string]any{"model": model}
+	for k, v := range transcribeFields { // P1: the fixed fields (pinned in prompts.go)
+		req[k] = v
+	}
 	if len(keywords) > 0 {
 		req["keywords"] = keywords
 	}
@@ -134,6 +137,7 @@ func (t *Transcriber) Transcribe(ctx context.Context, wavBytes []byte, keywords,
 		req["languageBias"] = languages
 	}
 	rj, _ := json.Marshal(req)
+	trace(&call, string(rj), "") // P1: the request fields (keywords, languages)
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
 	h := textproto.MIMEHeader{}

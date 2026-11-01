@@ -222,7 +222,8 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 	c.cors(w)
 	remote, fwd := analyze.ClientIPs(r)
 	ev := Event{TS: t0.UTC().Format(time.RFC3339Nano), Service: "analyze", Step: "analyze", TraceID: trace,
-		RequestID: id, RemoteIP: remote, ForwardedIP: fwd, Build: c.Build, Model: c.Engine.Muse}
+		RequestID: id, RemoteIP: remote, ForwardedIP: fwd, Build: c.Build, Model: c.Engine.Muse,
+		Settings: c.Engine.Settings()}
 	finish := func(status int, route string) {
 		ev.Status, ev.Route, ev.TotalMS = status, route, time.Since(t0).Milliseconds()
 		if c.Budget != nil {

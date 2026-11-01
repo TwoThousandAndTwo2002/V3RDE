@@ -1,0 +1,13 @@
+# P1 prompt pins of inference: one row per prompt version, "id version sha" (analyze.CheckPinHistory).
+# ONLY ADD ROWS. A text change of a prompt is a new row with a new version, at the end;
+# never edit or remove a row (the SUP generator refuses it). Rows of 2026-11-01: the texts of services bbfed58.
+agent 1 7e7bf4fbf4ab9bbc
+analyze.whole 1 5b01039918cb2fd0
+inventory.multi 1 d2b05eb1866bd786
+inventory.multi.compact 1 4b6179feaf072380
+sam.box 1 c5d5020a2b5d8041
+sam.concept 1 a05432927575771b
+sam.refine 1 276cdea3080f9701
+touchup.bigger 1 5baf1f95bc2e9a52
+twopass.details 1 592633bf2426bfac
+twopass.names 1 23ba4ea277123da5

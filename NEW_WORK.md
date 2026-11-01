@@ -1941,3 +1941,17 @@ T9, from the tester feedback; T9 approved the "V3RDE Batch 1 Mockup" v3.
 - A new account's email must have a real form (name@domain.ending, any country). Sign-in and the password reset keep the earlier check, so older accounts still sign in and get a reset link.
 - Tests: mobile 153 -> 159, auth 32 -> 33.
 
+
+## 92. Each Meta call names its prompt, its version and the text it sent
+
+**When:** Nov 1 2026.
+**Meta models:** Muse Spark 1.3, SAM 3.1, Muse Image 1.0, Muse Voice Transcribe 1.0 (no model change; the calls are logged, no prompt changes).
+**Files:** `server/prompts.go` (new), `server/prompts_test.go` (new), `inference/prompts.go` (new), `inference/prompts_test.go` (new), `inference/prompts_pins.txt` (new), `inference/meta.go`, `inference/events.go`, `inference/engine.go`, `inference/service.go`, `inference/touchupv2.go`, `inference/engine_test.go`, `post/prompts.go` (new), `post/prompts_test.go` (new), `post/prompts_pins.txt` (new), `post/post.go`, `post/touchup.go`, `post/touchup_v2_test.go`, `post/voice.go`
+**Sources:** `docs/sources/P1.md`
+
+T9: a prompt changes only when the logs can tie a change in results to the changed prompt.
+
+- Each service has a list of the prompts it sends: an id, a version and the sha of the prompt text. A test checks them against a pin history that only gets new rows, so a text change without a new version fails the build.
+- Each call line in the events has `prompt_id`, `prompt_version`, `prompt_sha`, the sha of the text really sent (`input_sha`), the reasoning `effort`, and (scan) the API's id and the cached tokens. Two prompts with one purpose (rescue email or drop-off; touch-up light or background) are told apart by the text sent. The auto touch-up job line now lists its SAM and Muse Image calls.
+- The scan event line keeps the engine settings (split, compact, marks, efforts, size levels, concepts), so a flag change is not taken for a prompt change.
+- No prompt text changed. Tests: server 38 -> 44, inference 104 -> 109, post 97 -> 101.
