@@ -351,13 +351,15 @@ func TestAnalyzeRateLimitPerUser(t *testing.T) {
 	}
 }
 
-// museBodies counts the API bodies that are not SAM calls.
+// museBodies counts the API bodies that are not SAM calls. X55: a body with no model is not counted: it is a SAM
+// call stopped while it was sent (the gate failed and the scan stopped its SAM call: "context canceled"), which the
+// fake API keeps as an empty body; the test failed at times with "gate down".
 func museBodies(f *fakeAPI) int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	n := 0
 	for _, b := range f.bodies {
-		if b["model"] != DefaultSAM {
+		if m, _ := b["model"].(string); m != "" && m != DefaultSAM {
 			n++
 		}
 	}

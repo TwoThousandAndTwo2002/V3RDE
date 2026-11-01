@@ -2053,3 +2053,15 @@ From the security assessment (F10, container hardening): no service dropped Linu
 
 - The Go services, their sidecars and the ledger (all run as uid 65534) now drop all Linux capabilities and cannot gain new privileges. Caddy and the translation job run as root and stay as they are.
 - Tests: mobile 180 -> 182.
+
+## 101. One more test that failed at times is steady
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `inference/service_test.go`
+**Sources:** `docs/sources/X55.md`
+
+The gate test failed at times in the SUP preflight ("gate down").
+
+- The test counted a cut-off SAM request as a Muse call. It now counts only requests that name a model that is not SAM.
+- No app change. Tests: inference 104 (no new test).
