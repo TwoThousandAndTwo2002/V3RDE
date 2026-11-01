@@ -2077,3 +2077,17 @@ The SME moved the app to `https://v3rde.thehungreeapp.com`; the old icarus name 
 
 - The password-reset mail, the claim link in the Facebook post and the About link of the phone app now use the new name.
 - Tests: mobile 182 (two tests updated).
+
+## 103. A push channel through an API Gateway WebSocket (from branch learn)
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `post/push.go` (new), `post/push_test.go` (new), `post/sigv4.go` (new), `post/sigv4_test.go` (new), `post/cmd/push/main.go` (new), `post/post.go`, `post/rescue.go`, `post/touchup.go`, `post/cmd/rescue/main.go`, `post/cmd/touchup/main.go`, `post/Dockerfile`, `server/sock.go` (new), `server/sock_test.go` (new), `mobile/src/push.ts` (new), `mobile/tests/push.test.mts` (new), `mobile/App.tsx`, `mobile/src/api.ts`, `mobile/src/rescue.ts`, `mobile/src/touchup.ts`, `mobile/src/screens/Review.tsx`, `mobile/package.json`, `mobile/tests/compose.test.mts`, `mobile/web-dist/`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/WS1.md`, `docs/sources/X57.md`
+
+The push channel of branch `learn` (its #97), made to work with the SME's WebSocket set-up. The rest of `learn` comes in a later merge.
+
+- A push service on the box: a signed-in web app gets a one-time ticket and opens the WebSocket of API Gateway; when a rescue or a touch-up ends, the box sends a short message, and the app reads the result at once. The polling stays as the fallback.
+- The SME's routes send the ping to `/api/push/pingOn` and give the connection id only on connect, so the app's ping carries a key from its ticket, and a socket that stops its pings is forgotten after 3 minutes.
+- Push stays off until the box has the WebSocket API's address and secret.
+- Tests: post 102 -> 110, server 38 -> 39, mobile 182 -> 189.

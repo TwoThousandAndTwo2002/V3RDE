@@ -31,8 +31,15 @@ export V3RDE_PORT="${V3RDE_PORT:-8080}"
 export V3RDE_I18N="${V3RDE_I18N:-$HOME/V3RDE_i18n}"           # X49b: the published translations (/i18n/)
 export V3RDE_LIF_SEED="${V3RDE_LIF_SEED:-$HOME/V3RDE_lif_seed}" # X49b: the first round's start (the Mac's runs)
 export COOKIE_SECURE="${COOKIE_SECURE:-true}" ANALYZE_RATE_BURST="${ANALYZE_RATE_BURST:-6}"
+# X57: the push settings (not secret) from $V3RDE_CFG/push.env, lines KEY=value; only these three keys are read.
+# No file or no value: push stays off (the app polls as before).
+if [ -f "$V3RDE_CFG/push.env" ]; then
+  while IFS='=' read -r k v; do
+    case "$k" in V3RDE_PUSH_ENDPOINT|V3RDE_PUSH_URL|V3RDE_PUSH_REGION) [ -n "$v" ] && export "$k=$v" ;; esac
+  done < <(grep -E '^V3RDE_PUSH_(ENDPOINT|URL|REGION)=' "$V3RDE_CFG/push.env" | tr -d '\r"'"'"' ')
+fi
 PATH="/opt/homebrew/bin:/usr/local/bin:/snap/bin:$PATH"
-SERVICES="analyze auth listings barcode gate touchup rescue fanout voice"   # each writes $V3RDE_RUNS/<name>
+SERVICES="analyze auth listings barcode gate touchup rescue fanout voice push"   # WS1: push   # each writes $V3RDE_RUNS/<name>
 
 say()  { printf '\n== %s ==\n' "$*"; }
 die()  { printf '\nABORT: %s\n' "$*" >&2; exit 1; }
@@ -104,9 +111,10 @@ preflight() {
   # bind mounts are files; the auth service then answers 503 to a reset request.
   local sf
   # FB: the Facebook Page token (fb2 on the Mac and the box). Missing: an empty file; fan-out then does not post.
-  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token"; do
+  # WS1: push_secret, the shared secret of the API Gateway WebSocket integrations. Missing: an empty file; push is off.
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/push_secret"; do
     [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
-    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts)"; }
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no push)"; }
     chmod 600 "$sf"
     asroot && chown 65534:65534 "$sf"
   done
@@ -190,7 +198,7 @@ up() {
   check "POST /v1/fanout/status" 404 -X POST "$u/v1/fanout/status"
   local s
   local s h
-  for s in barcode:8083 gate:8084 analyze:8087 ledger:8086 touchup:8088 rescue:8089 fanout:8090 voice:8091; do
+  for s in barcode:8083 gate:8084 analyze:8087 ledger:8086 touchup:8088 rescue:8089 fanout:8090 voice:8091 push:8092; do
     h=$(dc exec -T caddy wget -qO- -T 5 "http://$s/healthz" </dev/null 2>/dev/null | cut -c1-150 || true)
     [ -n "$h" ] || { h="did not answer  <-- CHECK"; BAD=$((BAD+1)); }
     printf '   %-30s %s\n' "${s%%:*} (internal)" "$h"
@@ -203,7 +211,7 @@ up() {
   local ids n f
   ids=$(dc ps -q) || die "docker compose ps failed"
   [ -n "$ids" ] || die "no containers"
-  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass fb_page_token; do
+  for f in meta_model_api_key fanout_status_token analyze_token smtp_pass fb_page_token push_secret; do
     [ -s "$V3RDE_CFG/$f" ] || continue # an empty file matches every line (X49o: smtp_pass is empty until x49p)
     # shellcheck disable=SC2086
     n=$(docker inspect $ids | grep -cFf "$V3RDE_CFG/$f" || true)

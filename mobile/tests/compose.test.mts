@@ -25,13 +25,13 @@ test("every Go service drops all capabilities and gets no new privileges", () =>
   assert.ok(hardened(b.get("x-hardened")!) && hardened(b.get("x-sidecar")!) && hardened(b.get("x-post")!));
   const own = ["auth", "listings", "barcode", "gate", "analyze"];
   for (const s of own) assert.ok(b.get(s)!.includes("<<: *hardened"), s);
-  for (const s of ["touchup", "rescue", "fanout", "voice"]) assert.ok(b.get(s)!.includes("<<: *post"), s);
+  for (const s of ["touchup", "rescue", "fanout", "voice", "push"]) assert.ok(b.get(s)!.includes("<<: *post"), s);
   const sidecars = [...b.keys()].filter((k) => k.startsWith("sidecar-"));
   assert.equal(sidecars.length, 9);
   for (const s of [...sidecars, "ledger"]) assert.ok(b.get(s)!.includes("<<: *sidecar"), s);
   // the only services left as they were: caddy (root, port 80) and the lif job (root)
   const all = [...b.keys()].filter((k) => !k.startsWith("x-"));
-  assert.deepEqual(all.filter((s) => !own.includes(s) && !/^(touchup|rescue|fanout|voice|ledger|sidecar-)/.test(s)).sort(), ["caddy", "lif"]);
+  assert.deepEqual(all.filter((s) => !own.includes(s) && !/^(touchup|rescue|fanout|voice|push|ledger|sidecar-)/.test(s)).sort(), ["caddy", "lif"]);
 });
 
 test("the hardened images run as uid 65534 (no capability is needed)", () => {

@@ -12,6 +12,7 @@ import { useFonts as useFontFiles } from "expo-font";
 import { Poppins_400Regular as regularFile } from "@expo-google-fonts/poppins/400Regular";
 import { Poppins_600SemiBold as semiboldFile } from "@expo-google-fonts/poppins/600SemiBold";
 import { auth, type User as Account } from "./src/api";
+import { startPush } from "./src/push";
 import { font, layoutFor, motion, useColors } from "./src/theme";
 import { Toast } from "./src/ui";
 import { Doodles as Wallpaper } from "./src/doodles";
@@ -151,6 +152,13 @@ const Shell = () => {
     setStage({ kind: "signin" });
   }, []);
   const who = stage.kind === "in" ? stage.who : null;
+  // WS1: the push socket while signed in, in the web app only (a phone's WebSocket sends another Origin, which the
+  // box refuses), and only when the box has push on; the polls are the fallback
+  const pushUser = who?.id ?? "";
+  useEffect(function push() {
+    if (!pushUser || RN.Platform.OS !== "web" || typeof WebSocket === "undefined") return;
+    return startPush(() => auth.pushTicket(), (url) => new WebSocket(url));
+  }, [pushUser]);
   const session = useMemo<Session | null>(() => who && {
     who,
     goTo: (role) => setStage((now) => (now.kind === "in" ? { ...now, role, menu: false } : now)),

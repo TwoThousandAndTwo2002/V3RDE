@@ -4,6 +4,8 @@
 
 /** The app asks for the state of the job this often. */
 export const POLL_MS = 2000;
+/** WS1: the poll while the push socket is open (a message ends the wait at once). */
+export const PUSH_POLL_MS = 6000;
 /** It stops asking after this time (the job is then shown as failed). */
 export const GIVE_UP_MS = 120_000;
 

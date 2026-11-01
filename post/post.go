@@ -97,13 +97,35 @@ type AuthClient struct {
 }
 
 func (a *AuthClient) Who(r *http.Request) (User, bool) {
+	u, err := a.WhoErr(r)
+	return u, err == nil
+}
+
+// ErrNoSession is WhoErr's answer when auth says the session is not valid
+// (401), not when auth did not answer.
+var ErrNoSession = errors.New("no session")
+
+// WhoErr is Who with the reason: ErrNoSession (no cookie, or auth answered
+// 401), or another error (no answer, another status) when it is not known.
+func (a *AuthClient) WhoErr(r *http.Request) (User, error) {
+	u, ok, known := a.who(r)
+	switch {
+	case ok:
+		return u, nil
+	case known:
+		return User{}, ErrNoSession
+	}
+	return User{}, errors.New("auth: no clear answer")
+}
+
+func (a *AuthClient) who(r *http.Request) (User, bool, bool) {
 	ck, err := r.Cookie(SessionCookie)
 	if err != nil || ck.Value == "" {
-		return User{}, false
+		return User{}, false, true
 	}
 	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, strings.TrimRight(a.URL, "/")+"/api/auth/me", nil)
 	if err != nil {
-		return User{}, false
+		return User{}, false, false
 	}
 	req.AddCookie(ck)
 	hc := a.HTTP
@@ -113,17 +135,20 @@ func (a *AuthClient) Who(r *http.Request) (User, bool) {
 	resp, err := hc.Do(req)
 	if err != nil {
 		log.Printf("auth lookup: %v", err)
-		return User{}, false
+		return User{}, false, false
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusUnauthorized {
+		return User{}, false, true
+	}
 	if resp.StatusCode != http.StatusOK {
-		return User{}, false
+		return User{}, false, false
 	}
 	var u User
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 4096)).Decode(&u); err != nil || u.ID == "" {
-		return User{}, false
+		return User{}, false, false
 	}
-	return u, true
+	return u, true, true
 }
 
 // Caller is the result of the auth step of a request.

@@ -330,6 +330,7 @@ func sha256hex(b []byte) string {
 
 // TouchupConfig is everything the touch-up handler needs (cmd/touchup).
 type TouchupConfig struct {
+	Push        *PushClient // WS1: a message to the owner's app when a job ends; nil = off
 	Editor      *ImageEditor
 	Checker     *Muse           // nil = no check: every edit is kept_original (fails closed)
 	Session     Authenticator   // the app's session cookie: /api/touchup...
@@ -659,6 +660,7 @@ func (c *TouchupConfig) queue(job *Job, img []byte, mime, prompt string, hold *H
 			UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, CapKey: job.capKey,
 			Status: 200, LatencyMS: ms, Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status,
 				"mode": snap.Mode, "reason": snap.Reason, "source_photo_id": snap.SourcePhotoID}})
+		c.Push.Notify(PushMessage{UserID: job.userID, Kind: "touchup", ID: snap.TouchupID, Status: snap.Status}) // WS1
 	}
 }
 
@@ -730,6 +732,7 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img)}})
+	c.Push.Notify(PushMessage{UserID: job.userID, Kind: "touchup", ID: snap.TouchupID, Status: snap.Status}) // WS1
 }
 
 // runV2 is run for X48o: the item is cut again from the upload (LoadItem),
@@ -770,6 +773,7 @@ func (c *TouchupConfig) runV2(ctx context.Context, job *Job, img []byte, hold *H
 		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img), "v2": true, "mask": r.Mask, "ssim": r.SSIM, "muse": r.Muse, "note": clip(r.Note, 240)}})
+	c.Push.Notify(PushMessage{UserID: job.userID, Kind: "touchup", ID: snap.TouchupID, Status: snap.Status}) // WS1
 }
 
 // WiderUnder, WiderMargin: an item photo with the long edge under WiderUnder

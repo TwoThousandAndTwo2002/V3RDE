@@ -72,6 +72,8 @@ export function canRescue(l: { status: string; expires_at: string }, now = Date.
 
 /** The polls of a rescue job: once a second, up to RESCUE_WAIT_MS (the service job limit is 90 s). */
 export const RESCUE_POLL_MS = 1000;
+/** WS1: the poll while the push socket is open (a message ends the wait at once). */
+export const RESCUE_PUSH_POLL_MS = 5000;
 export const RESCUE_WAIT_MS = 100_000;
 
 /** X49x: the word tables of this file (src/lang.ts). */

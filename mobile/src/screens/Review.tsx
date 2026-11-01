@@ -27,7 +27,8 @@ import type { Answer } from "./Capture";
 import { TouchUp } from "./TouchUp";
 import { DetailsView, hasDetails } from "./Details";
 import { useChat } from "./Voice";
-import { POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
+import { POLL_MS, PUSH_POLL_MS, afterPoll, photoToPost, touchError, type TouchState } from "../touchup";
+import { pollMs, pushNow, pushWait } from "../push";
 import { MORE, PICKUP, PLACE, TOUCH, VOICE } from "../words";
 import { currentPosition, type Place } from "../place";
 import type { PickedAddress } from "../maps";
@@ -114,8 +115,10 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     try {
       const job = await touchup.start(photoId);
       let now: TouchState = { kind: "working", id: job.touchup_id, since };
+      let asked = pushNow(); // WS1: a message that came since the last read of the job also ends the wait
       while (live.current && now.kind === "working") {
-        await new Promise((go) => setTimeout(go, POLL_MS));
+        await pushWait(pollMs(POLL_MS, PUSH_POLL_MS), (m) => m.kind === "touchup" && m.id === job.touchup_id, asked); // WS1
+        asked = pushNow();
         if (!live.current || removed.current.has(item)) return;
         now = afterPoll(await touchup.get(job.touchup_id), job.touchup_id, since, Date.now());
       }

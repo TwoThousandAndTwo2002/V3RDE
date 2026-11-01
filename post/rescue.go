@@ -710,6 +710,7 @@ func (s *RescueStore) SentToday(owner string, now time.Time) int {
 
 // RescueConfig is everything the rescue handler needs (cmd/rescue).
 type RescueConfig struct {
+	Push        *PushClient // WS1: a message to the owner's app when a job ends; nil = off
 	Muse        *Muse
 	Directory   *Directory
 	Listings    *ListingsClient
@@ -979,6 +980,7 @@ func (c *RescueConfig) create(w http.ResponseWriter, r *http.Request) {
 		ev.Detail = j.detail(res)
 		ev.Detail["async"] = true
 		c.record(ev)
+		c.Push.Notify(PushMessage{UserID: j.owner, Kind: "rescue", ID: res.RescueID, Status: res.Status}) // WS1
 	}()
 }
 
