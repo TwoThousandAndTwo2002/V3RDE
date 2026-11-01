@@ -1957,3 +1957,13 @@ T9; T9 approved the "V3RDE Language Mockup" v2.
 - Every app text is now one whole message in a word table, so each language can say it its way (for example "1 item found" and "3 items found"). The next round translates the 57 new texts.
 - Yoruba joins the translation rounds. The About page says "Seven languages".
 - Tests: mobile 159 -> 169, i18n 64 -> 66.
+
+## 93. The translation round builds again
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `qe/round.Dockerfile`
+**Sources:** `docs/sources/X49y.md`
+
+- After #92 the translation round on the box did not start: its image runs the i18n tests, and two new tests read the app files, which are not in that image. The image now skips those two tests (every SUP script still runs them with the whole repo). The round then translates Yoruba and the 57 new texts.
+- Tests: no change (i18n 66).
