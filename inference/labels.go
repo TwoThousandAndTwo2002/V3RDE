@@ -41,7 +41,8 @@ const (
 
 var (
 	labelFields = map[string]bool{"title": true, "servings": true, "remove": true, "pickup": true, "photo": true,
-		"condition": true, "diet": true, "portions": true, "weight": true} // X49: the item details
+		"condition": true, "diet": true, "portions": true, "weight": true, // X49: the item details
+		"found": true} // I4: an item the find service added (from the chat)
 	labelHows   = map[string]bool{"hand": true, "voice": true, "text": true, "undo": true}
 	labelPhotos = map[string]bool{"": true, "original": true, "touched_up": true}
 	labelTouch  = map[string]bool{"": true, "done": true, "kept": true, "failed": true}

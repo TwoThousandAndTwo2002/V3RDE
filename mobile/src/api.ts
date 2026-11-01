@@ -236,6 +236,11 @@ export function analyzeLabels(report: object): Promise<void> {
   return request<void>("POST", "/api/analyze/labels", { json: report, timeoutMs: 10_000 }).catch(() => undefined);
 }
 
+/** I3/I4: find a missed item in the scan photo by its name (the scan's request_id; the owner only). */
+export function findItem(requestId: string, name: string) {
+  return request<any>("POST", "/api/analyze/find", { json: { request_id: requestId, name }, timeoutMs: 35_000 });
+}
+
 /** Voice posting: one WAV clip, or (X48s) a typed chat line, and the review list (item, title, servings). The
  *  answer is a proposal; the app posts nothing until the donor taps Post. The service stops at 25 s; the app waits 35 s. */
 export function voice(said: Upload | { text: string }, items: VoiceItem[], pickupText = "", lang = "") {

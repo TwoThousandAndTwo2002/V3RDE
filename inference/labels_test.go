@@ -114,3 +114,19 @@ func TestLabelsKeepEditsAndChat(t *testing.T) {
 		}
 	}
 }
+
+// I4: an item the find service added from a chat line is a "found" edit.
+func TestLabelsFoundEdit(t *testing.T) {
+	s := newSvc(t, oneBox(t, "Romanesco"), "FOOD", 0, nil)
+	body := `{"request_id":"` + strings.Repeat("b", 32) + `","outcome":"posted","items":[],"edits":[{"item":4,"field":"found","from":"","to":"White rice","how":"text"}]}`
+	r := httptest.NewRequest(http.MethodPost, "/api/analyze/labels", strings.NewReader(body))
+	r.AddCookie(&http.Cookie{Name: SessionCookie, Value: "u1"})
+	w := httptest.NewRecorder()
+	s.h.ServeHTTP(w, r)
+	if w.Code != 204 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if e := s.events(t)[0].Labels.Edits; len(e) != 1 || e[0].Field != "found" || e[0].To != "White rice" {
+		t.Fatalf("%+v", e)
+	}
+}

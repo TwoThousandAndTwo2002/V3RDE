@@ -622,3 +622,40 @@ func TestVoiceTypedText(t *testing.T) {
 		t.Fatalf("voice: %d %+v", w.Code, p)
 	}
 }
+
+// I4: the donor says a food is missing; the proposal names it in find (the
+// app asks the find service). Cleaned, once each, at most 3; not a title of
+// the list; only with a scan (edit mode).
+func TestVoiceFind(t *testing.T) {
+	f := &voiceFake{mapText: `{"changes":[],"find":["Sandwich","sandwich","the BREAD!!","pasta tray","a b c d e f","x",7,"???"]}`}
+	cfg, h, stop := newVoice(t, f)
+	defer stop()
+	w := do(h, voiceReq(t, "/api/voice", nil, map[string]string{"items": reviewItems, "text": "you missed the sandwich and the bread"}, "u1"))
+	var p Proposal
+	json.Unmarshal(w.Body.Bytes(), &p)
+	if w.Code != 200 || strings.Join(p.Find, "|") != "sandwich|the bread|a b c d" {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	if strings.Join(p.Dropped, "|") != `find "pasta tray": already in the list|find "x": over the limit of 3|a find with no name|a find with no name` {
+		t.Fatalf("dropped %q", p.Dropped)
+	}
+	if !strings.Contains(f.museBody, "put its short name in find") || !strings.Contains(f.museBody, "never a food in ITEMS") || !strings.Contains(f.museBody, `\"find\": [`) {
+		t.Fatalf("prompt %.400s", f.museBody)
+	}
+	b, _ := os.ReadFile(cfg.Events.Path(time.Now()))
+	if !strings.Contains(string(b), `"find":["sandwich","the bread","a b c d"]`) {
+		t.Fatalf("events %s", b)
+	}
+	// no scan (voice-only draft): find is refused; an answer with no find has an empty list
+	find, dropped := FindNames(map[string]any{"find": []any{"bread"}}, nil)
+	if len(find) != 0 || len(dropped) != 1 || !strings.Contains(dropped[0], "no scan photo") {
+		t.Fatal(find, dropped)
+	}
+	f2 := &voiceFake{mapText: `{"changes":[]}`}
+	_, h2, stop2 := newVoice(t, f2)
+	defer stop2()
+	w = do(h2, voiceReq(t, "/api/voice", nil, map[string]string{"items": reviewItems, "text": "ok"}, "u1"))
+	if !strings.Contains(w.Body.String(), `"find":[]`) {
+		t.Fatalf("%s", w.Body)
+	}
+}

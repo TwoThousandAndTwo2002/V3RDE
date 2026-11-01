@@ -70,7 +70,7 @@ export type LabelOutcome = "posted" | "retake" | "closed";
 export type EditHow = "hand" | "voice" | "text" | "undo";
 // X49: the details too (condition, diet, portions, weight; the values of ItemDetails as text, "" = none)
 export type Edit = {
-  item: number; field: "title" | "servings" | "remove" | "pickup" | "photo" | "condition" | "diet" | "portions" | "weight";
+  item: number; field: "title" | "servings" | "remove" | "pickup" | "photo" | "condition" | "diet" | "portions" | "weight" | "found";
   from: string; to: string; how: EditHow;
 };
 export type ChatLine = { how: "voice" | "text"; text: string; changes: number; undone?: boolean; pickup?: boolean };
@@ -89,7 +89,8 @@ export function diffEdits(before: ItemForm[], after: ItemForm[], pickupBefore: s
     if (a.servings !== b.servings) out.push({ item: b.item, field: "servings", from: b.servings, to: a.servings, how });
     out.push(...detailEdits(b.item, b.details, a.details, how));
   }
-  for (const a of after) if (!before.some((b) => b.item === a.item)) out.push({ item: a.item, field: "remove", from: "", to: a.title, how }); // back (Undo)
+  // back (Undo), or I4: an item the find service added from a chat line ("found")
+  for (const a of after) if (!before.some((b) => b.item === a.item)) out.push({ item: a.item, field: how === "undo" ? "remove" : "found", from: "", to: a.title, how });
   if (pickupAfter !== pickupBefore) out.push({ item: 0, field: "pickup", from: "", to: "", how });
   return out;
 }

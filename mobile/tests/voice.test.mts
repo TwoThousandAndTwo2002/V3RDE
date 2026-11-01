@@ -1,7 +1,7 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems } from "../src/voice.ts";
+import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, joinFound, turnsWithFound, liveMarks, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -22,7 +22,7 @@ test("the proposal from the answer", () => {
   assert.equal(p.changes.length, 1);
   assert.equal(p.new_items.length, 1);
   assert.equal(p.unclear, undefined);
-  assert.deepEqual(proposalOf(null), { transcript: "", changes: [], new_items: [], pickup_text: undefined, unclear: undefined, dropped: [] });
+  assert.deepEqual(proposalOf(null), { transcript: "", changes: [], new_items: [], pickup_text: undefined, unclear: undefined, dropped: [], find: [] });
   assert.deepEqual(proposalOf({ dropped: ["price", 3, ""] }).dropped, ["price"]);
 });
 
@@ -121,4 +121,33 @@ test("a details change after a chat turn ends Undo; the same details in another 
   assert.equal(canUndo([t], reordered, t.after.pickup), true);
   assert.equal(stableJson({ b: 1, a: [2, { d: 3, c: undefined }] }), '{"a":[2,{"d":3}],"b":1}');
   assert.equal(stableJson(undefined), "");
+});
+
+// I4: the chat asks the find service for a missed item
+test("I4: find names in the proposal: strings, trimmed, once each, at most 3; the turn keeps them", () => {
+  assert.deepEqual(proposalOf({ find: [" rice ", "rice", 3, "", "bread", "cake", "pie"] }).find, ["rice", "bread", "cake"]);
+  const t = chatTurn(ITEMS, "Lobby", proposalOf({ find: ["rice"] }), "typed", "you missed the rice", W, M);
+  assert.deepEqual(t.find, ["rice"]);
+  assert.equal(t.count, 0);
+  assert.equal(chatTurn(ITEMS, "Lobby", proposalOf({}), "typed", "x", W, M).find, undefined);
+});
+
+test("I4: found items join after the highest number used so far; a removed found item's number is not used again", () => {
+  const now = [it(1, "Pasta", "6")]; // the scan had items 1 to 3
+  const j = joinFound(now, 3, [it(1, "Rice", "2"), it(2, "Beans", "1")]);
+  assert.deepEqual(j.items.map((x) => [x.item, x.title]), [[1, "Pasta"], [4, "Rice"], [5, "Beans"]]);
+  assert.deepEqual(j.added.map((x) => x.item), [4, 5]);
+  assert.equal(j.top, 5);
+  const removed = j.items.filter((x) => x.item !== 5); // the user removes Beans (5)
+  assert.deepEqual(joinFound(removed, j.top, [it(1, "Cake", "1")]).added.map((x) => x.item), [6]);
+});
+
+test("I4 review: found items join every live turn, so Undo keeps them and the marks stay", () => {
+  const p = proposalOf({ changes: [{ item: 1, number_of_serving: 8 }], find: ["rice"] });
+  const t = chatTurn(ITEMS, "Lobby", p, "typed", "8 pasta, and rice is missing", W, M);
+  const rice = it(4, "Rice", "2");
+  const [u] = turnsWithFound([t], [rice]);
+  assert.ok(canUndo([u], [...t.after.items, rice], "Lobby"));
+  assert.deepEqual(undoTo([u])!.items.map((x) => x.title), ["Pasta", "Salad", "Bread", "Rice"]);
+  assert.equal(turnsWithFound([{ ...t, undone: true }], [rice])[0].after.items.length, 3);
 });

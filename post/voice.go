@@ -205,14 +205,17 @@ Return ONLY valid JSON:
 {"changes": [{"item": <number from ITEMS>, "title": "new title or omit", "number_of_serving": <number or omit>,
   "remove": true or omit}],
  "new_items": [{"title": "...", "number_of_serving": <number>}],
+ "find": ["the short name of a food the donor says the photo scan missed, or omit"],
  "pickup_text": "the new pickup place and time, or omit",
  "unclear": "a short question to ask the donor if something cannot be mapped, or omit"}
 Use only these fields. Change only what the donor said. Servings are whole numbers from 1 to 99. Do not invent food, places or times.
 Do not say that food is safe or healthy.`
 
 const (
-	ruleEdit = "RULE: new_items must be empty. The donor can only change or remove the items in ITEMS."
-	ruleNew  = "RULE: ITEMS is empty. Put each food the donor names in new_items (at most 10). changes must be empty."
+	ruleEdit = "RULE: new_items must be empty. The donor can only change or remove the items in ITEMS. " +
+		"If the donor says a food is missing from ITEMS (the scan missed it), put its short name in find (at most 3, for example \"sandwich\"). " +
+		"Only a food the donor says is missing; never a food in ITEMS; do not guess."
+	ruleNew = "RULE: ITEMS is empty. Put each food the donor names in new_items (at most 10). changes and find must be empty."
 )
 
 // VoiceItem is one item of the review list.
@@ -243,6 +246,7 @@ type Proposal struct {
 	Transcript string    `json:"transcript"`
 	Changes    []Change  `json:"changes"`
 	NewItems   []NewItem `json:"new_items"`
+	Find       []string  `json:"find"` // I4: the names of missed items the app asks the find service for
 	PickupText *string   `json:"pickup_text,omitempty"`
 	Unclear    string    `json:"unclear,omitempty"`
 	Dropped    []string  `json:"dropped,omitempty"` // model output the rules refused, for the ledger and the app
@@ -360,6 +364,59 @@ func ApplyRules(obj map[string]any, items []VoiceItem) (changes []Change, newIte
 	}
 	unclear = cleanText(Str(obj, "unclear"), 160)
 	return
+}
+
+// VoiceMaxFind is the most names one line asks to find (I4).
+const VoiceMaxFind = 3
+
+var findNameRe = regexp.MustCompile(`[^\p{L}\p{N}' -]+`)
+
+// findName makes a name a short noun phrase, as the find service does
+// (inference FindWord): letters, digits, spaces, hyphens, apostrophes; at
+// most 4 words and 40 characters; lower case. "" when nothing is left.
+func findName(s string) string {
+	f := strings.Fields(strings.ToLower(findNameRe.ReplaceAllString(s, " ")))
+	if len(f) > 4 {
+		f = f[:4]
+	}
+	s = strings.Join(f, " ")
+	if r := []rune(s); len(r) > 40 {
+		s = strings.TrimSpace(string(r[:40]))
+	}
+	return s
+}
+
+// FindNames is I4: the model's "find" list, in edit mode only (the photo is
+// the source of truth: the app asks the find service to look in the photo).
+// Names are cleaned, once each, at most VoiceMaxFind; a name that is a
+// title of the list is not a missed item. Everything refused is in dropped.
+func FindNames(obj map[string]any, items []VoiceItem) (find, dropped []string) {
+	raw, _ := obj["find"].([]any)
+	have, asked := map[string]bool{}, map[string]bool{}
+	for _, it := range items {
+		have[findName(it.Title)] = true
+	}
+	for _, x := range raw {
+		s, _ := x.(string)
+		n := findName(s)
+		switch {
+		case len(items) == 0:
+			dropped = append(dropped, "find "+strconv.Quote(cleanText(s, 40))+": the list is empty (no scan photo to look in)")
+		case n == "":
+			dropped = append(dropped, "a find with no name")
+		case asked[n]:
+			continue // the same name twice: one find
+		case have[n]:
+			dropped = append(dropped, "find "+strconv.Quote(n)+": already in the list")
+		case len(find) == VoiceMaxFind:
+			dropped = append(dropped, "find "+strconv.Quote(n)+": over the limit of "+strconv.Itoa(VoiceMaxFind))
+		default:
+			asked[n] = true
+			find = append(find, n)
+			continue
+		}
+	}
+	return find, dropped
 }
 
 // outside lists the keys of m that are not in the contract (they are
@@ -624,19 +681,24 @@ func (c *VoiceConfig) propose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	changes, newItems, newPickup, unclear, dropped := ApplyRules(obj, items)
+	find, fdrop := FindNames(obj, items)
+	dropped = append(dropped, fdrop...)
+	if find == nil {
+		find = []string{}
+	}
 	if changes == nil {
 		changes = []Change{}
 	}
 	if newItems == nil {
 		newItems = []NewItem{}
 	}
-	p := Proposal{RequestID: id, Transcript: text, Changes: changes, NewItems: newItems, PickupText: newPickup,
+	p := Proposal{RequestID: id, Transcript: text, Changes: changes, NewItems: newItems, Find: find, PickupText: newPickup,
 		Unclear: unclear, Dropped: dropped, Audio: info, Source: source, CostUSD: Sum(calls), LatencyMS: time.Since(t0).Milliseconds(),
 		Models: append(models, mcall.Model)}
 	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD, ev.SpentTodayUSD = 200, p.LatencyMS, calls, p.CostUSD, c.Budget.Spent()
 	// the ledger keeps the transcript and the proposal (labels for tuning, as
 	// #15); never the audio
-	ev.Detail = map[string]any{"transcript": text, "items": len(items), "changes": changes, "new_items": newItems,
+	ev.Detail = map[string]any{"transcript": text, "items": len(items), "changes": changes, "new_items": newItems, "find": find,
 		"pickup_changed": newPickup != nil, "dropped": dropped, "audio": info, "lang": cleanText(r.FormValue("lang"), 35),
 		"keywords": len(keywords), "keywords_cut": cut, "source": source}
 	WriteJSON(w, http.StatusOK, p)

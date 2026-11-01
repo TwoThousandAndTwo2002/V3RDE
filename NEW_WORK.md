@@ -1976,3 +1976,19 @@ T9 chose "2a, then 2b if not found"; T9 approved the "V3RDE Items Mockup" v3.
 - Only the scan's owner; the rate limit, busy and the daily limit are as for a scan. The events line has step "find".
 - Tests: inference 116 -> 121.
 
+## 94. Find a missed item from the chat
+
+**When:** Nov 1 2026.
+**Meta models:** Muse Spark 1.3 (the chat's mapping now also names missed items); then SAM 3.1 and Muse Spark through the find service (#93).
+**Files:** `post/voice.go`, `post/voice_test.go`, `inference/labels.go`, `inference/labels_test.go`, `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/src/voice.ts`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/src/screens/Voice.tsx`, `mobile/src/screens/Review.tsx`, `mobile/tests/voice.test.mts`, `mobile/tests/maps.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/I4.md`
+
+T9 chose "2a, then 2b if not found"; T9 approved the "V3RDE Items Mockup" v3.
+
+- In the review, say or type that an item is missing ("you missed the rice"). The chat's answer has `find: ["rice"]` (at most 3 names; only when there is a scan; a name already on the list is left out).
+- The app asks the find service for each name. The chat shows "Looking for rice in the photo…", then "Rice is on the list now." or "No rice found in the photo.".
+- A found item joins the list with its crop and "Found from your words" on its card. A one-item review becomes the list. Post waits while a find is out.
+- The chat hint has a fourth example: "Try “rice is missing”".
+- The label report logs a found item as a "found" edit (the self-improvement data).
+- Tests: post 97 -> 98, inference 121 -> 122, mobile 162 -> 165.
+

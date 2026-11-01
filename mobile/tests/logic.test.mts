@@ -230,6 +230,7 @@ test("edits: diff, merge of typing, and the report", () => {
     { item: 2, field: "remove", from: "Pears", to: "", how: "voice" },
     { item: 0, field: "pickup", from: "", to: "", how: "voice" }]);
   assert.deepEqual(diffEdits(b, a, "", "", "undo").map((e) => e.field), ["title", "servings", "remove"]); // the removed item is back
+  assert.deepEqual(diffEdits(b, [...b, it(4, "White rice", "2")], "", "", "text"), [{ item: 4, field: "found", from: "", to: "White rice", how: "text" }]); // I4: found from the chat
   let log = addEdits([], diffEdits(a, [it(1, "B", "2"), a[1]], "", "", "hand"));
   log = addEdits(log, diffEdits([it(1, "B", "2"), a[1]], [it(1, "Ba", "2"), a[1]], "", "", "hand"));
   assert.deepEqual(log, [{ item: 1, field: "title", from: "Bananas", to: "Ba", how: "hand" }]); // typing = one edit
