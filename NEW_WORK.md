@@ -1955,3 +1955,16 @@ T9: a prompt changes only when the logs can tie a change in results to the chang
 - Each call line in the events has `prompt_id`, `prompt_version`, `prompt_sha`, the sha of the text really sent (`input_sha`), the reasoning `effort`, and (scan) the API's id and the cached tokens. Two prompts with one purpose (rescue email or drop-off; touch-up light or background) are told apart by the text sent. The auto touch-up job line now lists its SAM and Muse Image calls.
 - The scan event line keeps the engine settings (split, compact, marks, efforts, size levels, concepts), so a flag change is not taken for a prompt change.
 - No prompt text changed. Tests: server 38 -> 44, inference 104 -> 109, post 97 -> 101.
+
+## 93. The scan event line keeps each answer item
+
+**When:** Nov 1 2026.
+**Meta models:** none (no model change; the line keeps what Muse Spark answered).
+**Files:** `inference/events.go`, `inference/service.go`, `inference/service_test.go`
+**Sources:** `docs/sources/LR1.md`
+
+T9 approved I1, the daily self-improvement report. The report compares what the model gave with what the donor posted, so the scan line now keeps it.
+
+- Each 200 scan line has `answer`: every item as the app got it (the 8 fields), how it was made (whole photo, one call or a split of calls for the boxes, a retry, two-pass, agent, barcode), its units, and the "check this" and tray marks.
+- The donor's labels (same request id) were already logged; now every field can be compared, also the ones the donor did not change.
+- Tests: inference 109 -> 110.

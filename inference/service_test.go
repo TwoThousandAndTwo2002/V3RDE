@@ -710,3 +710,39 @@ func TestGateRunsWithSAM(t *testing.T) {
 		t.Fatalf("the SAM spend of a NOT_FOOD photo is not logged: %+v", ev)
 	}
 }
+
+// LR1: the event line keeps each answer item as the app got it, with how it
+// was made, and P1's settings; the bearer route too.
+func TestAnalyzeEventKeepsAnswerItems(t *testing.T) {
+	s := newSvc(t, threeBoxes(t, "Soup", "Beans", "Rice"), "FOOD", 0, nil)
+	w, a := s.do(multipartReq(t, testPhoto(t)))
+	if w.Code != 200 {
+		t.Fatalf("%d %s", w.Code, w.Body)
+	}
+	ev := s.events(t)[0]
+	if len(ev.Answer) != int(a["count"].(float64)) || len(ev.Answer) == 0 {
+		t.Fatalf("answer items %+v, count %v", ev.Answer, a["count"])
+	}
+	for i, e := range ev.Answer {
+		f := items(a)[i]["fields"].(map[string]any)
+		if e.Item != i+1 || e.Fields.Name != f["name"] || e.Fields.NumberOfServing != f["number_of_serving"] ||
+			e.Fields.MealCondition != f["meal_condition"] || e.Via == "" || e.Via == SourceBarcode || e.Count < 1 {
+			t.Errorf("item %d: %+v, answer %v", i+1, e, f)
+		}
+	}
+	if ev.Settings == nil || ev.Settings["muse"] != ev.Model {
+		t.Errorf("settings %v", ev.Settings)
+	}
+	// a barcode hit: one item, via barcode
+	b := newSvc(t, threeBoxes(t), "FOOD", 0, nil)
+	b.do(req(t, "/api/analyze", "u1", testPhoto(t), "078742370026"))
+	if e := b.events(t)[0].Answer; len(e) != 1 || e[0].Via != SourceBarcode || e[0].Fields.Name != "Great Value Marinara Pasta Sauce" {
+		t.Fatalf("barcode answer %+v", e)
+	}
+	// an error line has no answer items
+	n := newSvc(t, threeBoxes(t, "Unknown", "Unknown", "Unknown"), "FOOD", 0, nil)
+	n.do(multipartReq(t, testPhoto(t)))
+	if e := n.events(t)[0]; e.Status == 200 || len(e.Answer) != 0 {
+		t.Fatalf("error line %d %+v", e.Status, e.Answer)
+	}
+}

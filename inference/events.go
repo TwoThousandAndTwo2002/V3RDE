@@ -80,6 +80,10 @@ type Event struct {
 	FrameW          int        `json:"frame_w,omitempty"` // the frame of the box coordinates
 	FrameH          int        `json:"frame_h,omitempty"`
 	Boxes           []EventBox `json:"boxes,omitempty"`
+	// LR1: each answer item as the app got it (the model's details, before any
+	// edit by the donor), so the labels of the same request_id can be
+	// compared field by field.
+	Answer []EventItem `json:"answer,omitempty"`
 	// P1: the engine settings of this request (Engine.Settings), so a change
 	// of a flag can be told apart from a change of a prompt.
 	Settings map[string]any `json:"settings,omitempty"`
@@ -171,6 +175,16 @@ type EventBox struct {
 	Outcome string `json:"outcome"`        // item | not_food | model_no_food | already_listed | not_named
 	Item    int    `json:"item,omitempty"` // 1-based item in the answer (outcome item)
 	Name    string `json:"name,omitempty"`
+}
+
+// EventItem (LR1) is one answer item on the event line.
+type EventItem struct {
+	Item   int            `json:"item"`
+	Fields analyze.Result `json:"fields"`
+	Via    string         `json:"via,omitempty"`   // Item.Source (whole, single, retry, agent, two-pass), or barcode
+	Count  int            `json:"count,omitempty"` // units of the item (boxes)
+	Check  bool           `json:"check,omitempty"` // the app marks it "check this"
+	Tray   bool           `json:"tray,omitempty"`
 }
 
 // EventCall is one API call of the request.

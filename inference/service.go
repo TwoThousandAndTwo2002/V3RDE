@@ -289,12 +289,16 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		ev.Barcode = code
 		ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
 		ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
+		via := map[int]EventItem{} // LR1: how each answer item was made
 		done := func() {
 			ans.Count = len(ans.Items)
 			ans.LatencyMS = time.Since(t0).Milliseconds()
 			ev.Source, ev.Items = ans.Source, ans.Count
 			for _, it := range ans.Items {
 				ev.PhotoIDs = append(ev.PhotoIDs, it.PhotoID)
+				e := via[it.Item]
+				e.Item, e.Fields = it.Item, it.Fields
+				ev.Answer = append(ev.Answer, e)
 			}
 			finish(http.StatusOK, ans.Source)
 			writeJSONResp(w, http.StatusOK, ans)
@@ -382,6 +386,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				}
 				ans.Source, ans.Model = SourceBarcode, "catalog"
 				ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid, PhotoCredit: credit})
+				via[1] = EventItem{Via: SourceBarcode}
 				done()
 				return
 			}
@@ -580,6 +585,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			}
 			answerOf[i] = n
 			ans.Items = append(ans.Items, AnswerItem{Item: n, Fields: it.Result, PhotoID: pid})
+			via[n] = EventItem{Via: it.Source, Count: it.Count, Check: it.Check, Tray: it.Tray}
 		}
 		ledgerBoxes(&ev, inv, answerOf, noFood, listedIdx)
 		ans.Source = SourceVision
