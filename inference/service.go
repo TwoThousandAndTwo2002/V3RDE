@@ -91,9 +91,13 @@ type ServiceConfig struct {
 	Timeout     time.Duration // per photo, gate and every API call included (25 s: under API Gateway's 30 s, X32c)
 	Origin      string        // CORS allow-origin; "" = no CORS headers
 	Build       string
-	now         func() time.Time
-	slots       chan struct{}
-	scans       *scanJobs // X44b: the scans that run as jobs
+	// LR3: the stored learn reports (cmd/learn), read-only; "" = no route.
+	LearnDir string
+	// LR3: the admin accounts (auth user ids) that may read them.
+	Admins map[string]bool
+	now    func() time.Time
+	slots  chan struct{}
+	scans  *scanJobs // X44b: the scans that run as jobs
 }
 
 // AnswerItem is one item: the 8 contract fields unchanged, nested.
@@ -166,6 +170,8 @@ func NewService(c ServiceConfig) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 		})
 	}
+	mux.HandleFunc("/api/analyze/learn", c.learnDays)      // LR3: admin GET only (session); else the plain 404
+	mux.HandleFunc("/api/analyze/learn/{day}", c.learnDay) // LR3
 	return mux
 }
 

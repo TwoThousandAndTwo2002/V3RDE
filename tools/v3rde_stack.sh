@@ -13,7 +13,7 @@
 #   V3RDE_CFG     secrets: meta_model_api_key (made by hand, 0600), analyze_token and
 #                 fanout_status_token (made here when missing, 0600), google_maps_api_key (X49j: an
 #                 empty file when missing: no map), smtp_user and smtp_pass (X49o: empty files when
-#                 missing: no reset mail)
+#                 missing: no reset mail), admin_users (LR3: auth user ids of the admins, empty when missing: no admin)
 #   V3RDE_ASSETS  products.sqlite, gate_pe_s16_f16w_384.tflite, gate_head_pe_s16_384_deploy.json
 #   V3RDE_PHOTOS  the photo store (items/, touchups/)
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
@@ -104,9 +104,11 @@ preflight() {
   # bind mounts are files; the auth service then answers 503 to a reset request.
   local sf
   # FB: the Facebook Page token (fb2 on the Mac and the box). Missing: an empty file; fan-out then does not post.
-  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token"; do
+  # LR3: admin_users, the accounts (auth user ids, one per line or comma-separated) that may read the learn reports.
+  # Missing: an empty file; then nobody is an admin and the route answers 404.
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/admin_users"; do
     [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
-    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts)"; }
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no admin)"; }
     chmod 600 "$sf"
     asroot && chown 65534:65534 "$sf"
   done
@@ -121,11 +123,11 @@ preflight() {
   done
   # made here, so Docker does not make them as root; the services run as 65534
   for d in $SERVICES; do mkdir -p "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
-  mkdir -p "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
+  mkdir -p "$V3RDE_RUNS/ledger" "$V3RDE_RUNS/learn" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"   # LR3: learn
   mkdir -p "$V3RDE_I18N" "$V3RDE_LIF_SEED"   # X49b: else docker makes them as root-owned empty folders
   if asroot; then
     for d in $SERVICES; do chown 65534:65534 "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
-    chown 65534:65534 "$V3RDE_RUNS/telemetry" "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
+    chown 65534:65534 "$V3RDE_RUNS/telemetry" "$V3RDE_RUNS/ledger" "$V3RDE_RUNS/learn" "$V3RDE_PHOTOS" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
   fi
 }
 
@@ -185,6 +187,7 @@ up() {
   check "POST /v1/analyze" 401 -X POST "$u/v1/analyze"
   check "POST /api/analyze" 401 -X POST "$u/api/analyze"
   check "GET /api/analyze/scan/<id>" 401 "$u/api/analyze/scan/00000000000000000000000000000000"   # X44b: the scan job route
+  check "GET /api/analyze/learn" 404 "$u/api/analyze/learn"   # LR3: admin sessions only; any other caller gets 404
   for p in /api/touchup /api/touchup/batch /api/rescue/l_0000000000000000 /api/fanout/l_0000000000000000 /api/voice /v1/touchup /v1/touchup/batch /v1/voice; do check "POST $p" 401 -X POST "$u$p"; done
   for p in /api/scan /api/inventory /v1/inventory; do check "POST $p" 410 -X POST "$u$p"; done
   check "POST /v1/fanout/status" 404 -X POST "$u/v1/fanout/status"

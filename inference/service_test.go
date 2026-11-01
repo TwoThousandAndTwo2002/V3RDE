@@ -80,7 +80,7 @@ func (fakeSession) Who(r *http.Request) (User, bool) {
 	if err != nil || ck.Value == "" {
 		return User{}, false
 	}
-	return User{ID: ck.Value}, true
+	return User{ID: ck.Value, Email: ck.Value + "@example.org"}, true
 }
 
 type svc struct {

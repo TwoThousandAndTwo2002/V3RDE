@@ -66,8 +66,25 @@ func main() {
 	// (or every box too small to name) uses it, with no agent (D57).
 	earlyWhole := flag.Bool("early-whole", true, "start the whole-photo call with SAM (X32c)")
 	origin := flag.String("origin", "", "CORS Access-Control-Allow-Origin; empty disables")
+	learnDir := flag.String("learn-dir", "", "LR3: the stored learn reports (cmd/learn), read-only; empty = no route")
+	adminsFile := flag.String("admins-file", "", "LR3: a file of the admin accounts' user ids (auth's id; comma-separated or one per line) that may read the learn reports; empty or no file = no admin")
 	flag.Parse()
 
+	admins := ""
+	if *adminsFile != "" {
+		b, err := os.ReadFile(*adminsFile)
+		if err != nil && !os.IsNotExist(err) { // a folder made by docker for a missing file: no admin, the scans go on
+			log.Printf("admins: %v (no admin)", err)
+		}
+		var ids []string
+		for _, line := range strings.Split(string(b), "\n") {
+			if i := strings.Index(line, "#"); i >= 0 { // a note after the id
+				line = line[:i]
+			}
+			ids = append(ids, line)
+		}
+		admins = strings.Join(ids, ",")
+	}
 	key := readSecret(*keyFile, "api key")
 	token := readSecret(*tokenFile, "bearer token")
 	if err := os.MkdirAll(*events, 0o755); err != nil {
@@ -95,12 +112,25 @@ func main() {
 	h := inference.NewService(inference.ServiceConfig{Engine: eng, Auth: analyze.NewBearer(token), Session: session,
 		Limiter: analyze.NewLimiter(*burst, *window), Budget: budget, Events: ev, GateURL: *gate,
 		BarcodeURL: *barcodeURL, ListingsURL: *listingsURL, Photos: &inference.PhotoStore{Dir: *photos},
-		Stock: stockOf(*stock), MaxImage: *maxImage, MaxInFlight: *inFlight, Timeout: *timeout, Origin: *origin, Build: build})
+		Stock: stockOf(*stock), MaxImage: *maxImage, MaxInFlight: *inFlight, Timeout: *timeout, Origin: *origin, Build: build,
+		LearnDir: *learnDir, Admins: idSet(admins)})
 	srv := &http.Server{Addr: *listen, Handler: h, ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 60 * time.Second, WriteTimeout: *timeout + 10*time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("icarus-analyze listening on %s gate=%s auth=%s barcode=%s listings=%s photos=%s stock=%q cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
-		*listen, *gate, *authURL, *barcodeURL, *listingsURL, *photos, *stock, *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
+	log.Printf("icarus-analyze listening on %s gate=%s auth=%s barcode=%s listings=%s photos=%s stock=%q learn=%q admins=%d cap=$%.2f spent_today=$%.4f in_flight=%d build=%s (key %d bytes, token %d bytes)",
+		*listen, *gate, *authURL, *barcodeURL, *listingsURL, *photos, *stock, *learnDir, len(idSet(admins)), *capUSD, budget.Spent(), *inFlight, build, len(key), len(token))
 	log.Fatal(srv.ListenAndServe())
+}
+
+// idSet is the ids of a comma-separated list (text after "#" on a line was
+// taken out before).
+func idSet(list string) map[string]bool {
+	m := map[string]bool{}
+	for _, e := range strings.Split(list, ",") {
+		if e = strings.TrimSpace(e); e != "" {
+			m[e] = true
+		}
+	}
+	return m
 }
 
 // stockOf is nil for an empty folder flag (N1: the stock photos are off).

@@ -1,0 +1,12 @@
+# LR3: once a day, after the UTC day ends (the report reads whole UTC days). Persistent: a run
+# missed while the box was off runs at the next start.
+[Unit]
+Description=V3RDE learn report, daily (LR3)
+
+[Timer]
+OnCalendar=*-*-* 00:23:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1982,3 +1982,17 @@ T9: a daily self-improvement report, and a prompt changes only when the logs can
 - The same counts by how the item was made, the fields the donors change most (with the most common changes, by hand, voice or text), and whether the model's servings are too high or too low. The size calibration of X44g is in it too.
 - It changes nothing: a person reads it. It writes a JSON and a Markdown file per day.
 - Tests: inference 110 -> 114.
+
+## 95. The learn report runs every day on the box, for admin accounts
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `inference/learnroute.go` (new), `inference/learnroute_test.go` (new), `inference/service.go`, `inference/service_test.go`, `inference/cmd/inventory/main.go`, `deploy/docker-compose.yml`, `deploy/learn/v3rde-learn.service` (new), `deploy/learn/v3rde-learn.timer` (new), `tools/learn_round.sh` (new), `tools/learn_install.sh` (new), `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/LR3.md`
+
+T9 chose a systemd timer, and the report page for admin accounts only.
+
+- A systemd timer runs the report once a day after the UTC day ends. The job has no network, reads the scan logs read-only, and runs as the service user.
+- `GET /api/analyze/learn` lists the days, `/api/analyze/learn/<day>` gives a report (JSON, or Markdown). Only a signed-in account whose user id is in the `admin_users` file gets it; every other caller gets the 404 of a path that does not exist.
+- The timer is installed once on the box: `sudo bash tools/learn_install.sh`.
+- Tests: inference 114 -> 115.
