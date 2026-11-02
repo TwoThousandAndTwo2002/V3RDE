@@ -53,6 +53,9 @@ export type NewListing = {
   address?: { text: string };
 };
 /** One item of the review list, in the listing contract (voice posting). */
+/** X60: an owner's change of a listing (PATCH /api/listings/{id}); each field is optional. */
+export type ListingChange = { title?: string; number_of_serving?: number; reset?: boolean };
+
 export type VoiceItem = { item: number; title: string; number_of_serving: number };
 
 type Options = { json?: unknown; form?: FormData; timeoutMs?: number };
@@ -135,6 +138,9 @@ export const listings = Object.freeze({
   release: (id: string) => request<Listing>("POST", "/api/listings/" + encodeURIComponent(id) + "/release"),
   /** X48t: the owner deletes a listing nobody has grabbed (204; 409 when it was grabbed). */
   remove: (id: string) => request<null>("DELETE", "/api/listings/" + encodeURIComponent(id)),
+  /** X60: the owner changes the title, the servings or the timer (reset) of a listing nobody has grabbed (200; 409
+   *  when it was grabbed). An ended listing with reset shows again. */
+  update: (id: string, change: ListingChange) => request<Listing>("PATCH", "/api/listings/" + encodeURIComponent(id), { json: change }),
   create(n: NewListing) {
     const form = formOf([["title", n.title], ["number_of_serving", String(n.number_of_serving)],
       ["pickup_text", n.pickup_text], ...placeFields(n.place)], [["request_id", n.request_id]]);

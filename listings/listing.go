@@ -23,6 +23,9 @@
 //	                                 (then the claim hook tells fan-out, in the background: hook.go)
 //	DELETE /api/listings/{id}        X48t: the owner deletes a listing nobody has grabbed -> 204 |
 //	                                 409 collected | 404 unknown or another's (then the hook tells fan-out "expired")
+//	PATCH /api/listings/{id}         X60: the owner changes {"title", "number_of_serving", "reset"} of a listing nobody
+//	                                 has grabbed -> 200 listing | 409 collected, or ended without reset | 404 unknown or
+//	                                 another's | 400 bad field (then the share hook asks fan-out to change the post)
 //	GET  /api/listings/{id}/photo    the image bytes
 //	GET  /api/listings/healthz
 //

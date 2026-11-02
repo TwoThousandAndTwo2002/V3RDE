@@ -2220,3 +2220,18 @@ T9: when two items start with the same words and the donor does not say which, t
 - The chat now asks which item when a request fits more than one, with their names, and changes nothing until the donor says.
 - The earlier turn is dropped after an answer with no question, after two questions in a row, after Undo or a hand edit, and after a post.
 - Tests: post 114 -> 115, mobile 192 -> 193.
+
+## 106. The donor changes a posted listing
+
+**When:** Nov 2 2026.
+**Meta models:** Muse Spark 1.3 (the Facebook post text of a changed listing; the same prompts as a new post).
+**Files:** `listings/store.go`, `listings/handler.go`, `listings/share.go`, `listings/listing.go`, `listings/update_test.go`, `post/fanout.go`, `post/fanout_change_test.go`, `mobile/src/listing.ts`, `mobile/src/api.ts`, `mobile/src/screens/Give.tsx`, `mobile/src/words.ts`, `mobile/tests/listing.test.mts`, `mobile/tests/app_texts.json`, `mobile/web-dist/`
+**Sources:** `docs/sources/X60.md`
+
+T9: after a post, the donor could not change the servings or the name, or post an ended listing again.
+
+- A pencil next to the X on each listing nobody has grabbed opens "Change the listing": the name, the servings, and "Reset the timer to 30 minutes".
+- On an ended listing the same popup is "Post again": the listing shows again for 30 minutes.
+- The Facebook post changes too: a new name or number writes the post text again (with the same checks), and a post again removes [UNAVAILABLE].
+- After a grab nothing changes (the receiver counts on it).
+- Tests: listings 50 -> 54, post 115 -> 118, mobile 193 -> 195.

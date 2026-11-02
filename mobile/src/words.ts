@@ -93,6 +93,20 @@ export const GIVE = {
   removed: "Deleted. People no longer see it.",
   grabbed: "Someone is picking this up. It cannot be deleted.",
   removeFailed: "Could not delete it. Try again.",
+  // X60 (T9): change a posted listing nobody has grabbed: the name, the servings, and the timer (30 minutes from now)
+  editName: (title: string) => "Change " + title,
+  editTitle: "Change the listing",
+  againTitle: "Post again",
+  editBody: "People see the change at once. The Facebook post changes too.",
+  againBody: "It shows again for 30 minutes. The Facebook post changes too.",
+  timerReset: "Reset the timer to 30 minutes",
+  save: "Save",
+  postAgain: "Post again",
+  saved: "Saved. People see the change.",
+  postedAgain: "Posted again for 30 minutes.",
+  saveFailed: "Could not save it. Try again.",
+  changeGrabbed: "Someone is picking this up. It cannot be changed.",
+  changeEnded: "It ended. Tap the pencil to post it again.",
 } as const;
 
 /** R5: the rescue of an expired listing (T9 2026-10-31: take it to one of 3 places; the email only for bulk). */

@@ -183,6 +183,7 @@ func New(c Config) http.Handler {
 	mux.HandleFunc("POST "+p+"/{id}/grab", rt.signedIn(rt.grab))
 	mux.HandleFunc("POST "+p+"/{id}/release", rt.signedIn(rt.release)) // X49e
 	mux.HandleFunc("DELETE "+p+"/{id}", rt.signedIn(rt.remove))        // X48t
+	mux.HandleFunc("PATCH "+p+"/{id}", rt.signedIn(rt.update))         // X60
 	mux.HandleFunc("GET "+p+"/{id}/photo", rt.signedIn(rt.photo))
 	return mux
 }
@@ -407,6 +408,53 @@ func (rt routes) remove(w http.ResponseWriter, r *http.Request, u User) {
 		log.Printf("listing %s deleted by its owner %s", l.ID, u.ID)
 		rt.Claim.Ended(l.ID) // fan-out: the post says the food is gone (in the background)
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// update is PATCH /api/listings/{id} (X60): the owner changes the title, the
+// servings or the timer of a listing nobody has grabbed; with "reset" an
+// ended listing shows again ("post again"). JSON {"title", "number_of_serving",
+// "reset"}, each optional, nothing else. Then the share hook asks fan-out to
+// change the Facebook post (in the background; never a test account's).
+func (rt routes) update(w http.ResponseWriter, r *http.Request, u User) {
+	var in struct {
+		Title           *string `json:"title"`
+		NumberOfServing *int    `json:"number_of_serving"`
+		Reset           bool    `json:"reset"`
+	}
+	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&in); err != nil {
+		fail(w, http.StatusBadRequest, `send JSON {"title", "number_of_serving", "reset"}`)
+		return
+	}
+	c := Change{Title: in.Title, Reset: in.Reset}
+	if in.NumberOfServing != nil {
+		if *in.NumberOfServing == 0 { // 0 means "keep" in Change: a sent 0 is a bad number
+			fail(w, http.StatusBadRequest, fmt.Sprintf("number_of_serving must be 1-%d", MaxServings))
+			return
+		}
+		c.NumberOfServing = *in.NumberOfServing
+	}
+	l, err := rt.Store.Update(r.PathValue("id"), u.ID, c, nil)
+	switch {
+	case errors.Is(err, ErrNotFound):
+		fail(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrGrabbed):
+		fail(w, http.StatusConflict, "someone is picking this up: it cannot be changed")
+	case errors.Is(err, ErrExpired):
+		fail(w, http.StatusConflict, "listing expired: send reset to post it again")
+	case errors.Is(err, os.ErrPermission), err != nil && strings.Contains(err.Error(), "no space"):
+		fail(w, http.StatusInternalServerError, "could not store the listing")
+	case err != nil:
+		fail(w, http.StatusBadRequest, err.Error())
+	default:
+		log.Printf("listing %s changed by its owner %s title=%t servings=%t reset=%t", l.ID, u.ID, in.Title != nil, in.NumberOfServing != nil, in.Reset)
+		writeJSON(w, http.StatusOK, l)
+		if !rt.TestTTLEmails[strings.ToLower(strings.TrimSpace(u.Email))] {
+			ck, _ := r.Cookie(sessionCookie)
+			rt.Share.Changed(l.ID, ck)
+		}
 	}
 }
 

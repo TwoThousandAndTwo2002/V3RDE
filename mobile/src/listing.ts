@@ -1,6 +1,7 @@
 // Listing rules of the Give and Receive screens, written new for V3RDE (NEW_WORK_UI.md, UI 12 and 13).
 // Pure functions (no React, no network), so the tests run them directly.
-import type { Listing } from "./api";
+import type { Listing, ListingChange } from "./api";
+import { FORM_WORDS, LIMITS } from "./capture";
 
 /** Whole seconds until the listing expires (0 when it has expired or the time is not known). */
 export function secondsLeft(l: Pick<Listing, "expires_at">, now = Date.now()): number {
@@ -25,6 +26,21 @@ export function isGone(l: Pick<Listing, "status" | "expires_at">, now = Date.now
 /** X48t: the owner can delete a listing until someone grabs it (the service says the same: 409). */
 export function canDelete(l: Pick<Listing, "status">): boolean {
   return l.status !== "collected";
+}
+
+/** X60 (T9 2026-11-01: change the name and the servings, reset the timer, post an ended listing again): the change
+ *  that the popup sends (only the fields that changed), a problem text for a bad field, or null when nothing changes.
+ *  An ended listing always sends reset (the service refuses it otherwise). */
+export function listingChange(l: Pick<Listing, "title" | "number_of_serving" | "status" | "expires_at">, title: string,
+  servings: string, reset: boolean, now = Date.now()): { change: ListingChange } | { problem: string } | null {
+  const t = title.trim(), n = Number(servings);
+  if (t.length === 0 || t.length > LIMITS.title) return { problem: FORM_WORDS.title };
+  if (!Number.isInteger(n) || n < 1 || n > LIMITS.servingsMax) return { problem: FORM_WORDS.servings };
+  const change: ListingChange = {};
+  if (t !== l.title) change.title = t;
+  if (n !== l.number_of_serving) change.number_of_serving = n;
+  if (reset || isGone(l, now)) change.reset = true;
+  return Object.keys(change).length ? { change } : null;
 }
 
 /** The text of the time pill of a card. */

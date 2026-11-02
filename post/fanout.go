@@ -10,6 +10,9 @@ package post
 //
 //	POST /api/fanout/{listing_id}      session cookie, owner only, active listing -> 201 Post
 //	GET  /api/fanout/{listing_id}      session cookie, owner only -> 200 Post
+//	PUT  /api/fanout/{listing_id}      X60: the owner changed the listing: the post says the new title and
+//	                                   servings (the text is written again), loses [UNAVAILABLE] after a post
+//	                                   again, and the sweep uses the new timer -> 200 Post
 //	POST /v1/fanout/status             internal only (no Caddy route); its own token
 //	                                   (-status-token-file), sent by the listings service on a grab
 //	     {"listing_id","status":"claimed"|"expired"|"released"} -> 200 Post
@@ -83,6 +86,11 @@ type Post struct {
 	UpdatedAt string  `json:"updated_at,omitempty"`
 	RequestID string  `json:"request_id"`
 	CostUSD   float64 `json:"cost_usd"`
+	// Title and Servings (X60): the listing the text was written for; a
+	// change of either one writes the text again. Empty in a post from
+	// before X60: its first change writes the text again.
+	Title    string `json:"title,omitempty"`
+	Servings int    `json:"servings,omitempty"`
 }
 
 // Banner is the text a status edit puts in front of the post.
@@ -352,6 +360,7 @@ func NewFanout(c *FanoutConfig) http.Handler {
 	})
 	mux.HandleFunc("POST /api/fanout/{id}", c.publish)
 	mux.HandleFunc("GET /api/fanout/{id}", c.get)
+	mux.HandleFunc("PUT /api/fanout/{id}", c.change) // X60
 	mux.HandleFunc("POST /v1/fanout/status", c.status)
 	return mux
 }
@@ -435,8 +444,51 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 		fail(CapRefusal(why))
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), c.Timeout)
+	text, tcalls, bad := c.writeText(r.Context(), l, photo, mime, hold)
+	calls = append(calls, tcalls...)
+	if bad != nil {
+		ev.Detail = bad.detail
+		fail(bad.status, bad.code, bad.msg)
+		return
+	}
+	pctx, pcancel := context.WithTimeout(context.Background(), c.PublishTimeout)
+	defer pcancel()
+	postID, photoID, err := c.Page.PublishPhoto(pctx, photo, mime, c.PostText(text, lid))
+	if err != nil {
+		ev.Detail = map[string]any{"graph_error": clip(err.Error(), 300)}
+		fail(http.StatusBadGateway, CodeUpstream, "Facebook refused the post")
+		return
+	}
+	p := Post{ListingID: lid, OwnerID: who.User.ID, PostID: postID, PhotoID: photoID, Text: text,
+		Status: PostPosted, ExpiresAt: l.ExpiresAt, PostedAt: c.now().UTC().Format(time.RFC3339Nano),
+		RequestID: id, CostUSD: Sum(calls), Title: l.Title, Servings: l.NumberOfServing}
+	ev.Detail = map[string]any{"post_id": postID, "photo_id": photoID}
+	if err := c.Store.Put(p); err != nil {
+		time.Sleep(200 * time.Millisecond)
+		if err = c.Store.Put(p); err != nil { // the post is public: the events line keeps its id
+			fail(http.StatusInternalServerError, CodeInternal, "posted, but could not record it: post "+postID)
+			return
+		}
+	}
+	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = http.StatusCreated, time.Since(t0).Milliseconds(), calls, Sum(calls)
+	WriteJSON(w, http.StatusCreated, p)
+	c.record(ev)
+}
+
+// textFail is a refused post text: the answer and the events detail.
+type textFail struct {
+	status    int
+	code, msg string
+	detail    map[string]any
+}
+
+// writeText asks Muse for the post text of l (with the photo) and checks it
+// (the model check, no link, not the pickup text). It settles hold. The same
+// steps for a new post (publish) and a changed listing (X60 change).
+func (c *FanoutConfig) writeText(parent context.Context, l Listing, photo []byte, mime string, hold *Hold) (string, []Call, *textFail) {
+	ctx, cancel := context.WithTimeout(parent, c.Timeout)
 	defer cancel()
+	var calls []Call
 	data, _ := json.Marshal(map[string]any{"title": l.Title, "servings": l.NumberOfServing})
 	obj, call, merr := c.Muse.AskJSON(ctx, "fanout:text", fmt.Sprintf(FanoutPrompt, data), Image{Bytes: photo, Mime: mime})
 	calls = append(calls, call)
@@ -457,41 +509,189 @@ func (c *FanoutConfig) publish(w http.ResponseWriter, r *http.Request) {
 	pickup := strings.TrimSpace(l.PickupText)
 	switch {
 	case merr != nil || text == "" || len(text) > 400:
-		fail(http.StatusBadGateway, CodeUpstream, "the post text failed")
-		return
+		return "", calls, &textFail{http.StatusBadGateway, CodeUpstream, "the post text failed", nil}
 	case urlRe.MatchString(text) || (len(pickup) >= 6 && strings.Contains(strings.ToLower(text), strings.ToLower(pickup))):
-		fail(http.StatusBadGateway, CodeUpstream, "the post text broke a rule (link or pickup text)")
-		return
+		return "", calls, &textFail{http.StatusBadGateway, CodeUpstream, "the post text broke a rule (link or pickup text)", nil}
 	case verdict == nil:
-		fail(http.StatusBadGateway, CodeUpstream, "the post check could not run")
-		return
+		return "", calls, &textFail{http.StatusBadGateway, CodeUpstream, "the post check could not run", nil}
 	case !okText:
-		ev.Detail = map[string]any{"check_reason": clip(Str(verdict, "reason"), 160)}
-		fail(http.StatusUnprocessableEntity, "post_rejected", "the post text did not pass the check")
+		return "", calls, &textFail{http.StatusUnprocessableEntity, "post_rejected", "the post text did not pass the check",
+			map[string]any{"check_reason": clip(Str(verdict, "reason"), 160)}}
+	}
+	return text, calls, nil
+}
+
+// change is PUT /api/fanout/{id} (X60, T9 2026-11-01: "the Facebook post
+// changes too"). The listings service calls it with the owner's session after
+// the owner changed the listing. It reads the listing again (so the last
+// change wins) and makes the post say it: a new title or number writes the
+// text again (the same Muse steps and check as a new post); a post that says
+// [UNAVAILABLE] loses the banner when the listing was posted again; a new
+// timer only moves the time of the sweep. A claimed post never changes (the
+// listing service refuses a change after a grab). 404 = no post (nothing to
+// change), 409 = not active, or the post is being published now.
+func (c *FanoutConfig) change(w http.ResponseWriter, r *http.Request) {
+	t0 := c.now()
+	id := analyze.NewRequestID()
+	w.Header().Set("X-Request-Id", id)
+	lid := r.PathValue("id")
+	ev := Event{RequestID: id, TS: t0.UTC().Format(time.RFC3339Nano), Route: "fanout.change", ListingID: lid}
+	ev.From(r)
+	var calls []Call
+	fail := func(status int, code, msg string) {
+		ev.Status, ev.Code, ev.Error, ev.LatencyMS = status, code, msg, time.Since(t0).Milliseconds()
+		ev.Calls, ev.CostUSD = calls, Sum(calls)
+		WriteJSON(w, status, ErrorAnswer{RequestID: id, Error: msg, Code: code})
+		c.record(ev)
+	}
+	who, ok := Identify(r, c.Session, nil)
+	if !ok {
+		fail(http.StatusUnauthorized, CodeUnauthorized, "not logged in")
 		return
 	}
-	pctx, pcancel := context.WithTimeout(context.Background(), c.PublishTimeout)
-	defer pcancel()
-	postID, photoID, err := c.Page.PublishPhoto(pctx, photo, mime, c.PostText(text, lid))
-	if err != nil {
-		ev.Detail = map[string]any{"graph_error": clip(err.Error(), 300)}
-		fail(http.StatusBadGateway, CodeUpstream, "Facebook refused the post")
+	ev.UserID, ev.CapKey = who.User.ID, who.RateKey
+	if c.Page == nil {
+		fail(http.StatusServiceUnavailable, CodeDisabled, "no Facebook Page is configured")
 		return
 	}
-	p := Post{ListingID: lid, OwnerID: who.User.ID, PostID: postID, PhotoID: photoID, Text: text,
-		Status: PostPosted, ExpiresAt: l.ExpiresAt, PostedAt: c.now().UTC().Format(time.RFC3339Nano),
-		RequestID: id, CostUSD: Sum(calls)}
-	ev.Detail = map[string]any{"post_id": postID, "photo_id": photoID}
-	if err := c.Store.Put(p); err != nil {
-		time.Sleep(200 * time.Millisecond)
-		if err = c.Store.Put(p); err != nil { // the post is public: the events line keeps its id
-			fail(http.StatusInternalServerError, CodeInternal, "posted, but could not record it: post "+postID)
+	if c.Limiter != nil && !c.Limiter.Allow(who.RateKey) {
+		fail(http.StatusTooManyRequests, CodeRateLimited, "rate limited")
+		return
+	}
+	l, err := c.Listings.Mine(r, lid)
+	switch {
+	case errors.Is(err, ErrNotOwned):
+		fail(http.StatusNotFound, CodeNotFound, err.Error())
+		return
+	case err != nil:
+		fail(http.StatusBadGateway, CodeUpstream, "listings unavailable")
+		return
+	case l.Status != "active" || l.Expired(c.now()):
+		fail(http.StatusConflict, "not_active", "only an active listing can change its post")
+		return
+	}
+	p, found, pending := c.Store.Lookup(lid)
+	switch {
+	case pending:
+		fail(http.StatusConflict, "pending", "the post is being published now: retry")
+		return
+	case !found || p.OwnerID != who.User.ID:
+		fail(http.StatusNotFound, CodeNotFound, "no post for this listing")
+		return
+	case p.Status == PostClaimed: // before the model calls: no cost (applyChange checks again under the lock)
+		fail(http.StatusConflict, "claimed", errClaimed.Error())
+		return
+	}
+	text := p.Text
+	if p.Title != l.Title || p.Servings != l.NumberOfServing {
+		photo, mime, err := c.Listings.Photo(r, lid)
+		if err != nil {
+			fail(http.StatusBadGateway, CodeUpstream, "the listing photo is unavailable")
+			return
+		}
+		hold, why := c.Budget.ReserveFor(who.RateKey)
+		if hold == nil {
+			fail(CapRefusal(why))
+			return
+		}
+		var tcalls []Call
+		var bad *textFail
+		text, tcalls, bad = c.writeText(r.Context(), l, photo, mime, hold)
+		calls = append(calls, tcalls...)
+		if bad != nil {
+			ev.Detail = bad.detail
+			fail(bad.status, bad.code, bad.msg)
 			return
 		}
 	}
-	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = http.StatusCreated, time.Since(t0).Milliseconds(), calls, Sum(calls)
-	WriteJSON(w, http.StatusCreated, p)
+	ctx, cancel := context.WithTimeout(context.Background(), c.PublishTimeout)
+	defer cancel()
+	p, edited, err := c.applyChange(ctx, l, text, func() (Listing, error) { return c.Listings.Mine(r, lid) })
+	switch {
+	case errors.Is(err, errClaimed):
+		fail(http.StatusConflict, "claimed", err.Error())
+		return
+	case errors.Is(err, errStale):
+		fail(http.StatusConflict, "stale", err.Error())
+		return
+	case errors.Is(err, errNotActive):
+		fail(http.StatusConflict, "not_active", err.Error())
+		return
+	case errors.Is(err, ErrNotOwned):
+		fail(http.StatusNotFound, CodeNotFound, "no post for this listing")
+		return
+	case err != nil && errors.Is(err, errListings):
+		fail(http.StatusBadGateway, CodeUpstream, "listings unavailable")
+		return
+	case errors.Is(err, errNotRecorded):
+		ev.Detail = map[string]any{"post_id": p.PostID}
+		fail(http.StatusInternalServerError, CodeInternal, err.Error())
+		return
+	case err != nil:
+		ev.Detail = map[string]any{"post_id": p.PostID, "graph_error": clip(err.Error(), 300)}
+		fail(http.StatusBadGateway, CodeUpstream, "Facebook refused the edit")
+		return
+	}
+	ev.Status, ev.LatencyMS, ev.Calls, ev.CostUSD = http.StatusOK, time.Since(t0).Milliseconds(), calls, Sum(calls)
+	ev.Detail = map[string]any{"post_id": p.PostID, "edited": edited, "new_text": text != "" && len(calls) > 0}
+	WriteJSON(w, http.StatusOK, p)
 	c.record(ev)
+}
+
+// errClaimed (X60): the post says [CLAIMED]; a change does not touch it.
+var errClaimed = errors.New("the post is claimed: it does not change")
+
+// errStale (X60 review): the listing changed again while this text was
+// written; the newer change's own call writes the post (the last change wins).
+var errStale = errors.New("the listing changed again: the newer change edits the post")
+
+// errNotActive: the listing was grabbed or ended while the text was written.
+var errNotActive = errors.New("only an active listing can change its post")
+
+// errListings: the listings service did not answer.
+var errListings = errors.New("listings unavailable")
+
+// applyChange puts the change of l in the post, under the status lock (the
+// sweep and the claim hook edit the same post): Facebook only when the text
+// or the banner changes. It reports whether Facebook was edited. X60 review:
+// under the lock it reads the listing again (fresh); when the title or the
+// servings are no longer the ones the text was written for, an older change
+// finished after a newer one, so it changes nothing (errStale). The timer
+// comes from the fresh listing too.
+func (c *FanoutConfig) applyChange(ctx context.Context, l Listing, text string, fresh func() (Listing, error)) (Post, bool, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	p, ok, _ := c.Store.Lookup(l.ID)
+	if !ok {
+		return p, false, ErrNotOwned
+	}
+	if p.Status == PostClaimed {
+		return p, false, errClaimed
+	}
+	now, err := fresh()
+	switch {
+	case errors.Is(err, ErrNotOwned):
+		return p, false, ErrNotOwned
+	case err != nil:
+		return p, false, fmt.Errorf("%w: %v", errListings, err)
+	case now.Title != l.Title || now.NumberOfServing != l.NumberOfServing:
+		return p, false, errStale
+	case now.Status != "active" || now.Expired(c.now()):
+		return p, false, errNotActive // grabbed or ended meanwhile: the claim hook or the sweep edits the post
+	}
+	l = now
+	edit := text != p.Text || p.Status != PostPosted
+	if edit {
+		if err := c.Page.UpdateMessage(ctx, p.PostID, c.PostText(text, l.ID)); err != nil {
+			return p, false, err
+		}
+	}
+	p.Text, p.Status, p.ExpiresAt, p.Title, p.Servings = text, PostPosted, l.ExpiresAt, l.Title, l.NumberOfServing
+	p.UpdatedAt = c.now().UTC().Format(time.RFC3339Nano)
+	if err := c.Store.Put(p); err != nil {
+		return p, edit, fmt.Errorf("%w: %v", errNotRecorded, err)
+	}
+	return p, edit, nil
 }
 
 func (c *FanoutConfig) get(w http.ResponseWriter, r *http.Request) {
@@ -513,6 +713,14 @@ func (c *FanoutConfig) get(w http.ResponseWriter, r *http.Request) {
 // claimed, unless the grab is released (X49e): then the post is posted again,
 // without a banner. A release of a post that is not claimed changes nothing.
 func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post, bool, error) {
+	return c.setStatus(ctx, lid, status, false)
+}
+
+// setStatus is SetStatus; due (the sweep) changes the post only when its
+// timer still ran out under the lock (X60 review: a reset between Due and
+// this edit moved the timer; the delete hook sends "expired" before the
+// timer ends, so only the sweep checks).
+func (c *FanoutConfig) setStatus(ctx context.Context, lid, status string, due bool) (Post, bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	p, ok, pending := c.Store.Lookup(lid)
@@ -521,6 +729,9 @@ func (c *FanoutConfig) SetStatus(ctx context.Context, lid, status string) (Post,
 	}
 	if !ok {
 		return Post{}, false, ErrNotOwned
+	}
+	if due && !(Listing{ExpiresAt: p.ExpiresAt}).Expired(c.now()) {
+		return p, false, nil
 	}
 	next := status
 	if status == PostReleased {
@@ -626,7 +837,7 @@ func (c *FanoutConfig) Sweep(ctx context.Context) int {
 	c.FlushStore()
 	n := 0
 	for _, p := range c.Store.Due(c.now()) {
-		_, changed, err := c.SetStatus(ctx, p.ListingID, PostExpired)
+		_, changed, err := c.setStatus(ctx, p.ListingID, PostExpired, true)
 		ev := Event{RequestID: analyze.NewRequestID(), TS: c.now().UTC().Format(time.RFC3339Nano),
 			Route: "fanout.sweep", ListingID: p.ListingID, Status: 200,
 			Detail: map[string]any{"post_id": p.PostID, "changed": changed}}

@@ -544,6 +544,67 @@ func (s *Store) Delete(id, ownerID string) (Listing, error) {
 	return r.Listing, nil
 }
 
+// Change (X60) is an owner's change of a listing: a new title, a new number
+// of servings (0 = keep), and Reset = the timer starts again (the store's TTL
+// from now). An ended listing can change only with Reset ("post again").
+type Change struct {
+	Title           *string
+	NumberOfServing int
+	Reset           bool
+}
+
+// ErrNoChange (X60): the request changes nothing.
+var ErrNoChange = errors.New("send title, number_of_serving or reset")
+
+// Update changes listing id of ownerID (X60, T9 2026-11-01: "reset the timer,
+// change the name", and the servings). The checks are in this order: unknown
+// or another's (ErrNotFound: an id cannot be probed), grabbed (ErrGrabbed: a
+// receiver counts on it), a bad field, ended without Reset (ErrExpired).
+// after runs as in GrabThen. When the save fails, nothing changes.
+func (s *Store) Update(id, ownerID string, c Change, after func(Listing)) (Listing, error) {
+	now := s.now().UTC()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, ok := s.items[id]
+	switch {
+	case !ok || r.OwnerID != ownerID:
+		return Listing{}, ErrNotFound
+	case r.Status == "collected":
+		return Listing{}, ErrGrabbed
+	case c.Title == nil && c.NumberOfServing == 0 && !c.Reset:
+		return Listing{}, ErrNoChange
+	}
+	before := r
+	if c.Title != nil {
+		t := strings.TrimSpace(*c.Title)
+		if t == "" || len(t) > MaxTitle {
+			return Listing{}, fmt.Errorf("title must be 1-%d characters", MaxTitle)
+		}
+		r.Title = t
+	}
+	if c.NumberOfServing != 0 {
+		if c.NumberOfServing < 1 || c.NumberOfServing > MaxServings {
+			return Listing{}, fmt.Errorf("number_of_serving must be 1-%d", MaxServings)
+		}
+		r.NumberOfServing = c.NumberOfServing
+	}
+	switch {
+	case c.Reset:
+		r.ExpiresAt = now.Add(s.ttl).Format(time.RFC3339Nano)
+	case !active(r, now):
+		return Listing{}, ErrExpired
+	}
+	s.items[id] = r
+	if err := s.saveLocked(); err != nil {
+		s.items[id] = before
+		return Listing{}, err
+	}
+	if after != nil {
+		after(r.Listing)
+	}
+	return forOwnerOrGrabber(r), nil
+}
+
 // Photo is the path and the type of the photo of listing id.
 func (s *Store) Photo(id string) (string, string, error) {
 	s.mu.Lock()

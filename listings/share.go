@@ -15,6 +15,8 @@ package listings
 // are never posted.
 
 import (
+	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -40,9 +42,28 @@ func shareAgain(status int, err error) bool {
 	return err != nil || status == http.StatusTooManyRequests || (status >= 500 && status != http.StatusServiceUnavailable)
 }
 
+// Changed (X60) asks fan-out to change the post of listingID after the owner
+// changed the listing (PUT <URL><listing_id>, the same cookie and tries as
+// Share). Fan-out reads the listing again, so a later change wins.
+func (h *ShareHook) Changed(listingID string, session *http.Cookie) {
+	h.send(http.MethodPut, listingID, session)
+}
+
+// ChangeBackoff (X60 review): 4 more tries in 145 s, longer than the longest
+// share (DefaultBackoff note: 95 s), so a change while the first post is
+// still being published (409 "pending") is not lost.
+var ChangeBackoff = []time.Duration{5 * time.Second, 20 * time.Second, 60 * time.Second, 60 * time.Second}
+
+// pendingCode is fan-out's code for "the post is being published now: retry".
+const pendingCode = "pending"
+
 // Share starts the post of listingID in the background with the giver's
 // session cookie. A nil hook, a hook with no URL, or no cookie does nothing.
 func (h *ShareHook) Share(listingID string, session *http.Cookie) {
+	h.send(http.MethodPost, listingID, session)
+}
+
+func (h *ShareHook) send(method, listingID string, session *http.Cookie) {
 	if h == nil || h.URL == "" || session == nil || !listingIDForm.MatchString(listingID) {
 		return
 	}
@@ -50,40 +71,49 @@ func (h *ShareHook) Share(listingID string, session *http.Cookie) {
 	waits := h.Backoff
 	if waits == nil {
 		waits = ShareBackoff
+		if method == http.MethodPut {
+			waits = ChangeBackoff
+		}
 	}
 	go func() {
 		var status, tries int
 		var err error
 		for tries = 1; ; tries++ {
-			status, err = h.once(listingID, ck)
-			if !shareAgain(status, err) || tries > len(waits) {
+			var code string
+			status, code, err = h.once(method, listingID, ck)
+			retry := shareAgain(status, err) || (method == http.MethodPut && status == http.StatusConflict && code == pendingCode)
+			if !retry || tries > len(waits) {
 				break
 			}
 			time.Sleep(waits[tries-1])
 		}
-		log.Printf("share hook: listing %s -> fanout %d after %d tries (err=%v)", listingID, status, tries, err)
+		log.Printf("share hook: %s listing %s -> fanout %d after %d tries (err=%v)", method, listingID, status, tries, err)
 		if h.Done != nil {
 			h.Done(listingID, status, err)
 		}
 	}()
 }
 
-func (h *ShareHook) once(listingID string, ck *http.Cookie) (int, error) {
+func (h *ShareHook) once(method, listingID string, ck *http.Cookie) (int, string, error) {
 	client := h.HTTP
 	if client == nil {
 		client = &http.Client{Timeout: 120 * time.Second} // longer than a share (DefaultBackoff note: 95 s)
 	}
-	req, err := http.NewRequest(http.MethodPost, strings.TrimRight(h.URL, "/")+"/"+listingID, nil)
+	req, err := http.NewRequest(method, strings.TrimRight(h.URL, "/")+"/"+listingID, nil)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	req.AddCookie(ck)
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
-	resp.Body.Close()
-	return resp.StatusCode, nil
+	defer resp.Body.Close()
+	var body struct {
+		Code string `json:"code"`
+	}
+	_ = json.NewDecoder(io.LimitReader(resp.Body, 4096)).Decode(&body)
+	return resp.StatusCode, body.Code, nil
 }
 
 // listingIDForm is the form of a listing id (newID("l_")): it goes into a URL path.

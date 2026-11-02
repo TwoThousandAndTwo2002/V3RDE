@@ -112,3 +112,39 @@ test("Give cards: Delete on the photo, a small Rescue pill", async () => {
   // the frost layers take the corners of the part (a round button showed a square blur)
   assert.match(ui, /style=\{\[StyleSheet\.absoluteFill, round\]\} \/>/);
 });
+
+// X60 (T9 2026-11-01: "add this, reset the timer, change the name"): the popup sends only what changed; a bad field is
+// a problem text; nothing changed is null; an ended listing always sends reset ("post again").
+test("listingChange: the owner's change of a posted listing", async () => {
+  const { listingChange } = await import("../src/listing.ts");
+  const { FORM_WORDS } = await import("../src/capture.ts");
+  const live = { title: "Rice", number_of_serving: 8, status: "active", expires_at: at(600) };
+  assert.equal(listingChange(live, " Rice ", "8", false, T), null);
+  assert.deepEqual(listingChange(live, " Rice, family box ", "10", false, T), { change: { title: "Rice, family box", number_of_serving: 10 } });
+  assert.deepEqual(listingChange(live, "Rice", "8", true, T), { change: { reset: true } });
+  assert.deepEqual(listingChange(live, "  ", "8", true, T), { problem: FORM_WORDS.title });
+  assert.deepEqual(listingChange(live, "x".repeat(81), "8", false, T), { problem: FORM_WORDS.title });
+  for (const n of ["0", "100", "", "2.5"]) assert.deepEqual(listingChange(live, "Rice", n, false, T), { problem: FORM_WORDS.servings }, n);
+  const ended = { ...live, expires_at: at(-60) };
+  assert.deepEqual(listingChange(ended, "Rice", "8", false, T), { change: { reset: true } });
+  assert.deepEqual(listingChange(ended, "Rice", "3", false, T), { change: { number_of_serving: 3, reset: true } });
+});
+
+test("Give: a pencil next to the X opens the change popup (post again on an ended card)", async () => {
+  const fs = await import("node:fs");
+  const give = fs.readFileSync(new URL("../src/screens/Give.tsx", import.meta.url), "utf8");
+  const api = fs.readFileSync(new URL("../src/api.ts", import.meta.url), "utf8");
+  const { GIVE } = await import("../src/words.ts");
+  assert.match(give, /<FrostBtn testID=\{"edit-" \+ l\.id\} glyph="pencil" label=\{GIVE\.editName\(l\.title\)\}/);
+  assert.match(give, /canDelete\(l\) \? \(\s*<Row tight>/); // only before a grab, with the X
+  assert.match(give, /<Popup testID="listing-edit" small /);
+  assert.match(give, /again \? GIVE\.againTitle : GIVE\.editTitle/);
+  assert.match(give, /again \? null : \(\s*<Row[^>]*>\s*<ChipBtn testID="edit-reset"/); // no chip when it ended: reset is always on
+  assert.match(give, /listings\.update\(l\.id, asked\.change\)/);
+  assert.match(api, /request<Listing>\("PATCH", "\/api\/listings\/" \+ encodeURIComponent\(id\), \{ json: change \}\)/);
+  assert.equal(GIVE.editName("Rice"), "Change Rice");
+  assert.equal(GIVE.timerReset, "Reset the timer to 30 minutes");
+  assert.equal(GIVE.changeGrabbed, "Someone is picking this up. It cannot be changed.");
+  assert.equal(GIVE.changeEnded, "It ended. Tap the pencil to post it again.");
+  assert.match(give, /ended409 \? GIVE\.changeEnded : conflict \? GIVE\.changeGrabbed/); // X60 review: an ended 409 is not a grab
+});
