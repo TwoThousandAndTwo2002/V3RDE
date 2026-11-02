@@ -33,7 +33,7 @@ func logoOf(t *testing.T, src string) Logo {
 // The tool reads the approved geometry and colours from theme.ts (one source for the app and the icons).
 func TestReadLogoFromTheme(t *testing.T) {
 	l := logoOf(t, theme(t))
-	if l.ViewW != 130 || l.ViewH != 118 || l.Depth1 != 8 || l.Depth2 != 16 || l.IconShare != 0.46 || math.Abs(l.AdaptiveVisible-72.0/108) > 1e-9 {
+	if l.ViewW != 130 || l.ViewH != 118 || l.Depth1 != 8 || l.Depth2 != 16 || l.IconShare != 0.46 || math.Abs(l.AdaptiveMark-48.0/108) > 1e-9 {
 		t.Fatalf("logo %+v", l)
 	}
 	want := [][2]float64{{10, 10}, {38, 10}, {60, 62}, {82, 10}, {110, 10}, {74, 90}, {46, 90}}
@@ -114,8 +114,8 @@ func TestIconGeometryAndColours(t *testing.T) {
 	}
 }
 
-// Android: the background is the accent; the foreground has the same mark at 46 % of the visible part (72 of
-// 108 dp), inside the 66 dp safe circle; the monochrome layer is the merged outline in one colour.
+// Android: the background is the accent; the foreground has the mark box 48 of 108 dp (LG2: Android's "at least
+// 48x48 dp"; the box is 52.9 x 48 dp), inside the 66 dp safe circle; the monochrome layer is the merged outline in one colour.
 func TestAdaptiveLayers(t *testing.T) {
 	l := logoOf(t, theme(t))
 	bg := l.Background(1024)
@@ -123,6 +123,9 @@ func TestAdaptiveLayers(t *testing.T) {
 		if bg.RGBAAt(p.X, p.Y) != l.Accent {
 			t.Fatal("background is not the accent")
 		}
+	}
+	if l.AdaptiveMark*108 < 48 || l.AdaptiveMark*108*l.ViewW/l.ViewH > 66 {
+		t.Fatalf("the adaptive mark box is %.1f dp high: Android wants at least 48 dp and at most 66 dp", l.AdaptiveMark*108)
 	}
 	safe := 66.0 / 108 * 512
 	for name, img := range map[string]*image.NRGBA{"foreground": l.Foreground(1024), "monochrome": l.Monochrome(1024)} {
@@ -143,7 +146,7 @@ func TestAdaptiveLayers(t *testing.T) {
 				}
 			}
 		}
-		h := 0.46 * 1024 * 72 / 108
+		h := 1024 * 48.0 / 108
 		r := ink(img, color.RGBA{}, true)
 		if math.Abs(float64(r.Dy())-96*h/118) > 2 {
 			t.Fatalf("%s: ink height %d, want %.1f", name, r.Dy(), 96*h/118)
@@ -153,7 +156,7 @@ func TestAdaptiveLayers(t *testing.T) {
 		}
 	}
 	// the merged outline covers all three V's: the depth2 tip (lower right) has ink in the monochrome layer
-	k := 0.46 * 1024 * 72 / 108 / 118
+	k := 1024 * 48.0 / 108 / 118
 	ox, oy := (1024-130*k)/2, (1024-118*k)/2
 	if c := l.Monochrome(1024).NRGBAAt(int(ox+(60+16)*k), int(oy+(88+16)*k)); c.A < 200 {
 		t.Fatalf("the monochrome layer has no depth2 tip: %v", c)

@@ -199,7 +199,7 @@ export const logo = {
   leafGapEm: 0.04,    // the space before the leaf, a share of the font size
   baselineEm: 0.35,   // Poppins (hhea ascent 1050, descent 350 of 1000): the baseline is lineHeight/2 - this x font size above the line bottom
   iconShare: 0.46,    // the mark height on an app icon, a share of the icon side (the Hungree "H" icon: 470/1024)
-  adaptiveVisible: 2 / 3, // Android adaptive icon: the visible part of a 108 dp layer (72 dp)
+  adaptiveMark: 48 / 108, // LG2 (T9 Nov 2): the mark box on an Android adaptive layer: 48 of 108 dp (Android: a logo of at least 48 dp)
 } as const;
 
 export const font = { // Poppins (SIL Open Font Licence, @expo-google-fonts/poppins): the Hungree brand font

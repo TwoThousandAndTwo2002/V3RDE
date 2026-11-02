@@ -5,7 +5,7 @@
 //
 // An app icon: a full-bleed accent square (the system cuts the corners), the mark at logo.iconShare of the side,
 // centred on its box (no optical shift, T9), face onAccent, depth1 light fg, depth2 dark accentSoft. The Android
-// adaptive foreground has the same mark at logo.iconShare of the visible part (logo.adaptiveVisible of the layer);
+// adaptive foreground has the mark box logo.adaptiveMark of the layer (48 of 108 dp: LG2, T9 Nov 2, Android's 48 dp);
 // the monochrome layer is the outline of the three V's together, in one colour (T9 Nov 2: "merged stack").
 package main
 
@@ -25,15 +25,15 @@ import (
 
 // Logo is the logo group of theme.ts and the four palette colours an icon uses.
 type Logo struct {
-	ViewW, ViewH    float64
-	V               [][2]float64 // one V
-	Depth1, Depth2  float64
-	IconShare       float64
-	AdaptiveVisible float64
-	Accent          color.RGBA // palette.light.accent: the icon background
-	Face            color.RGBA // palette.light.onAccent
-	Deep1           color.RGBA // palette.light.fg
-	Deep2           color.RGBA // palette.dark.accentSoft
+	ViewW, ViewH   float64
+	V              [][2]float64 // one V
+	Depth1, Depth2 float64
+	IconShare      float64
+	AdaptiveMark   float64
+	Accent         color.RGBA // palette.light.accent: the icon background
+	Face           color.RGBA // palette.light.onAccent
+	Deep1          color.RGBA // palette.light.fg
+	Deep2          color.RGBA // palette.dark.accentSoft
 }
 
 var (
@@ -94,7 +94,7 @@ func ReadLogo(theme string) (Logo, error) {
 		}
 	}
 	nums := map[string]*float64{"viewW": &l.ViewW, "viewH": &l.ViewH, "depth1": &l.Depth1, "depth2": &l.Depth2,
-		"iconShare": &l.IconShare, "adaptiveVisible": &l.AdaptiveVisible}
+		"iconShare": &l.IconShare, "adaptiveMark": &l.AdaptiveMark}
 	for k, p := range nums {
 		v, ok := t[k]
 		if !ok {
@@ -173,17 +173,17 @@ func (l Logo) Background(side int) *image.RGBA {
 	return img
 }
 
-// Foreground is the Android adaptive foreground layer: the mark on transparent, at iconShare of the visible part.
+// Foreground is the Android adaptive foreground layer: the mark on transparent, its box adaptiveMark of the layer.
 func (l Logo) Foreground(side int) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, side, side))
-	l.mark(img, side, l.IconShare*l.AdaptiveVisible*float64(side), nil)
+	l.mark(img, side, l.AdaptiveMark*float64(side), nil)
 	return img
 }
 
 // Monochrome is the Android themed-icon layer: the outline of the three V's together, in the face colour.
 func (l Logo) Monochrome(side int) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, side, side))
-	l.mark(img, side, l.IconShare*l.AdaptiveVisible*float64(side), &l.Face)
+	l.mark(img, side, l.AdaptiveMark*float64(side), &l.Face)
 	return img
 }
 

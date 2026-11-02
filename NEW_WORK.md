@@ -2220,3 +2220,16 @@ T9 chose the logo from a research rubric (the mark T1 "V³": one V three times, 
 - Every size and shape is a theme token (`logo`), and the colours are the palette's, in light and dark mode.
 - The 7 app icon files are new: a Go tool makes them from the same tokens (a red square, the mark at 46 % of the side; Android layers inside the safe zone; a one-colour layer for themed icons). They were Hungree brand files before; the Hungree red and the Poppins font stay labelled as pre-existing.
 - Tests: mobile 192 -> 199; the icon tool has 4 Go tests.
+
+## 108. A larger mark on the Android icon
+
+**When:** Nov 2 2026.
+**Meta models:** none (design work).
+**Files:** `mobile/src/theme.ts`, `mobile/tools/brand/brand.go`, `mobile/tools/brand/brand_test.go`, `mobile/assets/android-icon-foreground.png`, `mobile/assets/android-icon-monochrome.png`, `mobile/docs/style_guide.md`
+**Sources:** `docs/sources/LG2.md`
+
+T9: the mark on the Android icon must be at least 48 dp, as Android asks.
+
+- The mark on the Android icon layers is now 48 dp high (it was about 33 dp), still inside the part that every phone shows.
+- The other icon files do not change.
+- Tests: the icon tool's test now fails when the Android mark is under 48 dp or over 66 dp.
