@@ -2,7 +2,7 @@
 import test from "node:test";
 import { strict as assert } from "node:assert";
 import { ADDRESS_FOLLOW_M, MAPS_LOAD_MS, NAME_LIMIT_MS, NAME_WAIT_MS, MAP_ZOOM, SUGGEST_MIN, addressLines, firstPrediction, linesOf, metersBetween, scriptUrl } from "../src/maps.ts";
-import { PICKUP, VOICE, grabMessage, pickupLine } from "../src/words.ts";
+import { PICKUP, VOICE, pickupLine } from "../src/words.ts";
 import { listingProblem } from "../src/capture.ts";
 
 test("the Maps script URL: the key, the weekly channel, async loading, the callback", () => {
@@ -46,7 +46,6 @@ test("with an address the instructions may be empty; the receiver gets the addre
   assert.equal(pickupLine(l), "12 Main St, Denver, CO 80219, USA. front desk");
   assert.equal(pickupLine({ pickup_text: "Back door" }), "Back door");
   assert.equal(pickupLine({ pickup_text: "", pickup_address: { text: "12 Main St" } }), "12 Main St");
-  assert.match(grabMessage(l, "a@b.c"), /Pickup: 12 Main St, Denver, CO 80219, USA\. front desk\./);
   for (const v of Object.values(PICKUP)) {
     const text = typeof v === "string" ? v : (v as (a: string) => string)("12 Main St");
     for (const sentence of text.split(/[.?!] /)) assert.ok(sentence.split(/\s+/).length <= 20, text);

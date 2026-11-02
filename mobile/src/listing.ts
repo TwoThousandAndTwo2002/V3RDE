@@ -89,11 +89,6 @@ export function mapLink(pickup: string): string {
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(pickup.trim());
 }
 
-/** A WhatsApp message to the giver, made from the listing (a plain link: wa.me). */
-export function chatLink(message: string): string {
-  return "https://wa.me/?text=" + encodeURIComponent(message);
-}
-
 /** Give: open the camera first when the giver has no listing that is still up. */
 export function cameraFirst(mine: Pick<Listing, "status" | "expires_at">[], now = Date.now()): boolean {
   return mine.every((l) => isGone(l, now));

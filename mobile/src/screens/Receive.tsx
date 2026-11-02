@@ -1,7 +1,7 @@
 // Receive, written new for V3RDE (NEW_WORK_UI.md, UI 12; mobile/docs/style_guide.md "Receive").
 // "Available now": the listings that are up, photo first, in 1, 2 or 3 columns; more come as the list scrolls
 // (pull down to load again on a phone). Grab takes one; then a small sheet over its photo gives the pickup with
-// Maps and WhatsApp links. The user's own listings are not in this list (U19: they are under Give).
+// a Maps link (X63, T9 Nov 2: after a grab the grabber gets the place only, one Maps pill). The user's own listings are not in this list (U19: they are under Give).
 // X49e (#74, the approved "distance" mockup v2): the list is for a place (the location) and a
 // distance the user picks (1, 5 or 10 mi). Food farther than that shows in gray under "Farther than N mi" (up to
 // 25 mi), and its grab asks first. "Your pickup" keeps the user's grabs, with "Release it" until the timer ends.
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking, Modal, RefreshControl, ScrollView, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
 import { ApiError, listings, type Listing } from "../api";
-import { chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText } from "../listing";
+import { clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText } from "../listing";
 import { REACHES, canRelease, currentPosition, isFar, milesText, minutesLeft, readPlaceChoice, savePlaceChoice,
   splitByReach, type Place, type Reach, type Saved } from "../place";
 import { layoutFor, opacity, size, space, useColors } from "../theme";
@@ -19,7 +19,7 @@ import { ChipBtn, Grid, ListingCard, Muted, Pill, Popup, Rise, Row, ScreenHead, 
   usePhoto } from "../ui";
 import { Doodles as Wallpaper } from "../doodles";
 import { useSession } from "../session";
-import { PLACE, RECEIVE, grabMessage, pickupLine, servings } from "../words";
+import { PLACE, RECEIVE, pickupLine, servings } from "../words";
 
 /** Opens a link outside the app: a new browser tab on the web. */
 function openOut(url: string) {
@@ -211,8 +211,7 @@ export default function ReceiveScreen() {
           <>
             <Muted lines={2} style={{ opacity: left === 0 ? opacity.gone : 1 }}>{pickupLine(l)}</Muted>
             <Row style={{ marginTop: space.gap }}>
-              <Pill kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(l.pickup_address?.text || l.pickup_text))} />
-              <Pill title={RECEIVE.chat} grow onPress={() => openOut(chatLink(grabMessage(l, who.email)))} />
+              <Pill testID={"maps-" + l.id} title={RECEIVE.maps} grow onPress={() => openOut(mapLink(l.pickup_address?.text || l.pickup_text))} />
             </Row>
             {canRelease(l, who.id, now) ? (
               <View style={{ marginTop: space.gap, alignSelf: "center" }}>
@@ -286,8 +285,7 @@ export default function ReceiveScreen() {
             <Rise i={0}><Title center>{RECEIVE.grabbed}</Title></Rise>
             <Rise i={1}><Muted center lines={2} style={{ marginTop: space.hair }}>{taken.title + " · " + pickupLine(taken)}</Muted></Rise>
             <Rise i={2}><Row style={{ marginTop: space.gutter }}>
-              <Pill testID="maps" kind="secondary" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(taken.pickup_address?.text || taken.pickup_text))} />
-              <Pill testID="chat" title={RECEIVE.chat} grow onPress={() => openOut(chatLink(grabMessage(taken, who.email)))} />
+              <Pill testID="maps" title={RECEIVE.maps} grow onPress={() => openOut(mapLink(taken.pickup_address?.text || taken.pickup_text))} />
             </Row></Rise>
           </Sheet>
         ) : null}

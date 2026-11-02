@@ -1,7 +1,7 @@
 // Tests of the listing rules (src/listing.ts), written new for V3RDE (NEW_WORK_UI.md, UI 12).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { addPage, cameraFirst, canDelete, chatLink, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText, withChange } from "../src/listing.ts";
+import { addPage, cameraFirst, canDelete, clock, isGone, loadOthers, mapLink, othersOnly, secondsLeft, timeText, withChange } from "../src/listing.ts";
 
 const T = Date.parse("2026-10-29T12:00:00Z");
 const at = (s: number) => new Date(T + s * 1000).toISOString();
@@ -73,7 +73,6 @@ test("a grab changes only its listing", () => {
 
 test("links", () => {
   assert.equal(mapLink(" 12 Main St "), "https://www.google.com/maps/search/?api=1&query=12%20Main%20St");
-  assert.equal(chatLink("Hi & bye"), "https://wa.me/?text=Hi%20%26%20bye");
 });
 
 test("Give opens the camera first only when nothing of the giver is up", () => {
@@ -147,4 +146,23 @@ test("Give: a pencil next to the X opens the change popup (post again on an ende
   assert.equal(GIVE.changeGrabbed, "Someone is picking this up. It cannot be changed.");
   assert.equal(GIVE.changeEnded, "It ended. Tap the pencil to post it again.");
   assert.match(give, /ended409 \? GIVE\.changeEnded : conflict \? GIVE\.changeGrabbed/); // X60 review: an ended 409 is not a grab
+});
+
+// X63 (T9 2026-11-02: "we need to take whats app off or use it one or the other"; Maps only): after a grab the
+// sheet and the "Your pickup" card have one pill, Maps, as the primary pill; no WhatsApp link anywhere in the app.
+test("after a grab: Maps only, no WhatsApp", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const recv = fs.readFileSync(new URL("../src/screens/Receive.tsx", import.meta.url), "utf8");
+  assert.match(recv, /<Pill testID="maps" title=\{RECEIVE\.maps\} grow /);
+  assert.match(recv, /<Pill testID=\{"maps-" \+ l\.id\} title=\{RECEIVE\.maps\} grow /);
+  assert.doesNotMatch(recv, /kind="secondary" title=\{RECEIVE\.maps\}/, "Maps is the one pill, so it is the primary pill");
+  const src = new URL("../src/", import.meta.url).pathname;
+  const walk = (d: string): string[] => fs.readdirSync(d).flatMap((n) => {
+    const p = path.join(d, n);
+    return fs.statSync(p).isDirectory() ? walk(p) : [p];
+  });
+  for (const f of walk(src)) assert.doesNotMatch(fs.readFileSync(f, "utf8"), /wa\.me|WhatsApp/i, f);
+  const { RECEIVE } = await import("../src/words.ts");
+  assert.ok(!("chat" in RECEIVE));
 });

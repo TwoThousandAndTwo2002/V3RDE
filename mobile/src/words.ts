@@ -41,7 +41,6 @@ export const RECEIVE = {
   gone: "This food is gone",
   grabbed: "You grabbed it",
   maps: "Maps",
-  chat: "WhatsApp",
   close: "Close",
   collected: "Collected",
   expired: "Expired",
@@ -59,18 +58,6 @@ export const UNITS = {
 /** "1 serving", "6 servings". */
 export function servings(n: number): string {
   return UNITS.servings(n);
-}
-
-/** X49x: the WhatsApp message to the giver after a grab, as one whole message. */
-export const GRAB = {
-  message: (title: string, amount: string, pickup: string, email: string) =>
-    `Hi! I grabbed "${title}" on V3RDE (${amount}). Pickup: ${pickup}. I am ${email}. When can I come?`,
-} as const;
-
-/** The WhatsApp message to the giver after a grab. */
-export function grabMessage(l: { title: string; number_of_serving: number; pickup_text: string; pickup_address?: { text: string } },
-  email: string): string {
-  return GRAB.message(l.title, servings(l.number_of_serving), pickupLine(l), email);
 }
 
 /** X49j: where the food is, for the user who grabbed it: the chosen address, then the instructions. */
@@ -416,4 +403,4 @@ export const VOICE = {
 
 /** X49x: every word table of this file, by name (src/lang.ts puts them in the chosen language). */
 export const WORD_TABLES = { ROLE, FRAME, RECEIVE, GIVE, RESCUE, CAPTURE, REVIEW, PLACE, MORE, PICKUP, TOUCH, DETAILS, VOICE,
-  UNITS, GRAB, COUNT, SCAN, NET, CARD, MIC, SOURCE_NOTE, LANG } as unknown as Record<string, Record<string, unknown>>;
+  UNITS, COUNT, SCAN, NET, CARD, MIC, SOURCE_NOTE, LANG } as unknown as Record<string, Record<string, unknown>>;

@@ -213,7 +213,7 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 
 - **Written again:** Receive is new code on the U5 parts; the rewrite guard finds no line of the earlier app's mobile code.
 - **Feed:** "Available now", photo-first cards in 1, 2 or 3 columns with a live time pill (m:ss, "Collected", "Expired"); the next page loads near the end of the list; on a phone, pull down to load again.
-- **Grab:** one request at a time; then a small sheet over the listing photo, "You grabbed it", with "Maps" (a map search) and "WhatsApp" (a message to the giver). A listing that someone took first (409) shows as collected, with a toast. The user's own listings show "Your listing" and no Grab.
+- **Grab:** one request at a time; then a small sheet over the listing photo, "You grabbed it", with "Maps" (a map search) and "WhatsApp" (a message to the giver). X63 (NEW_WORK.md #111, T9 Nov 2): Maps only; WhatsApp is removed. A listing that someone took first (409) shows as collected, with a toast. The user's own listings show "Your listing" and no Grab.
 - **Parts:** `ListingCard`, `TimePill`, `Grid`, `usePhoto`, `useNow`; the `Sheet` part gets a ✕ (`onClose`) and keeps clear of the home bar.
 - **Rules:** `listing.ts` (time left, gone, pages without doubles, links, camera first), with tests.
 

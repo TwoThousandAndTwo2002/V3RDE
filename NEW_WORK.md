@@ -2290,3 +2290,16 @@ T9: a push failure must be easy to find, and every push needs its latency and ot
 - The health answer of the push service has the counts (sent, failed by status, pings, answers, unknown keys, connects) and the latency (median, 95th percentile and the largest of the last 256 calls), and the last failure.
 - A ping with an unknown key (at most one line a minute), and each notify, are lines too. The socket id is written only as a short hash, never in a URL or an AWS message.
 - Tests: post 118 -> 120.
+
+## 111. After a grab: Maps only
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `mobile/src/screens/Receive.tsx`, `mobile/src/words.ts`, `mobile/src/listing.ts`, `mobile/tests/listing.test.mts`, `mobile/tests/words.test.mts`, `mobile/tests/maps.test.mts`, `mobile/tests/app_texts.json`, `mobile/docs/style_guide.md`, `NEW_WORK_UI.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X63.md`
+
+T9: the person who grabs the food gets the place only, not a WhatsApp message.
+
+- The sheet after Grab and the "Your pickup" card have one pill, Maps, as the main red pill.
+- The WhatsApp pill, its message and its link are gone from the app.
+- Tests: mobile 202 -> 203.
