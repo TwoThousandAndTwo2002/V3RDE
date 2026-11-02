@@ -182,6 +182,26 @@ export const camera = {
   ratio: 4 / 3,      // the photo in the camera dialog (width to height)
 } as const;
 
+/**
+ * The V3RDE logo (LG1, T9 Nov 1: the mark T1 "V³" and the wordmark G; mobile/src/brand.tsx and the icon tool
+ * mobile/tools/brand). The mark is one V drawn three times, back to front: accentSoft at depth2, accent at depth1,
+ * fg on top. The colours are the palette tokens (an app icon: onAccent, light fg, dark accentSoft).
+ */
+export const logo = {
+  viewW: 130,         // the box of the mark (path units)
+  viewH: 118,
+  v: "10,10 38,10 60,62 82,10 110,10 74,90 46,90", // one V (polygon points)
+  depth1: 8,          // the accent V: this far right and down from the face (path units)
+  depth2: 16,         // the accentSoft V
+  leaf: "M2 22 C2 10 10 2 22 2 C22 14 14 22 2 22 Z", // the leaf full stop after the word
+  leafBox: 24,        // the box of the leaf path
+  leafEm: 0.36,       // the leaf size, a share of the font size
+  leafGapEm: 0.04,    // the space before the leaf, a share of the font size
+  baselineEm: 0.35,   // Poppins (hhea ascent 1050, descent 350 of 1000): the baseline is lineHeight/2 - this x font size above the line bottom
+  iconShare: 0.46,    // the mark height on an app icon, a share of the icon side (the Hungree "H" icon: 470/1024)
+  adaptiveMark: 48 / 108, // LG2 (T9 Nov 2): the mark box on an Android adaptive layer: 48 of 108 dp (Android: a logo of at least 48 dp)
+} as const;
+
 export const font = { // Poppins (SIL Open Font Licence, @expo-google-fonts/poppins): the Hungree brand font
   regular: "Poppins_400Regular",   // body text
   semibold: "Poppins_600SemiBold", // titles and pill text

@@ -12,6 +12,7 @@ import { AuthFrame } from "./AuthFrame";
 import { ABOUT_PATH, ABOUT_URL, RESET, SIGN_IN, cleanEmail, failure, formProblem, type Offer } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
 import { LanguageButton } from "../language";
+import { SignInBrand } from "../brand";
 
 /** Opens the About page: the same tab on the web, the browser on a phone. */
 function openAbout() {
@@ -55,6 +56,7 @@ export default function Login({ onSignedIn, onForgot, leaving }: { onSignedIn: (
 
   const fields = (
     <View>
+      <SignInBrand />
       <Title>{SIGN_IN.title}</Title>
       <Muted style={{ marginTop: space.inset }}>{SIGN_IN.line}</Muted>
       <View style={{ marginTop: space.pad }}>

@@ -2235,3 +2235,44 @@ T9: after a post, the donor could not change the servings or the name, or post a
 - The Facebook post changes too: a new name or number writes the post text again (with the same checks), and a post again removes [UNAVAILABLE].
 - After a grab nothing changes (the receiver counts on it).
 - Tests: listings 50 -> 54, post 115 -> 118, mobile 193 -> 195.
+
+## 107. The V3RDE logo in every place, and new app icons
+
+**When:** Nov 2 2026.
+**Meta models:** none (design work).
+**Files:** `mobile/src/brand.tsx` (new), `mobile/src/theme.ts`, `mobile/src/screens/Frame.tsx`, `mobile/src/screens/Login.tsx`, `mobile/src/screens/Reset.tsx`, `mobile/public/about/index.html`, `mobile/public/learn/index.html`, `mobile/tools/brand/` (new, Go), `mobile/assets/icon.png`, `mobile/assets/splash-icon.png`, `mobile/assets/favicon.png`, `mobile/assets/android-icon-background.png`, `mobile/assets/android-icon-foreground.png`, `mobile/assets/android-icon-monochrome.png`, `mobile/public/apple-touch-icon.png`, `mobile/docs/style_guide.md`, `mobile/tests/brand.test.mts` (new), `mobile/package.json`, `NEW_WORK_UI.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/LG1.md`
+
+T9 chose the logo from a research rubric (the mark T1 "V³": one V three times, for the 3 in V3RDE; the wordmark G: "V3RDE" and a leaf full stop) and approved it in the app from a true-scale mockup. Branch `logo`.
+
+- The wide top bar shows the mark and the wordmark; the phone header shows the mark; the sign-in and the reset screens show the mark and the wordmark above the title. The About and Learn pages show the same logo.
+- Every size and shape is a theme token (`logo`), and the colours are the palette's, in light and dark mode.
+- The 7 app icon files are new: a Go tool makes them from the same tokens (a red square, the mark at 46 % of the side; Android layers inside the safe zone; a one-colour layer for themed icons). They were Hungree brand files before; the Hungree red and the Poppins font stay labelled as pre-existing.
+- Tests: mobile 192 -> 199; the icon tool has 4 Go tests.
+
+## 108. A larger mark on the Android icon
+
+**When:** Nov 2 2026.
+**Meta models:** none (design work).
+**Files:** `mobile/src/theme.ts`, `mobile/tools/brand/brand.go`, `mobile/tools/brand/brand_test.go`, `mobile/assets/android-icon-foreground.png`, `mobile/assets/android-icon-monochrome.png`, `mobile/docs/style_guide.md`
+**Sources:** `docs/sources/LG2.md`
+
+T9: the mark on the Android icon must be at least 48 dp, as Android asks.
+
+- The mark on the Android icon layers is now 48 dp high (it was about 33 dp), still inside the part that every phone shows.
+- The other icon files do not change.
+- Tests: the icon tool's test now fails when the Android mark is under 48 dp or over 66 dp.
+
+## 109. The logo branch joins the services branch
+
+**When:** Nov 2 2026.
+**Meta models:** none (a merge; entries 107–108 are design work).
+**Files:** the logo branch (its entries 107–108: `mobile/src/brand.tsx`, `mobile/src/theme.ts`, `mobile/tools/brand/`, the 7 icon files, the About and Learn pages, …) merged; `NEW_WORK.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X61.md`
+
+T9: the V3RDE logo goes live, in every place and in the app icons.
+
+- A real merge: the logo commits keep their history. This file keeps every entry of both branches in number order.
+- No code conflict: the logo changes the brand parts, and the services branch changed the chat and the listing popup since the logo branch started.
+- The web build is made again from the merged code.
+- Tests: mobile 195 -> 202; the icon tool's 4 Go tests join the services checks.

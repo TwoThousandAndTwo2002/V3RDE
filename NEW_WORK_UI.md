@@ -47,7 +47,7 @@ The app base is written new. It replaces the base of the earlier app; it is not 
 - **Open-source template (pre-existing, labelled):** `package.json`, `tsconfig.json`, `index.ts`, `App.tsx` and `.gitignore` start from Expo's `blank-typescript` template for SDK 58 (`create-expo-app`, MIT licence, `mobile/third_party/EXPO_TEMPLATE_LICENSE.txt`). `App.tsx` is the template screen until the screens are written again.
 - **Dependencies:** added with `npx expo install`, so each version is the one SDK 58 names: camera, image picker, image manipulator, audio, fonts (Poppins, SIL Open Font Licence) and the web parts.
 - **The app is V3RDE:** name and web title `V3RDE`, slug and URL scheme `v3rde`, Android package and iOS bundle ID `com.kkombuchaas.v3rde`. A phone installs it as a new app. The permission texts name V3RDE.
-- **Brand icons (pre-existing, labelled):** the 7 icon files are Hungree LLC brand assets from before the Hackathon. They are byte-equal to the earlier files (sha256 checked against the audit).
+- **Brand icons (pre-existing, labelled):** the 7 icon files are Hungree LLC brand assets from before the Hackathon. They are byte-equal to the earlier files (sha256 checked against the audit). **Replaced in NEW_WORK.md #107 (LG1, T9 Nov 1):** the 7 icon files are now the V3RDE logo, made new in the Hackathon by `mobile/tools/brand` from the `logo` tokens; only the Hungree red and the Poppins font stay pre-existing.
 - **EAS:** the `preview` profile builds an APK. The EAS project for slug `v3rde` is made with `eas init` after this change.
 - Not yet type-checked or exported for the web: `voicerec.ts` and `webcam.ts` need `api.ts` and `logic.ts`, which come next.
 - Tests: mobile 11 (`npm test`).
