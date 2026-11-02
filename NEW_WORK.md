@@ -2276,3 +2276,17 @@ T9: the V3RDE logo goes live, in every place and in the app icons.
 - No code conflict: the logo changes the brand parts, and the services branch changed the chat and the listing popup since the logo branch started.
 - The web build is made again from the merged code.
 - Tests: mobile 195 -> 202; the icon tool's 4 Go tests join the services checks.
+
+## 110. Push: each message to a browser is measured and logged
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `post/push.go`, `post/push_stats_test.go` (new)
+**Sources:** `docs/sources/X62.md`
+
+T9: a push failure must be easy to find, and every push needs its latency and other figures. On Nov 2 every answer to a ping failed (a wrong stage in an AWS policy), and nothing on the box said so.
+
+- Every message and every close the box sends through API Gateway is a line in the push events: the AWS status, a short code, the time it took, what it was for, and AWS's reason when it failed. A failure is also a log line. The answer to a ping (one a minute for each socket) is a line only when it fails; it is always counted and timed.
+- The health answer of the push service has the counts (sent, failed by status, pings, answers, unknown keys, connects) and the latency (median, 95th percentile and the largest of the last 256 calls), and the last failure.
+- A ping with an unknown key (at most one line a minute), and each notify, are lines too. The socket id is written only as a short hash, never in a URL or an AWS message.
+- Tests: post 118 -> 120.
