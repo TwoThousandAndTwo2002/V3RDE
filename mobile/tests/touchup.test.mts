@@ -50,10 +50,13 @@ test("one touch-up button, the auto touch-up", async () => {
   assert.ok(!("light" in TOUCH) && !("background" in TOUCH));
 });
 
-test("X50a: picking a photo closes More, and the large photo of one item shows the photo that posts", async () => {
+test("X65: picking a photo keeps More open (X50a closed it), and the large photo of one item shows the photo that posts", async () => {
   const fs = await import("node:fs");
   const review = fs.readFileSync(new URL("../src/screens/Review.tsx", import.meta.url), "utf8");
-  assert.match(review, /setOne\(it\.item, \{ \.\.\.t, chosen: c \}\);\s*closeMore\(\);/);
+  const choose = review.slice(review.indexOf("onChoose={(c) => {"), review.indexOf("}} />", review.indexOf("onChoose={(c) => {")));
+  assert.match(choose, /setOne\(it\.item, \{ \.\.\.t, chosen: c \}\);/);
+  assert.doesNotMatch(choose, /closeMore\(\)|setMoreOpen\(/); // bug 23: the thumbnails stay
+
   assert.match(review, /const oneEdit = answer\.items\.length === 1 && items\.length === 1 \? editOf\(items\[0\]\) : undefined;/);
   assert.match(review, /const bigPhoto = usePhoto\(oneEdit \? touchup\.photoPath\(oneEdit\) : undefined\);/);
   assert.match(review, /photo=\{bigUri\}>/);

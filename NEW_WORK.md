@@ -2371,3 +2371,17 @@ T9: the items work (many barcodes in one photo, find a missed item, from the cha
 - The 10 new app texts of items are in the translation list (`mobile/tests/app_texts.json`); the translation round at the deploy translates them.
 - The merge review found three places where the two sides did not fit, now fixed: a find after the chat's question removed that question (the found item now joins the remembered list too); the learn report counted the catalog items of a photo with many barcodes, and the items found from the chat, under the wrong source (now "barcode" and "found").
 - Tests: inference 115 -> 135, post 120 -> 121, mobile 203 -> 210.
+
+## 113. The language choice where the role changes; a touch-up pick keeps More open
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `mobile/src/language.tsx`, `mobile/src/popupstack.ts` (new), `mobile/src/ui.tsx`, `mobile/src/screens/Frame.tsx`, `mobile/src/screens/Role.tsx`, `mobile/src/screens/Review.tsx`, `mobile/tests/lang.test.mts`, `mobile/tests/touchup.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X65.md`
+
+T9 (Nov 2, test findings 21 and 23): on a wide screen a user could not change the language after picking Give or Receive without a log out; after a tap on a touch-up photo, More closed and the two small photos went away.
+
+- The language choice is an oval pill where the role changes: in the ☰ role sheet (it was a text link) and, on a wide screen, in the top bar next to Log out (it was not there). The sign-in row keeps its link.
+- A tap on Original or Touched up keeps More open; the chosen photo has the red line and is the one that posts (entry 96 closed More here).
+- On a wide screen the language oval can open its sheet over a dialog of the screen (a listing edit): only the newest dialog takes Esc and the Tab key, so one Esc closes the language sheet and not the edit under it.
+- Tests: mobile 210 -> 212.

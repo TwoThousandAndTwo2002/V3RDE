@@ -139,7 +139,7 @@ test("the language choice is on the sign-in row and in the role sheet, and Arabi
   const app = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
   const lang = readFileSync(new URL("../src/lang.ts", import.meta.url), "utf8");
   assert.match(login, /<LanguageButton \/>\s*<TextLink testID="about"/);
-  assert.match(role, /<LanguageButton testID="menu-language" \/>[\s\S]*testID="logout"/);
+  assert.match(role, /<LanguageButton testID="menu-language" look="pill" \/>[\s\S]*testID="logout"/);
   assert.match(app, /<LanguageSheet onPick=\{pickLanguage\}/);
   assert.match(lang, /document\.documentElement\.dir = l\.dir;/);
   // react-native-web flips start and end inside a View with dir (LocaleProvider)
@@ -203,4 +203,53 @@ test("X49x review: the last choice wins over a slow load, and a file with no tex
     globalThis.fetch = real;
     applyTexts("en", {}, {});
   }
+});
+
+// X65 (T9 Nov 2, bug 21: "users cannot change the application language after selecting a role"; "the same oval style as
+// the others"): the language pill in the role sheet (phone) and in the top bar next to Log out (wide screen)
+test("X65: the language choice is an oval pill where the role changes: the role sheet and the top bar", () => {
+  const src = (f: string) => readFileSync(new URL("../src/" + f, import.meta.url), "utf8");
+  const frame = src("screens/Frame.tsx"), lang = src("language.tsx"), role = src("screens/Role.tsx");
+  // the wide top bar: the language oval, then Log out (the top bar has no role sheet)
+  assert.match(frame, /<LanguageButton testID="topbar-language" look="bar" \/>\s*<Pressable testID="topbar-logout"/);
+  const bar = frame.slice(frame.indexOf("const bar = page.topBar ?"), frame.indexOf(") : ("));
+  assert.ok(bar.includes("topbar-language"), "the language oval is in the top bar");
+  // the role sheet: the pill is not centred as a link any more (the width of the sheet, as Log out)
+  assert.doesNotMatch(role, /alignItems: "center" \}\}><LanguageButton/);
+  // the ovals use the tokens of the pills they sit next to (Pill secondary; the top-bar Log out)
+  assert.match(lang, /height: size\.control, borderRadius: radius\.round, borderWidth: size\.border, borderColor: col\.line/);
+  assert.match(lang, /paddingHorizontal: look === "pill" \? size\.pillPadX : size\.tabPadX/);
+  assert.match(lang, /backgroundColor: look === "pill" \? col\.card : isHovered\(state\) \? col\.iconFill : col\.bg/);
+  assert.match(frame, /height: size\.control, paddingHorizontal: size\.tabPadX, borderRadius: radius\.round/); // its neighbour
+  // the sign-in row keeps the link (the default look), and every look keeps one name for screen readers
+  assert.match(src("screens/Login.tsx"), /<LanguageButton \/>/);
+  assert.match(lang, /look = "link"/);
+  assert.equal((lang.match(/accessibilityLabel=\{LANG\.name\(now\.native\)\}/g) || []).length, 1);
+});
+
+
+// X65 review: on a wide screen the language oval can open its sheet over a dialog of the role panel (a listing edit):
+// only the newest popup takes Esc and the Tab focus, so one Esc closes the language sheet and not the edit under it
+test("X65 review: two popups at once: only the newest takes Esc and Tab", async () => {
+  const { pushPopup, isTopPopup } = await import("../src/popupstack.ts");
+  const edit = {}, sheet = {};
+  const offEdit = pushPopup(edit);
+  assert.equal(isTopPopup(edit), true);
+  const offSheet = pushPopup(sheet);
+  assert.equal(isTopPopup(sheet), true);
+  assert.equal(isTopPopup(edit), false); // Esc and Tab go to the language sheet only
+  offSheet();
+  assert.equal(isTopPopup(edit), true); // the edit gets them back
+  offEdit();
+  assert.equal(isTopPopup(edit), false);
+  const a = {}, b = {}; const offA = pushPopup(a); const offB = pushPopup(b); offA(); // out of order
+  assert.equal(isTopPopup(b), true); offB(); assert.equal(isTopPopup(b), false);
+  const ui = readFileSync(new URL("../src/ui.tsx", import.meta.url), "utf8");
+  assert.match(ui, /useEffect\(\(\) => pushPopup\(token\), \[token\]\);/);
+  assert.match(ui, /e\.key === "Escape" && isTopPopup\(token\) && onDismiss\(\)/);
+  assert.match(ui, /if \(e\.key !== "Tab" \|\| !top\(\)\) return;/);
+  assert.match(ui, /trapFocus\(box\.current as unknown as HTMLElement \| null, \(\) => isTopPopup\(token\)\)/);
+  // a long name or a long Log out never pushes the tabs: the right group and the oval can shrink
+  const frame = readFileSync(new URL("../src/screens/Frame.tsx", import.meta.url), "utf8");
+  assert.match(frame, /flexGrow: 1, flexBasis: 0, minWidth: 0, flexDirection: "row"/);
 });

@@ -16,15 +16,26 @@ const isHovered = (state: object) => (state as { hovered?: boolean }).hovered ==
 
 /** The button that opens the language sheet: the globe and the name of the language now, in that language. Not
  *  shown when the box has only English. */
-export function LanguageButton({ testID = "language" }: { testID?: string }) {
+export function LanguageButton({ testID = "language", look = "link" }: {
+  testID?: string;
+  /** X65 (T9 Nov 2: "the same oval style as the others"): "link" on the sign-in row; "pill" in the role sheet (as its Log
+   *  out pill: `Pill` secondary, the width of the sheet); "bar" in the wide top bar (as its Log out oval). */
+  look?: "link" | "pill" | "bar";
+}) {
   const col = useColors();
   const { languages, now, open } = useLanguage();
   if (languages.length < 2) return null;
+  const oval = look !== "link";
+  const fg = look === "link" ? col.link : look === "bar" ? col.muted : col.fg;
   return (
     <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={LANG.name(now.native)} onPress={open}
-      style={(state) => ({ flexDirection: "row", alignItems: "center", gap: space.gap, opacity: state.pressed ? opacity.pressed : 1 })}>
-      <GlyphIcon name="globe" color={col.link} />
-      <Text style={[type.button, { color: col.link }]}>{shortName(now.native)}</Text></Pressable>
+      style={(state) => ({ flexDirection: "row", alignItems: "center", gap: space.gap,
+        ...(oval ? { flexShrink: 1, minWidth: 0, height: size.control, borderRadius: radius.round, borderWidth: size.border, borderColor: col.line, justifyContent: "center",
+          paddingHorizontal: look === "pill" ? size.pillPadX : size.tabPadX,
+          backgroundColor: look === "pill" ? col.card : isHovered(state) ? col.iconFill : col.bg } : {}),
+        opacity: state.pressed ? opacity.pressed : oval && look === "pill" && isHovered(state) ? opacity.hover : 1 })}>
+      <GlyphIcon name="globe" color={look === "link" ? col.link : fg} />
+      <Text numberOfLines={1} style={[type.button, { color: fg, flexShrink: 1 }]}>{shortName(now.native)}</Text></Pressable>
   );
 }
 

@@ -152,7 +152,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
         const name = (x: "original" | "edit") => (x === "edit" ? "touched_up" : "original");
         if (t.chosen !== c) edits.current = addEdits(edits.current, [{ item: it.item, field: "photo", from: name(t.chosen), to: name(c), how: "hand" }]);
         setOne(it.item, { ...t, chosen: c });
-        closeMore(); // X50a (T9: "once that touched up picture is picked the menu should collapse so that the user can see the photo large")
+        // X65 (T9 Nov 2, bug 23): More stays open after a pick, so both photos stay in view (X50a closed it here)
       }} />
   ));
   // X49i: what More holds: Touch up, then the details at once (Change edits them in place)

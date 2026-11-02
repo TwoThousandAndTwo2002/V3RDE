@@ -14,6 +14,7 @@ import { revealOnFocus, useKeyboardInset } from "./keyboard";
 import { camera, glyph, layoutFor, motion, opacity, radius, shade, size, space, type, useColors } from "./theme";
 import { typeDelay } from "./details";
 import { CAPTURE, CARD } from "./words";
+import { isTopPopup, pushPopup } from "./popupstack";
 
 // ---------------------------------------------------------------- text
 
@@ -425,7 +426,7 @@ const MODAL = { accessibilityViewIsModal: true, role: "dialog" as const, "aria-m
  * Web: the focus goes into `el` and Tab and Shift+Tab stay in it (a modal dialog, WAI-ARIA APG). Returns the
  * function that ends it and gives the focus back.
  */
-function trapFocus(el: HTMLElement | null): (() => void) | undefined {
+function trapFocus(el: HTMLElement | null, top: () => boolean = () => true): (() => void) | undefined {
   if (!el || typeof document === "undefined") return undefined;
   const before = document.activeElement as HTMLElement | null;
   const inside = () => Array.from(el.querySelectorAll<HTMLElement>('[tabindex]:not([tabindex="-1"]), button, input, textarea, a[href]'));
@@ -433,7 +434,7 @@ function trapFocus(el: HTMLElement | null): (() => void) | undefined {
   const first = inside()[0];
   first?.focus?.();
   const tab = (e: KeyboardEvent) => {
-    if (e.key !== "Tab") return;
+    if (e.key !== "Tab" || !top()) return; // X65 review: only the newest popup keeps the focus
     const all = inside();
     if (all.length === 0) return;
     const at = all.indexOf(document.activeElement as HTMLElement);
@@ -466,9 +467,11 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID, sm
     Animated.timing(fade, { toValue: 1, duration: motion.dimMs, useNativeDriver: true }).start();
   }, [rise, fade]);
   const box = useBox<React.ComponentRef<typeof View>>(null);
+  const [token] = useState(() => ({}));
+  useEffect(() => pushPopup(token), [token]); // X65 review: the newest popup takes Esc and Tab
   useEffect(function escCloses() {
     if (RN.Platform.OS !== "web" || !onDismiss) return;
-    const escape = (e: KeyboardEvent) => e.key === "Escape" && onDismiss();
+    const escape = (e: KeyboardEvent) => e.key === "Escape" && isTopPopup(token) && onDismiss();
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
   }, [onDismiss]);
@@ -479,7 +482,7 @@ export function Popup({ dim = true, onDismiss, dismissName, children, testID, sm
   }, [onDismiss]);
   useEffect(function focusStaysIn() {
     if (RN.Platform.OS !== "web") return;
-    return trapFocus(box.current as unknown as HTMLElement | null);
+    return trapFocus(box.current as unknown as HTMLElement | null, () => isTopPopup(token));
   }, []);
   const shift = rise.interpolate({ inputRange: [0, 1], outputRange: [height * motion.sheetShift, 0] });
   const tapOut = onDismiss ? (

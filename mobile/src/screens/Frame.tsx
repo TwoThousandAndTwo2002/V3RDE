@@ -8,6 +8,7 @@ import * as RN from "react-native";
 import { layoutFor, opacity, radius, size, space, type, useColors } from "../theme";
 import { IconBtn } from "../ui";
 import { PhoneBrand, TopBrand } from "../brand";
+import { LanguageButton } from "../language";
 import { FRAME, ROLE, roleCard, type RoleName } from "../words";
 
 /** Web: Left and Right on the tab list choose the other role and move the focus to its tab. */
@@ -50,7 +51,9 @@ export function Frame({ role, onRole, onMenu, onLogout, children }: {
           {...arrows(role, onRole)}>
           <Tab role="give" on={role === "give"} onPress={() => onRole("give")} />
           <Tab role="receive" on={role === "receive"} onPress={() => onRole("receive")} /></View>
-        <View style={{ flexGrow: 1, flexBasis: 0, alignItems: "flex-end" }}>
+        <View style={{ flexGrow: 1, flexBasis: 0, minWidth: 0, flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: space.inset }}>
+          {/* X65 (T9 Nov 2): the language choice where the role changes; the wide screen has no role sheet */}
+          <LanguageButton testID="topbar-language" look="bar" />
           <Pressable testID="topbar-logout" accessibilityRole="button" onPress={onLogout}
             style={(state) => ({ height: size.control, paddingHorizontal: size.tabPadX, borderRadius: radius.round, justifyContent: "center",
               borderWidth: size.border, borderColor: col.line, backgroundColor: isHovered(state) ? col.iconFill : col.bg,

@@ -38,8 +38,8 @@ export function RoleSheet({ dim, chosen, onPick, onLogout, onDismiss }: {
         <RoleCard role="give" chosen={chosen === "give"} onPress={() => onPick("give")} /></View></Rise>
       <Rise i={2}><View style={{ marginTop: space.item }}>
         <RoleCard role="receive" chosen={chosen === "receive"} onPress={() => onPick("receive")} /></View></Rise>
-      {/* X49x: the language choice, above Log out */}
-      <Rise i={3}><View style={{ marginTop: space.gutter, alignItems: "center" }}><LanguageButton testID="menu-language" /></View></Rise>
+      {/* X49x: the language choice, above Log out; X65: an oval pill, as Log out */}
+      <Rise i={3}><View style={{ marginTop: space.gutter }}><LanguageButton testID="menu-language" look="pill" /></View></Rise>
       <Rise i={4}><View style={{ marginTop: space.gutter }}>
         <Pill testID="logout" kind="secondary" title={ROLE.logout} onPress={onLogout} /></View></Rise>
     </Popup>
