@@ -10,7 +10,7 @@ Written new for V3RDE during the Hackathon (NEW_WORK_UI.md, UI 5). It is the rul
 **Where the values come from** (the "Source" column).
 - **X32** — the look T9 approved on Oct 27 2026 (the X32 mockup, https://claude.ai/artifact/6AMxFSoWfFfGMySXPefUKW). **X25** — the scan mockup of Oct 25 2026 (the camera and the small sheets), the reference for the states X32 does not show. `mobile/tools/ui/measure_x32.py` reads the shots (phone 3 px = 1 pt, desktop 2 px = 1 pt) along fixed scan lines; the output is `mobile/tools/ui/x32_measure.json`. Text sizes come from glyph heights divided by the glyph heights in the Poppins font file. An independent check compared the new shots with all 25 reference shots.
 - **Ref-login** — the sign-in screen of the earlier repository (Icarus `457a62c`, from before the kickoff). Its code is not carried: a harness renders it once, as a reference to measure, the same way as X25.
-- **Brand** (pre-existing, labelled) — Hungree red `#BC202C` and the Poppins font (SIL Open Font Licence) are Hungree LLC brand assets from before the Hackathon.
+- **Brand** (pre-existing, labelled) — Hungree red `#BC202C` and the Poppins font (SIL Open Font Licence) are Hungree LLC brand assets from before the Hackathon. The V3RDE logo (the mark, the wordmark and the 7 app icon files, `logo` below) is new Hackathon work (LG1, T9 Nov 1).
 - **Platform** — touch size (Apple Human Interface Guidelines: 44 × 44 pt, https://developer.apple.com/design/human-interface-guidelines/accessibility), text contrast (WCAG 2.1: 4.5:1, https://www.w3.org/TR/WCAG21/#contrast-minimum), window size classes (Material 3, https://m3.material.io/foundations/layout/applying-layout/window-size-classes).
 - **Choice** — a value that the mockups do not show (dark mode, press feedback, motion). T9 can change it.
 
@@ -223,6 +223,30 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 | `doodle.faint` | 0.55 | T9, Oct 29 (animated sample) | the strength of a drawing in a dead cell (a live cell has 1) |
 | `doodle.stepMs` | 1000 | T9, Oct 29 (animated sample) | the time of one generation: the pattern moves up one row |
 
+## Logo (`logo`)
+
+The V3RDE logo (LG1, T9 Nov 1; the decision and the research rubric: project doc `docs/v3rde_logo_2026-11-01.md`; the approved mockup "V3RDE Logo Mockup", https://claude.ai/artifact/1B1TJxdtLPX6h1Qig13z1u). New Hackathon work.
+- **Mark T1 "V³":** one V (`logo.v`) drawn three times, back to front: `accentSoft` moved `logo.depth2`, `accent` moved `logo.depth1`, `fg` on top (dark mode: the dark values of the same tokens). `Mark` in `mobile/src/brand.tsx`; hidden from screen readers (its row has the name).
+- **Wordmark G:** "V3RDE" (`FRAME.brand`) in `fg`, then the leaf full stop in `accent`: `logo.leafEm` of the font size, `logo.leafGapEm` after the E, its bottom on the baseline (`logo.baselineEm`, from the Poppins file). Letter spacing 0.
+- **Sizes (T9: what the app does today for the brand):** the mark is as high as the line of the text next to it. Wide top bar (approved b): the mark (`type.title` line, 24) `space.gap` before the wordmark in `type.title`, at the left. Phone and tablet header (approved c): the mark only, 24 high, in the centre, named "V3RDE" (an image). Sign-in, reset (T9 Nov 2) and the wide sign-in card (approved b): the mark (`type.display` line, 28) and the wordmark in `type.display`, `space.pad` above the title. The row has one name for screen readers, "V3RDE" (a header).
+- **App icons (approved):** made from these tokens by `mobile/tools/brand` (Go, `golang.org/x/image/vector`): a full-bleed `accent` square (the system cuts the corners), the mark `logo.iconShare` of the side, centred on its box (no optical shift, T9): face `onAccent`, depth1 light `fg`, depth2 dark `accentSoft`. `icon.png` 1024 (and `splash-icon.png`, the same file), `favicon.png` 48, `apple-touch-icon.png` 180. Android adaptive icon: the background layer is the `accent`; the foreground has the same mark at `logo.iconShare` of the visible part (`logo.adaptiveVisible` of the layer), inside the safe zone; the monochrome layer is the outline of the three V's together in one colour (T9 Nov 2: "merged stack").
+- **About and Learn pages:** the same mark and wordmark in inline SVG with the page's colour tokens (phone: the mark only; wide: the mark and the wordmark).
+
+| Token | Value | Source | Use |
+|---|---|---|---|
+| `logo.viewW` | 130 | T9, Nov 1 (T1) | the box of the mark (path units) |
+| `logo.viewH` | 118 | T9, Nov 1 (T1) | the box of the mark (path units) |
+| `logo.v` | 10,10 38,10 60,62 82,10 110,10 74,90 46,90 | T9, Nov 1 (T1) | one V (polygon points) |
+| `logo.depth1` | 8 | T9, Nov 1 (T1) | the accent V: right and down from the face |
+| `logo.depth2` | 16 | T9, Nov 1 (T1) | the accentSoft V |
+| `logo.leaf` | M2 22 C2 10 10 2 22 2 C22 14 14 22 2 22 Z | T9, Nov 1 (G) | the leaf full stop |
+| `logo.leafBox` | 24 | T9, Nov 1 (G) | the box of the leaf path |
+| `logo.leafEm` | 0.36 | T9, Nov 1 (G) | the leaf size, a share of the font size |
+| `logo.leafGapEm` | 0.04 | T9, Nov 1 (G) | the space before the leaf, a share of the font size |
+| `logo.baselineEm` | 0.35 | Poppins file (hhea ascent 1050, descent 350 of 1000) | the baseline: lineHeight/2 - this × font size above the line bottom |
+| `logo.iconShare` | 0.46 | T9, Nov 1 (the Hungree "H" icon: 470/1024) | the mark height on an app icon |
+| `logo.adaptiveVisible` | 2 / 3 | Platform (Android adaptive icons: 72 of 108 dp visible) | the visible part of an adaptive icon layer |
+
 ## Layout (`layoutFor(width)`)
 
 | Function | Width (pt) | Kind | Popups | Columns | Header | Max width | Source |
@@ -269,11 +293,12 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 - X49w: on a phone browser the keyboard does not cover the field: the bottom sheet and the sign-in button move up by the keyboard height (`useKeyboardInset`, from the visual viewport), and a field that gets the focus scrolls into the part that shows (`KEYBOARD_SETTLE_MS` after the focus).
 - "About" (#78, T9 Oct 30: one word) is a second TextLink at the right end of the same row (`space.inset` in from the right). It opens the About page: on the web in the same tab (`ABOUT_PATH`, `/about/`), on a phone build in the browser (`ABOUT_URL`).
 - The phone and wide-screen frame is `AuthFrame` (`mobile/src/screens/AuthFrame.tsx`), shared with the reset screens.
+- LG1: the V3RDE logo row (`SignInBrand`, "Logo") `space.pad` above the title, phone and wide card.
 
 ## Reset password (`mobile/src/screens/Reset.tsx`, words in `mobile/src/signin.ts`)
 
 - Ask: "Reset your password", "We send a link to your email", the email field, the pill "Send link" (busy: "Sending…"), and the TextLink "Back to sign in" `space.gutter` under the field. Then "Check your email" with "If an account uses <email>, a link to set a new password is on its way. It works for 30 minutes." and the pill "Back to sign in". The same answer for every email.
-- The link (web `/reset#token=…`, app `v3rde://reset#token=…`: after - The layout is `AuthFrame`, the same as sign-in.
+- The link (web `/reset#token=…`, app `v3rde://reset#token=…`: after - The layout is `AuthFrame`, the same as sign-in, with the same logo row above each title (T9 Nov 2).
 
 ## Role sheet (`mobile/src/screens/Role.tsx`, words in `mobile/src/words.ts`)
 
@@ -284,8 +309,8 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 ## Frame (`mobile/src/screens/Frame.tsx`)
 
-- Phone and tablet (`layoutFor` compact and medium): a header `size.header` tall, `space.gutter` at the sides: the ☰ icon button (`size.iconBig`, glyph menu, name "Menu") at the left opens the role sheet; "V3RDE" in `muted` in the centre.
-- Wide screen (expanded): a top bar `size.topBar` tall with a `size.border` `line` under it, `space.pad` at the sides, its content at most `maxWidth` wide (each screen also centres its own content in `maxWidth`): "V3RDE" (`type.title`, `link`) at the left; the role tabs Give and Receive in the centre (`size.control` tall, `size.tabPadX` at the sides, `space.inset` apart; the chosen tab `link` text on `accentSoft`, the others `muted`, `iconFill` under the mouse); "Log out" at the right (`size.border` `line`, `muted` text). The role sheet is not used there after the first pick. Only the chosen tab is a Tab-key stop; Left and Right choose the other tab.
+- Phone and tablet (`layoutFor` compact and medium): a header `size.header` tall, `space.gutter` at the sides: the ☰ icon button (`size.iconBig`, glyph menu, name "Menu") at the left opens the role sheet; the V3RDE mark in the centre (`PhoneBrand`, "Logo").
+- Wide screen (expanded): a top bar `size.topBar` tall with a `size.border` `line` under it, `space.pad` at the sides, its content at most `maxWidth` wide (each screen also centres its own content in `maxWidth`): the V3RDE mark and wordmark (`TopBrand`, "Logo") at the left; the role tabs Give and Receive in the centre (`size.control` tall, `size.tabPadX` at the sides, `space.inset` apart; the chosen tab `link` text on `accentSoft`, the others `muted`, `iconFill` under the mouse); "Log out" at the right (`size.border` `line`, `muted` text). The role sheet is not used there after the first pick. Only the chosen tab is a Tab-key stop; Left and Right choose the other tab.
 - The screens keep clear of the status bar, the home bar and a notch at the side (react-native-safe-area-context insets); the toast and the role sheet also add the bottom inset.
 - A toast (`Toast`): `bg` text on `fg`, fully round, `camera.hintPadX` × `camera.hintPadY` padding, `size.toastBottom` above the home bar; a screen reader reads each new text (a polite live region; an announcement on iOS). "Your session has ended. Sign in again." shows when the services answer 401.
 
@@ -356,7 +381,7 @@ New line drawings of food (20, `mobile/src/doodles.tsx`) as a faint wallpaper, f
 
 A static page next to the app (not in the app bundle): the web build copies `mobile/public/` into `web-dist`, and the edge serves it at `/about/` (with the trailing slash; `/about` is the app). It follows this guide with CSS custom properties that carry the tokens (1 pt = 1 CSS px); `mobile/tests/about.test.mts` checks every value against `theme.ts`.
 - Backdrop: the doodle wallpaper of the app screens (`Doodles`: the same drawings, rule 30, seed and `doodle` tokens), fixed behind the whole page on `bg`; it moves up one row every `doodle.stepMs` and stands still with "reduce motion" (T9, Oct 30).
-- Header: phone and tablet as the Frame ("V3RDE" in `muted`, centred, `size.header`); wide: the top bar (`size.topBar`, `line` under it): "V3RDE" in `link` at the left, "Open the app" at the right in the style of Log out.
+- Header: phone and tablet as the Frame (the V3RDE mark, centred, `size.header`); wide: the top bar (`size.topBar`, `line` under it): the mark and the wordmark at the left ("Logo"), "Open the app" at the right in the style of Log out. The link keeps the name "V3RDE" and goes to the app.
 - Content at most `maxWidth` of `layoutFor`, `space.gutter` sides (wide: `space.pad`). Cards: `card`, `size.border` `line`, `radius.card`, `space.group` padding (the hero: `space.pad`). Sections `space.bar` apart; a section title (`type.title`) with a `muted` line `space.hair` under it.
 - Hero: the title in `type.display`, a `muted` line, then pills `space.pad` under it: "Watch the demo" (secondary; hidden until the video exists), "Find food near you" (secondary), "Share your food" (primary).
 - The problem (#81): a section title, a `muted` line and three plain cards (one photo, six languages, nothing left behind).

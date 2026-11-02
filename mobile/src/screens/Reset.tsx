@@ -9,6 +9,7 @@ import { space } from "../theme";
 import { EMAIL_LOOSE, EXPIRED_ERROR, MIN_PASSWORD, RESET, SIGN_IN, cleanEmail } from "../signin";
 import { ErrorText, Field, FieldButton, Muted, Pill, TextLink, Title } from "../ui";
 import { AuthFrame } from "./AuthFrame";
+import { SignInBrand } from "../brand";
 
 export function ForgotPassword({ onBack, startEmail = "" }: { onBack: () => void; startEmail?: string }) {
   const [email, setEmail] = useState(startEmail);
@@ -37,6 +38,7 @@ export function ForgotPassword({ onBack, startEmail = "" }: { onBack: () => void
     return (
       <AuthFrame action={<Pill testID="back" title={RESET.back} onPress={onBack} />}>
         <View accessibilityLiveRegion="polite" aria-live="polite">
+          <SignInBrand />
           <Title>{RESET.sentTitle}</Title>
           <Muted style={{ marginTop: space.inset }}>{RESET.sent(sentTo)}</Muted></View>
       </AuthFrame>
@@ -44,6 +46,7 @@ export function ForgotPassword({ onBack, startEmail = "" }: { onBack: () => void
   }
   return (
     <AuthFrame action={<Pill testID="send" title={RESET.send} busy={waiting} busyName={RESET.sending} onPress={send} />}>
+      <SignInBrand />
       <Title>{RESET.askTitle}</Title>
       <Muted style={{ marginTop: space.inset }}>{RESET.askLine}</Muted>
       <View style={{ marginTop: space.pad }}>
@@ -88,6 +91,7 @@ export function NewPassword({ token, onSignedIn, onAgain, leaving }: {
   };
   return (
     <AuthFrame leaving={leaving} action={<Pill testID="save" title={RESET.save} busy={waiting} busyName={RESET.saving} onPress={save} />}>
+      <SignInBrand />
       <Title>{RESET.newTitle}</Title>
       <Muted style={{ marginTop: space.inset }}>{RESET.newLine}</Muted>
       <View style={{ marginTop: space.pad }}>

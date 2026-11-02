@@ -2206,3 +2206,17 @@ T9: the rest of the learn work joins the branch that is deployed (the push chann
 - The edge's Report-Only CSP allows the learn page's inline script by its hash. Two push tests wrote their events by the real date and read them by a fake one; their events log now uses the fake date too. A rescue test read the events before the second job's line was written; it now waits for that line.
 - The web build is made again from the merged code.
 - Tests: server 39 -> 45, inference 104 -> 115, listings 48 -> 50, post 110 -> 114, auth 33 -> 35, barcode 20 -> 22, telemetry 22 -> 24, gate 28 -> 30, mobile 189 -> 192.
+
+## 107. The V3RDE logo in every place, and new app icons
+
+**When:** Nov 2 2026.
+**Meta models:** none (design work).
+**Files:** `mobile/src/brand.tsx` (new), `mobile/src/theme.ts`, `mobile/src/screens/Frame.tsx`, `mobile/src/screens/Login.tsx`, `mobile/src/screens/Reset.tsx`, `mobile/public/about/index.html`, `mobile/public/learn/index.html`, `mobile/tools/brand/` (new, Go), `mobile/assets/icon.png`, `mobile/assets/splash-icon.png`, `mobile/assets/favicon.png`, `mobile/assets/android-icon-background.png`, `mobile/assets/android-icon-foreground.png`, `mobile/assets/android-icon-monochrome.png`, `mobile/public/apple-touch-icon.png`, `mobile/docs/style_guide.md`, `mobile/tests/brand.test.mts` (new), `mobile/package.json`, `NEW_WORK_UI.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/LG1.md`
+
+T9 chose the logo from a research rubric (the mark T1 "V³": one V three times, for the 3 in V3RDE; the wordmark G: "V3RDE" and a leaf full stop) and approved it in the app from a true-scale mockup. Branch `logo`.
+
+- The wide top bar shows the mark and the wordmark; the phone header shows the mark; the sign-in and the reset screens show the mark and the wordmark above the title. The About and Learn pages show the same logo.
+- Every size and shape is a theme token (`logo`), and the colours are the palette's, in light and dark mode.
+- The 7 app icon files are new: a Go tool makes them from the same tokens (a red square, the mark at 46 % of the side; Android layers inside the safe zone; a one-colour layer for themed icons). They were Hungree brand files before; the Hungree red and the Poppins font stay labelled as pre-existing.
+- Tests: mobile 192 -> 199; the icon tool has 4 Go tests.

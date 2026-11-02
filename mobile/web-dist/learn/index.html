@@ -65,11 +65,17 @@ a { color: inherit; }
 
 /* Frame: phone/tablet header (size.header) and wide top bar (size.topBar) */
 .top { position: sticky; top: 0; z-index: 2; background: var(--bg); }
-/* Phone and tablet: "V3RDE" in muted in the centre (Frame). Wide: the top bar, "V3RDE" in link at the left, and a
+/* Phone and tablet: the V3RDE mark in the centre (Frame). Wide: the top bar, the mark and the wordmark at the left, and a
    button in the style of Log out (line border, muted text, size.tabPadX) at the right. */
 .top-in { height: var(--header); max-width: var(--maxWidth); margin: 0 auto; padding: 0 var(--gutter);
   display: flex; align-items: center; justify-content: center; }
-.brand { color: var(--muted); text-decoration: none; }
+.brand { color: var(--fg); text-decoration: none; display: inline-flex; align-items: center; gap: var(--gap); }
+/* LG1: the V3RDE logo (theme.ts logo, src/brand.tsx): the mark as high as a title line (type.title 24), three V's back to
+   front (accentSoft at 16, accent at 8, fg); phone and tablet: the mark only; wide: the mark and the wordmark */
+.brand .mark { display: block; height: 24px; width: calc(24px * 130 / 118); }
+.mark .m0 { fill: var(--fg); } .mark .m1 { fill: var(--accent); } .mark .m2 { fill: var(--accentSoft); }
+.brand .word { display: none; align-items: baseline; }
+.brand .leaf { width: 0.36em; height: 0.36em; margin-left: 0.04em; fill: var(--accent); } /* logo.leafEm, logo.leafGapEm: its bottom on the baseline */
 .top .bar-btn { display: none; height: var(--control); padding: 0 var(--tabPadX); border-radius: var(--r-round);
   border: var(--border) solid var(--line); color: var(--muted); text-decoration: none; align-items: center; }
 .top .bar-btn:hover { background: var(--iconFill); }
@@ -77,7 +83,7 @@ a { color: inherit; }
 @media (min-width: 840px) {
   .top { border-bottom: var(--border) solid var(--line); }
   .top-in { height: var(--topBar); padding: 0 var(--pad); justify-content: space-between; }
-  .brand { color: var(--link); }
+  .brand .word { display: inline-flex; }
   .top .bar-btn { display: inline-flex; }
 }
 
@@ -118,7 +124,7 @@ section { margin-top: var(--bar); }
 </style>
 </head>
 <body>
-<header class="top"><div class="top-in"><a class="brand title" href="/">V3RDE</a></div></header>
+<header class="top"><div class="top-in"><a class="brand title" href="/" aria-label="V3RDE"><svg class="mark" viewBox="0 0 130 118" aria-hidden="true" focusable="false"><polygon class="m2" transform="translate(16 16)" points="10,10 38,10 60,62 82,10 110,10 74,90 46,90"/><polygon class="m1" transform="translate(8 8)" points="10,10 38,10 60,62 82,10 110,10 74,90 46,90"/><polygon class="m0" points="10,10 38,10 60,62 82,10 110,10 74,90 46,90"/></svg><span class="word" aria-hidden="true">V3RDE<svg class="leaf" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 22 C2 10 10 2 22 2 C22 14 14 22 2 22 Z"/></svg></span></a></div></header>
 <main>
   <div class="top-line" style="margin-top: var(--gap)">
     <h1 class="display">Learn report</h1>

@@ -1,11 +1,13 @@
 // The frame of the signed-in screens, written new for V3RDE (NEW_WORK_UI.md, UI 11; mobile/docs/style_guide.md
 // "Frame"). Phone and tablet: a ☰ header that opens the role sheet. Wide screen: a top bar with the brand, the
-// role tabs (Give, Receive) and Log out; the role sheet is not needed there.
+// role tabs (Give, Receive) and Log out; the role sheet is not needed there. LG1: the brand is the V3RDE logo
+// (src/brand.tsx): the mark and the wordmark in the top bar, the mark alone in the phone header.
 import type { ReactNode } from "react";
 import { Pressable, Text, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
 import { layoutFor, opacity, radius, size, space, type, useColors } from "../theme";
-import { IconBtn, Muted } from "../ui";
+import { IconBtn } from "../ui";
+import { PhoneBrand, TopBrand } from "../brand";
 import { FRAME, ROLE, roleCard, type RoleName } from "../words";
 
 /** Web: Left and Right on the tab list choose the other role and move the focus to its tab. */
@@ -43,7 +45,7 @@ export function Frame({ role, onRole, onMenu, onLogout, children }: {
   const bar = page.topBar ? (
     <View style={{ borderBottomWidth: size.border, borderBottomColor: col.line }}>
       <View style={[lane, { height: size.topBar, paddingHorizontal: space.pad }]}>
-        <View style={{ flex: 1 }}><Text accessibilityRole="header" style={[type.title, { color: col.link }]}>{FRAME.brand}</Text></View>
+        <View style={{ flex: 1, alignItems: "flex-start" }}><TopBrand /></View>
         <View accessibilityRole="tablist" aria-label={FRAME.tabs} style={{ flexDirection: "row", gap: space.inset }}
           {...arrows(role, onRole)}>
           <Tab role="give" on={role === "give"} onPress={() => onRole("give")} />
@@ -59,7 +61,7 @@ export function Frame({ role, onRole, onMenu, onLogout, children }: {
   ) : (
     <View style={[lane, { height: size.header, paddingHorizontal: space.gutter }]}>
       <View style={{ flex: 1 }}><IconBtn big glyph="menu" label={FRAME.menu} onPress={onMenu} testID="menu" /></View>
-      <Muted>{FRAME.brand}</Muted>
+      <PhoneBrand />
       <View style={{ flexGrow: 1, flexBasis: 0 }} />
     </View>
   );
