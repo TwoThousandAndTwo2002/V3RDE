@@ -233,6 +233,12 @@ func Learn(lines [][]byte, confidentPx float64) LearnReport {
 		for _, a := range s.Answer {
 			via[a.Item] = a.Via
 		}
+		found := map[int]bool{} // IM review: an item the find service added (I4) is not in the scan's answer
+		for _, e := range l.Labels.Edits {
+			if e.Field == "found" {
+				found[e.Item] = true
+			}
+		}
 		for _, it := range l.Labels.Items {
 			if ok {
 				count(tally(byPrompt, promptGroup(s)), it)
@@ -241,6 +247,8 @@ func Learn(lines [][]byte, confidentPx float64) LearnReport {
 			switch {
 			case !ok:
 				v = "no scan line"
+			case v == "" && found[it.Item]:
+				v = "found"
 			case v == "":
 				v = s.Source + " (before LR1)"
 			}

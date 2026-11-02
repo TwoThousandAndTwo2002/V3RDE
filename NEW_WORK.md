@@ -1972,6 +1972,23 @@ T9: a prompt changes only when the logs can tie a change in results to the chang
 - The scan event line keeps the engine settings (split, compact, marks, efforts, size levels, concepts), so a flag change is not taken for a prompt change.
 - No prompt text changed. Tests: server 38 -> 44, inference 104 -> 109, post 97 -> 101.
 
+## 92. One photo with many barcodes
+
+**When:** Nov 1 2026.
+**Meta models:** SAM 3.1 and Muse Spark 1.3 for the other food in the photo (as the scan); no new model.
+**Files:** `inference/barcodes.go` (new), `inference/service.go`, `inference/events.go`, `inference/barcodes_test.go` (new), `inference/service_test.go`, `mobile/src/capture.ts`, `mobile/src/api.ts`, `mobile/src/logic.ts`, `mobile/src/words.ts`, `mobile/src/screens/Capture.tsx`, `mobile/tests/capture.test.mts`, `mobile/tests/logic.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/I1.md`
+
+T9 chose "A: one photo with many barcodes" and "barcodes + vision" for a photo with codes and other food; T9 approved the "V3RDE Items Mockup" v3.
+
+- After the shutter (or an upload), the app reads every retail barcode in the still photo (web; at most 2 s). "Use this photo?" says "2 barcodes found". The codes and their boxes go with the photo (`barcodes`, at most 24). One live barcode alone is the fast path, as before.
+- The service looks up every code at the same time. Each catalog product is one item, with its stock photo when there is one.
+- The scanner still runs for the other food in the photo (also for a plate with one packet). The smallest box of the scanner that holds a barcode is that product, so it is not listed twice.
+- If the scanner cannot answer (busy, the daily limit, not food, an error), the barcode items still answer.
+- A product that is already in your listings is left out, as before. The events line keeps every code and what it became.
+- Branch `items` (not deployed yet).
+- Tests: inference 104 -> 116, mobile 159 -> 162.
+
 ## 93. The translation round builds again
 
 **When:** Nov 1 2026.
@@ -1994,6 +2011,23 @@ T9 approved I1, the daily self-improvement report. The report compares what the 
 - Each 200 scan line has `answer`: every item as the app got it (the 8 fields), how it was made (whole photo, one call or a split of calls for the boxes, a retry, two-pass, agent, barcode), its units, and the "check this" and tray marks.
 - The donor's labels (same request id) were already logged; now every field can be compared, also the ones the donor did not change.
 - Tests: inference 109 -> 110.
+
+## 93. Find a missed item: the find service
+
+**When:** Nov 1 2026.
+**Meta models:** SAM 3.1 (the item's word as its text concept, or the drawn box as its box prompt) and Muse Spark 1.3 (names what SAM found).
+**Files:** `inference/find.go` (new), `inference/findengine.go` (new), `inference/engine.go`, `inference/service.go`, `inference/events.go`, `inference/find_test.go` (new)
+**Sources:** `docs/sources/items_I3.md` (named `I3.md` on branch `items`)
+
+T9 chose "2a, then 2b if not found"; T9 approved the "V3RDE Items Mockup" v3.
+
+- `POST /api/analyze/find`: after a scan, its owner asks for an item that the list does not have. 2a: its name ("rice"); SAM looks for that word in the scan's photo. 2b: a box drawn on the photo and its name; SAM takes the box.
+- Muse names what SAM found. The user's word goes to Muse as a quoted hint, never as an instruction.
+- A box that is already on the list (the scan's or an earlier find's) is not found again, also a drawn one. At most 3 new items; each has a crop of the photo as its listing photo. A model error is an error, not "not found".
+- 2b: if Muse cannot name the box as food, the item is the box with the user's name (T9: add it anyway).
+- Nothing new found: `not_found` (the app then offers "Draw a box around it").
+- Only the scan's owner; the rate limit, busy and the daily limit are as for a scan. The events line has step "find".
+- Tests: inference 116 -> 121.
 
 ## 94. A rescue opens at once the second time; the places found are kept
 
@@ -2021,6 +2055,22 @@ T9: a daily self-improvement report, and a prompt changes only when the logs can
 - The same counts by how the item was made, the fields the donors change most (with the most common changes, by hand, voice or text), and whether the model's servings are too high or too low. The size calibration of X44g is in it too.
 - It changes nothing: a person reads it. It writes a JSON and a Markdown file per day.
 - Tests: inference 110 -> 114.
+
+## 94. Find a missed item from the chat
+
+**When:** Nov 1 2026.
+**Meta models:** Muse Spark 1.3 (the chat's mapping now also names missed items); then SAM 3.1 and Muse Spark through the find service (#93).
+**Files:** `post/voice.go`, `post/voice_test.go`, `inference/labels.go`, `inference/labels_test.go`, `mobile/src/logic.ts`, `mobile/tests/logic.test.mts`, `mobile/src/voice.ts`, `mobile/src/api.ts`, `mobile/src/words.ts`, `mobile/src/screens/Voice.tsx`, `mobile/src/screens/Review.tsx`, `mobile/tests/voice.test.mts`, `mobile/tests/maps.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/I4.md`
+
+T9 chose "2a, then 2b if not found"; T9 approved the "V3RDE Items Mockup" v3.
+
+- In the review, say or type that an item is missing ("you missed the rice"). The chat's answer has `find: ["rice"]` (at most 3 names; only when there is a scan; a name already on the list is left out).
+- The app asks the find service for each name. The chat shows "Looking for rice in the photo…", then "Rice is on the list now." or "No rice found in the photo.".
+- A found item joins the list with its crop and "Found from your words" on its card. A one-item review becomes the list. Post waits while a find is out.
+- The chat hint has a fourth example: "Try “rice is missing”".
+- The label report logs a found item as a "found" edit (the self-improvement data).
+- Tests: post 97 -> 98, inference 121 -> 122, mobile 162 -> 165.
 
 ## 95. Upload a photo: a sure way to open the photo picker on phones
 
@@ -2303,3 +2353,21 @@ T9: the person who grabs the food gets the place only, not a WhatsApp message.
 - The sheet after Grab and the "Your pickup" card have one pill, Maps, as the main red pill.
 - The WhatsApp pill, its message and its link are gone from the app.
 - Tests: mobile 202 -> 203.
+
+## 112. The items branch joins the services branch
+
+**When:** Nov 2 2026.
+**Meta models:** none new (entries 92–94 of items say how SAM 3.1 and Muse Spark 1.3 find and name the items).
+**Files:** the items branch (its entries 92–94: `inference/barcodes.go`, `inference/find.go`, `inference/findengine.go`, `post/voice.go`, `mobile/src/capture.ts`, `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Voice.tsx`, …) merged; `NEW_WORK.md`, `inference/events.go`, `inference/service.go`, `mobile/src/screens/Capture.tsx`, `mobile/src/screens/Voice.tsx`, `mobile/tests/voice.test.mts`, `post/voice_test.go`, `post/prompts.go`, `post/prompts_pins.txt`, `mobile/tests/app_texts.json`, `inference/learn.go`, `inference/im_test.go` (new), `mobile/src/earlierfound.ts` (new), `docs/sources/items_I3.md` (new), `docs/sources/IM.md` (new), `mobile/web-dist/`
+**Sources:** `docs/sources/IM.md`
+
+T9: the items work (many barcodes in one photo, find a missed item, from the chat too) joins the branch that is deployed, before the translation screens.
+
+- A real merge: the items commits keep their history. This file keeps every entry of both branches in number order; on the same number the services entry comes first, then the learn entry, then the items entry.
+- Both sides changed the scan event line, the routes of the scanner, the camera, the chat and their tests: every field, route, test and change of both is kept. The chat keeps its last question (entry 105) and the found items (entry 94) together; Start over clears both.
+- The chat's prompt has the "find" rule now, so it is `voice.map` version 3 with a new pin; the older pins do not change.
+- Items' sources file of entry 93 is `docs/sources/items_I3.md`, because `docs/sources/I3.md` is the learn report page (entry 98).
+- The web build is made again from the merged code.
+- The 10 new app texts of items are in the translation list (`mobile/tests/app_texts.json`); the translation round at the deploy translates them.
+- The merge review found three places where the two sides did not fit, now fixed: a find after the chat's question removed that question (the found item now joins the remembered list too); the learn report counted the catalog items of a photo with many barcodes, and the items found from the chat, under the wrong source (now "barcode" and "found").
+- Tests: inference 115 -> 135, post 120 -> 121, mobile 203 -> 210.

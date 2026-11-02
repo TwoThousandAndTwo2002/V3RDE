@@ -60,26 +60,29 @@ type Event struct {
 	Build         string      `json:"build"`
 	Error         string      `json:"error,omitempty"`
 	// X32a: the one route
-	Caller          string     `json:"caller,omitempty"`  // session | bearer
-	UserID          string     `json:"user_id,omitempty"` // "" for bearer callers
-	Code            string     `json:"code,omitempty"`    // the error code; "" on 200
-	Source          string     `json:"source,omitempty"`  // barcode | vision
-	PhotoStored     bool       `json:"photo_stored"`
-	Barcode         string     `json:"barcode,omitempty"`
-	BarcodeOutcome  string     `json:"barcode_outcome,omitempty"`
-	BarcodeStatus   int        `json:"barcode_status,omitempty"`
-	BarcodeMS       int64      `json:"barcode_ms,omitempty"`
-	CatalogServings float64    `json:"catalog_servings,omitempty"`
-	StockPhoto      string     `json:"stock_photo,omitempty"`           // N1: cutout | as_is | none; "" = not looked up
-	Items           int        `json:"items"`                           // items in the answer
-	DroppedNoFood   int        `json:"dropped_model_no_food,omitempty"` // the model's answer said no food
-	DroppedListed   int        `json:"dropped_already_listed,omitempty"`
-	NotNamed        int        `json:"not_named,omitempty"` // counted, not named (over the limit or too small)
-	Dedup           string     `json:"dedup,omitempty"`     // ok | unavailable | skipped (no user)
-	DedupMS         int64      `json:"dedup_ms,omitempty"`
-	FrameW          int        `json:"frame_w,omitempty"` // the frame of the box coordinates
-	FrameH          int        `json:"frame_h,omitempty"`
-	Boxes           []EventBox `json:"boxes,omitempty"`
+	Caller          string        `json:"caller,omitempty"`  // session | bearer
+	UserID          string        `json:"user_id,omitempty"` // "" for bearer callers
+	Code            string        `json:"code,omitempty"`    // the error code; "" on 200
+	Source          string        `json:"source,omitempty"`  // barcode | vision
+	PhotoStored     bool          `json:"photo_stored"`
+	Barcode         string        `json:"barcode,omitempty"`
+	BarcodeOutcome  string        `json:"barcode_outcome,omitempty"`
+	BarcodeStatus   int           `json:"barcode_status,omitempty"`
+	BarcodeMS       int64         `json:"barcode_ms,omitempty"`
+	CatalogServings float64       `json:"catalog_servings,omitempty"`
+	Barcodes        []BarcodeRead `json:"barcodes,omitempty"`              // I1: every code of a photo with many codes
+	Of              string        `json:"of,omitempty"`                    // I3: a find's scan (its request_id)
+	Find            *FindRec      `json:"find,omitempty"`                  // I3: what the find asked
+	StockPhoto      string        `json:"stock_photo,omitempty"`           // N1: cutout | as_is | none; "" = not looked up
+	Items           int           `json:"items"`                           // items in the answer
+	DroppedNoFood   int           `json:"dropped_model_no_food,omitempty"` // the model's answer said no food
+	DroppedListed   int           `json:"dropped_already_listed,omitempty"`
+	NotNamed        int           `json:"not_named,omitempty"` // counted, not named (over the limit or too small)
+	Dedup           string        `json:"dedup,omitempty"`     // ok | unavailable | skipped (no user)
+	DedupMS         int64         `json:"dedup_ms,omitempty"`
+	FrameW          int           `json:"frame_w,omitempty"` // the frame of the box coordinates
+	FrameH          int           `json:"frame_h,omitempty"`
+	Boxes           []EventBox    `json:"boxes,omitempty"`
 	// LR1: each answer item as the app got it (the model's details, before any
 	// edit by the donor), so the labels of the same request_id can be
 	// compared field by field.

@@ -8,6 +8,8 @@ export type Change = { item: number; title?: string; number_of_serving?: number;
 export type NewItem = { title: string; number_of_serving: number; needs_photo: boolean };
 export type Proposal = {
   transcript: string; changes: Change[]; new_items: NewItem[]; pickup_text?: string; unclear?: string; dropped: string[];
+  /** I4: the names of missed items the app asks the find service for (at most 3). */
+  find: string[];
 };
 
 /** X59 (T9 Nov 2: "there is no chat history that is fed into the prompt"): the last turn of the chat that ended in a
@@ -51,6 +53,7 @@ export function proposalOf(body: unknown): Proposal {
     pickup_text: typeof b.pickup_text === "string" ? b.pickup_text : undefined,
     unclear: typeof b.unclear === "string" && b.unclear ? b.unclear : undefined,
     dropped: list<unknown>(b.dropped).filter((d): d is string => typeof d === "string" && d.length > 0),
+    find: [...new Set(list<unknown>(b.find).filter((d): d is string => typeof d === "string" && d.trim().length > 0).map((d) => d.trim().slice(0, 40)))].slice(0, 3),
   };
 }
 
@@ -129,6 +132,8 @@ export type Turn = {
   marks: Record<number, string>; pickupMarked: boolean; undone: boolean;
   /** X48u review: the line named a pickup (changed or not): its words may hold an address. */
   pickupSaid: boolean;
+  /** I4: the missed items this line asked to find. */
+  find?: string[];
 };
 
 /** The words of the chat marks on the cards. */
@@ -167,7 +172,8 @@ export function chatTurn(items: ItemForm[], pickup: string, p: Proposal, how: Ho
   }
   const count = changeCount(items, pickup, p);
   return { how, text, lines: count || p.unclear || p.dropped.length || p.new_items.length ? proposalLines(items, pickup, p, w) : [], count,
-    before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false, pickupSaid: p.pickup_text !== undefined };
+    before: { items, pickup }, after, marks, pickupMarked: after.pickup !== pickup, undone: false, pickupSaid: p.pickup_text !== undefined,
+    ...(p.find.length ? { find: p.find } : {}) };
 }
 
 /** JSON with the keys in order (two details with the same values in another order are the same). */
@@ -201,4 +207,20 @@ export function liveMarks(turns: Turn[], items: ItemForm[], pickup: string): { m
 export function undoTo(turns: Turn[]): { items: ItemForm[]; pickup: string } | null {
   const last = turns[turns.length - 1];
   return last && !last.undone ? last.before : null;
+}
+
+/** I4: the items of a find answer join the list after `top`, the highest item number used so far in this review
+ *  (the scan's, and every found item's, also one the user removed since): a number is never used twice, so
+ *  touch-up, marks and the label report of a removed item never mix with a new one. */
+export function joinFound(items: ItemForm[], top: number, found: ItemForm[]): { items: ItemForm[]; added: ItemForm[]; top: number } {
+  let n = Math.max(top, ...items.map((x) => x.item));
+  const added = found.map((f) => ({ ...f, item: ++n }));
+  return { items: [...items, ...added], added, top: n };
+}
+
+/** I4 review: found items join every turn that is not undone (before and after), so Undo and the card marks of
+ *  a turn stay while a find adds to the list, and an Undo does not drop a found item. */
+export function turnsWithFound(turns: Turn[], added: ItemForm[]): Turn[] {
+  return turns.map((t) => (t.undone ? t : { ...t, before: { ...t.before, items: [...t.before.items, ...added] },
+    after: { ...t.after, items: [...t.after.items, ...added] } }));
 }

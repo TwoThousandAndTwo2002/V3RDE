@@ -39,7 +39,7 @@ var Prompts = analyze.NewPrompts(
 		Golden: constant(EditPrompts[ModeLight]), Match: func(s string) bool { return s == EditPrompts[ModeLight] }},
 	analyze.PromptSpec{ID: "touchup.edit.background", Version: "1", Purposes: []string{"touchup:edit"},
 		Golden: constant(EditPrompts[ModeBackground]), Match: func(s string) bool { return s == EditPrompts[ModeBackground] }},
-	analyze.PromptSpec{ID: "voice.map", Version: "2", Purposes: []string{"voice:map"}, // X59: the earlier turn and the "which item" rule
+	analyze.PromptSpec{ID: "voice.map", Version: "3", Purposes: []string{"voice:map"}, // X59: the earlier turn and the "which item" rule; IM: the "find" field and rule (items I4)
 		Golden: constant(VoicePrompt + "\x01" + ruleEdit + "\x01" + ruleNew + "\x01" + voiceEarlier + "\x01" + voiceNoEarlier)},
 	// voice:transcribe has no prompt text: the fixed request fields are the
 	// pin; the keywords and languages are in input_sha.

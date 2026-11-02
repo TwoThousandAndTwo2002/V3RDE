@@ -12,7 +12,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Image, KeyboardAvoidingView, ScrollView, TextInput, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
-import { ApiError, analyzeLabels, listings, touchup, type Upload } from "../api";
+import { ApiError, analyzeLabels, findItem, listings, touchup, type Upload } from "../api";
+import { answerToItems } from "../logic";
+import { joinFound } from "../voice";
+import type { Chat } from "./Voice";
 import {
   addEdits, deviceLocale, diffEdits, notPostedItems, stillOpen, fitReport, foundTitle, itemPhotoPath, labelReport, notPostedTitle, postTitle, postedSummary, postingText,
   type ChatLine, type Edit, type EditHow, type ItemForm, type LabelOutcome, type PhotoLabel,
@@ -202,11 +205,34 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
     onStartOver();
   };
   const pickupBox = useRef<React.ComponentRef<typeof TextInput>>(null);
+  // I4: a missed item found by its name joins the list, marked; the item numbers go on after the scan's
+  const [found, setFound] = useState<Record<number, string>>({});
+  const top = useRef(Math.max(0, ...answer.items.map((x) => x.item))); // I4 review: the highest item number used so far
+  const [grown, setGrown] = useState(false); // I4 review: a find added an item: the list view stays
+  const chatNow = useRef<Chat | null>(null);
+  const onFind = async (name: string, how: "voice" | "text") => {
+    try {
+      const got = answerToItems(await findItem(answer.requestId, name));
+      if (got.length === 0 || !live.current) return 0;
+      const j = joinFound(now.current.items, top.current, got);
+      top.current = j.top;
+      change(j.items, now.current.pickup, how);
+      chatNow.current?.addFound(j.added);
+      setGrown(true);
+      setFound((f) => ({ ...f, ...Object.fromEntries(j.added.map((x) => [x.item, VOICE.markFound])) }));
+      return j.added.length;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) { ended(); return -1; }
+      throw err;
+    }
+  };
   const chat = useChat({ items, pickup, onOpen: (o) => { talking.current = o; },
-    onApply: (next, place, how) => { change(next, place, how); setProblem(""); } });
+    onApply: (next, place, how) => { change(next, place, how); setProblem(""); },
+    onFind: answer.requestId ? onFind : undefined, current: () => now.current });
+  chatNow.current = chat;
   const chatLog = useRef<ChatLine[]>([]);
   chatLog.current = chat.log.length ? chat.log : chatLog.current; // the chat clears after a post; its lines stay for the report
-  const one = answer.items.length === 1;
+  const one = answer.items.length === 1 && !grown; // I4: a found item turns the one-item form into the list (and it stays)
 
   const post = async () => {
     if (busy.current || items.length === 0) return;
@@ -317,7 +343,7 @@ export default function Review({ answer, shot, barcode, onStartOver, onPosted, o
       <View style={{ flex: 1, minWidth: 0 }}>
         {items.map((it, k) => (
           <Rise key={it.item} i={2 + k}>
-            <ItemCard it={it} n={k + 1} touch={moreFor(it, k + 1)} mark={chat.marks[it.item]} editId={editOf(it)}
+            <ItemCard it={it} n={k + 1} touch={moreFor(it, k + 1)} mark={chat.marks[it.item] ?? found[it.item]} editId={editOf(it)}
               onChange={(f) => change(now.current.items.map((x) => (x.item === it.item ? f : x)), now.current.pickup, "hand")}
               onRemove={() => { removed.current.add(it.item); change(now.current.items.filter((x) => x.item !== it.item), now.current.pickup, "hand"); }} /></Rise>
         ))}

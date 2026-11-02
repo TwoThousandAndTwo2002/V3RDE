@@ -90,10 +90,10 @@ test("a Maps failure: the location at Post; X49q: the map moves, the current loc
 });
 
 // X49q (T9 2026-10-31): the hints take turns in the empty chat box; each fits the narrow desktop box.
-test("the chat box hints: three, short, the first is the old hint; they turn every 4 s while the chat is empty", async () => {
+test("the chat box hints: four (I4: a missed item), short, the first is the old hint; they turn every 4 s while the chat is empty", async () => {
   const fs = await import("node:fs");
   const voice = fs.readFileSync(new URL("../src/screens/Voice.tsx", import.meta.url), "utf8");
-  assert.equal(VOICE.hints.length, 3);
+  assert.equal(VOICE.hints.length, 4);
   assert.equal(VOICE.hints[0], VOICE.hint);
   for (const h of VOICE.hints) assert.ok(h.length <= 22, h);
   assert.match(voice, /HINT_SWAP_MS = 4000/);

@@ -40,6 +40,13 @@ test("answerToItems (R2): a barcode answer keeps no meal_condition (a fixed valu
   assert.equal(f.meal_condition, "ready_to_eat"); // the answer itself is not changed
 });
 
+test("answerToItems (I1): in a photo with codes and other food, a catalog item keeps no meal_condition; a vision item keeps it", () => {
+  const f = { name: "Yogurt", meal_condition: "ready_to_eat", weight: 0.15 };
+  const mixed = answerToItems({ source: "vision", items: [{ item: 1, fields: f, photo_id: ID, source: "barcode" }, { item: 2, fields: f, photo_id: ID }] });
+  assert.deepEqual(mixed[0].details, { weight: 0.15 });
+  assert.equal(mixed[1].details?.meal_condition, "ready_to_eat");
+});
+
 test("itemDetails (X48d): the scanner's fields that the listings service takes; a wrong one is left out", () => {
   const f = { name: "Lasagna", number_of_serving: 6, description: " Baked pasta ", is_non_veg: 1, serving_type: "bulk",
     meal_condition: "ready_to_eat", weight: 2.5, meal_cost: 0 };
@@ -226,6 +233,7 @@ test("edits: diff, merge of typing, and the report", () => {
     { item: 2, field: "remove", from: "Pears", to: "", how: "voice" },
     { item: 0, field: "pickup", from: "", to: "", how: "voice" }]);
   assert.deepEqual(diffEdits(b, a, "", "", "undo").map((e) => e.field), ["title", "servings", "remove"]); // the removed item is back
+  assert.deepEqual(diffEdits(b, [...b, it(4, "White rice", "2")], "", "", "text"), [{ item: 4, field: "found", from: "", to: "White rice", how: "text" }]); // I4: found from the chat
   let log = addEdits([], diffEdits(a, [it(1, "B", "2"), a[1]], "", "", "hand"));
   log = addEdits(log, diffEdits([it(1, "B", "2"), a[1]], [it(1, "Ba", "2"), a[1]], "", "", "hand"));
   assert.deepEqual(log, [{ item: 1, field: "title", from: "Bananas", to: "Ba", how: "hand" }]); // typing = one edit

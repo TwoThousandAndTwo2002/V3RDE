@@ -4,13 +4,13 @@
 // a sheet over the photo: "Use this photo?", "Analyzing… n.n s", and a sheet for each answer code. The photo is
 // always kept until Retake. Then the review of the found items (Review.tsx, UI 15), and Post.
 import { useEffect, useRef, useState } from "react";
-import { Modal, StyleSheet, View, useWindowDimensions } from "react-native";
+import { Image, Modal, StyleSheet, View, useWindowDimensions } from "react-native";
 import * as RN from "react-native";
-import { CameraView, useCameraPermissions as useCameraAccess, type BarcodeScanningResult, type BarcodeType } from "expo-camera";
+import { CameraView, scanFromURLAsync, useCameraPermissions as useCameraAccess, type BarcodeScanningResult, type BarcodeType } from "expo-camera";
 import * as Picker from "expo-image-picker";
 import { ApiError, analyze, type Upload } from "../api";
 import { analyzeKind, noItemsText, answerToItems, retryText, type AnalyzeKind, type ItemForm } from "../logic";
-import { SHOT_QUALITY, analyzeShare, barcodeOf, elapsedText } from "../capture";
+import { READ_WAIT_MS, SHOT_QUALITY, analyzeShare, barcodeOf, codesFound, codesToSend, elapsedText, type FoundCode } from "../capture";
 import { asUri, fromBlob, fromUri } from "../photo";
 import { freeze, raise, still, unfreeze, videoIn, videoState } from "../webcam";
 import { camera, layoutFor, radius, size, space, useColors } from "../theme";
@@ -43,6 +43,21 @@ function Analyzing({ since }: { since: number }) {
       <Rise i={1}><View style={{ marginTop: space.bar }}><Progress share={analyzeShare(now - since)} /></View></Rise>
     </>
   );
+}
+
+/** The size of a photo (0 x 0 when it cannot be read). */
+const sizeOf = (uri: string) => new Promise<{ w: number; h: number }>((ok) => Image.getSize(uri, (w, h) => ok({ w, h }), () => ok({ w: 0, h: 0 })));
+
+/** I1: every retail code in a still photo, with its box (expo-camera scanFromURLAsync: on the web the Barcode
+ *  Detection API, which answers every code); none when there is no reader. */
+async function codesIn(uri: string): Promise<FoundCode[]> {
+  try {
+    const read = Promise.all([scanFromURLAsync(uri, CODES), sizeOf(uri)]).then(([found, size]) => codesFound(found, size.w, size.h));
+    const late = new Promise<FoundCode[]>((ok) => setTimeout(() => ok([]), READ_WAIT_MS)); // a slow reader: no codes
+    return await Promise.race([read, late]);
+  } catch {
+    return [];
+  }
 }
 
 /** A small sheet with a title, a line and two pills (the answer codes). */
@@ -78,6 +93,12 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
   const shooting = useRef(false); // a photo is on its way
   const how = useRef<Record<string, unknown>>({}); // how this photo was taken (sent with it; the server logs it)
   const count = useRef(0);
+  const [codes, setCodes] = useState<FoundCode[]>([]); // I1: the codes of the still photo
+  const [reading, setReading] = useState(false); // I1: the still is being read (Use photo waits)
+  const readAll = (uri: string, mine: number) => {
+    setCodes([]); setReading(true);
+    codesIn(uri).then((c) => { if (mine === trip.current) { setCodes(c); setReading(false); } });
+  };
 
   const asked = useRef(false); // the camera access is asked one time (the web says "can ask again" after a no)
   useEffect(function askOnce() {
@@ -106,6 +127,7 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
     how.current = { ...meta, prep_ms: Date.now() - t0 };
     if (up.uri.startsWith("blob:")) keep(up.uri);
     setShot(up);
+    readAll(up.uri, mine);
   };
 
   const shoot = async (barcode = "") => {
@@ -122,8 +144,9 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
           const s = await still(v);
           how.current = { ...meta, source: s.source, ms: Date.now() - t0, w: s.width, h: s.height };
           setProblem(""); setCode(barcode); setStep({ kind: "ask" });
-          ++trip.current;
+          const mine = ++trip.current;
           setShot({ uri: keep(s.uri), blob: s.blob, name: "photo.jpg", type: "image/jpeg", raw: true });
+          readAll(s.uri, mine);
         } catch (err) { unfreeze(v); throw err; }
         return;
       }
@@ -161,11 +184,11 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
   const startOver = () => {
     ++trip.current;
     if (RN.Platform.OS === "web") freeUrls();
-    setShot(null); setCode(""); setProblem(""); setStep({ kind: "ask" });
+    setShot(null); setCode(""); setCodes([]); setReading(false); setProblem(""); setStep({ kind: "ask" });
   };
 
   const send = async () => {
-    if (!shot) return;
+    if (!shot || reading) return; // I1: the codes of the still go with it
     const mine = ++trip.current;
     const stale = () => mine !== trip.current; // Retake or Back came while this trip was out
     setProblem(""); setStep({ kind: "busy", since: Date.now() });
@@ -178,7 +201,8 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
         how.current = { ...how.current, prep_ms: Date.now() - t0 };
         setShot({ ...up, uri: keep(up.uri) });
       }
-      const body = await analyze(up, code, how.current, stale);
+      const sendCodes = codesToSend(code, codes); // I1
+      const body = await analyze(up, sendCodes.barcode, how.current, stale, sendCodes.barcodes);
       if (stale()) return;
       const items = answerToItems(body);
       if (items.length === 0) { setStep({ kind: "ask" }); setProblem(noItemsText()); return; }
@@ -244,14 +268,17 @@ export default function Capture({ onClose, onPosted }: { onClose: () => void; on
       body = <Choice testID="daily-cap" photo={photo} title={CAPTURE.paused} line={CAPTURE.pausedLine}
         left={[CAPTURE.closeFlow, onClose]} right={[CAPTURE.retake, startOver]} />;
     } else {
-      const showCode = !!code && !problem;
+      const shown = codesToSend(code, codes); // I1: "3 barcodes found", or the one code
+      const many = shown.shown >= 2;
+      const one = code || shown.barcodes[0]?.code || ""; // a code that is not sent is not shown
+      const showCode = !!one && !problem;
       body = (
         <Sheet testID="use-photo" kind="small" photo={photo}>
           <Rise i={0}><Title center>{problem ? CAPTURE.again : CAPTURE.use}</Title></Rise>
-          {showCode ? <Rise i={1}><Muted center style={{ marginTop: space.hair }}>{CAPTURE.barcode(code)}</Muted></Rise> : null}
+          {showCode ? <Rise i={1}><Muted center style={{ marginTop: space.hair }}>{many ? CAPTURE.barcodes(shown.shown) : CAPTURE.barcode(one)}</Muted></Rise> : null}
           <Rise i={showCode ? 2 : 1}><Row style={{ marginTop: showCode ? space.gutter : space.foot }}>
             <Pill testID="retake" kind="secondary" title={CAPTURE.retake} onPress={startOver} grow />
-            <Pill testID="use" title={problem ? CAPTURE.tryAgain : CAPTURE.usePhoto} onPress={send} grow />
+            <Pill testID="use" title={problem ? CAPTURE.tryAgain : CAPTURE.usePhoto} onPress={send} busy={reading} busyName={CAPTURE.reading} grow />
           </Row></Rise>
           {problem ? <Rise i={3}><ErrorText center lines={2}>{problem}</ErrorText></Rise> : null}
         </Sheet>

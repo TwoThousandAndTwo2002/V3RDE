@@ -49,7 +49,11 @@ func (f *fakeAPI) server() *httptest.Server {
 			_ = json.NewEncoder(w).Encode(textResp("sam", text))
 			return
 		}
-		_ = json.NewEncoder(w).Encode(f.muse(firstText(body), body))
+		m := f.muse(firstText(body), body)
+		if st, ok := m["__status"].(int); ok { // I3: a Muse error answer
+			w.WriteHeader(st)
+		}
+		_ = json.NewEncoder(w).Encode(m)
 	}))
 }
 

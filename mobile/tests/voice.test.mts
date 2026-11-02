@@ -1,7 +1,8 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, earlierToSend, nextEarlier, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems, EARLIER_MAX_SAID, EARLIER_MAX_TURNS } from "../src/voice.ts";
+import { readFileSync } from "node:fs";
+import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, earlierToSend, nextEarlier, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems, EARLIER_MAX_SAID, EARLIER_MAX_TURNS, joinFound, turnsWithFound } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -22,7 +23,7 @@ test("the proposal from the answer", () => {
   assert.equal(p.changes.length, 1);
   assert.equal(p.new_items.length, 1);
   assert.equal(p.unclear, undefined);
-  assert.deepEqual(proposalOf(null), { transcript: "", changes: [], new_items: [], pickup_text: undefined, unclear: undefined, dropped: [] });
+  assert.deepEqual(proposalOf(null), { transcript: "", changes: [], new_items: [], pickup_text: undefined, unclear: undefined, dropped: [], find: [] });
   assert.deepEqual(proposalOf({ dropped: ["price", 3, ""] }).dropped, ["price"]);
 });
 
@@ -147,4 +148,51 @@ test("the earlier turn: kept after a question, then gone", () => {
   assert.equal(earlierToSend(e1, edited, "Front porch"), null); // a hand edit (or an Undo) since the question
   assert.equal(earlierToSend(e1, items, "Back door"), null);
   assert.equal(earlierToSend(null, items, "Front porch"), null);
+});
+
+// I4: the chat asks the find service for a missed item
+test("I4: find names in the proposal: strings, trimmed, once each, at most 3; the turn keeps them", () => {
+  assert.deepEqual(proposalOf({ find: [" rice ", "rice", 3, "", "bread", "cake", "pie"] }).find, ["rice", "bread", "cake"]);
+  const t = chatTurn(ITEMS, "Lobby", proposalOf({ find: ["rice"] }), "typed", "you missed the rice", W, M);
+  assert.deepEqual(t.find, ["rice"]);
+  assert.equal(t.count, 0);
+  assert.equal(chatTurn(ITEMS, "Lobby", proposalOf({}), "typed", "x", W, M).find, undefined);
+});
+
+test("I4: found items join after the highest number used so far; a removed found item's number is not used again", () => {
+  const now = [it(1, "Pasta", "6")]; // the scan had items 1 to 3
+  const j = joinFound(now, 3, [it(1, "Rice", "2"), it(2, "Beans", "1")]);
+  assert.deepEqual(j.items.map((x) => [x.item, x.title]), [[1, "Pasta"], [4, "Rice"], [5, "Beans"]]);
+  assert.deepEqual(j.added.map((x) => x.item), [4, 5]);
+  assert.equal(j.top, 5);
+  const removed = j.items.filter((x) => x.item !== 5); // the user removes Beans (5)
+  assert.deepEqual(joinFound(removed, j.top, [it(1, "Cake", "1")]).added.map((x) => x.item), [6]);
+});
+
+test("I4 review: found items join every live turn, so Undo keeps them and the marks stay", () => {
+  const p = proposalOf({ changes: [{ item: 1, number_of_serving: 8 }], find: ["rice"] });
+  const t = chatTurn(ITEMS, "Lobby", p, "typed", "8 pasta, and rice is missing", W, M);
+  const rice = it(4, "Rice", "2");
+  const [u] = turnsWithFound([t], [rice]);
+  assert.ok(canUndo([u], [...t.after.items, rice], "Lobby"));
+  assert.deepEqual(undoTo([u])!.items.map((x) => x.title), ["Pasta", "Salad", "Bread", "Rice"]);
+  assert.equal(turnsWithFound([{ ...t, undone: true }], [rice])[0].after.items.length, 3);
+});
+
+// IM review (the items merge): a find after a question keeps the question for the next line (X59 + I4)
+test("IM: found items join the earlier turn's list, so the question still goes with the next line", async () => {
+  const { earlierWithFound } = await import("../src/earlierfound.ts");
+  const items = [{ item: 1, title: "Honey Nut Cheerios", servings: "2" }, { item: 2, title: "Honey Nut O's", servings: "2" }] as any;
+  const ask = proposalOf({ transcript: "rice is missing, and make honey nut 4", changes: [], find: ["rice"], unclear: "Which one?" });
+  const e = nextEarlier(null, "rice is missing, and make honey nut 4", ask, { items, pickup: "Lobby" });
+  const rice = { item: 3, title: "Rice", servings: "2" } as any;
+  const now = [...items, rice]; // joinFound puts found items at the end of the list
+  assert.equal(earlierToSend(e, now, "Lobby"), null); // the merged code before the fix: the question was lost
+  const kept = earlierWithFound(e, [rice]);
+  assert.equal(earlierToSend(kept, now, "Lobby"), kept);
+  assert.equal(kept?.asked, "Which one?");
+  assert.equal(earlierWithFound(null, [rice]), null);
+  assert.equal(earlierWithFound(e, []), e);
+  const screen = readFileSync(new URL("../src/screens/Voice.tsx", import.meta.url), "utf8");
+  assert.match(screen, /setTurns\(\(all\) => turnsWithFound\(all, added\)\);\s*earlier\.current = earlierWithFound\(earlier\.current, added\);/);
 });

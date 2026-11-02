@@ -27,6 +27,42 @@ export function barcodeOf(data: unknown): string {
   return digits.length === 8 || digits.length === 12 || digits.length === 13 || digits.length === 14 ? digits : "";
 }
 
+/** I1: one code the app read in the still photo and its box, in the pixels of the still (fw x fh); the
+ *  "barcodes" field of /api/analyze (inference/barcodes.go CodeBox). */
+export type FoundCode = { code: string; x: number; y: number; w: number; h: number; fw: number; fh: number };
+/** I1: the most codes one scan sends (inference MaxBarcodes). */
+export const MAX_CODES = 24;
+/** A code the reader found (expo-camera BarcodeScanningResult: data, bounds). */
+type ReadCode = { data?: unknown; bounds?: { origin?: { x?: number; y?: number }; size?: { width?: number; height?: number } } };
+
+/** I1: the retail codes of a still photo, once each, at most MAX_CODES; a box that is not inside the
+ *  still (or a still with no size) is sent with no box, so the service does not match it to an item. */
+export function codesFound(found: readonly ReadCode[], fw: number, fh: number): FoundCode[] {
+  const out: FoundCode[] = [];
+  for (const f of found) {
+    const code = barcodeOf(f?.data);
+    if (!code || out.some((o) => o.code === code)) continue;
+    const x = Math.round(f.bounds?.origin?.x ?? -1), y = Math.round(f.bounds?.origin?.y ?? -1);
+    const w = Math.round(f.bounds?.size?.width ?? 0), h = Math.round(f.bounds?.size?.height ?? 0);
+    const inside = fw > 0 && fh > 0 && x >= 0 && y >= 0 && w > 0 && h > 0 && x + w <= fw && y + h <= fh;
+    out.push(inside ? { code, x, y, w, h, fw: Math.round(fw), fh: Math.round(fh) } : { code, x: 0, y: 0, w: 0, h: 0, fw: 0, fh: 0 });
+    if (out.length === MAX_CODES) break;
+  }
+  return out;
+}
+
+/** I1: what the scan sends: the live code as today, and the codes of the still when there are two or more
+ *  different codes in all, or no live code and a code of the still with its box (a plate with one packet:
+ *  the scanner runs too). One live code alone is today's fast path. `shown` is the number of different codes. */
+export function codesToSend(live: string, still: readonly FoundCode[]): { barcode: string; barcodes: FoundCode[]; shown: number } {
+  const all = new Set([...(live ? [live] : []), ...still.map((c) => c.code)]);
+  const send = all.size >= 2 || (!live && still.some((c) => c.fw > 0));
+  return { barcode: live, barcodes: send ? [...still] : [], shown: all.size };
+}
+
+/** I1 review: the read of a still waits at most this long (a slow reader must not hold "Use photo"). */
+export const READ_WAIT_MS = 2000;
+
 /** The limits of a listing (the listings service checks the same: listings.Input.Validate on branch services). */
 export const LIMITS = { title: 80, servingsMax: 99, pickup: 200, weightMax: 1000 } as const; // X49: weight in kg (listings/details.go)
 

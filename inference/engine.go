@@ -246,6 +246,22 @@ func (p *photo) prepared() *Prepared {
 	return p.prep
 }
 
+// newPhoto decodes the photo, turns it upright, and sets the inventory's size.
+func newPhoto(inv *Inventory, img []byte, mime string) *photo {
+	ph := &photo{raw: img, mime: mime, sam: img, samMime: mime}
+	if src, _, err := image.Decode(bytes.NewReader(img)); err == nil {
+		inv.Orientation = Orientation(img)
+		ph.src = Upright(src, inv.Orientation)
+		if inv.Orientation > 1 {
+			if jb, err := jpegQ(ph.src, samJPEGQuality); err == nil {
+				ph.sam, ph.samMime = jb, "image/jpeg"
+			}
+		}
+		inv.Width, inv.Height = ph.src.Bounds().Dx(), ph.src.Bounds().Dy()
+	}
+	return ph
+}
+
 // Run answers one photo.
 func (e *Engine) Run(ctx context.Context, img []byte, mime string, mode Mode) (*Inventory, error) {
 	inv, err := e.run(ctx, img, mime, mode)
@@ -263,17 +279,7 @@ func (e *Engine) run(ctx context.Context, img []byte, mime string, mode Mode) (*
 	t0 := time.Now()
 	inv := &Inventory{Mode: mode}
 	defer func() { inv.MS, inv.Cost = time.Since(t0).Milliseconds(), inv.CostUSD() }()
-	ph := &photo{raw: img, mime: mime, sam: img, samMime: mime}
-	if src, _, err := image.Decode(bytes.NewReader(img)); err == nil {
-		inv.Orientation = Orientation(img)
-		ph.src = Upright(src, inv.Orientation)
-		if inv.Orientation > 1 {
-			if jb, err := jpegQ(ph.src, samJPEGQuality); err == nil {
-				ph.sam, ph.samMime = jb, "image/jpeg"
-			}
-		}
-		inv.Width, inv.Height = ph.src.Bounds().Dx(), ph.src.Bounds().Dy()
-	}
+	ph := newPhoto(inv, img, mime)
 	if mode == ModeWhole || ph.src == nil {
 		return inv, e.whole(ctx, inv, ph, nil)
 	}
@@ -956,6 +962,11 @@ func (inv *Inventory) score(b Instance, pt *[2]float64) {
 // call sees only those boxes, renumbered 1..k. Returns items by the
 // original number and the numbers still without a valid item.
 func (e *Engine) single(ctx context.Context, inv *Inventory, ph *photo, named []Instance, which []int, purpose string) (map[int]Item, []int) {
+	return e.singleWith(ctx, inv, ph, named, which, purpose, "")
+}
+
+// singleWith is single with extra text after the prompt (I3: the user's word as a hint).
+func (e *Engine) singleWith(ctx context.Context, inv *Inventory, ph *photo, named []Instance, which []int, purpose, extra string) (map[int]Item, []int) {
 	got := map[int]Item{}
 	sub := make([]Instance, len(which))
 	for i, n := range which {
@@ -977,7 +988,7 @@ func (e *Engine) single(ctx context.Context, inv *Inventory, ph *photo, named []
 		e.Sent(purpose, jb)
 	}
 	c, err := e.API.Do(ctx, "muse:"+purpose, map[string]any{
-		"model": e.Muse, "input": UserMessage(TextPart(e.multiPrompt(sub)), ImagePart(jb, "image/jpeg"))})
+		"model": e.Muse, "input": UserMessage(TextPart(e.multiPrompt(sub)+extra), ImagePart(jb, "image/jpeg"))})
 	inv.add(c)
 	if err != nil {
 		return got, which

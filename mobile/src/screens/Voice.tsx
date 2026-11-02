@@ -8,7 +8,8 @@ import { ActivityIndicator, View } from "react-native";
 import * as RN from "react-native";
 import { ApiError, voice } from "../api";
 import { deviceLocale, type ChatLine, type ItemForm } from "../logic";
-import { canUndo, chatTurn, earlierToSend, keepOne, liveMarks, nextEarlier, proposalOf, undoTo, voiceError, voiceItems, type Earlier, type How, type Turn } from "../voice";
+import { canUndo, chatTurn, earlierToSend, keepOne, liveMarks, nextEarlier, proposalOf, turnsWithFound, undoTo, voiceError, voiceItems, type Earlier, type How, type Turn } from "../voice";
+import { earlierWithFound } from "../earlierfound";
 import { VoiceError, useVoiceRecorder, type VoiceClip } from "../voicerec";
 import { ClipBusy } from "../clipsession";
 import { VOICE_MAX_MS } from "../wav";
@@ -34,21 +35,47 @@ export type Chat = {
   clear: () => void;
   /** X48u: the chat lines for the label report. */
   log: ChatLine[];
+  /** I4 review: found items join the turns (Undo keeps them). */
+  addFound: (added: ItemForm[]) => void;
 };
+
+/** I4: the chat line of one find: the number found, or the error text. */
+function findText(name: string, n: number | string): string {
+  if (typeof n === "string") return n || VOICE.findFailed(name);
+  return n > 0 ? VOICE.foundOne(name, n) : VOICE.notFound(name);
+}
+
+/** I4 review: why a find failed, in the chat's words ("" = the general "Could not look for …"). */
+function findError(err: unknown): string {
+  if (!(err instanceof ApiError)) return "";
+  const code = typeof err.body?.code === "string" ? err.body.code : "";
+  if (err.status === 404) return VOICE.findGone; // the scan's photo is not kept: trying again does not help
+  if (err.status === 429 || err.status === 503) return voiceError(err.status, code, VOICE);
+  return "";
+}
 
 /** X49q: how long each hint of the chat box shows. */
 export const HINT_SWAP_MS = 4000;
 
-export function useChat({ items, pickup, onApply, onOpen }: {
+export function useChat({ items, pickup, onApply, onOpen, onFind, current }: {
   items: ItemForm[]; pickup: string;
   /** X48u: how says what made the change (a voice line, a typed line, Undo), for the label report. */
   onApply: (items: ItemForm[], pickup: string, how: "voice" | "text" | "undo") => void;
   /** True while a line is out: Post waits for it. */
   onOpen: (open: boolean) => void;
+  /** I4: looks for a missed item by its name in the scan photo; the number of items found and added (an error = -1). */
+  onFind?: (name: string, how: "voice" | "text") => Promise<number>;
+  /** I4 review: the list as it is now (the review's ref, set at once), so a line that ends right after a find sees it. */
+  current?: () => { items: ItemForm[]; pickup: string };
 }): Chat {
   const col = useColors();
   const { ended } = useSession();
   const [turns, setTurns] = useState<Turn[]>([]);
+  // I4: the answer of each find, by turn and name (none yet = still looking; -1 = it failed)
+  const [finds, setFinds] = useState<Record<string, number | string>>({}); // the number found, or the error text
+  const turnCount = useRef(0);
+  const pending = useRef(0); // I4: finds still out (Post waits)
+  const [waiting, setWaiting] = useState(0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [text, setText] = useState("");
@@ -84,13 +111,27 @@ export function useChat({ items, pickup, onApply, onOpen }: {
       const answer = proposalOf(await voice(said, voiceItems(at, VOICE.unnamed), place, deviceLocale(), before));
       if (!live.current) return;
       // X48s review: the answer goes onto the list as it is NOW (a hand edit while the line was out stays)
-      const { items: nowItems, pickup: nowPickup } = list.current;
+      const { items: nowItems, pickup: nowPickup } = current ? current() : list.current;
       const p = keepOne(nowItems, answer, VOICE.notAll);
       const t = chatTurn(nowItems, nowPickup, p, how, how === "typed" ? (said as { text: string }).text : p.transcript, VOICE,
         { title: VOICE.markTitle, servings: VOICE.markServings, mark: VOICE.mark });
       if (t.count > 0) onApply(t.after.items, t.after.pickup, how === "said" ? "voice" : "text");
       earlier.current = nextEarlier(before, how === "typed" ? (said as { text: string }).text : answer.transcript, answer, t.after);
+      const idx = turnCount.current++;
       setTurns((all) => [...all, t]);
+      if (t.find && onFind) { // I4: one find for each name, at the same time
+        pending.current += t.find.length;
+        setWaiting(pending.current);
+        for (const name of t.find) {
+          const put = (n: number | string) => {
+            if (!live.current) return;
+            setFinds((f) => ({ ...f, [idx + ":" + name]: n }));
+            if (RN.Platform.OS === "ios") RN.AccessibilityInfo.announceForAccessibility(findText(name, n)); // I4 review
+          };
+          onFind(name, how === "said" ? "voice" : "text").then(put, (err) => put(findError(err)))
+            .finally(() => { pending.current--; if (live.current) setWaiting(pending.current); });
+        }
+      }
       if (RN.Platform.OS === "ios") RN.AccessibilityInfo.announceForAccessibility([VOICE.made(t.count), ...t.lines].join(". "));
       if (how === "typed") setText("");
     } catch (err) {
@@ -110,7 +151,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   };
   const rec = useVoiceRecorder({ onAutoStop: send });
   // X48s review: Post waits while the microphone is on or a line is out
-  useEffect(() => { if (live.current) onOpen(starting || rec.recording || sending); }, [starting, rec.recording, sending]); // eslint-disable-line react-hooks/exhaustive-deps -- onOpen is a new function each render
+  useEffect(() => { if (live.current) onOpen(starting || rec.recording || sending || waiting > 0); }, [starting, rec.recording, sending, waiting]); // eslint-disable-line react-hooks/exhaustive-deps -- onOpen is a new function each render
   useEffect(function tick() { // the time and the bar move only while a clip runs
     if (!rec.recording) return;
     setNow(Date.now());
@@ -158,7 +199,12 @@ export function useChat({ items, pickup, onApply, onOpen }: {
           <Msg you><Muted>{t.how === "said" ? VOICE.said : VOICE.typed}</Muted><Body>{"“" + t.text + "”"}</Body></Msg>
           <Msg you={false}>
             {t.count > 0 ? <Body>{VOICE.made(t.count)}</Body> : null}
-            {(t.lines.length ? t.lines : [VOICE.none]).map((l, j) => <Body key={j}>{"• " + l}</Body>)}
+            {(t.lines.length ? t.lines : t.find && onFind ? [] : [VOICE.none]).map((l, j) => <Body key={j}>{"• " + l}</Body>)}
+            {t.find && onFind ? t.find.map((name) => {
+              const n = finds[k + ":" + name];
+              if (n === undefined) return <Row key={name} tight><ActivityIndicator color={col.accent} /><View style={{ flex: 1, minWidth: 0 }}><Body>{VOICE.looking(name)}</Body></View></Row>;
+              return <Body key={name}>{findText(name, n)}</Body>;
+            }) : null}
             {t.undone ? <Muted>{VOICE.undone}</Muted> : null}
             {k === turns.length - 1 && undoable ? <TextLink testID="chat-undo" onPress={undo}>{VOICE.undo}</TextLink> : null}
           </Msg>
@@ -194,5 +240,11 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   // X48u review: a line that set the pickup may hold an address: its words are not sent
   const log: ChatLine[] = turns.map((t) => ({ how: t.how === "said" ? "voice" : "text", text: t.pickupSaid ? "" : t.text, changes: t.count,
     ...(t.undone ? { undone: true } : {}), ...(t.pickupSaid ? { pickup: true } : {}) }));
-  return { thread, bar, marks, pickupMarked, log, clear: () => { setTurns([]); setError(""); setText(""); earlier.current = null; } };
+  // IM review: a found item joins the earlier turn's list too, so the question asked before the find still goes with the next line
+  const addFound = (added: ItemForm[]) => {
+    if (!live.current || !added.length) return;
+    setTurns((all) => turnsWithFound(all, added));
+    earlier.current = earlierWithFound(earlier.current, added);
+  };
+  return { thread, bar, marks, pickupMarked, log, addFound, clear: () => { setTurns([]); setFinds({}); turnCount.current = 0; setError(""); setText(""); earlier.current = null; } };
 }

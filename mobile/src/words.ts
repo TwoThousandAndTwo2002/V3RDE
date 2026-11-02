@@ -217,6 +217,8 @@ export const CAPTURE = {
   usePhoto: "Use photo",
   tryAgain: "Try again",
   barcode: (code: string) => "Barcode " + code,
+  barcodes: (n: number) => n + " barcodes found", // I1: many codes in the still photo
+  reading: "Reading the barcodes",
   analyzing: "Analyzing…",
   notFood: "Try a food item",
   notFoodLine: "This does not look like food. Take a photo of the food item.",
@@ -361,6 +363,8 @@ export const DETAILS = {
 } as const;
 
 /** The chat bar on the review (X48s: talk or type; tap to talk, tap to stop). */
+/** The first letter in capitals ("rice" -> "Rice"). */
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export const VOICE = {
   start: "Start talking",
   stop: "Stop talking",
@@ -385,7 +389,7 @@ export const VOICE = {
   typeName: "Type a change to the list",
   send: "Send",
   // X49q: the hints that take turns in the empty chat box (short: the desktop box is narrow)
-  hints: ["Talk or type a change", "Try \u201c6 servings\u201d", "Try \u201cremove item 2\u201d"],
+  hints: ["Talk or type a change", "Try \u201c6 servings\u201d", "Try \u201cremove item 2\u201d", "Try \u201crice is missing\u201d"],
   said: "You said",
   typed: "You typed",
   made: (n: number) => (n === 1 ? "1 change made" : n + " changes made"),
@@ -399,6 +403,13 @@ export const VOICE = {
   mark: (parts: string[]) => "Changed in the chat: " + parts.join(", "),
   markPickup: "Changed in the chat",
   none: "No change found in what you said.",
+  // I4: find a missed item in the photo
+  looking: (name: string) => "Looking for " + name + " in the photo\u2026",
+  foundOne: (name: string, n: number) => (n === 1 ? cap(name) + " is on the list now." : n + " items of " + name + " are on the list now."),
+  notFound: (name: string) => "No " + name + " found in the photo.",
+  findFailed: (name: string) => "Could not look for " + name + ". Try again.",
+  findGone: "The photo of this scan is not kept. Take a new photo.",
+  markFound: "Found from your words",
 } as const;
 
 /** X49x: every word table of this file, by name (src/lang.ts puts them in the chosen language). */
