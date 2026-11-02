@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from "react-native";
 import * as RN from "react-native";
 import { ApiError, voice } from "../api";
 import { deviceLocale, type ChatLine, type ItemForm } from "../logic";
-import { canUndo, chatTurn, keepOne, liveMarks, proposalOf, undoTo, voiceError, voiceItems, type How, type Turn } from "../voice";
+import { canUndo, chatTurn, earlierToSend, keepOne, liveMarks, nextEarlier, proposalOf, undoTo, voiceError, voiceItems, type Earlier, type How, type Turn } from "../voice";
 import { VoiceError, useVoiceRecorder, type VoiceClip } from "../voicerec";
 import { ClipBusy } from "../clipsession";
 import { VOICE_MAX_MS } from "../wav";
@@ -67,6 +67,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   const sent = useRef(false); // one clip goes one time (the automatic stop and the Stop tap give the same clip)
   const out = useRef(false); // X48s review: one line at a time (a fast double Send sends one line)
   const live = useRef(true); // false after Start over or the end of the flow: a late answer changes nothing
+  const earlier = useRef<Earlier | null>(null); // X59: the last turn, when it ended in a question
   const list = useRef({ items, pickup });
   list.current = { items, pickup };
   useEffect(() => () => { live.current = false; onOpen(false); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- at the end
@@ -79,7 +80,8 @@ export function useChat({ items, pickup, onApply, onOpen }: {
     busy(true);
     const { items: at, pickup: place } = list.current;
     try {
-      const answer = proposalOf(await voice(said, voiceItems(at, VOICE.unnamed), place, deviceLocale()));
+      const before = earlierToSend(earlier.current, at, place); // X59 review: none after a hand edit or an Undo
+      const answer = proposalOf(await voice(said, voiceItems(at, VOICE.unnamed), place, deviceLocale(), before));
       if (!live.current) return;
       // X48s review: the answer goes onto the list as it is NOW (a hand edit while the line was out stays)
       const { items: nowItems, pickup: nowPickup } = list.current;
@@ -87,6 +89,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
       const t = chatTurn(nowItems, nowPickup, p, how, how === "typed" ? (said as { text: string }).text : p.transcript, VOICE,
         { title: VOICE.markTitle, servings: VOICE.markServings, mark: VOICE.mark });
       if (t.count > 0) onApply(t.after.items, t.after.pickup, how === "said" ? "voice" : "text");
+      earlier.current = nextEarlier(before, how === "typed" ? (said as { text: string }).text : answer.transcript, answer, t.after);
       setTurns((all) => [...all, t]);
       if (RN.Platform.OS === "ios") RN.AccessibilityInfo.announceForAccessibility([VOICE.made(t.count), ...t.lines].join(". "));
       if (how === "typed") setText("");
@@ -142,6 +145,7 @@ export function useChat({ items, pickup, onApply, onOpen }: {
     const back = undoTo(turns);
     if (!back) return;
     onApply(back.items, back.pickup, "undo");
+    earlier.current = null; // X59 review: the undone words never go back to the model
     setTurns((all) => all.map((t, k) => (k === all.length - 1 ? { ...t, undone: true } : t)));
   };
 
@@ -190,5 +194,5 @@ export function useChat({ items, pickup, onApply, onOpen }: {
   // X48u review: a line that set the pickup may hold an address: its words are not sent
   const log: ChatLine[] = turns.map((t) => ({ how: t.how === "said" ? "voice" : "text", text: t.pickupSaid ? "" : t.text, changes: t.count,
     ...(t.undone ? { undone: true } : {}), ...(t.pickupSaid ? { pickup: true } : {}) }));
-  return { thread, bar, marks, pickupMarked, log, clear: () => { setTurns([]); setError(""); setText(""); } };
+  return { thread, bar, marks, pickupMarked, log, clear: () => { setTurns([]); setError(""); setText(""); earlier.current = null; } };
 }

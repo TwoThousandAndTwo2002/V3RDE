@@ -56,7 +56,7 @@ func TestPromptPurposes(t *testing.T) {
 		{"touchup:edit", EditPrompts[ModeLight], "touchup.edit.light"},
 		{"touchup:edit", EditPrompts[ModeBackground], "touchup.edit.background"},
 		{"touchup:edit", "other edit", analyze.Unknown},
-		{"voice:map", fmt.Sprintf(VoicePrompt, "[]", `""`, `""`, ruleNew), "voice.map"},
+		{"voice:map", fmt.Sprintf(VoicePrompt, "[]", `""`, `""`, voiceNoEarlier, ruleNew), "voice.map"},
 		{"voice:transcribe", `{"mode":"PUSH_TO_TALK"}`, "voice.transcribe"},
 	} {
 		if r, _ := Prompts.For(tc.purpose, tc.sent); r.ID != tc.id {

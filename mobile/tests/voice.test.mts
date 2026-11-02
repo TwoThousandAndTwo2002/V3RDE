@@ -1,7 +1,7 @@
 // Tests of the voice rules (src/voice.ts), written new for V3RDE (NEW_WORK_UI.md, UI 17).
 import test from "node:test";
 import { strict as assert } from "node:assert";
-import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems } from "../src/voice.ts";
+import { applyProposal, canUndo, changeCount, keepOne, changesSomething, chatTurn, liveMarks, earlierToSend, nextEarlier, proposalLines, proposalOf, stableJson, undoTo, voiceError, voiceItems, EARLIER_MAX_SAID, EARLIER_MAX_TURNS } from "../src/voice.ts";
 
 const it = (item: number, title: string, servings: string) => ({ item, title, servings, photo_id: "", description: "", err: "" });
 const ITEMS = [it(1, "Pasta", "6"), it(2, "Salad", "2"), it(3, "Bread", "4")];
@@ -121,4 +121,30 @@ test("a details change after a chat turn ends Undo; the same details in another 
   assert.equal(canUndo([t], reordered, t.after.pickup), true);
   assert.equal(stableJson({ b: 1, a: [2, { d: 3, c: undefined }] }), '{"a":[2,{"d":3}],"b":1}');
   assert.equal(stableJson(undefined), "");
+});
+
+// X59: the earlier turn is kept only after a question, at most EARLIER_MAX_TURNS questions in a row, and is gone after
+// an answer with no question (T9's case: two items whose names start with the same words, then a short answer).
+test("the earlier turn: kept after a question, then gone", () => {
+  const items = [{ item: 1, title: "Honey Nut Cheerios", servings: "2" }, { item: 2, title: "Honey Nut O's", servings: "2" }] as any;
+  const list = { items, pickup: "Front porch" };
+  const ask = proposalOf({ transcript: "make honey nut 4 servings", changes: [], unclear: "Which one: Honey Nut Cheerios or Honey Nut O's?" });
+  const done = proposalOf({ transcript: "the O's", changes: [{ item: 2, number_of_serving: 4 }] });
+  const e1 = nextEarlier(null, "make honey nut 4 servings", ask, list);
+  assert.deepEqual(e1 && { said: e1.said, asked: e1.asked, turns: e1.turns }, { said: "make honey nut 4 servings", asked: "Which one: Honey Nut Cheerios or Honey Nut O's?", turns: 1 });
+  assert.equal(nextEarlier(e1, "the O's", done, list), null); // answered: the next request starts fresh
+  const e2 = nextEarlier(e1, "the honey one", ask, list); // a second question: both lines go
+  assert.equal(e2?.said, "make honey nut 4 servings / the honey one");
+  assert.equal(e2?.turns, 2);
+  assert.equal(EARLIER_MAX_TURNS, 2);
+  assert.equal(nextEarlier(e2, "the other", ask, list), null); // a third question: the chat starts fresh
+  assert.equal(nextEarlier(null, "six servings", done, list), null); // no question: nothing kept
+  const long = nextEarlier(null, "x".repeat(EARLIER_MAX_SAID + 40) + "END", ask, list);
+  assert.ok(long && long.said.length === EARLIER_MAX_SAID && long.said.endsWith("END")); // the newest words stay
+  // X59 review: the turn goes with the next line only while the list is as that answer left it
+  assert.equal(earlierToSend(e1, items, "Front porch"), e1);
+  const edited = [items[0], { ...items[1], servings: "4" }];
+  assert.equal(earlierToSend(e1, edited, "Front porch"), null); // a hand edit (or an Undo) since the question
+  assert.equal(earlierToSend(e1, items, "Back door"), null);
+  assert.equal(earlierToSend(null, items, "Front porch"), null);
 });

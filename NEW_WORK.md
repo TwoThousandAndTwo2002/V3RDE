@@ -2206,3 +2206,17 @@ T9: the rest of the learn work joins the branch that is deployed (the push chann
 - The edge's Report-Only CSP allows the learn page's inline script by its hash. Two push tests wrote their events by the real date and read them by a fake one; their events log now uses the fake date too. A rescue test read the events before the second job's line was written; it now waits for that line.
 - The web build is made again from the merged code.
 - Tests: server 39 -> 45, inference 104 -> 115, listings 48 -> 50, post 110 -> 114, auth 33 -> 35, barcode 20 -> 22, telemetry 22 -> 24, gate 28 -> 30, mobile 189 -> 192.
+
+## 105. The chat remembers its question
+
+**When:** Nov 2 2026.
+**Meta models:** Muse Spark 1.3 (the chat's mapping; a new version of its prompt).
+**Files:** `post/voice.go`, `post/prompts.go`, `post/prompts_pins.txt`, `post/prompts_test.go`, `post/voice_test.go`, `mobile/src/voice.ts`, `mobile/src/api.ts`, `mobile/src/screens/Voice.tsx`, `mobile/tests/voice.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X59.md`
+
+T9: when two items start with the same words and the donor does not say which, the chat could not finish the request, and the donor had to say it all again.
+
+- When the chat asks a question, the next line takes the earlier words and the question with it, so a short answer ("the O's") finishes the change.
+- The chat now asks which item when a request fits more than one, with their names, and changes nothing until the donor says.
+- The earlier turn is dropped after an answer with no question, after two questions in a row, after Undo or a hand edit, and after a post.
+- Tests: post 114 -> 115, mobile 192 -> 193.

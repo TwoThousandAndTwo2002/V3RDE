@@ -10,6 +10,31 @@ export type Proposal = {
   transcript: string; changes: Change[]; new_items: NewItem[]; pickup_text?: string; unclear?: string; dropped: string[];
 };
 
+/** X59 (T9 Nov 2: "there is no chat history that is fed into the prompt"): the last turn of the chat that ended in a
+ *  question. The next line takes it to the service (earlier_said, earlier_asked), so a short answer ("the O's")
+ *  finishes the request. */
+export type Earlier = { said: string; asked: string; turns: number; list: { items: ItemForm[]; pickup: string } };
+/** At most this many questions in a row carry the earlier turn; then the chat starts fresh. */
+export const EARLIER_MAX_TURNS = 2;
+/** The longest earlier text the app sends (the service cuts at 500 bytes too: VoiceMaxEarlier). */
+export const EARLIER_MAX_SAID = 500;
+
+/** The earlier turn after an answer: kept only when the model asked a question (and fewer than EARLIER_MAX_TURNS in a
+ *  row), with what was said in this turn and before it, and the list as the answer left it (`list`); otherwise none,
+ *  so old words never change a new request. */
+export function nextEarlier(prev: Earlier | null, said: string, p: Proposal, list: { items: ItemForm[]; pickup: string }): Earlier | null {
+  const n = (prev?.turns ?? 0) + 1;
+  if (!p.unclear || n > EARLIER_MAX_TURNS) return null;
+  const all = (prev ? prev.said + " / " : "") + said.trim();
+  return { said: all.length > EARLIER_MAX_SAID ? all.slice(all.length - EARLIER_MAX_SAID) : all, asked: p.unclear, turns: n, list };
+}
+
+/** X59 review: the earlier turn to send with the next line: none when the list changed since that answer (a hand
+ *  edit or an Undo), so the model never applies again what the donor took back. */
+export function earlierToSend(e: Earlier | null, items: ItemForm[], pickup: string): Earlier | null {
+  return e && sameList(e.list, items, pickup) ? e : null;
+}
+
 /** The items as the voice service takes them: an empty title goes as "Item n" (the service needs a title). */
 export function voiceItems(items: ItemForm[], unnamed: (n: number) => string) {
   return items.map((it, k) => ({ item: it.item, title: it.title.trim() || unnamed(k + 1), number_of_serving: Number(it.servings) || 1 }));

@@ -11,3 +11,4 @@ touchup.edit.background 1 93d10dd0cdc7ee15
 touchup.edit.light 1 60ee5dc531594a3c
 voice.map 1 d6b22ba09ae33e26
 voice.transcribe 1 783e4264fbfb7cda
+voice.map 2 c7b21ecdf2b02e08

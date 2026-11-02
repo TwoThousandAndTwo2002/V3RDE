@@ -245,8 +245,10 @@ export function analyzeLabels(report: object): Promise<void> {
 
 /** Voice posting: one WAV clip, or (X48s) a typed chat line, and the review list (item, title, servings). The
  *  answer is a proposal; the app posts nothing until the donor taps Post. The service stops at 25 s; the app waits 35 s. */
-export function voice(said: Upload | { text: string }, items: VoiceItem[], pickupText = "", lang = "") {
+export function voice(said: Upload | { text: string }, items: VoiceItem[], pickupText = "", lang = "",
+                      earlier: { said: string; asked: string } | null = null) {
   const form = formOf([], [["pickup_text", pickupText], ["lang", lang]]);
+  if (earlier) { form.append("earlier_said", earlier.said); form.append("earlier_asked", earlier.asked); } // X59
   if ("text" in said) form.append("text", said.text);
   else addFile(form, "audio", said);
   if (items.length > 0) {
