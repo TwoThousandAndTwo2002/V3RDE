@@ -44,7 +44,7 @@ ARG BUILD=dev
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
     go build -tags "litert turbojpeg" -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /gate ./cmd/gate \
  && go build -tags "litert turbojpeg" -trimpath -ldflags="-s -w" -o /gatebench ./cmd/gatebench \
- && mkdir -p /events && chown 65534:65534 /events
+ && mkdir -p /events /sock && chown 65534:65534 /events /sock
 
 FROM debian:bookworm-slim
 RUN apt-get update -q && apt-get install -y -q --no-install-recommends libturbojpeg0 libstdc++6 \
@@ -54,6 +54,8 @@ COPY --from=build /gate /gate
 # the parity and speed bench (X45a): docker run --entrypoint /gatebench
 COPY --from=build /gatebench /gatebench
 COPY --from=build --chown=65534:65534 /events /events
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 VOLUME ["/events"]
 EXPOSE 8084

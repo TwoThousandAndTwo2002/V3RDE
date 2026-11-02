@@ -2,7 +2,7 @@
 // $connect and $disconnect integrations and the app's one-time ticket on
 // TCP (through Caddy), the services' messages on a unix socket only.
 //
-//	push -listen 0.0.0.0:8092 -socket /sock/push.sock -auth http://auth:8081 \
+//	push -listen 0.0.0.0:8092 -socket /sock/push.sock -auth http+unix://auth.sock \
 //	     -secret-file /run/secrets/push_secret -origins https://v3rde.thehungreeapp.com \
 //	     -endpoint https://<api-id>.execute-api.<region>.amazonaws.com/<stage> -region <region> \
 //	     -url wss://<websocket host>/<stage> -events /events
@@ -47,7 +47,7 @@ func listenUnix(path string) (net.Listener, error) {
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8092", "the public address (Caddy: /api/push/*)")
 	socket := flag.String("socket", "/sock/push.sock", "the unix socket of POST /v1/push/notify (the services)")
-	authURL := flag.String("auth", "http://auth:8081", "auth base URL (X57: auth stays on TCP)")
+	authURL := flag.String("auth", "http+unix://auth.sock", "auth base URL (US1: the auth socket; X57 used http://auth:8081)")
 	secretFile := flag.String("secret-file", "/run/secrets/push_secret", "the shared secret of the API Gateway integrations (Authorization: Bearer <secret>); empty file = push off")
 	origins := flag.String("origins", "https://v3rde.thehungreeapp.com", "comma-separated browser origins that may open a WebSocket")
 	endpoint := flag.String("endpoint", "", "the management API: https://<api-id>.execute-api.<region>.amazonaws.com/<stage>; empty = push off")

@@ -167,6 +167,17 @@ var SubjectConcepts = []string{"food", "fruit", "packaged food", "product"}
 // /image-generation): images = [{image_url: a data URL}], the tools off. A 400
 // that names an optional field is tried once more without those fields.
 func (v *V2) EditJSON(ctx context.Context, img []byte, prompt string) ([]byte, ImageCall, error) {
+	b, ic, err := v.editJSON(ctx, img, prompt)
+	if l := callLogOf(ctx); l != nil { // P1: a caller that keeps the calls (the touch-up job)
+		c := Call{Purpose: PurposeImageEdit, Model: v.ImageModel, Status: ic.Status, MS: ic.MS, AtMS: -1,
+			CostUSD: ic.CostUSD, Error: ic.Error, InputSHA: analyze.InputSHA(prompt)}
+		c.PromptRef, _ = Prompts.For(PurposeImageEdit, prompt)
+		l.add(c)
+	}
+	return b, ic, err
+}
+
+func (v *V2) editJSON(ctx context.Context, img []byte, prompt string) ([]byte, ImageCall, error) {
 	body := map[string]any{"model": v.ImageModel, "prompt": prompt, "n": 1,
 		"images":          []any{map[string]any{"image_url": "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(img)}},
 		"response_format": "b64_json", "output_format": "jpeg",
@@ -588,6 +599,14 @@ func promptFrame(img image.Image) ([]byte, int, int, float64, error) {
 	return jb, cfg.Width, cfg.Height, float64(cfg.Width) / float64(img.Bounds().Dx()), nil
 }
 
+// The SAM prompt tokens of BoxMask and Refine (P1: named, so the prompt
+// registry pins them; the text is the same as before).
+const (
+	SAMObject1     = "<0f>1"
+	SAMBoxFormat   = SAMObject1 + "<|box;x1=%d;y1=%d;x2=%d;y2=%d;w=%d;h=%d|>"
+	SAMPointFormat = "<|point;x=%d;y=%d;w=%d;h=%d|>"
+)
+
 // BoxMask is step 1: the item's box (in img's pixels) as a SAM box prompt;
 // the mask of object 1 as a raster of img's size.
 func (v *V2) BoxMask(ctx context.Context, img image.Image, box image.Rectangle) ([]byte, int, float64, error) {
@@ -596,7 +615,7 @@ func (v *V2) BoxMask(ctx context.Context, img image.Image, box image.Rectangle) 
 		return nil, 0, 0, err
 	}
 	sc := func(x int, lim int) int { return max(0, min(lim-1, int(float64(x)*k))) }
-	prompt := fmt.Sprintf("<0f>1<|box;x1=%d;y1=%d;x2=%d;y2=%d;w=%d;h=%d|>",
+	prompt := fmt.Sprintf(SAMBoxFormat,
 		sc(box.Min.X, fw), sc(box.Min.Y, fh), sc(box.Max.X-1, fw), sc(box.Max.Y-1, fh), fw, fh)
 	inst, cost, err := v.samPrompt(ctx, jb, prompt, "sam:box")
 	if err != nil {
@@ -656,9 +675,9 @@ func (v *V2) RefineMask(ctx context.Context, img image.Image, rough []byte, targ
 		return nil, 0, 0, 0, err
 	}
 	pt := func(p image.Point) string {
-		return fmt.Sprintf("<|point;x=%d;y=%d;w=%d;h=%d|>", max(0, min(fw-1, int(float64(p.X)*k))), max(0, min(fh-1, int(float64(p.Y)*k))), fw, fh)
+		return fmt.Sprintf(SAMPointFormat, max(0, min(fw-1, int(float64(p.X)*k))), max(0, min(fh-1, int(float64(p.Y)*k))), fw, fh)
 	}
-	prompt := "<0f>1" + pt(image.Pt(px, py))
+	prompt := SAMObject1 + pt(image.Pt(px, py))
 	for _, n := range negs {
 		prompt += "-" + pt(n)
 	}

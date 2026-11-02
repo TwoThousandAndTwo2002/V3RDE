@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	analyze "github.com/TwoThousandAndTwo2002/Icarus/server"
 )
 
 // Event is one line per request in <dir>/events-YYYYMMDD.jsonl (the
@@ -78,7 +80,14 @@ type Event struct {
 	FrameW          int        `json:"frame_w,omitempty"` // the frame of the box coordinates
 	FrameH          int        `json:"frame_h,omitempty"`
 	Boxes           []EventBox `json:"boxes,omitempty"`
-	PhotoIDs        []string   `json:"photo_ids,omitempty"`
+	// LR1: each answer item as the app got it (the model's details, before any
+	// edit by the donor), so the labels of the same request_id can be
+	// compared field by field.
+	Answer []EventItem `json:"answer,omitempty"`
+	// P1: the engine settings of this request (Engine.Settings), so a change
+	// of a flag can be told apart from a change of a prompt.
+	Settings map[string]any `json:"settings,omitempty"`
+	PhotoIDs []string       `json:"photo_ids,omitempty"`
 	// X32e: how the app took the photo (its "capture" form field, a small
 	// JSON object: source photo|frame|native, ms from the press, the preview
 	// video's time and state). Logged as sent; never used for the answer.
@@ -168,6 +177,16 @@ type EventBox struct {
 	Name    string `json:"name,omitempty"`
 }
 
+// EventItem (LR1) is one answer item on the event line.
+type EventItem struct {
+	Item   int            `json:"item"`
+	Fields analyze.Result `json:"fields"`
+	Via    string         `json:"via,omitempty"`   // Item.Source (whole, single, retry, agent, two-pass), or barcode
+	Count  int            `json:"count,omitempty"` // units of the item (boxes)
+	Check  bool           `json:"check,omitempty"` // the app marks it "check this"
+	Tray   bool           `json:"tray,omitempty"`
+}
+
 // EventCall is one API call of the request.
 type EventCall struct {
 	Purpose      string  `json:"purpose"`
@@ -180,6 +199,13 @@ type EventCall struct {
 	OutputTokens int     `json:"output_tokens,omitempty"`
 	CostUSD      float64 `json:"cost_usd"`
 	Error        string  `json:"error,omitempty"`
+	// P1: the prompt of the call (id, version, sha), the sha of the text
+	// sent, the effort sent, the API's id and the cached input tokens.
+	analyze.PromptRef
+	InputSHA     string `json:"input_sha,omitempty"`
+	Effort       string `json:"effort,omitempty"`
+	APIRequestID string `json:"api_request_id,omitempty"`
+	CachedTokens int    `json:"cached_tokens,omitempty"`
 }
 
 // RejectLogMax is how many rejections one event keeps.
@@ -202,7 +228,8 @@ func (ev *Event) fromInventory(inv *Inventory) {
 	}
 	for _, c := range inv.Calls {
 		ev.Calls = append(ev.Calls, EventCall{Purpose: c.Purpose, Model: c.Model, Status: c.Status, MS: c.MS, AtMS: c.AtMS, WaitMS: c.WaitMS,
-			InputTokens: c.Usage.InputTokens, OutputTokens: c.Usage.OutputTokens, CostUSD: c.Cost(), Error: c.Error})
+			InputTokens: c.Usage.InputTokens, OutputTokens: c.Usage.OutputTokens, CostUSD: c.Cost(), Error: c.Error,
+			PromptRef: c.PromptRef, InputSHA: c.InputSHA, Effort: c.Effort, APIRequestID: c.RequestID, CachedTokens: c.CachedTokens})
 	}
 }
 

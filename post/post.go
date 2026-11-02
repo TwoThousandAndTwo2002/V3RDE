@@ -420,6 +420,11 @@ type Call struct {
 	CostUSD      float64 `json:"cost_usd"`
 	UpstreamID   string  `json:"upstream_id,omitempty"`
 	Error        string  `json:"error,omitempty"`
+	// P1: the prompt (Prompts, by purpose and the text sent), the sha of the
+	// text sent, and the reasoning effort sent ("" = the API default).
+	analyze.PromptRef
+	InputSHA string `json:"input_sha,omitempty"`
+	Effort   string `json:"effort,omitempty"`
 }
 
 // Price sets c.CostUSD from its usage. A call that did not answer 2xx is free.
@@ -489,6 +494,7 @@ func (m *Muse) AskJSONWith(ctx context.Context, purpose, prompt string, tools []
 	if len(tools) > 0 {
 		body["tools"] = tools
 	}
+	trace(&call, analyze.TextOf(body), analyze.Effort(body)) // P1
 	b, _ := json.Marshal(body)
 	base := m.Base
 	if base == "" {

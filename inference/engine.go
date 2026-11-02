@@ -104,6 +104,23 @@ type Engine struct {
 	EarlyWhole bool
 }
 
+// Settings (P1) is what the event line keeps of the engine: the flags that
+// change the prompts, the calls or the levels. No key, no URL.
+func (e *Engine) Settings() map[string]any {
+	effort := ""
+	if e.API != nil {
+		effort = e.API.Effort
+	}
+	return map[string]any{
+		"muse": e.Muse, "sam": e.SAM, "effort": effort,
+		"concepts":  []string{e.Concept, e.PackageConcept, e.TrayConcept},
+		"max_named": e.MaxNamed, "min_conf": e.MinConf, "marks": e.Marks, "coords": !e.NoCoords,
+		"name_min_px": e.NameMinPx, "confident_px": e.ConfidentPx, "split": e.Split, "split_min": e.SplitMin,
+		"two_pass": e.TwoPass, "name_effort": e.NameEffort, "detail_effort": e.DetailEffort,
+		"compact": e.Compact, "early_whole": e.EarlyWhole,
+	}
+}
+
 // Item is one product: the strict contract plus where it is and how many.
 type Item struct {
 	analyze.Result

@@ -142,6 +142,7 @@ func (e *ImageEditor) Edit(ctx context.Context, img []byte, mime, prompt, size s
 		model = DefaultImage
 	}
 	call := Call{Purpose: "touchup:edit", Model: model}
+	trace(&call, prompt, e.Reasoning) // P1
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
 	fields := [][2]string{{"model", model}, {"prompt", prompt}, {"n", "1"},
@@ -742,6 +743,7 @@ func (c *TouchupConfig) run(job *Job, img []byte, mime, prompt string, hold *Hol
 // Every mode gets the same auto touch-up (T9: the app has one touch-up).
 func (c *TouchupConfig) runV2(ctx context.Context, job *Job, img []byte, hold *Hold, t0 time.Time) {
 	it := inference.LoadItem(c.Photos, c.AnalyzeEvents, c.ItemPhotos, job.SourcePhotoID, img, WiderUnder, WiderMargin)
+	ctx, calls := inference.WithCallLog(ctx) // P1: the SAM and Muse Image calls go on the event line
 	r, err := c.V2.Touchup(ctx, it)
 	status, reason, photoID := JobFailed, "", ""
 	switch {
@@ -770,10 +772,24 @@ func (c *TouchupConfig) runV2(ctx context.Context, job *Job, img []byte, hold *H
 	c.mu.Unlock()
 	c.record(Event{RequestID: job.RequestID, TS: t0.UTC().Format(time.RFC3339Nano), Route: "touchup.job",
 		UserID: job.userID, RemoteIP: job.remoteIP, ForwardedIP: job.forwardedIP, CapKey: job.capKey, Status: 200, LatencyMS: ms, CostUSD: cost,
+		Calls: v2Calls(calls.Calls()),
 		Detail: map[string]any{"touchup_id": snap.TouchupID, "status": snap.Status, "mode": snap.Mode,
 			"reason": snap.Reason, "source_photo_id": snap.SourcePhotoID, "photo_id": snap.PhotoID,
 			"source_sha256": sha256hex(img), "v2": true, "mask": r.Mask, "ssim": r.SSIM, "muse": r.Muse, "note": clip(r.Note, 240)}})
 	c.Push.Notify(PushMessage{UserID: job.userID, Kind: "touchup", ID: snap.TouchupID, Status: snap.Status}) // WS1
+}
+
+// v2Calls (P1) is the calls of an auto touch-up as event calls: the prompt,
+// the sha of the text sent, the effort, the usage and the cost of each.
+func v2Calls(in []inference.Call) []Call {
+	out := make([]Call, 0, len(in))
+	for _, c := range in {
+		out = append(out, Call{Purpose: c.Purpose, Model: c.Model, Status: c.Status, MS: c.MS,
+			InputTokens: c.Usage.InputTokens, OutputTokens: c.Usage.OutputTokens, CachedTokens: c.CachedTokens,
+			CostUSD: c.CostUSD, UpstreamID: c.RequestID, Error: c.Error,
+			PromptRef: c.PromptRef, InputSHA: c.InputSHA, Effort: c.Effort})
+	}
+	return out
 }
 
 // WiderUnder, WiderMargin: an item photo with the long edge under WiderUnder

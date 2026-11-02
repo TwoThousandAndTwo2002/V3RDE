@@ -47,10 +47,15 @@ type Call struct {
 	CachedTokens int     `json:"cached_tokens,omitempty"`
 	CostUSD      float64 `json:"cost_usd"`
 	// Cached: a probe SAMCache answer; not paid again (production pays it).
-	Cached  bool   `json:"cached,omitempty"`
-	Error   string `json:"error,omitempty"`
-	elapsed time.Duration
-	body    map[string]any
+	Cached bool   `json:"cached,omitempty"`
+	Error  string `json:"error,omitempty"`
+	// P1: the prompt (Prompts, by purpose and the text sent), the sha of the
+	// text sent, and the reasoning effort sent ("" = the API default).
+	analyze.PromptRef
+	InputSHA string `json:"input_sha,omitempty"`
+	Effort   string `json:"effort,omitempty"`
+	elapsed  time.Duration
+	body     map[string]any
 }
 
 // Text is the model's text output (output[].content[].text).
@@ -107,6 +112,18 @@ func UserMessage(parts ...map[string]any) []any {
 func (cl *Client) Do(ctx context.Context, purpose string, body map[string]any) (*Call, error) {
 	c := &Call{Purpose: purpose, AtMS: sinceStart(ctx)}
 	c.Model, _ = body["model"].(string)
+	sent := analyze.TextOf(body)
+	c.PromptRef, _ = Prompts.For(purpose, sent)
+	c.InputSHA = analyze.InputSHA(sent)
+	if cl.Effort != "" && c.Model != DefaultSAM {
+		if _, set := body["reasoning"]; !set {
+			body["reasoning"] = map[string]any{"effort": cl.Effort}
+		}
+	}
+	c.Effort = analyze.Effort(body)
+	if l := callLogOf(ctx); l != nil { // P1: a caller that keeps the calls (the touch-up job)
+		defer func() { l.add(*c) }()
+	}
 	tw := time.Now()
 	if err := waitGate(ctx, purpose); err != nil { // X48a: a Muse call waits for the gate
 		c.WaitMS, c.Error = time.Since(tw).Milliseconds(), err.Error()
@@ -115,11 +132,6 @@ func (cl *Client) Do(ctx context.Context, purpose string, body map[string]any) (
 	if w := time.Since(tw); w >= time.Millisecond {
 		c.WaitMS = w.Milliseconds()
 		c.AtMS = sinceStart(ctx)
-	}
-	if cl.Effort != "" && c.Model != DefaultSAM {
-		if _, set := body["reasoning"]; !set {
-			body["reasoning"] = map[string]any{"effort": cl.Effort}
-		}
 	}
 	b, err := json.Marshal(body)
 	if err != nil {

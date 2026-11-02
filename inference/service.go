@@ -91,9 +91,13 @@ type ServiceConfig struct {
 	Timeout     time.Duration // per photo, gate and every API call included (25 s: under API Gateway's 30 s, X32c)
 	Origin      string        // CORS allow-origin; "" = no CORS headers
 	Build       string
-	now         func() time.Time
-	slots       chan struct{}
-	scans       *scanJobs // X44b: the scans that run as jobs
+	// LR3: the stored learn reports (cmd/learn), read-only; "" = no route.
+	LearnDir string
+	// LR3: the admin accounts (auth user ids) that may read them.
+	Admins map[string]bool
+	now    func() time.Time
+	slots  chan struct{}
+	scans  *scanJobs // X44b: the scans that run as jobs
 }
 
 // AnswerItem is one item: the 8 contract fields unchanged, nested.
@@ -166,6 +170,8 @@ func NewService(c ServiceConfig) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 		})
 	}
+	mux.HandleFunc("/api/analyze/learn", c.learnDays)      // LR3: admin GET only (session); else the plain 404
+	mux.HandleFunc("/api/analyze/learn/{day}", c.learnDay) // LR3
 	return mux
 }
 
@@ -222,7 +228,8 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 	c.cors(w)
 	remote, fwd := analyze.ClientIPs(r)
 	ev := Event{TS: t0.UTC().Format(time.RFC3339Nano), Service: "analyze", Step: "analyze", TraceID: trace,
-		RequestID: id, RemoteIP: remote, ForwardedIP: fwd, Build: c.Build, Model: c.Engine.Muse}
+		RequestID: id, RemoteIP: remote, ForwardedIP: fwd, Build: c.Build, Model: c.Engine.Muse,
+		Settings: c.Engine.Settings()}
 	finish := func(status int, route string) {
 		ev.Status, ev.Route, ev.TotalMS = status, route, time.Since(t0).Milliseconds()
 		if c.Budget != nil {
@@ -288,12 +295,16 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 		ev.Barcode = code
 		ev.Capture = CaptureField(r.FormValue("capture")) // X32e: how the app took the photo
 		ans := Answer{RequestID: id, Model: c.Engine.Muse, Items: []AnswerItem{}}
+		via := map[int]EventItem{} // LR1: how each answer item was made
 		done := func() {
 			ans.Count = len(ans.Items)
 			ans.LatencyMS = time.Since(t0).Milliseconds()
 			ev.Source, ev.Items = ans.Source, ans.Count
 			for _, it := range ans.Items {
 				ev.PhotoIDs = append(ev.PhotoIDs, it.PhotoID)
+				e := via[it.Item]
+				e.Item, e.Fields = it.Item, it.Fields
+				ev.Answer = append(ev.Answer, e)
 			}
 			finish(http.StatusOK, ans.Source)
 			writeJSONResp(w, http.StatusOK, ans)
@@ -381,6 +392,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 				}
 				ans.Source, ans.Model = SourceBarcode, "catalog"
 				ans.Items = append(ans.Items, AnswerItem{Item: 1, Fields: res, PhotoID: pid, PhotoCredit: credit})
+				via[1] = EventItem{Via: SourceBarcode}
 				done()
 				return
 			}
@@ -579,6 +591,7 @@ func (c *ServiceConfig) analyze(w http.ResponseWriter, r *http.Request) {
 			}
 			answerOf[i] = n
 			ans.Items = append(ans.Items, AnswerItem{Item: n, Fields: it.Result, PhotoID: pid})
+			via[n] = EventItem{Via: it.Source, Count: it.Count, Check: it.Check, Tray: it.Tray}
 		}
 		ledgerBoxes(&ev, inv, answerOf, noFood, listedIdx)
 		ans.Source = SourceVision

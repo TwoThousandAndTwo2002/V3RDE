@@ -13,7 +13,7 @@
 #   V3RDE_CFG     secrets: meta_model_api_key (made by hand, 0600), analyze_token and
 #                 fanout_status_token (made here when missing, 0600), google_maps_api_key (X49j: an
 #                 empty file when missing: no map), smtp_user and smtp_pass (X49o: empty files when
-#                 missing: no reset mail)
+#                 missing: no reset mail), admin_users (LR3: auth user ids of the admins, empty when missing: no admin)
 #   V3RDE_ASSETS  products.sqlite, gate_pe_s16_f16w_384.tflite, gate_head_pe_s16_384_deploy.json
 #   V3RDE_PHOTOS  the photo store (items/, touchups/)
 #   V3RDE_RUNS    the event logs, the sidecar spools and the ledger
@@ -111,10 +111,11 @@ preflight() {
   # bind mounts are files; the auth service then answers 503 to a reset request.
   local sf
   # FB: the Facebook Page token (fb2 on the Mac and the box). Missing: an empty file; fan-out then does not post.
-  # WS1: push_secret, the shared secret of the API Gateway WebSocket integrations. Missing: an empty file; push is off.
-  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/push_secret"; do
+  # LR3: admin_users, the accounts (auth user ids, one per line or comma-separated) that may read the learn reports.
+  # Missing: an empty file; then nobody is an admin and the route answers 404.
+  for sf in "$V3RDE_CFG/smtp_user" "$V3RDE_CFG/smtp_pass" "$V3RDE_CFG/fb_page_token" "$V3RDE_CFG/admin_users" "$V3RDE_CFG/push_secret"; do
     [ -e "$sf" ] && [ ! -f "$sf" ] && die "$sf is not a file (remove it; the next up makes it)"
-    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no push)"; }
+    [ -e "$sf" ] || { ( umask 077; : > "$sf" ); echo "   made $sf (empty: no reset mail / no Page posts / no admin / no push)"; }
     chmod 600 "$sf"
     asroot && chown 65534:65534 "$sf"
   done
@@ -129,11 +130,11 @@ preflight() {
   done
   # made here, so Docker does not make them as root; the services run as 65534
   for d in $SERVICES; do mkdir -p "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
-  mkdir -p "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
+  mkdir -p "$V3RDE_RUNS/ledger" "$V3RDE_RUNS/learn" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"   # LR3: learn
   mkdir -p "$V3RDE_I18N" "$V3RDE_LIF_SEED"   # X49b: else docker makes them as root-owned empty folders
   if asroot; then
     for d in $SERVICES; do chown 65534:65534 "$V3RDE_RUNS/$d" "$V3RDE_RUNS/telemetry/$d"; done
-    chown 65534:65534 "$V3RDE_RUNS/telemetry" "$V3RDE_RUNS/ledger" "$V3RDE_PHOTOS" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
+    chown 65534:65534 "$V3RDE_RUNS/telemetry" "$V3RDE_RUNS/ledger" "$V3RDE_RUNS/learn" "$V3RDE_PHOTOS" "$V3RDE_PHOTOS/items" "$V3RDE_PHOTOS/touchups"
   fi
 }
 
@@ -193,12 +194,27 @@ up() {
   check "POST /v1/analyze" 401 -X POST "$u/v1/analyze"
   check "POST /api/analyze" 401 -X POST "$u/api/analyze"
   check "GET /api/analyze/scan/<id>" 401 "$u/api/analyze/scan/00000000000000000000000000000000"   # X44b: the scan job route
+  check "GET /api/analyze/learn" 404 "$u/api/analyze/learn"   # LR3: admin sessions only; any other caller gets 404
   for p in /api/touchup /api/touchup/batch /api/rescue/l_0000000000000000 /api/fanout/l_0000000000000000 /api/voice /v1/touchup /v1/touchup/batch /v1/voice; do check "POST $p" 401 -X POST "$u$p"; done
   for p in /api/scan /api/inventory /v1/inventory; do check "POST $p" 410 -X POST "$u$p"; done
   check "POST /v1/fanout/status" 404 -X POST "$u/v1/fanout/status"
-  local s
   local s h
-  for s in barcode:8083 gate:8084 analyze:8087 ledger:8086 touchup:8088 rescue:8089 fanout:8090 voice:8091 push:8092; do
+  # US: auth, barcode, gate and ledger answer on their unix sockets (the binary probes its own socket);
+  # barcode, gate and ledger have no TCP port any more
+  for s in auth barcode gate ledger; do
+    # the probe prints the body also on a 503 (a gate with no model): its exit status decides
+    if h=$(dc exec -T "$s" "/$s" -probe-socket "/sock/$s.sock" </dev/null 2>&1); then h=$(printf '%s' "$h" | head -1 | cut -c1-150)
+    else h="$(printf '%s' "$h" | tail -1 | cut -c1-110)  <-- CHECK"; BAD=$((BAD+1)); fi
+    printf '   %-30s %s\n' "$s (socket)" "$h"
+  done
+  for s in barcode:8083 gate:8084 ledger:8086; do
+    if dc exec -T caddy wget -qO- -T 3 "http://$s/healthz" </dev/null >/dev/null 2>&1; then
+      printf '   %-30s %s\n' "${s%%:*} on TCP" "answers  <-- CHECK (want: no TCP port)"; BAD=$((BAD+1))
+    else
+      printf '   %-30s %s\n' "${s%%:*} on TCP" "no answer (want no answer)"
+    fi
+  done
+  for s in analyze:8087 touchup:8088 rescue:8089 fanout:8090 voice:8091 push:8092; do
     h=$(dc exec -T caddy wget -qO- -T 5 "http://$s/healthz" </dev/null 2>/dev/null | cut -c1-150 || true)
     [ -n "$h" ] || { h="did not answer  <-- CHECK"; BAD=$((BAD+1)); }
     printf '   %-30s %s\n' "${s%%:*} (internal)" "$h"

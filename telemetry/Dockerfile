@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/g
     CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /sidecar ./cmd/sidecar \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /ledger ./cmd/ledger \
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /edgecloud ./cmd/edgecloud \
- && mkdir -p /spool /ledgerdir && chown 65534:65534 /spool /ledgerdir
+ && mkdir -p /spool /ledgerdir /sock && chown 65534:65534 /spool /ledgerdir /sock
 
 FROM scratch
 COPY --from=build /sidecar /sidecar
@@ -25,5 +25,7 @@ COPY --from=build /ledger /ledger
 COPY --from=build /edgecloud /edgecloud
 COPY --from=build --chown=65534:65534 /spool /spool
 COPY --from=build --chown=65534:65534 /ledgerdir /ledger-data
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 ENTRYPOINT ["/sidecar"]

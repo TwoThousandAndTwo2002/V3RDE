@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Learn report</title>
+<link rel="icon" href="/favicon.ico">
+<!--
+  I3 (T9 2026-11-01: "i approve I3"; the page is for "Admin accounts only"): the daily learn report (LR2) for an
+  admin. A static page next to the app, as the About page: the web build copies mobile/public/ into web-dist and the
+  edge serves it at /learn/. The page has no data of its own: it reads GET /api/analyze/learn (the days) and
+  /api/analyze/learn/<day> with the session cookie of the app (same site). Any caller that is not an admin gets 404
+  there, so the page shows only "Not found". Every value is a token of mobile/src/theme.ts (the same CSS variables as
+  the About page); text is put in with textContent only (the report has the donors' titles).
+-->
+<style>
+@font-face { font-family: "Poppins"; font-weight: 400; font-style: normal; font-display: swap; src: url("/assets/node_modules/@expo-google-fonts/poppins/400Regular/Poppins_400Regular.093ee89be9ede30383f39a899c485a82.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-weight: 600; font-style: normal; font-display: swap; src: url("/assets/node_modules/@expo-google-fonts/poppins/600SemiBold/Poppins_600SemiBold.6f1520d107205975713ba09df778f93f.ttf") format("truetype"); }
+
+:root {
+  /* palette.light */
+  --bg: #F6F5F5; --card: #FFFFFF; --fg: #232323; --muted: #6D6D78; --line: #DDDDDD;
+  --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #FFD4D7; --iconFill: #F3F3F3;
+  --link: #BC202C; --doodle: #BC202C; --doodleOpacity: 0.09;
+  /* space */
+  --hair: 4px; --inset: 6px; --gap: 8px; --item: 10px; --group: 12px; --grid: 14px; --gutter: 16px; --foot: 20px; --pad: 24px; --bar: 28px;
+  /* radius */
+  --r-photo: 12px; --r-card: 18px; --r-sheet: 26px; --r-round: 999px;
+  /* size */
+  --control: 48px; --iconBig: 44px; --topBar: 64px; --header: 56px; --border: 1px; --tabPadX: 16px; --pillPadX: 20px;
+  --glyphBox: 20px; --glyphSmall: 12px; --glyphStroke: 1.67; --focus: 2px; --iconSmall: 38px;
+  --maxWidth: 560px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141414; --card: #1E1E20; --fg: #F3F3F3; --muted: #A1A1AA; --line: #3A3A3F;
+    --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #4A1D22; --iconFill: #2A2A2E;
+    --link: #FF727D; --doodle: #FF727D; --doodleOpacity: 0.1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141414; --card: #1E1E20; --fg: #F3F3F3; --muted: #A1A1AA; --line: #3A3A3F;
+  --accent: #BC202C; --onAccent: #FFFFFF; --accentSoft: #4A1D22; --iconFill: #2A2A2E;
+  --link: #FF727D; --doodle: #FF727D; --doodleOpacity: 0.1; color-scheme: dark;
+}
+/* layoutFor(width): compact < 600, medium 600-839, expanded >= 840 */
+@media (min-width: 600px) { :root { --maxWidth: 900px; } }
+@media (min-width: 840px) { :root { --maxWidth: 1120px; } }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: "Poppins", system-ui, sans-serif; font-weight: 400; font-size: 14px; line-height: 20px; /* type.body */
+}
+a { color: inherit; }
+.display { font-weight: 600; font-size: 22px; line-height: 28px; margin: 0; }     /* type.display (new token, T9 Oct 30: 22) */
+.title { font-weight: 600; font-size: 18px; line-height: 24px; margin: 0; }       /* type.title */
+.label { font-weight: 600; font-size: 14px; line-height: 20px; margin: 0; }       /* type.button */
+.body  { font-weight: 400; font-size: 14px; line-height: 20px; margin: 0; }       /* type.body */
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Frame: phone/tablet header (size.header) and wide top bar (size.topBar) */
+.top { position: sticky; top: 0; z-index: 2; background: var(--bg); }
+/* Phone and tablet: "V3RDE" in muted in the centre (Frame). Wide: the top bar, "V3RDE" in link at the left, and a
+   button in the style of Log out (line border, muted text, size.tabPadX) at the right. */
+.top-in { height: var(--header); max-width: var(--maxWidth); margin: 0 auto; padding: 0 var(--gutter);
+  display: flex; align-items: center; justify-content: center; }
+.brand { color: var(--muted); text-decoration: none; }
+.top .bar-btn { display: none; height: var(--control); padding: 0 var(--tabPadX); border-radius: var(--r-round);
+  border: var(--border) solid var(--line); color: var(--muted); text-decoration: none; align-items: center; }
+.top .bar-btn:hover { background: var(--iconFill); }
+.top .bar-btn:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); }
+@media (min-width: 840px) {
+  .top { border-bottom: var(--border) solid var(--line); }
+  .top-in { height: var(--topBar); padding: 0 var(--pad); justify-content: space-between; }
+  .brand { color: var(--link); }
+  .top .bar-btn { display: inline-flex; }
+}
+
+/* Pill (size.control, radius.round, size.border) */
+.pill { display: inline-flex; align-items: center; justify-content: center; height: var(--control);
+  padding: 0 var(--pillPadX); border-radius: var(--r-round); border: var(--border) solid var(--accent);
+  background: var(--accent); color: var(--onAccent); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.pill.secondary { background: var(--card); color: var(--fg); border-color: var(--line); }
+.pill:hover { opacity: 0.92; }   /* opacity.hover */
+.pill:active { opacity: 0.85; }  /* opacity.pressed */
+.pill:focus-visible, .link:focus-visible, .brand:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); } /* size.focusBorder in link */
+.link { color: var(--link); text-decoration: underline; }
+
+main { max-width: var(--maxWidth); margin: 0 auto; padding: 0 var(--gutter) var(--pad); }
+@media (min-width: 840px) { main { padding: 0 var(--pad) var(--pad); } }
+
+
+section { margin-top: var(--bar); }
+.grid { display: grid; grid-template-columns: 1fr; gap: var(--grid); margin-top: var(--gutter); }
+@media (min-width: 600px) { .grid.two, .grid.four { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 840px) { .grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+.card { background: var(--card); border: var(--border) solid var(--line); border-radius: var(--r-card); padding: var(--group); }
+.card .label + .muted, .card .display + .muted { margin-top: var(--hair); }
+.days { display: flex; gap: var(--gap); flex-wrap: wrap; margin-top: var(--gutter); }
+.chip { height: var(--control); padding: 0 var(--tabPadX); border-radius: var(--r-round); border: var(--border) solid var(--line);
+  background: var(--card); color: var(--fg); font: inherit; font-weight: 600; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accentSoft); }
+.chip:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); }
+.rows { margin-top: var(--gutter); display: grid; gap: var(--item); }
+.row { background: var(--card); border: var(--border) solid var(--line); border-radius: var(--r-card); padding: var(--group); }
+.row .facts { display: flex; flex-wrap: wrap; gap: var(--gap) var(--gutter); margin-top: var(--gap); }
+.row .facts span { white-space: nowrap; }
+.bar { height: var(--gap); border-radius: var(--r-round); background: var(--iconFill); margin-top: var(--gap); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: var(--r-round); }
+.top-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--group); flex-wrap: wrap; }
+.state { margin-top: var(--pad); }
+.foot { margin-top: var(--bar); }
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand title" href="/">V3RDE</a></div></header>
+<main>
+  <div class="top-line" style="margin-top: var(--gap)">
+    <h1 class="display">Learn report</h1>
+    <a id="md" class="link label" hidden>Markdown</a>
+  </div>
+  <p class="body muted" style="margin-top: var(--inset)">Made every day from the scan logs. What the donors kept and changed, for each prompt version. It changes nothing in the app.</p>
+  <div id="days" class="days" role="group" aria-label="Day"></div>
+  <p id="state" class="body muted state" role="status" aria-live="polite">Loading…</p>
+  <div id="report" hidden>
+    <div class="grid four" id="totals"></div>
+    <section><h2 class="title">Prompts</h2><p class="body muted">Each version of the prompts the scan used.</p><div class="rows" id="prompts"></div></section>
+    <section><h2 class="title">How the item was made</h2><div class="rows" id="via"></div></section>
+    <section><h2 class="title">What donors change</h2><div class="rows" id="fields"></div></section>
+    <section><h2 class="title">Servings</h2><p class="body" id="servings" style="margin-top: var(--gap)"></p></section>
+    <section><h2 class="title">Box size</h2><p class="body muted">Names kept by the size of the box the model read (X44g).</p><div class="rows" id="sizes"></div>
+      <p class="body muted" id="suggest" style="margin-top: var(--gap)"></p></section>
+    <p class="body muted foot" id="made"></p>
+  </div>
+</main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+const pct = (n, d) => (d ? (100 * n / d).toFixed(1) + "%" : "–");
+const day = (d) => d.slice(0, 4) + "-" + d.slice(4, 6) + "-" + d.slice(6, 8);
+function card(big, label, sub) {
+  const c = el("div", "card"); c.append(el("p", "display num", big), el("p", "label", label)); if (sub) c.append(el("p", "body muted", sub)); return c;
+}
+function share(n, d) { const b = el("div", "bar"); const i = el("i"); i.style.width = (d ? Math.round(100 * n / d) : 0) + "%"; b.append(i); return b; }
+function tallyRow(t, scans) {
+  const r = el("div", "row"); r.append(el("p", "label", t.group));
+  const f = el("div", "facts body muted num");
+  if (scans) f.append(el("span", "", t.scans + " scans"), el("span", "", "$" + t.cost_usd.toFixed(4)), el("span", "", "p50 " + (t.p50_ms / 1000).toFixed(1) + " s"), el("span", "", "p95 " + (t.p95_ms / 1000).toFixed(1) + " s"));
+  f.append(el("span", "", t.items + " items"), el("span", "", "name kept " + pct(t.name_same, t.kept)), el("span", "", "servings kept " + pct(t.servings_same, t.kept)), el("span", "", t.removed + " removed"));
+  r.append(f, share(t.name_same, t.kept)); return r;
+}
+function show(s) {
+  const r = s.report;
+  $("totals").replaceChildren(
+    card(String(r.vision_scans + r.barcode_scans), "Answers", r.vision_scans + " photo, " + r.barcode_scans + " barcode"),
+    card(String(r.posted), "Posted label sets", r.label_sets + " in all, " + r.no_scan + " without a scan line"),
+    card("$" + r.spent_usd.toFixed(2), "Spent", r.analyze_lines + " scan requests"),
+    card(String(r.unknown_prompts), "Unknown prompts", r.unknown_prompts ? "A call had no registered prompt" : "Every call named its prompt"));
+  $("prompts").replaceChildren(...(r.by_prompt || []).map((t) => tallyRow(t, true)));
+  $("via").replaceChildren(...(r.by_via || []).map((t) => tallyRow(t, false)));
+  $("fields").replaceChildren(...(r.fields || []).map((f) => {
+    const row = el("div", "row"); const head = el("div", "top-line"); head.append(el("p", "label", f.field), el("p", "body muted num", f.edits + " edits"));
+    row.append(head);
+    const how = Object.keys(f.by_how).sort().map((h) => h + " " + f.by_how[h]).join(", ");
+    row.append(el("p", "body muted", how));
+    for (const c of f.top || []) row.append(el("p", "body", "“" + c.from + "” → “" + c.to + "” (" + c.count + ")"));
+    return row;
+  }));
+  const sv = r.servings;
+  $("servings").textContent = sv.items ? sv.same + " of " + sv.items + " kept items had the model's servings. The model gave more for " + sv.model_high + " and less for " + sv.model_low + " (mean model − final: " + sv.mean_diff + ")." : "No kept items yet.";
+  const cal = r.calibration;
+  $("sizes").replaceChildren(...(cal.by_size || []).map((t) => tallyRow(t, false)));
+  $("suggest").textContent = "ConfidentPx now: " + cal.confident_px + ". " + (cal.suggest_confident_px ? "Suggested: " + cal.suggest_confident_px + " (" + cal.why + ")." : "No suggestion: " + cal.why + ".");
+  $("made").textContent = "Made " + s.generated.replace("T", " ").replace("Z", " UTC") + " from the days " + s.days.map(day).join(", ") + ".";
+  $("report").hidden = false; $("state").hidden = true;
+}
+let current = ""; // the day the last click asked for: an older answer that comes later is dropped
+async function openDay(d) {
+  current = d;
+  for (const b of $("days").children) b.setAttribute("aria-pressed", String(b.dataset.day === d));
+  $("md").hidden = true; $("report").hidden = true;
+  $("state").hidden = false; $("state").textContent = "Loading…";
+  const res = await fetch("/api/analyze/learn/" + d, { credentials: "same-origin", cache: "no-store" }).catch(() => null);
+  let s = null;
+  try { s = res && res.ok ? await res.json() : null; } catch { s = null; }
+  if (d !== current) return;
+  if (!res) { $("state").textContent = "No answer. Try again."; return; }
+  if (!res.ok) { $("state").textContent = "Not found."; return; }
+  try { show(s); } catch { $("report").hidden = true; $("state").hidden = false; $("state").textContent = "This report cannot be shown."; return; }
+  $("md").href = "/api/analyze/learn/" + d + "?format=md"; $("md").hidden = false;
+}
+(async function start() {
+  const res = await fetch("/api/analyze/learn", { credentials: "same-origin", cache: "no-store" }).catch(() => null);
+  if (!res) { $("state").textContent = "No answer. Try again."; return; }
+  if (!res.ok) { $("state").textContent = "Not found."; return; }
+  const days = ((await res.json()).days || []).filter((d) => /^[0-9]{8}$/.test(d));
+  if (!days.length) { $("state").textContent = "No report yet. The first one is made after the first whole day."; return; }
+  $("days").replaceChildren(...days.slice(0, 7).map((d) => { const b = el("button", "chip num", day(d)); b.dataset.day = d; b.addEventListener("click", () => openDay(d)); return b; }));
+  openDay(days[0]);
+})();
+</script>
+</body>
+</html>

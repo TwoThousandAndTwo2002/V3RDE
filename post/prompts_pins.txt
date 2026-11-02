@@ -1,0 +1,13 @@
+# P1 prompt pins of post: one row per prompt version, "id version sha" (analyze.CheckPinHistory).
+# ONLY ADD ROWS. A text change of a prompt is a new row with a new version, at the end;
+# never edit or remove a row (the SUP generator refuses it). Rows of 2026-11-01: the texts of services bbfed58.
+fanout.check 1 b6337a0a56707cbb
+fanout.text 1 4d0b285b4ecb29bb
+rescue.dropoff 1 e0340190b8078247
+rescue.email 1 3129b85e5639e98b
+rescue.web_search 1 3e0d82e6c44541ef
+touchup.check 1 087f12d5f45f61c8
+touchup.edit.background 1 93d10dd0cdc7ee15
+touchup.edit.light 1 60ee5dc531594a3c
+voice.map 1 d6b22ba09ae33e26
+voice.transcribe 1 783e4264fbfb7cda

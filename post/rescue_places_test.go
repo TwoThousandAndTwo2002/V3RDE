@@ -102,7 +102,9 @@ func TestRescueUsesTheStoreBeforeTheWebSearch(t *testing.T) {
 	if !strings.Contains(second.Places[0].Directions, "origin=12+Main+St") {
 		t.Fatalf("the links are made for this rescue: %+v", second.Places[0])
 	}
-	if ev := rescueEvents(t, e); !strings.Contains(ev, `"found_by":"place_store"`) {
+	// X58: wait for the second job's own line (the first job's line already has "async":true, so rescueEvents
+	// could return before the second line is written; a flake seen in a push test)
+	if ev := eventsWith(t, e.cfg.Events.Path(e.now), `"found_by":"place_store"`); !strings.Contains(ev, `"found_by":"place_store"`) {
 		t.Fatalf("events %s", ev)
 	}
 }

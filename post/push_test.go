@@ -62,6 +62,7 @@ func TestPush(t *testing.T) {
 		Endpoint: mgmt.URL + "/prod", Region: "us-east-1", URL: "wss://push.example/prod", Creds: fixedCreds{}, MaxPerUser: 2,
 		Events: NewEvents(t.TempDir()), now: func() time.Time { return now },
 		StaleAfter: 24 * time.Hour} // X57: the session and age rules alone (the stale rule: TestPushPingByKey)
+	cfg.Events.now = func() time.Time { return now } // X58 review: the events file is named by the fake date
 	pub, in := NewPush(cfg)
 	ticket := func(cookie string) (int, string) {
 		r := httptest.NewRequest(http.MethodPost, "/api/push/ticket", nil)
@@ -429,6 +430,7 @@ func TestPushPingByKey(t *testing.T) {
 	cfg := &PushConfig{Session: sess, Secret: "sec", Origins: map[string]bool{"https://app.example": true},
 		Endpoint: mgmt.URL + "/prod", URL: "wss://x/prod", Region: "us-east-1", Creds: fixedCreds{},
 		Events: NewEvents(t.TempDir()), now: func() time.Time { return now }}
+	cfg.Events.now = func() time.Time { return now } // X58 review: the events file is named by the fake date
 	pub, _ := NewPush(cfg)
 	r := httptest.NewRequest(http.MethodPost, "/api/push/ticket", nil)
 	r.AddCookie(&http.Cookie{Name: SessionCookie, Value: "s-u1"})

@@ -32,6 +32,7 @@ func main() {
 	shareURL := flag.String("share", "", "N3: fan-out's post route for each new listing, e.g. http://fanout:8090/api/fanout/; \"\" = off")
 	testEmails := flag.String("test-ttl-emails", "", "X44h: comma-separated test account emails that may send ttl_seconds (30 s up to the TTL); \"\" = none")
 	flag.Parse()
+	listings.EnableUnixURLs(listings.SockDir) // US: an http+unix://<name> URL is the socket /sock/<name>
 	testTTL := map[string]bool{}
 	for _, e := range strings.Split(*testEmails, ",") {
 		if e = strings.ToLower(strings.TrimSpace(e)); e != "" {

@@ -12,7 +12,7 @@ ARG BUILD=dev
 # (https://docs.docker.com/build/cache/optimize/#use-cache-mounts).
 RUN --mount=type=cache,target=/root/.cache/go-build --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.build=${BUILD}" -o /auth ./cmd/auth \
- && mkdir -p /data /events && chown 65534:65534 /data /events
+ && mkdir -p /data /events /sock && chown 65534:65534 /data /events /sock
 
 FROM scratch
 COPY --from=build /auth /auth
@@ -26,6 +26,8 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 # "permission denied".
 COPY --from=build --chown=65534:65534 /data /data
 COPY --from=build --chown=65534:65534 /events /events
+# US: the socket folder, owned by the service user, so a new v3rde_sock volume gets that owner (as /events)
+COPY --from=build --chown=65534:65534 /sock /sock
 USER 65534:65534
 VOLUME ["/data", "/events"]
 EXPOSE 8081

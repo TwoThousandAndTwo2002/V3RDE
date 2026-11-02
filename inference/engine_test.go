@@ -126,6 +126,10 @@ func engine(t *testing.T, f *fakeAPI) (*Engine, func()) {
 func purposes(inv *Inventory) []string {
 	var p []string
 	for _, c := range inv.Calls {
+		if c.PromptRef.ID == analyze.Unknown || c.PromptRef.ID == "" { // P1: every call names its prompt
+			p = append(p, "UNKNOWN-PROMPT:"+c.Purpose)
+			continue
+		}
 		p = append(p, c.Purpose)
 	}
 	return p

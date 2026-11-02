@@ -96,6 +96,9 @@ func agree(in, out []int, h *gate.Head) error {
 
 func main() {
 	listen := flag.String("listen", "127.0.0.1:8084", "address to listen on")
+	// US (T9 2026-11-01: "the unix sockets within the box"): -listen "" with -socket = the socket only
+	socket := flag.String("socket", "", "US: also answer on this unix socket (the shared volume /sock); \"\" = no socket")
+	probe := flag.String("probe-socket", "", "US: GET /healthz over this unix socket, print the answer and exit (the stack check)")
 	modelPath := flag.String("model", "/assets/gate_pe_s16_f16w_384.tflite", "the gate .tflite")
 	headPath := flag.String("head", "/assets/gate_head_pe_s16_384_deploy.json", "the gate head JSON")
 	modelPin := flag.String("model-sha256", pinModel, "the model's required sha256 (\"\" = no check)")
@@ -109,6 +112,14 @@ func main() {
 	shadowModelPin := flag.String("shadow-model-sha256", "", "the shadow model's required sha256 (required with -shadow-model)")
 	shadowHeadPin := flag.String("shadow-head-sha256", "", "the shadow head's required sha256 (required with -shadow-model)")
 	flag.Parse()
+	if *probe != "" {
+		body, err := gate.ProbeUnix(*probe, "/healthz", 5*time.Second)
+		fmt.Println(body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
 	if err := os.MkdirAll(*events, 0o755); err != nil {
 		log.Fatalf("events dir: %v", err)
@@ -129,8 +140,8 @@ func main() {
 	}
 	srv := &http.Server{Addr: *listen, Handler: gate.New(c), ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("v3rde-gate listening on %s", *listen)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	log.Printf("v3rde-gate listening on %q socket=%q", *listen, *socket)
+	if err := gate.Serve(srv, *listen, *socket); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 }

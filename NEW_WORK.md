@@ -1958,6 +1958,20 @@ T9; T9 approved the "V3RDE Language Mockup" v2.
 - Yoruba joins the translation rounds. The About page says "Seven languages".
 - Tests: mobile 159 -> 169, i18n 64 -> 66.
 
+## 92. Each Meta call names its prompt, its version and the text it sent
+
+**When:** Nov 1 2026.
+**Meta models:** Muse Spark 1.3, SAM 3.1, Muse Image 1.0, Muse Voice Transcribe 1.0 (no model change; the calls are logged, no prompt changes).
+**Files:** `server/prompts.go` (new), `server/prompts_test.go` (new), `inference/prompts.go` (new), `inference/prompts_test.go` (new), `inference/prompts_pins.txt` (new), `inference/meta.go`, `inference/events.go`, `inference/engine.go`, `inference/service.go`, `inference/touchupv2.go`, `inference/engine_test.go`, `post/prompts.go` (new), `post/prompts_test.go` (new), `post/prompts_pins.txt` (new), `post/post.go`, `post/touchup.go`, `post/touchup_v2_test.go`, `post/voice.go`
+**Sources:** `docs/sources/P1.md`
+
+T9: a prompt changes only when the logs can tie a change in results to the changed prompt.
+
+- Each service has a list of the prompts it sends: an id, a version and the sha of the prompt text. A test checks them against a pin history that only gets new rows, so a text change without a new version fails the build.
+- Each call line in the events has `prompt_id`, `prompt_version`, `prompt_sha`, the sha of the text really sent (`input_sha`), the reasoning `effort`, and (scan) the API's id and the cached tokens. Two prompts with one purpose (rescue email or drop-off; touch-up light or background) are told apart by the text sent. The auto touch-up job line now lists its SAM and Muse Image calls.
+- The scan event line keeps the engine settings (split, compact, marks, efforts, size levels, concepts), so a flag change is not taken for a prompt change.
+- No prompt text changed. Tests: server 38 -> 44, inference 104 -> 109, post 97 -> 101.
+
 ## 93. The translation round builds again
 
 **When:** Nov 1 2026.
@@ -1967,6 +1981,19 @@ T9; T9 approved the "V3RDE Language Mockup" v2.
 
 - After #92 the translation round on the box did not start: its image runs the i18n tests, and two new tests read the app files, which are not in that image. The image now skips those two tests (every SUP script still runs them with the whole repo). The round then translates Yoruba and the 57 new texts.
 - Tests: no change (i18n 66).
+
+## 93. The scan event line keeps each answer item
+
+**When:** Nov 1 2026.
+**Meta models:** none (no model change; the line keeps what Muse Spark answered).
+**Files:** `inference/events.go`, `inference/service.go`, `inference/service_test.go`
+**Sources:** `docs/sources/LR1.md`
+
+T9 approved I1, the daily self-improvement report. The report compares what the model gave with what the donor posted, so the scan line now keeps it.
+
+- Each 200 scan line has `answer`: every item as the app got it (the 8 fields), how it was made (whole photo, one call or a split of calls for the boxes, a retry, two-pass, agent, barcode), its units, and the "check this" and tray marks.
+- The donor's labels (same request id) were already logged; now every field can be compared, also the ones the donor did not change.
+- Tests: inference 109 -> 110.
 
 ## 94. A rescue opens at once the second time; the places found are kept
 
@@ -1981,6 +2008,20 @@ T9: "after user selects rescue and backs out the results should be cached"; "acc
 - Every place that the food directory or the web search finds goes into one store on the server, by area. When the directory has nothing for an area, the stored places of the last 30 days are used and the paid web search does not run.
 - Tests: post 97 -> 102, mobile 169 -> 170.
 
+## 94. The learn report: what donors keep and change, for each prompt version
+
+**When:** Nov 1 2026.
+**Meta models:** none (it reads the logs of the Muse Spark and SAM 3.1 calls).
+**Files:** `inference/learn.go` (new), `inference/learn_test.go` (new), `inference/cmd/learn/main.go` (new), `inference/cmd/learn/main_test.go` (new), `inference/Dockerfile`
+**Sources:** `docs/sources/LR2.md`
+
+T9: a daily self-improvement report, and a prompt changes only when the logs can tie a change in results to it.
+
+- `learn` reads the scan events of the last 7 days and reports, for each prompt version (entry 92): scans, cost, p50 and p95 time, and how many names and servings the donors kept.
+- The same counts by how the item was made, the fields the donors change most (with the most common changes, by hand, voice or text), and whether the model's servings are too high or too low. The size calibration of X44g is in it too.
+- It changes nothing: a person reads it. It writes a JSON and a Markdown file per day.
+- Tests: inference 110 -> 114.
+
 ## 95. Upload a photo: a sure way to open the photo picker on phones
 
 **When:** Nov 1 2026.
@@ -1992,6 +2033,20 @@ T9: "on mobile user is not able to upload a previously taken photo" (Android, Du
 
 - "Upload a photo" on the web now opens a real file field in the tap (not a hidden one with a made-up click), and the chosen photo goes straight to the upload step. A photo that cannot be read now says "The photo failed. Try again." in place of a silent wait.
 - Tests: mobile 170 -> 175.
+
+## 95. The learn report runs every day on the box, for admin accounts
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `inference/learnroute.go` (new), `inference/learnroute_test.go` (new), `inference/service.go`, `inference/service_test.go`, `inference/cmd/inventory/main.go`, `deploy/docker-compose.yml`, `deploy/learn/v3rde-learn.service` (new), `deploy/learn/v3rde-learn.timer` (new), `tools/learn_round.sh` (new), `tools/learn_install.sh` (new), `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/LR3.md`
+
+T9 chose a systemd timer, and the report page for admin accounts only.
+
+- A systemd timer runs the report once a day after the UTC day ends. The job has no network, reads the scan logs read-only, and runs as the service user.
+- `GET /api/analyze/learn` lists the days, `/api/analyze/learn/<day>` gives a report (JSON, or Markdown). Only a signed-in account whose user id is in the `admin_users` file gets it; every other caller gets the 404 of a path that does not exist.
+- The timer is installed once on the box: `sudo bash tools/learn_install.sh`.
+- Tests: inference 114 -> 115.
 
 ## 96. Touch-up: the choice closes the menu and the large photo shows it
 
@@ -2005,6 +2060,20 @@ T9: after picking the touched-up photo only the small picture changed; "the menu
 - A tap on Original or Touched up closes More, and the large photo of the listing shows the photo that will post.
 - Tests: mobile 175 -> 176.
 
+## 96. The services of the box talk over unix sockets
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `server/sock.go` (new), `server/sock_test.go` (new), `listings/sock.go` (new), `listings/sock_test.go` (new), `auth/sock.go` (new), `auth/sock_test.go` (new), `gate/sock.go` (new), `gate/sock_test.go` (new), `barcode/sock.go` (new), `barcode/sock_test.go` (new), `telemetry/sock.go` (new), `telemetry/sock_test.go` (new), `auth/cmd/auth/main.go`, `gate/cmd/gate/main.go`, `barcode/cmd/barcode/main.go`, `telemetry/cmd/ledger/main.go`, `inference/cmd/inventory/main.go`, `listings/cmd/listings/main.go`, `post/cmd/fanout/main.go`, `post/cmd/rescue/main.go`, `post/cmd/touchup/main.go`, `post/cmd/voice/main.go`, `auth/Dockerfile`, `listings/Dockerfile`, `barcode/Dockerfile`, `gate/Dockerfile`, `telemetry/Dockerfile`, `inference/Dockerfile`, `post/Dockerfile`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/US1.md`
+
+T9: unix sockets inside the box.
+
+- Every service checks the sign-in of each request with auth over a unix socket, not over the container network.
+- The food gate, the barcode catalog and the ledger have no network port any more: only the services that mount the socket folder reach them.
+- The stack check asks each socket for its health and checks that the three have no port.
+- Tests: server 44 -> 45, auth 33 -> 35, gate 26 -> 28, barcode 20 -> 22, telemetry 22 -> 24, listings 48 -> 50.
+
 ## 97. Security F1: a huge picture is refused before it is decoded
 
 **When:** Nov 1 2026.
@@ -2016,6 +2085,21 @@ From the security assessment (F1, High): a small PNG or GIF can say it is 16000 
 
 - The scan route and the food check now read the picture's size from its header first and refuse more than 50 megapixels (the limit JPEG photos already had). The food check decodes one photo at a time and gets a 1 GB memory limit.
 - Tests: gate 26 -> 28, server 38, inference 104 (more cases in the refusal tests).
+
+## 97. A push channel through an API Gateway WebSocket, with polling as the fallback
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `post/push.go` (new), `post/push_test.go` (new), `post/sigv4.go` (new), `post/sigv4_test.go` (new), `post/cmd/push/main.go` (new), `post/rescue.go`, `post/touchup.go`, `post/cmd/rescue/main.go`, `post/cmd/touchup/main.go`, `mobile/src/push.ts` (new), `mobile/tests/push.test.mts` (new), `mobile/src/api.ts`, `mobile/src/rescue.ts`, `mobile/src/touchup.ts`, `mobile/src/screens/Review.tsx`, `mobile/App.tsx`, `mobile/package.json`, `mobile/web-dist/`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/v3rde_stack.sh`
+**Sources:** `docs/sources/WS1.md`
+
+T9 chose the AWS WebSocket API.
+
+- A new push service on the box: API Gateway holds the app's WebSocket; when a rescue or a touch-up ends, the box sends the app a short message (only what ended, never the data).
+- The web app opens the socket with a one-time ticket after sign-in. While the socket works (the box answers its ping every minute), the app polls less often and reads the result at once when the message comes. Without a working socket (and in the phone app), it polls as before.
+- A logout or an ended session closes the socket in 1 to 1.5 minutes. The services send messages over a unix socket only.
+- Push stays off until the WebSocket API is set up in AWS (the SME steps); nothing changes for users until then.
+- Tests: post 101 -> 108, mobile 159 -> 165.
 
 ## 98. Two tests that failed at times are steady
 
@@ -2029,6 +2113,21 @@ Two tests failed at times in the SUP preflight: a scan-job test ("TempDir Remove
 - The test started three scan jobs and did not wait for them, so they wrote files while the test removed its folder. The test now waits for each job to end, and the wait has a 30-second deadline in place of 2.5 seconds.
 - The login time test takes the fastest of 7 tries of each kind, in turn, so a busy moment does not fail it.
 - No app change. Tests: inference 104, auth 33 (no new test).
+
+## 98. The learn report page, for admin accounts
+
+**When:** Nov 1 2026.
+**Meta models:** none.
+**Files:** `mobile/public/learn/index.html` (new), `mobile/tests/learn.test.mts` (new), `mobile/package.json`, `mobile/docs/style_guide.md`, `mobile/web-dist/`, `inference/scanjob_test.go`
+**Sources:** `docs/sources/I3.md`
+
+T9 approved the "Learn Report Mockup".
+
+- A page at `/learn/`, next to the About page: the daily learn report (entries 94 and 95) for an admin account. It shows up to 7 days, four totals, and rows for each prompt version, how the item was made, what donors change, the servings and the box sizes, with a link to the same report as text.
+- The page itself has no data: it reads the admin route with the session. Any other caller sees "Not found.".
+- The same colours, text sizes and spacing as the About page.
+- A scan test that failed now and then under load (it ended while its scans still wrote files) now waits for them.
+- Tests: mobile 165 -> 168.
 
 ## 99. Security F4: security headers on every answer of the edge
 
@@ -2091,3 +2190,19 @@ The push channel of branch `learn` (its #97), made to work with the SME's WebSoc
 - The SME's routes send the ping to `/api/push/pingOn` and give the connection id only on connect, so the app's ping carries a key from its ticket, and a socket that stops its pings is forgotten after 3 minutes.
 - Push stays off until the box has the WebSocket API's address and secret.
 - Tests: post 102 -> 110, server 38 -> 39, mobile 182 -> 189.
+
+## 104. The learn branch joins the services branch
+
+**When:** Nov 2 2026.
+**Meta models:** none new (entries 92–98 of learn say how Muse Spark, SAM 3.1 and Muse Image are traced and reported).
+**Files:** the learn branch (its entries 92–98: `server/prompts.go`, `inference/prompts.go`, `inference/learn.go`, `inference/learnroute.go`, `*/sock.go`, `mobile/public/learn/index.html`, …) merged; `NEW_WORK.md`, `deploy/Caddyfile`, `deploy/docker-compose.yml`, `tools/v3rde_stack.sh`, `mobile/package.json`, `post/touchup.go`, `post/push_test.go`, `post/rescue_places_test.go`, `inference/scanjob_test.go`, `mobile/web-dist/`
+**Sources:** `docs/sources/X58.md`
+
+T9: the rest of the learn work joins the branch that is deployed (the push channel came first, entry 103).
+
+- A real merge: the learn commits keep their history. This file keeps every entry of both branches in number order; the numbers both took (92–98) stay on both entries, the services entry first.
+- The push channel stays as entry 103 made it (the SME's routes, the ping key, the v3rde name). From learn it now also has the session check over the auth socket.
+- Every Meta call line names its prompt and version; the daily learn report and its admin page come in; auth, gate, barcode and ledger talk over unix sockets (gate, barcode and ledger have no TCP port now).
+- The edge's Report-Only CSP allows the learn page's inline script by its hash. Two push tests wrote their events by the real date and read them by a fake one; their events log now uses the fake date too. A rescue test read the events before the second job's line was written; it now waits for that line.
+- The web build is made again from the merged code.
+- Tests: server 39 -> 45, inference 104 -> 115, listings 48 -> 50, post 110 -> 114, auth 33 -> 35, barcode 20 -> 22, telemetry 22 -> 24, gate 28 -> 30, mobile 189 -> 192.
