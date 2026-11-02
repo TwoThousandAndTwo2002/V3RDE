@@ -128,6 +128,7 @@ type runner struct {
 	ctx      i18n.ContextFile
 	about    map[string]string
 	keep     []string
+	fixed    map[string]map[string]string // X66: language -> id -> a person's text (i18n/fixed.json)
 }
 
 func (x *runner) logf(format string, a ...any) { fmt.Fprintf(x.d.Log, "round: "+format+"\n", a...) }
@@ -191,6 +192,19 @@ func Run(ctx context.Context, o Options, d Deps) (Summary, error) {
 		x.text[m.ID] = m.Text
 	}
 	x.logf("[1/7] extract: %d texts from %s/%s at %s (%s)", len(x.cur), filepath.Base(o.Repo), src.Dir, short(commit), branch)
+	// X66: the translations a person gave (i18n/fixed.json): used as they are, never translated again
+	ff, err := ReadFixed(filepath.Join(conf, "fixed.json"))
+	if err != nil { // X66 review: a bad file never stops the round (the deploy goes on); its texts are translated
+		x.logf("[1/7] warning: fixed.json cannot be read: %v (no fixed text is used)", err)
+	}
+	var fixWarn []string
+	x.fixed, fixWarn = ActiveFixed(ff, x.cur, langs)
+	for _, w := range fixWarn {
+		x.logf("[1/7] warning: fixed.json: %s (not used)", w)
+	}
+	if n := countFixed(x.fixed); n > 0 {
+		x.logf("[1/7] fixed.json: %d texts a person gave are used as they are", n)
+	}
 
 	// 2. the graph, and the diff with the last round
 	var dropped []string
@@ -279,7 +293,13 @@ func Run(ctx context.Context, o Options, d Deps) (Summary, error) {
 	for _, lr := range targets {
 		if slices.Contains(st.Failed, lr.l.Code) {
 			w, _ := WorkList(lr.src, im, x.cur)
-			pending += len(w)
+			pending += len(withoutFixed(w, x.fixed[lr.l.Code]))
+		}
+		pending += fixedPending(lr.live, x.fixed[lr.l.Code]) // X66: a new fixed text is a round (no model call for it)
+		// X66 review: a fixed text that is no longer in fixed.json (removed, or old) is translated again
+		for _, id := range unfixed(lr.live, x.fixed[lr.l.Code]) {
+			delete(lr.src, id)
+			pending++
 		}
 	}
 	if haveState && len(im.Added)+len(im.Changed)+len(im.Removed) == 0 && !newLang && pending == 0 {
@@ -313,6 +333,7 @@ func Run(ctx context.Context, o Options, d Deps) (Summary, error) {
 	total := 0
 	for _, lr := range targets {
 		work, removed := WorkList(lr.src, im, x.cur)
+		work = withoutFixed(work, x.fixed[lr.l.Code]) // X66: a person's text is not translated
 		lr.plan = &LangPlan{Work: nz(work), Removed: nz(removed), Status: "planned"}
 		plan.Langs[lr.l.Code] = lr.plan
 		total += len(work)
@@ -361,11 +382,12 @@ func Run(ctx context.Context, o Options, d Deps) (Summary, error) {
 			sum.Failed = append(sum.Failed, lr.l.Code)
 			x.logf("[5/7] %-8s FAILED, the live file stays as it was: %v", lr.l.Code, lr.err)
 			if len(lr.live.Messages) > 0 {
-				live[lr.l.Code] = lr.live
+				live[lr.l.Code], _ = ApplyFixed(lr.l.Code, lr.live, nil, nil, x.cur, x.fixed[lr.l.Code]) // X66: published, the state stays
 			}
 			continue
 		}
 		res, newSrc, rv := MergeLive(lr.l.Code, lr.live, lr.src, x.cur, lr.outcome)
+		res, rv = ApplyFixed(lr.l.Code, res, newSrc, rv, x.cur, x.fixed[lr.l.Code]) // X66
 		res.Run, res.Commit, res.Dedupe, res.K = x.tag, commit, true, 1
 		if x.m.Settings.Model != "" {
 			res.Model, res.Prompt = x.m.Settings.Model, muse.PromptBatch
@@ -482,6 +504,9 @@ func (x *runner) valid(lr *lang) map[string]rung.Chosen {
 		if t, ok := x.text[c.ID]; ok && lr.src[c.ID] == t {
 			out[c.ID] = c
 		}
+	}
+	for id, t := range x.fixed[lr.l.Code] { // X66 review: the checks and judges compare with the person's text
+		out[id] = rung.Chosen{ID: id, Text: t, Fixed: true}
 	}
 	return out
 }
@@ -855,7 +880,7 @@ func (x *runner) planFix(lr *lang) ([]i18n.Message, map[string]string) {
 	for _, s := range starts {
 		for _, r := range i18n.Spread(x.newG, s) {
 			c, ok := cands[r.ID]
-			if _, done := lr.from[r.ID]; done || !ok || lr.bad[r.ID] || c.SameAs != "" || x.text[r.ID] == "" {
+			if _, done := lr.from[r.ID]; done || !ok || lr.bad[r.ID] || c.SameAs != "" || c.Fixed || x.text[r.ID] == "" { // X66 review: never a fixed text
 				continue
 			}
 			lr.from[r.ID] = s

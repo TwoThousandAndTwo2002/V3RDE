@@ -121,6 +121,7 @@ type Chosen struct {
 	SameAs     string   `json:"same_as,omitempty"`     // the id whose translation this one reuses (same English text)
 	Revised    bool     `json:"revised,omitempty"`     // L4j: translated again with the problems that a check or a judge found
 	SpreadFrom string   `json:"spread_from,omitempty"` // L4j: translated again because this corrected text reached it through the graph
+	Fixed      bool     `json:"fixed,omitempty"`       // X66: a person's text from i18n/fixed.json (no model, no score)
 }
 
 // Result is <lang>.json.

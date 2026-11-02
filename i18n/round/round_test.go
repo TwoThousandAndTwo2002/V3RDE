@@ -151,6 +151,7 @@ const xID, yID = "ROLE.logout", "RECEIVE.collected"
 type fakeTr struct {
 	mu    sync.Mutex
 	calls int
+	texts map[string]int // X66 review: the English texts sent, with how many times
 }
 
 func (f *fakeTr) Chat(ctx context.Context, sys, user string) (muse.Reply, error) {
@@ -162,6 +163,14 @@ func (f *fakeTr) Chat(ctx context.Context, sys, user string) (muse.Reply, error)
 		return muse.Reply{}, err
 	}
 	out := map[string]string{}
+	f.mu.Lock()
+	if f.texts == nil {
+		f.texts = map[string]int{}
+	}
+	for _, it := range items {
+		f.texts[it.Text]++
+	}
+	f.mu.Unlock()
 	for _, it := range items {
 		p := "T:"
 		if strings.Contains(it.Context, "Problems found") {

@@ -2385,3 +2385,18 @@ T9 (Nov 2, test findings 21 and 23): on a wide screen a user could not change th
 - A tap on Original or Touched up keeps More open; the chosen photo has the red line and is the one that posts (entry 96 closed More here).
 - On a wide screen the language oval can open its sheet over a dialog of the screen (a listing edit): only the newest dialog takes Esc and the Tab key, so one Esc closes the language sheet and not the edit under it.
 - Tests: mobile 210 -> 212.
+
+## 114. A translation a person gives stays as it is
+
+**When:** Nov 2 2026.
+**Meta models:** none new (the translation round, entries 69 and 92, uses Muse Spark and MetricX for every other text).
+**Files:** `i18n/fixed.json` (new), `i18n/round/fixed.go` (new), `i18n/round/fixed_test.go` (new), `i18n/round/run.go`, `i18n/round/round_test.go`, `i18n/rung/rung.go`
+**Sources:** `docs/sources/X66.md`
+
+T9 (Nov 2, test finding 22): the Yoruba text of "Nothing is offered now. Look again in a few minutes." on Receive; T9 gave the correct translation. The round makes every text with the model and had no place for a person's text.
+
+- `i18n/fixed.json`: for each language, the texts a person gives, with the English each one translates. The first one is T9's Yoruba text of this message.
+- The translation round uses a fixed text as it is: it does not translate it again, it is not on the review list, and the live file marks it as fixed. A change of `fixed.json` alone starts a round with no model call.
+- When the English of the app changes, the fixed text is old: the round says so in its log, does not use it, and translates the text again. A fixed text must keep the `{name}` values of the English. A text taken out of `fixed.json` is translated again too.
+- The model never gets a fixed text, also not in the fix round; the checks and judges compare the other texts with the person's text. A bad `fixed.json` never stops the round (a warning).
+- Tests: i18n 66 -> 70.

@@ -1,0 +1,13 @@
+{
+  "note": "X66: translations a person gives (T9). language code -> text id -> en (the English it translates, exactly as the app has it), text, by, date. The translation round uses each text as it is, never translates it again and takes it off the review list. When the English of the app changes, the entry is old: the round does not use it and translates the text again (a warning in the round log). Edit by hand, through the SUP.",
+  "texts": {
+    "yo": {
+      "RECEIVE.empty": {
+        "en": "Nothing is offered now. Look again in a few minutes.",
+        "text": "Kò sí nkan tí a fúni ní báyìí. Ẹ tún wò ó níwòba ìṣẹ́jú díẹ̀ sí i.",
+        "by": "T9",
+        "date": "2026-11-02"
+      }
+    }
+  }
+}
