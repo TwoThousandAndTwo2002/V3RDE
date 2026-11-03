@@ -181,9 +181,17 @@
 		}
 	}
 
+	# X67 (T9 Nov 2: "the about page should be available to the public without
+	# signing in"): the static pages are folders; their address with no slash
+	# goes to the folder (308, the query kept), so the page's own relative links
+	# work. A folder of the build with no index.html (_expo/, assets/) is a 404.
+	redir /about /about/?{query} 308
+	redir /learn /learn/?{query} 308
+
 	# The app: mobile/web-dist, the committed web build of the ui branch
 	# (D191; before the merge, the holding page in deploy/web, D152). Paths
-	# that are not files serve index.html. Expo's
+	# that are not files serve index.html; a folder ({path}/, X67: about/,
+	# learn/) serves its own index.html (before, it served the app). Expo's
 	# content-hashed files are cached for a year, but only when the file is
 	# there: a missing one gets index.html with no-store, so a browser never
 	# keeps the page at a file's address for a year. The rest is no-store.
@@ -199,7 +207,7 @@
 			file
 		}
 		header @other Cache-Control "no-store"
-		try_files {path} /index.html
+		try_files {path} {path}/ /index.html
 		file_server
 	}
 

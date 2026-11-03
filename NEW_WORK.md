@@ -2400,3 +2400,16 @@ T9 (Nov 2, test finding 22): the Yoruba text of "Nothing is offered now. Look ag
 - When the English of the app changes, the fixed text is old: the round says so in its log, does not use it, and translates the text again. A fixed text must keep the `{name}` values of the English. A text taken out of `fixed.json` is translated again too.
 - The model never gets a fixed text, also not in the fix round; the checks and judges compare the other texts with the person's text. A bad `fixed.json` never stops the round (a warning).
 - Tests: i18n 66 -> 70.
+
+## 115. The About page opens with no sign-in
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `deploy/Caddyfile`, `mobile/tests/edge.test.mts`
+**Sources:** `docs/sources/X67.md`
+
+T9: "the about page should be available to the public without signing in". The public address `/about/` showed the app's sign-in screen, not the About page (measured: the title of both `/about/` and `/about` was "V3RDE", the app's).
+
+- The edge sends a path that is a folder to that folder's page: `/about/` is the About page, `/learn/` the Learn page (its data still needs an admin account).
+- `/about` and `/learn` go to `/about/` and `/learn/` (308, with the query). Every other path still opens the app, except a folder of the build with no page (`/_expo/`, `/assets/`): an empty 404.
+- Tests: mobile 212 -> 213.

@@ -72,3 +72,22 @@ test("every inline script of the web pages is allowed by its hash (script-src ha
   }
   assert.ok(inline >= 1, "the about page doodles");
 });
+
+// X67 (T9 Nov 2: "the about page should be available to the public without signing in"): /about/ served the app (its
+// sign-in screen), because try_files sent every path that is not a file to /index.html. A folder now serves its own
+// index.html, and /about and /learn go to the folder.
+test("X67: the about and learn pages are served as themselves, with no sign-in", () => {
+  const app = caddy.slice(caddy.indexOf("\thandle {\n\t\troot * /srv"));
+  assert.match(app, /try_files \{path\} \{path\}\/ \/index\.html\n/);
+  assert.doesNotMatch(caddy, /try_files \{path\} \/index\.html\n/);
+  for (const page of ["about", "learn"]) {
+    const redir = caddy.indexOf(`redir /${page} /${page}/?{query} 308`);
+    assert.ok(redir > 0 && redir < caddy.indexOf("\thandle {\n\t\troot * /srv"), page + ": the redirect is before the app");
+    assert.ok(fs.existsSync(new URL(`../web-dist/${page}/index.html`, import.meta.url)), page + ": the page is in the web build");
+  }
+  // the about page is static: no sign-in, no script of the app
+  const about = fs.readFileSync(new URL("../web-dist/about/index.html", import.meta.url), "utf8");
+  assert.match(about, /<title>About V3RDE<\/title>/);
+  assert.doesNotMatch(about, /id="root"|_expo\/static/);
+});
+
