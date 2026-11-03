@@ -149,6 +149,29 @@ ol.steps li .label + .muted { margin-top: var(--hair); }
 .down { display: flex; align-items: center; justify-content: center; color: var(--muted); height: var(--bar); }
 .down svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
+/* X72: the two views of How it is built, as the role tabs of the app's top bar (size.control, size.tabPadX,
+   radius.round; the chosen one link text on accentSoft). Radio buttons and labels, no script. */
+.vr { position: absolute; opacity: 0; width: var(--border); height: var(--border); }
+.views { display: inline-flex; gap: var(--inset); margin: var(--gutter) 0 0; padding: 0; border: 0; }
+.sr { position: absolute; width: var(--border); height: var(--border); overflow: hidden; clip-path: inset(50%); }
+.views label { display: inline-flex; align-items: center; height: var(--control); padding: 0 var(--tabPadX); border-radius: var(--r-round); color: var(--muted); cursor: pointer; }
+.views label:hover { background: var(--iconFill); }
+.vr:checked + label { background: var(--accentSoft); color: var(--link); }
+.vr:focus-visible + label { outline: var(--focus) solid var(--link); outline-offset: var(--hair); }
+section:has(#v-over:checked) .v-deep, section:has(#v-deep:checked) .v-over { display: none; }
+.zoom { display: block; margin-top: var(--group); border-radius: var(--r-photo); }
+.zoom:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); }
+.view > .muted:first-child { margin-top: var(--gutter); }
+.summary { margin-top: var(--gutter); }
+.summary + .muted { margin-top: var(--gap); }
+/* How it is built (X72): the six drawings of the demo video, each a card with its title, one line and the picture
+   (white, as in the video, with a radius.photo corner); one column, two on a wide screen. */
+.figs { display: grid; grid-template-columns: 1fr; gap: var(--grid); margin-top: var(--gutter); }
+@media (min-width: 840px) { .figs { grid-template-columns: 1fr 1fr; } }
+.fig { margin: 0; display: flex; flex-direction: column; }
+.fig .muted { margin-top: var(--hair); }
+.fig img { display: block; width: 100%; height: auto; border-radius: var(--r-photo); border: var(--border) solid var(--line); }
+
 footer { max-width: var(--maxWidth); margin: 0 auto; padding: var(--pad) var(--gutter); border-top: var(--border) solid var(--line); }
 @media (min-width: 840px) { footer { padding: var(--pad); } }
 footer .muted + .muted { margin-top: var(--hair); }
@@ -174,8 +197,8 @@ footer .muted + .muted { margin-top: var(--hair); }
       <h1 class="display" id="h-hero">Extra food goes to people near it, not to the trash</h1>
       <p class="body muted">Share a meal with people near you in 30 minutes. Food nobody picks up goes to a food program.</p>
       <div class="row">
-        <!-- T9 Oct 30: "Watch the demo" shows when the video exists: set DEMO_URL in the script (https only). -->
-        <a class="pill secondary label" href="#" data-testid="demo" hidden>Watch the demo</a>
+        <!-- X72 (T9 Nov 3): the demo video exists: the link is in the markup (the script stays the same, so its CSP hash does too) -->
+        <a class="pill secondary label" href="https://youtu.be/_WzjoTMUfCg" data-testid="demo">Watch the demo</a>
         <a class="pill secondary label" href="/">Find food near you</a>
         <a class="pill label" href="/">Share your food</a>
       </div>
@@ -228,23 +251,41 @@ footer .muted + .muted { margin-top: var(--hair); }
     </ol>
   </section>
 
-  <!-- Architecture (Technical depth; Use of Meta AI tooling). X68 (T9 Nov 2: "update the arch diagrams on this about page
-       and clean it up. its way too busy"): one drawing, read from the code of services #115 (deploy/docker-compose.yml,
-       deploy/Caddyfile, NEW_WORK.md). Three layers, top to bottom: every arrow points down. A red border is a Meta AI model. -->
+  <!-- Architecture (Technical depth; Use of Meta AI tooling). X72 (T9 Nov 3: "the schematics on here are bad. lets use the
+       images we created in the story board ... specifically v15 for the video and reuse those in there"): the six
+       drawings of the demo video v15 (slides 11, 12, 16, 20, 23, 26), cut from its frames, with the slides' own titles
+       and lines. Each picture has a full text alternative. -->
   <section aria-labelledby="h-arch">
     <h2 class="title" id="h-arch">How it is built</h2>
-    <p class="body muted">Three layers. Our server does the quick checks and keeps your listings; Meta's AI models do the hard work. A red border is a Meta AI model that our server calls; Meta's PE-Core runs on our server.</p>
-    <div class="card overview">
-      <div class="layer"><p class="label">Your phone or browser</p><ul class="chips body"><li class="chip">Give, Receive and the chat</li><li class="chip">Camera and barcode reader</li><li class="chip">Microphone or keyboard</li><li class="chip">Seven languages</li></ul></div>
-      <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-      <div class="layer"><p class="label">Our server</p><div class="groups">
-        <div class="grp"><p class="label">Front door</p><ul class="body muted"><li>Sign-in and fair use</li><li>Food check (Meta's PE-Core)</li><li>Food DB for barcodes</li></ul></div>
-        <div class="grp"><p class="label">Your food</p><ul class="body muted"><li>Finds and counts each item</li><li>Finds an item it missed</li><li>A better photo</li><li>Changes by voice or text</li></ul></div>
-        <div class="grp"><p class="label">Your listings</p><ul class="body muted"><li>Live for 30 minutes</li><li>Grab and pick up</li><li>Rescue to a food program</li><li>Live updates in the web app</li></ul></div>
-        <div class="grp"><p class="label">What we learn</p><ul class="body muted"><li>Time and cost of each AI call</li><li>A daily report of donor changes</li><li>New text translated after each update</li></ul></div>
-      </div></div>
-      <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-      <div class="layer"><p class="label">Meta's AI models</p><ul class="chips body"><li class="chip ai">SAM 3.1 finds and counts</li><li class="chip ai">Muse Spark 1.3 names, understands, decides</li><li class="chip ai">Muse Image 1.0 makes the photo better</li><li class="chip ai">Muse Voice Transcribe 1.0 turns speech to text</li><li class="chip ai">Muse Spark Open translates</li></ul></div>
+    <!-- X72 (T9 Nov 3): two views, Overview first; radio buttons and CSS only (no script, so the CSP does not change) -->
+    <fieldset class="views"><legend class="sr">How it is built: choose a view</legend><input class="vr" type="radio" name="arch-view" id="v-over" checked><label for="v-over" class="label">Overview</label><input class="vr" type="radio" name="arch-view" id="v-deep"><label for="v-deep" class="label">In depth</label></fieldset>
+    <div class="view v-over">
+    <!-- X72 (T9 Nov 3: "in the overview you add the summary of what this web app does") -->
+    <p class="body summary">V3RDE gets extra food to people near it. A donor takes one photo: Meta's AI models find, count and name each item, make the photo better, and write the listing. The listing is live for 30 minutes, and people near it grab it and pick it up. Food that nobody grabs goes to a food program near it. The app is in seven languages, and a donor can change a listing by voice or by text.</p>
+        <p class="body muted">Three layers. Our server does the quick checks and keeps your listings; Meta's AI models do the hard work. A red border is a Meta AI model that our server calls; Meta's PE-Core runs on our server.</p>
+        <div class="card overview">
+          <div class="layer"><p class="label">Your phone or browser</p><ul class="chips body"><li class="chip">Give, Receive and the chat</li><li class="chip">Camera and barcode reader</li><li class="chip">Microphone or keyboard</li><li class="chip">Seven languages</li></ul></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+          <div class="layer"><p class="label">Our server</p><div class="groups">
+            <div class="grp"><p class="label">Front door</p><ul class="body muted"><li>Sign-in and fair use</li><li>Food check (Meta's PE-Core)</li><li>Food DB for barcodes</li></ul></div>
+            <div class="grp"><p class="label">Your food</p><ul class="body muted"><li>Finds and counts each item</li><li>Finds an item it missed</li><li>A better photo</li><li>Changes by voice or text</li></ul></div>
+            <div class="grp"><p class="label">Your listings</p><ul class="body muted"><li>Live for 30 minutes</li><li>Grab and pick up</li><li>Rescue to a food program</li><li>Live updates in the web app</li></ul></div>
+            <div class="grp"><p class="label">What we learn</p><ul class="body muted"><li>Time and cost of each AI call</li><li>A daily report of donor changes</li><li>New text translated after each update</li></ul></div>
+          </div></div>
+          <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+          <div class="layer"><p class="label">Meta's AI models</p><ul class="chips body"><li class="chip ai">SAM 3.1 finds and counts</li><li class="chip ai">Muse Spark 1.3 names, understands, decides</li><li class="chip ai">Muse Image 1.0 makes the photo better</li><li class="chip ai">Muse Voice Transcribe 1.0 turns speech to text</li><li class="chip ai">Muse Spark Open translates</li></ul></div>
+        </div>
+    </div>
+    <div class="view v-deep">
+    <p class="body muted">The drawings from our demo video.</p>
+    <div class="figs">
+      <figure class="card fig"><h3 class="label">The graph of the app's menus</h3><p class="body muted">Text alone gave weak translations (“Post” became a noun), so each text now gets its context from a graph of the app's menus.</p><a class="zoom" href="img/graph.png" aria-label="The graph of the app's menus: open the drawing full size"><img src="img/graph.png" width="996" height="596" loading="lazy" alt="The menu path Role, Give, Capture, Review. On Review the button text “Post {plural}” belongs to the idea “post”. The graph tells the model: a button, a verb, the user posts all the items now. Text alone gives the Spanish noun Publicación; with the graph, the verb Publicar."></a></figure>
+      <figure class="card fig"><h3 class="label">How translation works</h3><p class="body muted">After each update, the new and changed texts go through the menu graph, Muse Spark Open, and two judges.</p><a class="zoom" href="img/translate.png" aria-label="How translation works: open the drawing full size"><img src="img/translate.png" width="996" height="453" loading="lazy" alt="App texts that are new or changed go to the menu graph, which gives each text its context; Muse Spark Open translates one screen per call; two judges read each screen and give reasons; a flagged text is fixed once with the reason; the texts go live in 7 languages. A text that fails twice goes to a person."></a></figure>
+      <figure class="card fig"><h3 class="label">How posting works</h3><p class="body muted">Each listing goes to our <a class="link" href="https://www.facebook.com/profile.php?id=61595838462229">Facebook Page</a> for you, so food reaches people where they already are.</p><a class="zoom" href="img/posting.png" aria-label="How posting works: open the drawing full size"><img src="img/posting.png" width="996" height="260" loading="lazy" alt="The donor posts with one tap in V3RDE; Muse Spark writes the post and checks it; the V3RDE Facebook Page posts it; when the food is claimed, the post updates to show it."></a></figure>
+      <figure class="card fig"><h3 class="label">How Rescue works</h3><p class="body muted">If no one claims the food, V3RDE finds the nearest food programs, with directions.</p><a class="zoom" href="img/rescue.png" aria-label="How Rescue works: open the drawing full size"><img src="img/rescue.png" width="996" height="459" loading="lazy" alt="No one claimed the listing in time; the food directory (Feed America) finds programs near the pickup; if it finds none, Muse Spark searches the web; the nearest food programs are shown, with one-tap directions in Google Maps."></a></figure>
+      <figure class="card fig"><h3 class="label">How it learns</h3><p class="body muted">Every donor fix is kept, checked each day, and used to write the next prompt version.</p><a class="zoom" href="img/learns.png" aria-label="How it learns: open the drawing full size"><img src="img/learns.png" width="996" height="356" loading="lazy" alt="Each scan is tagged with its prompt version; the donor fixes what is wrong and posts; a daily check compares the model with what the donor posted; the next prompt version is written from the fixes, and goes back into every scan, where it is checked again."></a></figure>
+      <figure class="card fig"><h3 class="label">Under the hood</h3><p class="body muted">Checks run on our server in under a second; Meta models run in the cloud.</p><a class="zoom" href="img/under-the-hood.png" aria-label="Under the hood: open the drawing full size"><img src="img/under-the-hood.png" width="996" height="577" loading="lazy" alt="Median time per call. On our box: a barcode scan 5 ms, the PE-Core food gate 0.75 s. In the cloud (Meta models): SAM 3.1 finds items in 1.46 s, Muse Voice Transcribe 1.25 s, Muse Spark names and servings 7.08 s, Muse Image touch-up 22.4 s. A whole photo scan: 7.6 s median, $0.016 median per scan. Source: the V3RDE ledger, Oct 29 to Nov 3, 2026."></a></figure>
+    </div>
     </div>
   </section>
 

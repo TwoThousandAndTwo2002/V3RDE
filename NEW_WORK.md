@@ -2461,3 +2461,17 @@ T9: "remove made by the hungree app from the bottom of the about page".
 T9: "the readme has to have the change as well" (entry 118: no "by" line).
 
 - The README says "Built for the Meta Global AI Developer Hackathon", with no company name. The credits keep the label of the brand assets from before the Hackathon and the Open Food Facts credit.
+
+## 120. The About page: Overview and In depth, with the drawings of the demo video
+
+**When:** Nov 3 2026.
+**Meta models:** none new (the drawings show SAM 3.1, Muse Spark 1.3, Muse Spark Open, Muse Image 1.0, Muse Voice Transcribe 1.0 and PE-Core as the code uses them).
+**Files:** `mobile/public/about/index.html`, `mobile/public/about/img/` (6 new pictures), `mobile/tests/about.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X72.md`
+
+T9: "the schematics on here are bad. lets use the images we created in the story board ... specifically v15 for the video and reuse those in there"; "there should be a technical toggle and a simple one but dont use that word"; "in the overview you add the summary of what this web app does".
+
+- "How it is built" has two views, chosen with two pills: Overview (first) has a short summary of what V3RDE does and the three-layer drawing of entry 116; In depth has the six drawings of the demo video v15 (the graph of the app's menus, how translation works, how posting works, how Rescue works, how it learns, under the hood), cut from the video's own frames, each with its slide's title and line and a full text alternative.
+- "Watch the demo" now shows and opens the video. "How posting works" links to the V3RDE Facebook Page.
+- The page's script does not change, so the security policy of the edge does not change.
+- Tests: mobile 213 -> 214.

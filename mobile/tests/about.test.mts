@@ -5,6 +5,7 @@
 import test from "node:test";
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import vm from "node:vm";
 import { ABOUT_PATH, ABOUT_URL, SIGN_IN } from "../src/signin.ts";
@@ -172,7 +173,10 @@ test("the fonts are the app's Poppins files from the web build", () => {
 
 test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
   const text = BODY.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ");
-  assert.doesNotMatch(text, /Facebook/i, "no Facebook until the service account (T9)");
+  // X72 (T9 Nov 3): the Facebook Page exists (#88) and is linked from "How posting works" (it was "no Facebook until the
+  // service account", Oct 30); the only Facebook address is the V3RDE Page
+  const fb = [...BODY.matchAll(/href="(https:\/\/www\.facebook\.com\/[^"]*)"/g)].map((m) => m[1]);
+  assert.deepEqual(fb, ["https://www.facebook.com/profile.php?id=61595838462229"]);
   assert.doesNotMatch(text, /374,760|products\. A hit/, "the food DB has no product count (T9)");
   assert.match(text, /Food DB/);
   assert.doesNotMatch(text, /\bsafe to eat\b|\bhealthy\b|\bnutrition|\bcalorie/i); // no safety, health or nutrition claims (anti-projects)
@@ -181,7 +185,7 @@ test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
   assert.match(PAGE, /<html lang="en">/);
   assert.match(BODY, /<main id="main">/);
   // "Watch the demo" stays hidden until the video exists; then only an https address shows it.
-  assert.match(BODY, /<a class="pill secondary label" href="#" data-testid="demo" hidden>Watch the demo<\/a>/);
+  assert.match(BODY, /<a class="pill secondary label" href="https:\/\/youtu\.be\/_WzjoTMUfCg" data-testid="demo">Watch the demo<\/a>/); // X72
   const demo = SCRIPT.match(/var DEMO_URL = "([^"]*)";/);
   assert.ok(demo && (demo[1] === "" || /^https:\/\//.test(demo[1])), "DEMO_URL is empty or https");
   assert.match(SCRIPT, /\/\^https:\\\/\\\/\/\.test\(DEMO_URL\)/);
@@ -270,3 +274,34 @@ test("no ZIP code on the page; the Open Food Facts photo credit is in the footer
   assert.doesNotMatch(foot, /V3RDE by|Hungree LLC/);
   assert.match(foot, /are Hungree brand assets from before the Hackathon/);
 });
+
+// X72 (T9 Nov 3: "the schematics on here are bad. lets use the images we created in the story board ... v15 for the
+// video"; "there should be a technical toggle and a simple one but dont use that word"; "in the overview you add the
+// summary of what this web app does"): two views, Overview first, radio buttons and CSS only.
+test("X72: How it is built has two views: Overview (first, with the summary) and In depth (the six drawings of the video)", () => {
+  const labels = [...ARCH.matchAll(/<label for="(v-over|v-deep)" class="label">([^<]+)<\/label>/g)].map((m) => m[1] + ":" + m[2]);
+  assert.deepEqual(labels, ["v-over:Overview", "v-deep:In depth"]);
+  // X72 review: one group with a name (fieldset and legend); each radio has its label right after it
+  assert.match(ARCH, /<fieldset class="views"><legend class="sr">How it is built: choose a view<\/legend><input class="vr" type="radio" name="arch-view" id="v-over" checked><label for="v-over" class="label">Overview<\/label><input class="vr" type="radio" name="arch-view" id="v-deep"><label for="v-deep" class="label">In depth<\/label><\/fieldset>/);
+  assert.doesNotMatch(ARCH.replace(/<!--[\s\S]*?-->/g, ""), /\b[Ss]imple\b|\b[Tt]echnical\b/); // T9: not those words
+  assert.match(STYLE, /section:has\(#v-over:checked\) \.v-deep, section:has\(#v-deep:checked\) \.v-over \{ display: none; \}/);
+  assert.match(STYLE, /\.vr:focus-visible \+ label \{ outline: var\(--focus\) solid var\(--link\)/);
+  const over = ARCH.slice(ARCH.indexOf('<div class="view v-over">'), ARCH.indexOf('<div class="view v-deep">'));
+  assert.match(over, /<p class="body summary">V3RDE gets extra food to people near it\./);
+  assert.ok(over.includes('<div class="layer"><p class="label">Your phone or browser</p>'), "the three-layer drawing is the Overview");
+  const deep = ARCH.slice(ARCH.indexOf('<div class="view v-deep">'));
+  // X72 review: each picture opens full size (on a phone the drawing is small)
+  const figs = [...deep.matchAll(/<figure class="card fig"><h3 class="label">([^<]+)<\/h3><p class="body muted">[\s\S]*?<\/p><a class="zoom" href="img\/([a-z-]+)\.png" aria-label="[^"]+: open the drawing full size"><img src="img\/\2\.png" width="(\d+)" height="(\d+)" loading="lazy" alt="([^"]+)"><\/a><\/figure>/g)];
+  assert.deepEqual(figs.map((m) => m[2]), ["graph", "translate", "posting", "rescue", "learns", "under-the-hood"]);
+  for (const [, title, file, w, h, alt] of figs) {
+    const png = readFileSync(join(ROOT, "public/about/img/" + file + ".png"));
+    assert.equal(png.readUInt32BE(16) + "x" + png.readUInt32BE(20), w + "x" + h, file + ": width and height are the file's");
+    assert.ok(alt.length > 100, title + ": the picture has a full text alternative");
+  }
+  // the page's one inline script is the same, so the Caddyfile CSP hash still allows it (edge.test checks the build)
+  const caddy = readFileSync(join(ROOT, "../deploy/Caddyfile"), "utf8");
+  const body = PAGE.match(/<script>([\s\S]*?)<\/script>/)![1];
+  const hash = "'sha256-" + createHash("sha256").update(body, "utf8").digest("base64") + "'";
+  assert.ok(caddy.includes(hash), "the Caddyfile CSP allows the about page script " + hash);
+});
+
