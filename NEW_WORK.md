@@ -2426,3 +2426,15 @@ T9: "update the arch diagrams on this about page and clean it up. its way too bu
 - "How it is built" is one drawing of three layers, top to bottom: your phone or browser; our server in four groups (front door, your food, your listings, what we learn); Meta's AI models with the red border. It is read from the code of entry 115, so it also shows the parts that came after the first drawing: finding a missed item, the live updates in the app, the daily report and the translation round.
 - The three step-by-step drawings, the three problem cards and the "Measured, not guessed" numbers are gone. The page is 1548 px tall on a desktop (it was 1818, and 3008 with the drawings open).
 - Tests: mobile 213 -> 213 (four tests of the old drawing became four tests of the new one).
+
+## 117. A README that describes the major modules
+
+**When:** Nov 2 2026.
+**Meta models:** none (a document).
+**Files:** `README.md` (new)
+**Sources:** `docs/sources/X69.md`
+
+T9: "also we need a readme for the git hub something that describes the major modules in this project." T9 chose one README at the root.
+
+- `README.md`: what V3RDE is, a short drawing of how it is built, one line for each module (what it is and which service runs it), how to run the tests and the stack, how changes are made, and the credits. It links to `NEW_WORK.md` and `NEW_WORK_UI.md` for the list of new work.
+- Every line is read from the code of entry 116 (the modules' `go.mod` and `cmd/`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/`).
