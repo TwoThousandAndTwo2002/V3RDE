@@ -2,7 +2,7 @@
 
 V3RDE gets extra food to people near it, not to the trash. A donor takes one photo; Meta's AI models find, count and name each item, make the photo better, and the listing is live for 30 minutes. People near it grab it and pick it up. Food that nobody grabs goes to a food program near it (Rescue). The app is in seven languages.
 
-Built by Hungree LLC for the Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026). [NEW_WORK.md](NEW_WORK.md) lists every part made in the Hackathon, with its date, the Meta model it uses, its files and its sources. [NEW_WORK_UI.md](NEW_WORK_UI.md) does the same for the app's screens.
+Built for the Meta Global AI Developer Hackathon (Oct 26 – Nov 4, 2026). [NEW_WORK.md](NEW_WORK.md) lists every part made in the Hackathon, with its date, the Meta model it uses, its files and its sources. [NEW_WORK_UI.md](NEW_WORK_UI.md) does the same for the app's screens.
 
 - Live: https://v3rde.thehungreeapp.com (the About page: https://v3rde.thehungreeapp.com/about/)
 

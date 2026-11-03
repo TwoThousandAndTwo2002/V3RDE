@@ -2450,3 +2450,14 @@ T9: "remove made by the hungree app from the bottom of the about page".
 
 - The footer line "V3RDE by Hungree LLC" is gone. The label of the brand assets from before the Hackathon (the red and the Poppins font) and the Open Food Facts credit stay.
 - Tests: mobile 213 -> 213 (the footer test now also checks that there is no by-line).
+
+## 119. The README has no "by" line
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `README.md`
+**Sources:** `docs/sources/X71.md`
+
+T9: "the readme has to have the change as well" (entry 118: no "by" line).
+
+- The README says "Built for the Meta Global AI Developer Hackathon", with no company name. The credits keep the label of the brand assets from before the Hackathon and the Open Food Facts credit.
