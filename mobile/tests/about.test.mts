@@ -265,4 +265,8 @@ test("no ZIP code on the page; the Open Food Facts photo credit is in the footer
   assert.ok(!/\bZIP\b/i.test(PAGE), "the page still names a ZIP code");
   const foot = PAGE.slice(PAGE.indexOf("<footer>"), PAGE.indexOf("</footer>"));
   assert.ok(/Open Food Facts \(openfoodfacts\.org\)/.test(foot) && foot.includes("(CC BY-SA)"), "the credit line");
+  // X70 (T9 Nov 2: "remove made by the hungree app from the bottom of the about page"): no by-line; the label of the
+  // earlier brand assets stays (the Hackathon rules: earlier assets are labelled)
+  assert.doesNotMatch(foot, /V3RDE by|Hungree LLC/);
+  assert.match(foot, /are Hungree brand assets from before the Hackathon/);
 });

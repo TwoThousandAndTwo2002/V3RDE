@@ -2438,3 +2438,15 @@ T9: "also we need a readme for the git hub something that describes the major mo
 
 - `README.md`: what V3RDE is, a short drawing of how it is built, one line for each module (what it is and which service runs it), how to run the tests and the stack, how changes are made, and the credits. It links to `NEW_WORK.md` and `NEW_WORK_UI.md` for the list of new work.
 - Every line is read from the code of entry 116 (the modules' `go.mod` and `cmd/`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `tools/`).
+
+## 118. The About page has no "by" line
+
+**When:** Nov 2 2026.
+**Meta models:** none.
+**Files:** `mobile/public/about/index.html`, `mobile/tests/about.test.mts`, `mobile/web-dist/`
+**Sources:** `docs/sources/X70.md`
+
+T9: "remove made by the hungree app from the bottom of the about page".
+
+- The footer line "V3RDE by Hungree LLC" is gone. The label of the brand assets from before the Hackathon (the red and the Poppins font) and the Open Food Facts credit stay.
+- Tests: mobile 213 -> 213 (the footer test now also checks that there is no by-line).
