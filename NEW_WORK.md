@@ -2413,3 +2413,16 @@ T9: "the about page should be available to the public without signing in". The p
 - The edge sends a path that is a folder to that folder's page: `/about/` is the About page, `/learn/` the Learn page (its data still needs an admin account).
 - `/about` and `/learn` go to `/about/` and `/learn/` (308, with the query). Every other path still opens the app, except a folder of the build with no page (`/_expo/`, `/assets/`): an empty 404.
 - Tests: mobile 212 -> 213.
+
+## 116. The About page: one clean drawing of how V3RDE is built
+
+**When:** Nov 2 2026.
+**Meta models:** none new (the drawing names SAM 3.1, Muse Spark 1.3, Muse Image 1.0, Muse Voice Transcribe 1.0, Muse Spark Open and PE-Core, as the code uses them).
+**Files:** `mobile/public/about/index.html`, `mobile/tests/about.test.mts`, `mobile/docs/style_guide.md`, `mobile/web-dist/`
+**Sources:** `docs/sources/X68.md`
+
+T9: "update the arch diagrams on this about page and clean it up. its way too busy." T9 chose one clean drawing; the problem cards and the "Measured" numbers go.
+
+- "How it is built" is one drawing of three layers, top to bottom: your phone or browser; our server in four groups (front door, your food, your listings, what we learn); Meta's AI models with the red border. It is read from the code of entry 115, so it also shows the parts that came after the first drawing: finding a missed item, the live updates in the app, the daily report and the translation round.
+- The three step-by-step drawings, the three problem cards and the "Measured, not guessed" numbers are gone. The page is 1548 px tall on a desktop (it was 1818, and 3008 with the drawings open).
+- Tests: mobile 213 -> 213 (four tests of the old drawing became four tests of the new one).

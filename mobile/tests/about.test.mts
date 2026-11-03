@@ -193,68 +193,58 @@ test("the words: T9's decisions (Oct 30) and the hackathon rules", () => {
   for (const s of BODY.match(/<svg\b[^>]*>/g) ?? []) assert.match(s, /aria-hidden="true"/, s);
 });
 
-// ---- A2 (#81): the problem, "How it is built" (one drawing always open, three on a tap), left to right then down.
-const ARCH = BODY.slice(BODY.indexOf('<section aria-labelledby="h-arch">'), BODY.indexOf('<section aria-labelledby="h-num">'));
-const RIGHT = "M2 10 H17 M12 5 L17 10 L12 15", DOWN = "M10 2 V17 M5 12 L10 17 L15 12";
+// ---- A2 (#81), X68 (T9 Nov 2: "update the arch diagrams on this about page and clean it up. its way too busy"; the
+// mockup "V3RDE About Page Mockup" approved): the problem line; "How it is built" is one drawing of three layers, top to
+// bottom; no step-by-step flows, no problem cards, no "Measured" numbers.
+const ARCH = BODY.slice(BODY.indexOf('<section aria-labelledby="h-arch">'), BODY.indexOf('<section aria-labelledby="h-new">'));
+const DOWN = "M10 2 V17 M5 12 L10 17 L15 12";
 
-test("the problem is stated, with the seven languages and Rescue", () => {
+test("the problem is stated; the page has no problem cards, no step-by-step flows and no numbers section (X68)", () => {
   const text = BODY.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
   assert.match(text, /Posting food should take seconds/);
   assert.match(text, /V3RDE uses Meta's AI models to do that work for you/);
-  assert.match(text, /Nothing left behind/);
-  // The seven languages are the ones of i18n/languages.json, by name and count (X49x: T9 added Yoruba).
+  assert.doesNotMatch(text, /One photo, not a form|Nothing left behind|Measured, not guessed/);
+  assert.doesNotMatch(BODY, /<details\b|class="stats"|h-num|class="node/);
+  assert.doesNotMatch(STYLE, /\.more |\.flow|\.stats|\.node/); // no CSS left for the parts that went
+  assert.ok(ARCH.length > 0, "the drawing is before the Hackathon section");
+  // X68 review: the page says "Seven languages"; it must stay true of i18n/languages.json (X49x: T9 added Yoruba)
   const langs = JSON.parse(readFileSync(join(ROOT, "../i18n/languages.json"), "utf8")).languages as { name: string }[];
-  assert.equal(langs.length, 7);
-  for (const l of langs) assert.ok(text.includes(l.name.split(" (")[0]), "the page names " + l.name);
+  assert.equal(langs.length, 7, "the page says Seven languages");
   assert.match(text, /Seven languages/);
 });
 
-test("How it is built: one drawing always open, three that open on a tap", () => {
-  const overview = ARCH.slice(ARCH.indexOf('<div class="card overview">'), ARCH.indexOf("<details"));
-  assert.ok(overview.length > 0 && !/<details/.test(overview), "the overview is not inside a details");
-  for (const part of ["Your phone or browser", "Our server", "Meta's AI models"]) assert.ok(overview.includes(part), part);
-  const more = ARCH.match(/<details\b[^>]*>/g) ?? [];
-  assert.deepEqual(more, ['<details class="more card" id="m-post">', '<details class="more card" id="m-rescue">', '<details class="more card" id="m-lang">']);
-  const glyph = group("glyph");
-  for (const sum of ARCH.match(/<summary>[\s\S]*?<\/summary>/g) ?? []) {
-    assert.ok(sum.includes('<path d="' + glyph.plus + '"/>') && sum.includes('<path d="' + glyph.minus + '"/>'), "plus and minus glyphs");
-  }
-  assert.match(STYLE, /\.more \.minus, \.more\[open\] \.plus \{ display: none; \}/);
-  assert.match(STYLE, /\.more summary:focus-visible \{ outline: var\(--focus\) solid var\(--link\)/);
+test("X68: How it is built is one drawing: phone or browser, our server (four groups), Meta's AI models", () => {
+  const layers = [...ARCH.matchAll(/<div class="layer"><p class="label">([^<]+)<\/p>/g)].map((m) => m[1]);
+  assert.deepEqual(layers, ["Your phone or browser", "Our server", "Meta's AI models"]);
+  const groups = [...ARCH.matchAll(/<div class="grp"><p class="label">([^<]+)<\/p>/g)].map((m) => m[1]);
+  assert.deepEqual(groups, ["Front door", "Your food", "Your listings", "What we learn"]);
+  // the parts of #115 that the old drawing did not have (read from the code; NEW_WORK.md 93-94, 97, 98, 69)
+  for (const part of ["Finds an item it missed", "Live updates in the web app", "A daily report of donor changes", "New text translated after each update",
+    "Seven languages", "Food DB for barcodes", "Rescue to a food program", "Live for 30 minutes"]) assert.ok(ARCH.includes(part), part);
+  assert.match(STYLE, /\.groups \{ display: grid; grid-template-columns: 1fr;/);
+  assert.match(STYLE, /@media \(min-width: 840px\) \{ \.groups \{ grid-template-columns: repeat\(4, 1fr\); \} \}/);
 });
 
-test("every drawing reads left to right, then down: no arrow points back", () => {
-  const arrows = [...ARCH.matchAll(/<div class="(go|down)" aria-hidden="true"><svg[^>]*><path d="([^"]+)"\/><\/svg><\/div>/g)];
-  assert.ok(arrows.length > 20, "arrows: " + arrows.length);
-  for (const a of arrows) assert.equal(a[2], a[1] === "go" ? RIGHT : DOWN, a[0]);
+test("X68: the drawing reads top to bottom: two arrows, both down; no other drawing", () => {
+  const arrows = [...ARCH.matchAll(/<div class="down" aria-hidden="true"><svg[^>]*><path d="([^"]+)"\/><\/svg><\/div>/g)];
+  assert.equal(arrows.length, 2);
   const all = [...ARCH.matchAll(/<path d="([^"]+)"\/>/g)].map((m) => m[1]);
-  for (const d of all) assert.ok([RIGHT, DOWN, group("glyph").plus, group("glyph").minus].includes(d), "an arrow or glyph that is not right, down, plus or minus: " + d);
-  // On a wide screen a "go" arrow points right; stacked it turns to point down (a quarter turn, never back).
-  assert.match(STYLE, /\.go svg \{ transform: rotate\(90deg\); \}/);
-  assert.match(STYLE, /\.go svg \{ transform: none; \}/);
-  // The steps of each detail drawing are 1..n in reading order.
-  for (const id of ["m-post", "m-rescue", "m-lang"]) {
-    const part = ARCH.slice(ARCH.indexOf('id="' + id + '"'), ARCH.indexOf("</details>", ARCH.indexOf('id="' + id + '"')));
-    const steps = [...part.matchAll(/<span class="step">(\d+)<\/span>/g)].map((m) => Number(m[1]));
-    assert.deepEqual(steps, steps.map((_, i) => i + 1), id);
-  }
+  assert.deepEqual(all, [DOWN, DOWN]);
 });
 
-test("each box says where it runs; a Meta model has the red border; the models are the ones of NEW_WORK.md", () => {
+test("a Meta model has the red border; the models are the ones of NEW_WORK.md; PE-Core runs on our server", () => {
   const work = readFileSync(join(ROOT, "../NEW_WORK.md"), "utf8");
-  const boxes = [...ARCH.matchAll(/<div class="node([a-z ]*)"><p class="where">([^<]+)<\/p><p class="label">(?:<span class="step">\d+<\/span>)?([^<]+)<\/p>/g)];
-  assert.equal(boxes.length, (ARCH.match(/<p class="where">/g) ?? []).length, "every step box is read");
-  assert.equal(boxes.length, 24, "12 + 7 + 5 step boxes");
-  for (const m of boxes) {
-    const [, cls, where, label] = m;
-    assert.ok(/^(Your phone|Our server|Meta AI|Our server, a Meta AI model)$/.test(where), where);
-    assert.equal(cls.split(" ").includes("ai"), where.includes("Meta AI"), label + ": the red border marks a Meta AI model");
-  }
-  assert.match(STYLE, /\.node\.ai \{ border-color: var\(--accent\); \}/);
-  for (const model of ["SAM 3.1", "Muse Spark 1.3", "Muse Image 1.0", "Muse Voice Transcribe 1.0", "Muse Spark Open", "PE-Core"]) {
-    assert.ok(ARCH.includes(model), "the page names " + model);
+  const ai = [...ARCH.matchAll(/<li class="chip ai">([^<]+)<\/li>/g)].map((m) => m[1]);
+  assert.equal(ai.length, 5);
+  for (const [i, model] of ["SAM 3.1", "Muse Spark 1.3", "Muse Image 1.0", "Muse Voice Transcribe 1.0", "Muse Spark Open"].entries()) {
+    assert.ok(ai[i].startsWith(model + " "), ai[i]);
     assert.ok(work.includes(model), "NEW_WORK.md names " + model);
   }
+  const server = ARCH.slice(ARCH.indexOf('<p class="label">Our server</p>'), ARCH.indexOf("Meta's AI models</p>"));
+  assert.ok(server.includes("Food check (Meta's PE-Core)") && work.includes("PE-Core"), "PE-Core is on our server, named as Meta's");
+  assert.match(ARCH, /A red border is a Meta AI model that our server calls; Meta's PE-Core runs on our server\./);
+  assert.ok(!/class="chip ai"/.test(server) && !/class="chip ai"/.test(ARCH.slice(0, ARCH.indexOf('<p class="label">Our server</p>'))));
+  assert.match(STYLE, /\.chip\.ai \{ border-color: var\(--accent\); \}/);
 });
 
 test("the sign-in screen links to the page", () => {
@@ -273,7 +263,6 @@ test("the sign-in screen links to the page", () => {
 // a barcode scan (#83 of reach: Open Food Facts, CC BY-SA; "Credit on the About page").
 test("no ZIP code on the page; the Open Food Facts photo credit is in the footer", () => {
   assert.ok(!/\bZIP\b/i.test(PAGE), "the page still names a ZIP code");
-  assert.ok(PAGE.includes("Uses the pickup address on the map, or your location"), "the Rescue step words");
   const foot = PAGE.slice(PAGE.indexOf("<footer>"), PAGE.indexOf("</footer>"));
   assert.ok(/Open Food Facts \(openfoodfacts\.org\)/.test(foot) && foot.includes("(CC BY-SA)"), "the credit line");
 });

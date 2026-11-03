@@ -132,53 +132,22 @@ ol.steps li { display: flex; gap: var(--group); align-items: flex-start; }
   display: flex; align-items: center; justify-content: center; }
 ol.steps li .label + .muted { margin-top: var(--hair); }
 
-/* How it is built: flows of stages. A stage is a column of parts (top to bottom, an arrow down between them); the
-   stages go left to right with an arrow between them (size.control wide). Three stages a row (the high-level
-   drawing: five), so a row reads left to right and the rows read top to bottom. A phone: one column, arrows down. */
+/* How it is built (X68): three layers, top to bottom, an arrow down between them. A layer is a box;
+   its parts are chips (a Meta AI model that our server calls: the red border) or, on our server, four groups side
+   by side on a wide screen (two on a tablet, one on a phone). */
 .overview { margin-top: var(--gutter); padding: var(--pad); }
-.flow { display: flex; flex-direction: column; }
-.stage { display: flex; flex-direction: column; }
-.stage-name { color: var(--muted); margin-bottom: var(--gap); }
-.node { border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--gap) var(--group); background: var(--bg); }
-.node.ai { border-color: var(--accent); }
-.node .where { color: var(--muted); margin: 0; }
-.node .step { color: var(--link); margin-right: var(--inset); }
-.down, .go { display: flex; align-items: center; justify-content: center; color: var(--muted); }
-.down { height: var(--gutter); }
-.go { height: var(--control); }
-.down svg, .go svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.go svg { transform: rotate(90deg); }
-@media (min-width: 840px) {
-  .flow { flex-direction: row; flex-wrap: wrap; row-gap: var(--pad); }
-  .flow.c3 .stage { flex: 0 0 calc((100% - 2 * var(--control)) / 3); }
-  .flow.c4 .stage { flex: 0 0 calc((100% - 3 * var(--control)) / 4); }
-  .flow.c5 .stage { flex: 0 0 calc((100% - 4 * var(--control)) / 5); }
-  .go { width: var(--control); height: auto; }
-  .go svg { transform: none; }
-  .flow.c3 > .go:nth-child(6n) { display: none; }         /* the end of a row of three: the next row starts left */
-  .stage .node { flex: 0 0 auto; }
-}
-/* More detail: a tap opens it (details and summary, no script) */
-.more { margin-top: var(--gutter); padding: 0; }
-.more summary { display: flex; align-items: center; justify-content: space-between; gap: var(--group); padding: var(--group) var(--pad); cursor: pointer; list-style: none; min-height: var(--control); }
-.more summary::-webkit-details-marker { display: none; }
-.more summary:focus-visible { outline: var(--focus) solid var(--link); outline-offset: var(--hair); border-radius: var(--r-card); }
-.sum-text { display: flex; flex-direction: column; }
-.toggle { flex: none; width: var(--iconSmall); height: var(--iconSmall); border-radius: var(--r-round); background: var(--iconFill); display: flex; align-items: center; justify-content: center; }
-.toggle svg { width: var(--glyphSmall); height: var(--glyphSmall); stroke: var(--fg); stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; }
-.more .minus, .more[open] .plus { display: none; }
-.more[open] .minus { display: block; }
-.more > .flow { padding: 0 var(--pad) var(--pad); }
-.part ul { margin: var(--gap) 0 0; padding: 0 0 0 var(--gutter); }
-.part li + li { margin-top: var(--hair); }
-.flow.parts .stage { justify-content: stretch; }
-.flow.parts .node { flex: 1 1 auto; }
-.sr { position: absolute; width: var(--border); height: var(--border); overflow: hidden; clip-path: inset(50%); }
-
-/* Numbers */
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--grid); margin-top: var(--gutter); }
-@media (min-width: 840px) { .stats { grid-template-columns: repeat(4, 1fr); } }
-.stat .muted { margin-top: var(--hair); }
+.layer { border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--group); background: var(--bg); }
+.chips { list-style: none; margin: var(--gap) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--gap); }
+.chip { border: var(--border) solid var(--line); border-radius: var(--r-round); padding: var(--hair) var(--group); background: var(--card); }
+.chip.ai { border-color: var(--accent); }
+.groups { display: grid; grid-template-columns: 1fr; gap: var(--gap); margin-top: var(--gap); }
+@media (min-width: 600px) { .groups { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 840px) { .groups { grid-template-columns: repeat(4, 1fr); } }
+.grp { background: var(--card); border: var(--border) solid var(--line); border-radius: var(--r-photo); padding: var(--gap) var(--group); }
+.grp ul { margin: var(--hair) 0 0; padding: 0 0 0 var(--gutter); }
+.grp li + li { margin-top: var(--hair); }
+.down { display: flex; align-items: center; justify-content: center; color: var(--muted); height: var(--bar); }
+.down svg { width: var(--glyphBox); height: var(--glyphBox); stroke: currentColor; stroke-width: var(--glyphStroke); fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
 footer { max-width: var(--maxWidth); margin: 0 auto; padding: var(--pad) var(--gutter); border-top: var(--border) solid var(--line); }
 @media (min-width: 840px) { footer { padding: var(--pad); } }
@@ -217,11 +186,6 @@ footer .muted + .muted { margin-top: var(--hair); }
   <section aria-labelledby="h-problem">
     <h2 class="title" id="h-problem">Posting food should take seconds</h2>
     <p class="body muted">Sharing extra food used to mean typing each item, counting servings and taking a good photo. Most people gave up, and the food went to the trash. V3RDE uses Meta's AI models to do that work for you.</p>
-    <div class="grid three">
-      <div class="card"><h3 class="label">One photo, not a form</h3><p class="body muted">Meta's models find, count and name each item, and make the photo look good.</p></div>
-      <div class="card"><h3 class="label">Seven languages</h3><p class="body muted">English, Spanish, Portuguese, Chinese, Hindi, Arabic and Yoruba.</p></div>
-      <div class="card"><h3 class="label">Nothing left behind</h3><p class="body muted">Nobody grabbed it in 30 minutes? Rescue finds a food program near it.</p></div>
-    </div>
   </section>
 
   <!-- Roles (T9: Give, Receive, and food programs) -->
@@ -264,120 +228,23 @@ footer .muted + .muted { margin-top: var(--hair); }
     </ol>
   </section>
 
-  <!-- Architecture (Technical depth; Use of Meta AI tooling), read from the code (NEW_WORK.md entries 4, 9, 16, 17,
-       19, 48, 50, 54-64, 65, 69, 73, 74, 75). One drawing is always open; three more open on a tap (details).
-       Every drawing reads left to right, then top to bottom: an arrow points right or down, never back. -->
+  <!-- Architecture (Technical depth; Use of Meta AI tooling). X68 (T9 Nov 2: "update the arch diagrams on this about page
+       and clean it up. its way too busy"): one drawing, read from the code of services #115 (deploy/docker-compose.yml,
+       deploy/Caddyfile, NEW_WORK.md). Three layers, top to bottom: every arrow points down. A red border is a Meta AI model. -->
   <section aria-labelledby="h-arch">
     <h2 class="title" id="h-arch">How it is built</h2>
-    <p class="body muted">Three parts work together. Quick checks run on our own server; Meta's AI models do the hard work. Tap a flow below to see it step by step. A red border is a Meta AI model.</p>
+    <p class="body muted">Three layers. Our server does the quick checks and keeps your listings; Meta's AI models do the hard work. A red border is a Meta AI model that our server calls; Meta's PE-Core runs on our server.</p>
     <div class="card overview">
-      <div class="flow c3 parts">
-        <div class="stage"><div class="node part phone"><p class="label">Your phone or browser</p><p class="body muted">What you see and touch</p><ul class="body"><li>Camera and barcode reader</li><li>Microphone or keyboard</li><li>The app in your language</li></ul></div></div>
-        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-        <div class="stage"><div class="node part server"><p class="label">Our server</p><p class="body muted">Quick checks and your listings</p><ul class="body"><li>Sign-in and fair use</li><li>Food DB and food check (PE-Core)</li><li>Listings, timers and Rescue</li><li>Checks every AI answer</li><li>Logs the time and cost of each call</li></ul></div></div>
-        <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-        <div class="stage"><div class="node part ai"><p class="label">Meta's AI models</p><p class="body muted">The hard work</p><ul class="body"><li>SAM 3.1: finds and counts</li><li>Muse Spark 1.3: names, understands, decides</li><li>Muse Image 1.0: better photos</li><li>Muse Voice Transcribe 1.0: speech to text</li><li>Muse Spark Open: translations</li></ul></div></div>
-      </div>
-    </div>
-    <details class="more card" id="m-post">
-      <summary><span class="sum-text"><span class="label">Posting food, step by step</span><span class="body muted">12 steps, from the photo to the listing</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
-        <div class="flow c3">
-          <div class="stage"><p class="label stage-name">Snap</p>
-            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Camera</p><p class="body muted">Takes the photo and reads the barcode</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Front door</p><p class="body muted">Checks who you are and keeps use fair</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Check</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">3</span>Food DB</p><p class="body muted">A known barcode fills the listing at once</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node server ai"><p class="where">Our server, a Meta AI model</p><p class="label"><span class="step">4</span>Food check</p><p class="body muted">PE-Core runs on our server. Not food? It stops here, free</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Find and name</p>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>SAM 3.1</p><p class="body muted">Finds and counts every item, even a full shelf</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">6</span>Muse Spark 1.3</p><p class="body muted">Names each item; same items are counted</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Better photo</p>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">7</span>Muse Image 1.0</p><p class="body muted">Makes the photo sharper and cleaner</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">8</span>Photo check</p><p class="body muted">Same food, same items, or the original stays</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Fix by talking</p>
-            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">9</span>Your words</p><p class="body muted">Say or type: “the salad is gone”</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">10</span>Muse Voice Transcribe 1.0 and Muse Spark 1.3</p><p class="body muted">Understand what you mean</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">11</span>Change check</p><p class="body muted">Only real items, sensible servings</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Post</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">12</span>Listing</p><p class="body muted">Live for 30 minutes for people near you</p></div>
-          </div>
-        </div>
-    </details>
-    <details class="more card" id="m-rescue">
-      <summary><span class="sum-text"><span class="label">Rescue, step by step</span><span class="body muted">Food that nobody grabbed still finds a home</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
-        <div class="flow c4">
-          <div class="stage"><p class="label stage-name">Start</p>
-            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">1</span>Rescue button</p><p class="body muted">The timer ended and nobody grabbed it</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">2</span>Where is the food?</p><p class="body muted">Uses the pickup address on the map, or your location</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Decide</p>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Muse Spark 1.3</p><p class="body muted">Shelf-stable or perishable?</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Find places</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Food program directory</p><p class="body muted">The nearest food banks, pantries and meal programs</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">5</span>Muse Spark 1.3 web search</p><p class="body muted">Only when the directory finds none</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Go</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">6</span>Three places</p><p class="body muted">The nearest that take this kind of food</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">7</span>Directions and a call</p><p class="body muted">A large amount? An email to send first</p></div>
-          </div>
-        </div>
-    </details>
-    <details class="more card" id="m-lang">
-      <summary><span class="sum-text"><span class="label">Seven languages, step by step</span><span class="body muted">English, Spanish, Portuguese, Chinese, Hindi, Arabic and Yoruba</span></span><span class="toggle" aria-hidden="true"><svg class="plus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165 M6 0.835 V11.165"/></svg><svg class="minus" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M0.835 6 H11.165"/></svg></span></summary>
-        <div class="flow c4">
-          <div class="stage"><p class="label stage-name">Find new text</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">1</span>New text</p><p class="body muted">After each update, finds what changed</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Translate</p>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">2</span>Muse Spark Open</p><p class="body muted">Translates a whole screen at a time</p></div>
-            <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
-            <div class="node ai"><p class="where">Meta AI</p><p class="label"><span class="step">3</span>Two judges</p><p class="body muted">Muse Spark Open and Muse Spark 1.3 check meaning and tone</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Keep the good ones</p>
-            <div class="node server"><p class="where">Our server</p><p class="label"><span class="step">4</span>Score check</p><p class="body muted">A weak translation keeps the last good text</p></div>
-          </div>
-          <div class="go" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2 10 H17 M12 5 L17 10 L12 15"/></svg></div>
-          <div class="stage"><p class="label stage-name">Your language</p>
-            <div class="node phone"><p class="where">Your phone</p><p class="label"><span class="step">5</span>Your language</p><p class="body muted">The app text, ready in 7 languages</p></div>
-          </div>
-        </div>
-    </details>
-  </section>
-
-  <!-- Technical depth: measured, not estimated (NEW_WORK.md entry 4) -->
-  <section aria-labelledby="h-num">
-    <h2 class="title" id="h-num">Measured, not guessed</h2>
-    <p class="body muted">Live runs on 23 shelf photos, a hand check of 294 boxes.</p>
-    <div class="stats">
-      <div class="card stat"><p class="title num">89.8%</p><p class="body muted">correct product names</p></div>
-      <div class="card stat"><p class="title num">97.4%</p><p class="body muted">correct on items 96 px or larger</p></div>
-      <div class="card stat"><p class="title num">$0.0012</p><p class="body muted">for each named item</p></div>
-      <div class="card stat"><p class="title num">6.1 s</p><p class="body muted">for 24 items (was 14.9 s)</p></div>
+      <div class="layer"><p class="label">Your phone or browser</p><ul class="chips body"><li class="chip">Give, Receive and the chat</li><li class="chip">Camera and barcode reader</li><li class="chip">Microphone or keyboard</li><li class="chip">Seven languages</li></ul></div>
+      <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+      <div class="layer"><p class="label">Our server</p><div class="groups">
+        <div class="grp"><p class="label">Front door</p><ul class="body muted"><li>Sign-in and fair use</li><li>Food check (Meta's PE-Core)</li><li>Food DB for barcodes</li></ul></div>
+        <div class="grp"><p class="label">Your food</p><ul class="body muted"><li>Finds and counts each item</li><li>Finds an item it missed</li><li>A better photo</li><li>Changes by voice or text</li></ul></div>
+        <div class="grp"><p class="label">Your listings</p><ul class="body muted"><li>Live for 30 minutes</li><li>Grab and pick up</li><li>Rescue to a food program</li><li>Live updates in the web app</li></ul></div>
+        <div class="grp"><p class="label">What we learn</p><ul class="body muted"><li>Time and cost of each AI call</li><li>A daily report of donor changes</li><li>New text translated after each update</li></ul></div>
+      </div></div>
+      <div class="down" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2 V17 M5 12 L10 17 L15 12"/></svg></div>
+      <div class="layer"><p class="label">Meta's AI models</p><ul class="chips body"><li class="chip ai">SAM 3.1 finds and counts</li><li class="chip ai">Muse Spark 1.3 names, understands, decides</li><li class="chip ai">Muse Image 1.0 makes the photo better</li><li class="chip ai">Muse Voice Transcribe 1.0 turns speech to text</li><li class="chip ai">Muse Spark Open translates</li></ul></div>
     </div>
   </section>
 
